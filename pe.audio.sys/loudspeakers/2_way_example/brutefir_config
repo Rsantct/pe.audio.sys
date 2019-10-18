@@ -18,7 +18,7 @@ logic:
 # --------- GENERAL SETTINGS --------
 # -----------------------------------
 
-convolver_config:   "~/.brutefir_convolver_SeasFlat";
+convolver_config:   "~/.brutefir_convolver_16k";
 sampling_rate:      48000 ;
 filter_length:      16384 ;
 float_bits:         32 ;
