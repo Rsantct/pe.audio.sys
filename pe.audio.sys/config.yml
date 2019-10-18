@@ -33,24 +33,24 @@ system_card: hw:UDJ6
 external_cards:
 
     # sintax:
-    #<descriptor_name>  will be used to name the belonging jack ports
-    #    alsacard: <hw:ALSANAME>
-    #    resampler: <zita-a2j | zita-j2a | alsa_in | alsa_out>
+    #<descriptorName>  will be used to name the belonging jack ports
+    #    alsacard:    <hw:ALSANAME>
+    #    resampler:   <zita-a2j | zita-j2a | alsa_in | alsa_out>
     #    resamplingQ: <NN>
     #    misc_params: <''>
 
     # some examples:
-    # This is used to capture
+    # This is used to resampled capture
     #LineIN:
-    #    alsacard: hw:CODEC
-    #    resampler: zita-a2j
+    #    alsacard:    hw:CODEC
+    #    resampler:   zita-a2j
     #    resamplingQ: 96
     #    misc_params: ''
     
     # This is used just to RTA external monitoring
     #DEQ2496:
-    #    alsacard: hw:CODEC
-    #    resampler: zita-j2a
+    #    alsacard:    hw:CODEC
+    #    resampler:   zita-j2a
     #    resamplingQ: 48
     #    misc_params: ''
 
@@ -118,8 +118,9 @@ sources:
         xo:             mp
 
 # ==================== SOURCE MONITOR PORTS ============================
-# The source selector will connect the source also here.
-# If an external card is used, then the 
+# The source selector will connect the source also to below jack ports.
+# If an external card is used, then the port name must be the same as
+# used for <descriptorName> at the avobe 'external_cards' section.
 source_monitors:
     # - <monitorName>
     #- DEQ2496
