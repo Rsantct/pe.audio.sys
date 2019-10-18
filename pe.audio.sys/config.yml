@@ -134,12 +134,13 @@ scripts:
     - sound_cards_prepare.py
     # Runs MPD:
     - mpd.sh
+    # An internet streams player based on Mplayer:
     - istreams.py
     # Set Pulseaudio apps to sound through by JACK:
     - pulseaudio-jack-sink.py
     # DVB-T player based in Mplayer, useful for DVB-T radio stations:
-    #- DVB-T.py
-    # librespot (Spotify Connect client) plays music through by the alsa backend
+    - DVB-T.py
+    # librespot (Spotify Connect client) plays music from an SpotifypPremium account
     - librespot.py
 
 
