@@ -1,1 +1,463 @@
-.
+<!DOCTYPE html>
+<html>
+    
+    <!--
+
+    Copyright (c) 2019 Rafael Sánchez
+    This file is part of 'pe.audio.sys', a PC based personal audio system.
+    
+    This is based on 'pre.di.c,' a preamp and digital crossover
+    https://github.com/rripio/pre.di.c
+    Copyright (C) 2018 Roberto Ripio
+    'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
+    https://github.com/AudioHumLab/FIRtro
+    Copyright (c) 2006-2011 Roberto Ripio
+    Copyright (c) 2011-2016 Alberto Miguélez
+    Copyright (c) 2016-2018 Rafael Sánchez
+    
+    'pe.audio.sys' is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    'pe.audio.sys' is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
+
+    -->
+    
+<head>
+
+    <title>pe.audio.sys</title>
+
+    <!-- responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- web-app behavoir (full screen when iconize at init screen on smartphones -->
+    <!-- some Androids: -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta charset="utf-8">
+
+    <!-- The javascript functions used when an event occurs on this page body's -->
+    <script src="js/functions.js"></script>
+
+    <!-- CSS Styles
+        (i) To comment out inside CSS style tag use /* xxx */
+            The .xxxxx refers to classes definitions
+    -->
+    <style>
+
+        /* GLOBAL THEME */
+        body    {   color:white;
+                    background-color: rgb(38, 38, 38);
+                    font-family: Verdana, Helvetica, Arial;
+                    font-weight:bold;
+                }
+
+        /* GLOBAL BUTTONS STYLE */
+        button  {   background-color: rgb(100, 100, 100);
+                    border-radius: 5px/5px;
+                    border:2px solid rgb(120,120,120);
+                    /* Text inside buttons: */
+                    color: white;                         
+                    font-weight:bold;
+                    font-size:0.95em;   /* smaller than usual */
+                }
+
+        /* GLOBAL TABLES behavior */
+        table   {   width: 100%;
+                }
+                  
+        /* GLOBAL TABLES CELLS behavior */
+        th, td  {   padding: 5px;
+                    text-align: center;
+                    border: 1px solid gray;
+                    font-size:1.0em;
+                }
+
+        /* GLOBAL SELECT behavior */
+        select  {   font-size:          0.9em;
+                    font-weight:        bold;
+                    color:              white;
+                    background-color:   rgb(25, 25, 25);
+                }
+
+        /* 1st SECTION: lside: shows the loudspeaker, rside: advanced toggler */
+        td#main_lside       { width:  95%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
+        td#main_rside       { width:   5%; text-align: center; border: none; }
+
+        /* 2nd SECTION */
+        td#OnOff            { width:   5%; text-align: center; border: none; }
+
+        td#levelInfo        { width:   5%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
+
+        td#LoudnessInfo     { width: 7%; border: none; font-size:0.6em;}
+        td#MonoInfo         { width: 7%; border: none; font-size:0.6em;}
+
+        td#input            { width:  85%; text-align: right; border: none;}
+        
+        /* 3th SECTION */
+        td#treble           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        td#bass             { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        td#balance          { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        td#target           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        
+        /* 4th SECTION*/
+        table#eq_table      { border: 1px solid grey; border-radius: 10px/10px; }
+        td#xo               { border: none; width: 33%; }
+        td#drc              { border: none; width: 33%; }
+        td#peq              { border: none; width: 33%; color:grey; }
+        
+        /* 5th SECTION */
+        table#level_buttons_table  { table-layout: fixed; }
+        td#level_buttons11   { border-style: none; width:15%; }
+        td#level_buttons12   { border-style: none; width:70%; }
+        td#level_buttons13   { border-style: none; width:15%; font-size:0.50em; vertical-align: bottom;}
+        td#level_buttons21   { border-style: none; width:15%; }
+        td#level_buttons22   { border-style: none; width:70%; }
+        td#level_buttons23   { border-style: none; width:15%; font-size:0.50em; }
+        
+        /* 6th SECTION */
+        table#player_info   { text-align: left; }
+        td#bitrate          { border: 1px solid grey; border-radius: 10px/10px; width: 5%; font-size:0.6em;}
+        td#artist           { border: 1px solid grey; border-radius: 10px/10px; }
+        td#track            { border: 1px solid grey; border-radius: 10px/10px; width: 3%; font-size:0.6em;}
+        td#time             { border: 1px solid grey; border-radius: 10px/10px; width: 7%; font-size:0.6em;}
+        td#album            { border: 1px solid grey; border-radius: 10px/10px; }
+        td#title            { border: 1px solid grey; border-radius: 10px/10px; }
+        
+        /* 7th SECTION */
+        td#playback_control_11  { border-style: none; width:10%; }
+        td#playback_control_12  { border-style: none; width:75%; }
+        td#playback_control_13  { border-style: none; width:15%; text-align:left; }
+        td#playback_control_21  { border-style: none; width:10%; }
+        td#playback_control_22  { border-style: none; width:75%; }
+        td#playback_control_23  { border-style: none; width:15%; text-align:center;}
+        
+        
+        /* 8th SECTION */
+        .macro_buttons  {   width: 100%;
+                            min-height: 2.7em; 
+                            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
+                            border:2px solid rgb(120,120,120);
+                            border-radius: 10px/10px;
+                            /* below is for text inside button: */
+                            font-size:0.80em;
+                            display: inline; 
+                        }
+        td#mCell        {   border-style: none; width:30%; }
+        
+        /* LOUDNESS METER CONTAINER (type CELL) */
+        .loud_meter_container {
+            border-style: none;
+            width: 50%;
+            text-align: right;
+            vertical-align: top;
+        }
+        /* The LOUDNESS METER itself (type METER) */
+        .loud_meter { 
+                    width:      100%;
+                    height:     0.8em;
+                    border:     1px solid;
+                    }
+
+        /* LOUDNESS SLIDER CONTAINER (type CELL) */
+        .loud_slider_container {
+            border-style: none;
+            width: 50%;
+            text-align: right;
+        }
+
+        /* The SLIDER itself (type INPUT RANGE) */
+        .loud_slider {
+          -webkit-appearance:   none;
+          width:                100%;
+          height:               1.0em;
+          border-radius:        5px;   
+          background:           rgb(120,120,120);
+          outline:              none;
+          opacity:              0.7;
+          -webkit-transition:   .2s;
+          transition:           opacity .2s;
+        }
+        /* The SLIDER HANDLER */
+        .loud_slider::-webkit-slider-thumb {
+          -webkit-appearance:   none;
+          appearance:           none;
+          width:                1.5em;
+          height:               1.5em;
+          border-radius:        50%; 
+          background:           rgb(240,240,240);
+          cursor:               pointer;
+        }
+        .loud_slider::-moz-range-thumb {
+          width:                25px;
+          height:               25px;
+          border-radius:        50%;
+          background:           rgb(240,240,240);
+          cursor:               pointer;
+        }
+
+    </style>
+
+</head>
+
+<!-- initizalizes the web page, and auto updates -->
+<body onload="page_initiate()" >
+
+    <!-- :: pe.audio.sys :: Loudspeaker | advanced_controls_switch -->
+    <div>
+    <table id="main_title" >
+        <tr>
+            <td id="main_lside"></td>
+            <td id="main_rside">
+                <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="advanced_toggle()">&#9881;</button>
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <!-- AMPLI + LEVEL + LOUDNESS + MONO + INPUTS -->
+    <div>
+    <table id="level_ampli_input">
+        <tr>
+            <!-- AMPLI swith -->
+            <td id="OnOff"     rowspan="2">
+                <select id="onoffSelector" onchange="ampli(this.value)">
+                  <option value="off">OFF</option>
+                  <option value="on" >ON </option>
+                </select>
+            </td>
+
+            <!-- LEVEL display -->
+            <td id="levelInfo" rowspan="2">
+            </td>
+
+            <!-- LOUDNESS control -->
+            <td id="LoudnessInfo">
+                <button type="button" id="buttonLoud" onmousedown="control_cmd('loudness_track toggle')" >L</button>
+            </td>
+        
+            <!-- INPUTS selector, will be filled by javascript -->
+            <td id="input"     rowspan="2">
+                <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901</button>
+                <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
+                <select id="inputsSelector" onchange="control_cmd('input ' + this.value, update=false)" ></select>
+            </td>
+        </tr>
+        <tr>
+            <!-- MONO / STEREO control -->
+            <td id="MonoInfo">
+                <button type="button" id="buttonMono" onmousedown="control_cmd('mono toggle')"           >M</button>
+            </td>
+        </tr>
+    </table>
+    </div>
+
+
+    <!-- ADVANCED CONTROLS (will be displayed through by a button)
+            loudness adjusting
+            treble        balance
+            bass          target
+            XO      DRC     PEQ
+    -->
+    <div id="advanced_controls" align="center" style="display:none; font-size:0.75em;">
+
+    <!-- A LOUDNESS METER AND REFERENCE ADJUST (will be hidden if loudness_track=False) -->
+    <div id="loudness_metering_and_slider" style="display:block" >
+    <table>
+        <tr>
+            <td class="loud_meter_container">
+                <button type="button" id="buttonLoudMonReset" onmousedown="loudness_monitor_reset()" >reset</button>
+                &nbsp;Loud. monitor:
+            </td>
+            <td class="loud_meter_container">
+            <!-- JS will set this stuff: -->
+            <meter  id="loud_meter"  class="loud_meter" value="0"
+                    min="-15" optimum="0" low="9" high="12" max="15" ></meter>
+            </td>
+        </tr>
+        <tr>
+            <!-- JS will update the Loud. Ref-->
+            <td id="loud_slider_container" class="loud_slider_container">Loud. Ref: ??</td>
+            <td class="loud_slider_container">
+            <input  id="loud_slider" class="loud_slider" type="range"
+                    min="-15.0" step="1" max="15.0"
+                    oninput="loudness_ref_change(this.value)">
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <table>
+        <tr>
+            <td id="treble">
+                <button type="button"                 onmousedown="control_cmd('treble -1 add')"  >-</button>
+                <span id="trebleInfo">treble</span>
+                <button type="button"                 onmousedown="control_cmd('treble +1 add')"  >+</button>
+            </td>
+            <td id="balance">
+                <button type="button"                 onmousedown="control_cmd('balance -1 add')"  >-</button>
+                <span id="balInfo">BAL</span>
+                <button type="button"                 onmousedown="control_cmd('balance +1 add')"  >+</button>
+            </td>
+        </tr>
+        <tr>
+            <td id="bass">
+                <button type="button"                 onmousedown="control_cmd('bass   -1 add')"  >-</button>
+                <span id="bassInfo">bass</span>
+                <button type="button"                 onmousedown="control_cmd('bass   +1 add')"  >+</button>
+            </td>
+            <td id="target">
+                <span>
+                <select id="targetSelector"  onchange="set_target(this.value)" ></select>
+                </span>
+            </td>
+        </tr>
+    </table>
+    <table id="eq_table">
+        <tr>
+            <td id="xo">
+                <span>XO:
+                <select id="xoSelector"     onchange="control_cmd('xo ' + this.value, update=false)" ></select>
+                </span>
+            </td>
+            <td id="drc">
+                <span >DRC:
+                <select id="drcSelector"    onchange="control_cmd('drc ' + this.value, update=false)" ></select>
+                </span>
+            </td>
+            <td id="peq">
+                <!-- a PEQ selector will be created if ecasound is used -->
+                <span id="span_peq" style="display:inline-block;">[peq]
+                </span>
+            </td>
+        </tr>
+    </table>
+    </div><!-- EOF ADVANCED CONTROLS -->
+
+    <!-- LEVEL butttons -->
+    <div class="level_buttons" id="level_buttons" align="center" >
+        <table id="level_buttons_table">
+        <tr>
+            <td id="level_buttons11">
+            </td>
+            <!-- 1 dB MAIN VOLUME and MUTE buttons -->
+            <td id="level_buttons12">
+                <button type="button" onmousedown="control_cmd('level -1 add')" >
+                        &nbsp;-1&nbsp;</button>
+                <button type="button" onmousedown="control_cmd('mute toggle')" id="buttonMute" >
+                        &nbsp;&nbsp;0&nbsp;&nbsp;</button>            
+                <button type="button" onmousedown="control_cmd('level +1 add')" >
+                        &nbsp;+1&nbsp;</button>
+            </td>
+            <td id="level_buttons13">
+                &nbsp;&nbsp;mon:&nbsp;&nbsp;
+            </td>
+        <tr>
+        </tr>
+            <td id="level_buttons21">
+            </td>
+            <!-- 3 dB MAIN VOLUME buttons -->
+            <td id="level_buttons22">
+                <button type="button" onmousedown="control_cmd('level -3 add')" >
+                        &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
+                <button type="button" onmousedown="control_cmd('level +3 add')" >
+                        &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
+            </td>
+            <!-- 2 dB MONITOR VOLUME buttons -->
+            <td id="level_buttons23">
+                <button type="button" id="MON_vol_down"  onmousedown="MON_vol('-2dB')">-</button>
+                <button type="button" id="MON_vol_up"    onmousedown="MON_vol('+2dB')">+</button>
+            </td>
+        </tr>
+        </table>
+    </div>
+
+    <!-- PLAYING INFO -->
+    <div>
+    <table id="player_info" >
+        <tr> 
+            <td id="bitrate"></td>
+            <td id="track"></td>
+            <td id="artist"></td>
+            <td id="time"></td>
+        </tr>
+        <tr>
+            <td id="album" colspan="4"></td>
+        </tr>
+        <tr>
+            <td id="title" colspan="4"></td>
+        </tr>
+    </table>
+    </div>
+
+    <!-- PLAYBACK CONTROL and MACROS TOGGLE-->
+    <div>
+    <table id="playback_control">
+        <tr> <!-- row1 -->
+            <td id="playback_control_11">
+            </td>
+            <td id="playback_control_12" >
+                <button type="button" id="buttonPrevious" onmousedown="playerCtrl('previous')" >&lt;|           </button>
+                <button type="button" id="buttonRew"      onmousedown="playerCtrl('rew')"      >&lt;&lt;        </button>
+                <button type="button" id="buttonFF"       onmousedown="playerCtrl('ff')"       >&gt;&gt;        </button>
+                <button type="button" id="buttonNext"     onmousedown="playerCtrl('next')"     >|&gt;           </button>
+            </td>
+            <td id="playback_control_13" >
+            </td>
+       </tr>
+        <tr> <!-- row2 -->
+            <td id="playback_control_21" >
+            </td>
+            <td id="playback_control_22" >
+                <button type="button" id="buttonEject"    onmousedown="playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
+                <button type="button" id="buttonStop"     onmousedown="playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
+                <button type="button" id="buttonPause"    onmousedown="playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
+                <button type="button" id="buttonPlay"     onmousedown="playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
+            </td>
+            <!-- MACROS button toggle-->
+            <td id="playback_control_23" >
+                <button type="button" id="macros_toggle_button"  onmousedown="macros_toggle()">::</button>
+            </td>
+        </tr>
+    </table>
+    </div>
+    
+    <!-- MACRO BUTTONS can be toggled -->
+    <!-- 9 buttons keypad for customizable user macros (if any found) -->
+    <div>
+    <table id="macro_buttons" style="display:none">
+    <tr>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_1" onmousedown="user_macro('1', this.innerText)" >-</button></td>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_2" onmousedown="user_macro('2', this.innerText)" >-</button></td>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_3" onmousedown="user_macro('3', this.innerText)" >-</button></td>
+    </tr>                                                                       
+    <tr>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_4" onmousedown="user_macro('4', this.innerText)" >-</button></td>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_5" onmousedown="user_macro('5', this.innerText)" >-</button></td>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_6" onmousedown="user_macro('6', this.innerText)" >-</button></td>
+    </tr>                                                                       
+    <tr>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_7" onmousedown="user_macro('7', this.innerText)" >-</button></td>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_8" onmousedown="user_macro('8', this.innerText)" >-</button></td>
+    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_9" onmousedown="user_macro('9', this.innerText)" >-</button></td>
+    </tr>                                                                       
+    </table>
+    </div>
+
+    <!-- UNCOMMENT TO TEST JAVASCRIPT FUNCTIONS WITH THIS BUTTON 
+    <div>
+        <button type="button"                 onclick="TESTING()" >TEST</button>
+    </div>
+    -->
+
+</body>
+</html>
