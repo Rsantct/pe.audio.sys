@@ -1,0 +1,13 @@
+# A config file for the 'aux.py' module
+# The 'aux.py' module will run under a TCP server.
+
+#  AUX service TCP addressing :
+aux_address:    0.0.0.0
+aux_port:       9981
+
+# Configure here your scripts to SWITCH ON/OFF your AMPLIFIER.
+# (i) It is expected that the scripts will store the amplifier state 'on' or 'off'
+#     into the file '~/.amplifier' so that the control web page could display it.
+amp_on_cmdline:  /home/predic/bin/ampli.sh on
+amp_off_cmdline: /home/predic/bin/ampli.sh off
+

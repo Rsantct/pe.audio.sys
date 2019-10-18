@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Reading addresses and ports from the simplepre config file
+SRV_ADDR=$( grep aux_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
+SRV_PORT=$( grep aux_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+
+pkill -KILL -f "server.py aux"
+
+if [[ $1 = 'stop' ]]; then
+    exit 0
+fi
+
+sleep .25
+
+python3 ~/pe.audio.sys/share/server.py aux $SRV_ADDR $SRV_PORT &

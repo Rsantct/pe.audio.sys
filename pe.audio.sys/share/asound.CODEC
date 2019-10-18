@@ -1,0 +1,62 @@
+state.CODEC {
+	control.1 {
+		iface PCM
+		name 'Playback Channel Map'
+		value.0 3
+		value.1 4
+		comment {
+			access read
+			type INTEGER
+			count 2
+			range '0 - 36'
+		}
+	}
+	control.2 {
+		iface PCM
+		name 'Capture Channel Map'
+		value.0 3
+		value.1 4
+		comment {
+			access read
+			type INTEGER
+			count 2
+			range '0 - 36'
+		}
+	}
+	control.3 {
+		iface MIXER
+		name 'PCM Playback Switch'
+		value true
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 1
+		}
+	}
+	control.4 {
+		iface MIXER
+		name 'PCM Playback Volume'
+		value.0 128
+		value.1 128
+		comment {
+			access 'read write'
+			type INTEGER
+			count 2
+			range '0 - 128'
+			dbmin -12800
+			dbmax 0
+			dbvalue.0 0
+			dbvalue.1 0
+		}
+	}
+	control.5 {
+		iface CARD
+		name 'Keep Interface'
+		value false
+		comment {
+			access 'read write'
+			type BOOLEAN
+			count 1
+		}
+	}
+}

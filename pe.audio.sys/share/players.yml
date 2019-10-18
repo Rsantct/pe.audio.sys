@@ -1,0 +1,4 @@
+# ================= players server TCP addressing  ===================
+players_address:    0.0.0.0
+players_port:       9981
+
