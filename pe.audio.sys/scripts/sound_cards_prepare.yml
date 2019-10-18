@@ -1,0 +1,23 @@
+#
+#    Prepapare sound cards to be used under pe.audio.sys.
+#
+#    This is optional, but recommended.
+#
+#    Please include this script under your config.yml file
+#
+#    ALSA mixer setting must be available under share/asound.XXXXX
+#    where XXXXX stands for the card name.
+#    
+
+
+# <CARD FUNCTION>               (free descriptor)
+    # alsa:name:    <XXXX>      (aplay -l)
+    # pulse_name:   <XXXX>      (pactl list cards short)
+
+system:
+    alsa_name:      UDJ6
+    pulse_name:     alsa_card.usb-ESI_Audiotechnik_GmbH_UDJ6-00
+
+external:
+    alsa_name:      CODEC
+    pulse_name:     alsa_card.usb-Burr-Brown_from_TI_USB_Audio_CODEC-00
