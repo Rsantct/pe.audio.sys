@@ -100,18 +100,15 @@ XO and DRC pcms will be scanned from the list of files found under the loudspeke
 when named as follows:
 
 
-- DRC pcm files must be named:
+DRC pcm files must be named:
 
-    drc.X.DRCSETNAME.pcm   where X must be L | R
-
-    0123456.........-4    
+    drc.<X>.DRCSETNAME.pcm   where X must be L | R
 
 
 
-- XO pcm files must be named:
 
-    xo.XY.XOSETNAME.pcm   where XY must be fr | lo | mi | hi | sw
+XO pcm files must be named:
 
-    0123456........-4    
+    xo.<XX>.XOSETNAME.pcm    where XX must be fr | lo | mi | hi | sw
 
  
