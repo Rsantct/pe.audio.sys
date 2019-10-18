@@ -1,0 +1,145 @@
+# ======== pe.audio.sys services TCP addressing  ===============
+# adressing pairs listed here will trigger the tcp server
+# to run the underlying service
+
+services_addressing:
+  # <service>_address:    x.x.x.x | localhost
+  # <service>_port:       N
+
+    # the MAIN service to control the audio and preamp
+    pasysctrl_address:      0.0.0.0
+    pasysctrl_port:         9989
+
+    # Auxiliary functions service
+    aux_address:            0.0.0.0
+    aux_port:               9988
+
+    # Players management service
+    players_address:        0.0.0.0
+    players_port:           9987
+
+
+# =================  SOUND CARDS =====================================
+
+# Main system card
+system_card: hw:UDJ6
+
+# Additional cards to be used resampled under jack,
+# either as capture or as playback devices.
+# resamplingQuality: 0..4 for alsa_in/out or 16..96 for zita-a2j/j2a
+# sintax:
+# <card jack name>
+#   {alsacard: ..., resampler: ..., resamplingQ:..., misc_params:...}
+external_cards:
+
+    # sintax:
+    #<descriptor_name>  will be used to name the belonging jack ports
+    #    alsacard: <hw:ALSANAME>
+    #    resampler: <zita-a2j | zita-j2a | alsa_in | alsa_out>
+    #    resamplingQ: <NN>
+    #    misc_params: <''>
+
+    # some examples:
+    # This is used to capture
+    #LineIN:
+    #    alsacard: hw:CODEC
+    #    resampler: zita-a2j
+    #    resamplingQ: 96
+    #    misc_params: ''
+    
+    # This is used just to RTA external monitoring
+    #DEQ2496:
+    #    alsacard: hw:CODEC
+    #    resampler: zita-j2a
+    #    resamplingQ: 48
+    #    misc_params: ''
+
+
+# =================  JACK SOUND CARD CONFIGURATION  ==================
+
+# DUMMY backend for testing:
+#jack_options:           -R -d dummy
+#jack_backend_options:   -r 48000 -P 6 -C 2
+
+# REAL ALSA CARD:
+jack_options:           -R -d alsa
+jack_backend_options:   -d system_card -r 48000 -P -o 6
+
+
+# ==================== THE LOUDSPEAKER  ====================
+loudspeaker: SeasFlat
+
+# (i): XO and DRC sets will be scanned from the list of xo......pcm and
+#      drc........pcm files found under the loudspeaker folder.
+
+# Put here the common IDSTRING that identifies the XO filters at start up.
+# ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
+xo_init:     mp
+
+# Put here the IDSTRING that identifies the DRC filters at start up.
+# ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
+drc_init:    lp_multipV1
+
+# The system gain in dB for nominal SPL
+# (i) This is a parameter dependent on the system amplifiers gains,
+#     not only on the loudspeaker itself.
+ref_level_gain: 0
+
+# ========== TARGET EQ FILENAMES TO LOAD AT STARTUP: ==========
+
+target_mag: target_mag_+3.0-1.0.dat
+target_pha: target_pha_+3.0-1.0.dat
+
+# =================== MISCEL: =================================
+
+# Max digital gain (dB) authorised for the convolver output
+gain_max: 6
+
+# The index of the flat curve into the 'eq/loudness.dat' curves file
+loudness_flat_curve_index: 7
+
+# ========================== SOURCES:  ===============================
+# (i) If capture_ports here are named 'xxxxloop', then the preamp will
+# automagically spawn them for the sources can connect into. Obviously the
+# sources must be configured accordingly.
+
+sources:
+    spotify:
+        capture_port:   alsa_loop
+        gain:           0.0
+        xo:             mp
+    mpd:
+        capture_port:   mpd_loop
+        gain:           0.0
+        xo:             mp
+    istreams:
+        capture_port:   istreams_loop
+        gain:           0.0
+        xo:             mp
+
+# ==================== SOURCE MONITOR PORTS ============================
+# The source selector will connect the source also here.
+# If an external card is used, then the 
+source_monitors:
+    # - <monitorName>
+    #- DEQ2496
+
+# ============= SCRIPTS YOU WANT TO RUN (players, etc...)  =============
+# The scripts files are located under the scripts folder.
+# Files must be executable, also must accept at least 'stop' as
+# command line argument in order to be stopped if necessary.
+scripts:
+    # Releases cards from Pulseaudio and restore alsa mixer settings:
+    - sound_cards_prepare.py
+    # Runs MPD:
+    - mpd.sh
+    - istreams.py
+    # Set Pulseaudio apps to sound through by JACK:
+    - pulseaudio-jack-sink.py
+    # DVB-T player based in Mplayer, useful for DVB-T radio stations:
+    #- DVB-T.py
+    # librespot (Spotify Connect client) plays music through by the alsa backend
+    - librespot.py
+
+
+
