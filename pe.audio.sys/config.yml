@@ -11,11 +11,11 @@ services_addressing:
     pasysctrl_port:         9989
 
     # Auxiliary functions service
-    aux_address:            0.0.0.0
+    aux_address:            localhost
     aux_port:               9988
 
     # Players management service
-    players_address:        0.0.0.0
+    players_address:        localhost
     players_port:           9987
 
 
