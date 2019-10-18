@@ -53,7 +53,7 @@ from ruamel.yaml import YAML
 
 UHOME = os.path.expanduser("~")
 
-## USER SETTINGS: see inside config/DVB-T.yml
+## USER SETTINGS: see inside DVB-T.yml
 
 ## Mplayer options:
 tuner_file = f'{UHOME}/.mplayer/channels.conf'
@@ -67,7 +67,7 @@ if  not f.is_fifo():
     sp.Popen ( f'mkfifo {input_fifo}'.split() )
 del(f)
 
-# Mplayer output is redirected to a file, so it can be read what is been playing:
+# Mplayer output is redirected to a file, so it can be read what it is been playing:
 redirection_path = f'{UHOME}/pe.audio.sys/.dvb_events'
 
 
