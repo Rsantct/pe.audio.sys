@@ -206,7 +206,7 @@
     //    echo 'HELLO YOU HAVE SENT command=TEST';
     //}
 
-    // PRE.DI.C: any else will be an STANDARD pre.di.c CONTROL command, handled by the 'control' server
+    // Any else will be an STANDARD pe.audio.sys CONTROL command, handled by the 'pasysctrl' server
     else {
         echo system_socket( 'pasysctrl', $command );
     }
