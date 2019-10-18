@@ -43,7 +43,7 @@ input "in.L", "in.R" {
 };
 
 output "lo.L", "lo.R", "hi.L", "hi.R" {
-    # hardwire to jack:
+    # hardwire to jack sound card:
     device: "jack" { ports:
         "system:playback_3"/"lo.L", "system:playback_4"/"lo.R", 
         "system:playback_5"/"hi.L", "system:playback_6"/"hi.R";
@@ -73,56 +73,56 @@ coeff "c.eq" {
 # -----------------------------------------
 
 coeff "drc.L.lp_multipV1" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/drc.L.lp_multipV1.pcm";
+    filename:    "drc.L.lp_multipV1.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "drc.L.mp_multipV1" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/drc.L.mp_multipV1.pcm";
+    filename:    "drc.L.mp_multipV1.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "drc.R.lp_multipV1" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/drc.R.lp_multipV1.pcm";
+    filename:    "drc.R.lp_multipV1.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "drc.R.mp_multipV1" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/drc.R.mp_multipV1.pcm";
+    filename:    "drc.R.mp_multipV1.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.hi.lp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/xo.hi.lp.pcm";
+    filename:    "xo.hi.lp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.hi.mp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/xo.hi.mp.pcm";
+    filename:    "xo.hi.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.lo.lp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/xo.lo.lp.pcm";
+    filename:    "xo.lo.lp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.lo.mp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/SeasFlat/xo.lo.mp.pcm";
+    filename:    "xo.lo.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
