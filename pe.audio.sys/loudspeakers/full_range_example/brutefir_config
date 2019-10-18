@@ -42,7 +42,7 @@ input "in.L", "in.R" {
 };
 
 output "fr.L", "fr.R" {
-    # hard wired to system ports
+    # hard wired to jack sound card ports:
     device: "jack" { ports:
         "system:playback_1"/"fr.L", "system:playback_2"/"fr.R";
     };
@@ -69,70 +69,70 @@ coeff "c.eq" {
 # -----------------------------------------
 
 coeff "drc.L.p1" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/drc.L.p1.pcm";
+    filename:    "drc.L.p1.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "drc.R.p1" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/drc.R.p1.pcm";
+    filename:    "drc.R.p1.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "drc.L.p2" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/drc.L.p2.pcm";
+    filename:    "drc.L.p2.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "drc.R.p2" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/drc.R.p2.pcm";
+    filename:    "drc.R.p2.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.fr.mp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/xo.fr.mp.pcm";
+    filename:    "xo.fr.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.fr.lp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/xo.fr.lp.pcm";
+    filename:    "xo.fr.lp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.lo.mp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/xo.lo.mp.pcm";
+    filename:    "xo.lo.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.lo.lp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/xo.lo.lp.pcm";
+    filename:    "xo.lo.lp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.hi.mp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/xo.hi.mp.pcm";
+    filename:    "xo.hi.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 coeff "xo.hi.lp" {
-    filename:    "/home/predic/pe.audio.sys/loudspeakers/lspk1/xo.hi.lp.pcm";
+    filename:    "xo.hi.lp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
