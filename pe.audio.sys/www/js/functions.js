@@ -550,6 +550,12 @@ function fills_drc_selector() {
         option.text = drc_sets[i];
         x.add(option);
     }
+
+    // And adds 'none'
+    var option = document.createElement("option");
+    option.text = 'none';
+    x.add(option);
+
 }
 
 // Inserts the PEQ selector if Ecasound is used
