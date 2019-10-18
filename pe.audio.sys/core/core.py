@@ -163,7 +163,10 @@ def get_eq_curve(prop, value):
     return EQ_CURVES[f'{prop}_mag'][:,index], EQ_CURVES[f'{prop}_pha'][:,index]
 
 def bf_set_drc( x ):
-    cmd = ( f'cfc "f.drc.L" "drc.L.{x}"; cfc "f.drc.R" "drc.R.{x}";' )
+    if x == 'none':
+        cmd = ( f'cfc "f.drc.L" -1         ; cfc "f.drc.R" -1         ;' )
+    else:
+        cmd = ( f'cfc "f.drc.L" "drc.L.{x}"; cfc "f.drc.R" "drc.R.{x}";' )
     bf_cli( cmd )
 
 def bf_set_xo( filters, xo ):
@@ -497,7 +500,7 @@ class Lspk(object):
                 self.filters.append( x[3:5] )
         
     def set_drc(self, drc):
-        if drc in self.drc_sets:
+        if drc in self.drc_sets or drc == 'none':
             bf_set_drc( drc )
             return 'done'
         else:
