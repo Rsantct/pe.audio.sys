@@ -42,9 +42,9 @@ input "in.L", "in.R" {
 };
 
 output "fr.L", "fr.R" {
-    # does not connect outputs in jack:
+    # hard wired to system ports
     device: "jack" { ports:
-        ""/"fr.L", ""/"fr.R";
+        "system:playback_1"/"fr.L", "system:playback_2"/"fr.R";
     };
     sample:   "AUTO";
     channels: 2/0,1;
