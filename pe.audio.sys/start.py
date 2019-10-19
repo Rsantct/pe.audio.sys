@@ -156,7 +156,7 @@ def run_scripts(mode='start'):
         print( f'(start.py) will {mode} the script \'{script}\' ...' )
         sp.Popen( f'{UHOME}/pe.audio.sys/scripts/{script} {mode}', shell=True)
         if mode == 'stop':
-            sleep(.5) # this is necessary because off asyncronous stopping
+            sleep(.5) # this is necessary because of asyncronous stopping
 
 def kill_bill():
     """ killing any previous instance of this,
