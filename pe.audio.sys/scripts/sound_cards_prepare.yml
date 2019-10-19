@@ -5,7 +5,7 @@
 #
 #    Please include this script under your config.yml file
 #
-#    ALSA mixer setting must be available under share/asound.XXXXX
+#    ALSA mixer setting must be available under ~/pe.audio.sys/asound.XXXXX
 #    where XXXXX stands for the card name.
 #    
 
