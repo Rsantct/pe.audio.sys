@@ -52,7 +52,7 @@ Few user scripts or shared modules can have an YAML of the same name for configu
     |
     |-- pasysctrl           command line tool to control the system
     |
-    |-- start.py            this starts up the whole system
+    |-- start.py            this starts up or shutdown the whole system
     |
     |-- share/              core and general purpose modules and associated files
     |   |
