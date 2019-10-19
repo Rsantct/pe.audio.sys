@@ -4,7 +4,7 @@ The system is intended as a personal audio system based on a PC. It is based on 
 
 - Digital crossover for sophysticated loudspeakers management
 - Preamplifier with loudness compensated and calibrated volume control.
-- Web page for system control (only FIRtro)
+- Web page for system control (only on FIRtro)
 
  Additional features on pe.audio.sys:
 
