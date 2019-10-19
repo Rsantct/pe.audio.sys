@@ -60,7 +60,7 @@ Few user scripts or shared modules can have an YAML of the same name for configu
     |
     |-- loudspeakers/       
     |   |
-    |   |-- lspk1           loudspeaker files: brutefir_config, xo & drc pcm FIRs
+    |   |-- lspk1/          loudspeaker files: brutefir_config, xo & drc pcm FIRs
     |   |-- ...
     |
     |-- scripts/            additional scripts to launch at start up
