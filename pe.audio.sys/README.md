@@ -1,38 +1,44 @@
 # Overview
 
-The system is intended as a personal audio system based on a PC. It is based on the former **FIRtro** and the current **pre.di.c** projects. Its main features are:
+The system is intended as a personal audio system based on a PC. It is based on the former **FIRtro** and the current **pre.di.c** projects, from the pioneer @rripio and others contributors.
+
+https://github.com/AudioHumLab/FIRtro/wiki
+
+https://github.com/rripio/pre.di.c
+
+Its main features are:
 
 - Digital crossover for sophysticated loudspeakers management
 - Preamplifier with loudness compensated and calibrated volume control.
 - Web page for system control (only on FIRtro)
 
- Additional features on **pe.audio.sys**:
+ Additional features on **pe.audio.sys** are extended to involve:
 
 - Music players management.
-- Auxiliary system functions management.
+- Auxiliary system functions management (amplifier switching, ...).
 - New control web page behavoir.
 
-Most of the system is written in Python3, and config files are YAML kind of.
+Most of the system is written in Python3, and config files are YAML kind of, thanks **@rripio**.
 
 The control of the system is based on a tcp server architecture.
 
-The core is mainly based on:
+The system core is mainly based on:
 
-    - JACK: a sound server (wiring audio streams and sound card interfacing)
+- JACK: the sound server (wiring audio streams and sound card interfacing)
 
-    - BRUTEFIR, a convolution engine that supports:
+- BRUTEFIR, a convolution engine that supports:
 
-        - XOVER FIR filtering (multiway active loudspeaker crossover filtering)
-        - DRC FIR filtering (digital room correction)
-        - EQ: bass, treble, dynamic loudness curves, in-room target eq curves.
-        - LEVEL control
+    - XOVER FIR filtering (multiway active loudspeaker crossover filtering)
+    - DRC FIR filtering (digital room correction)
+    - EQ: bass, treble, dynamic loudness curves, in-room target eq curves.
+    - LEVEL control
 
 
 # Configuration
 
 All system features are configured under `config.yml`. This file is self commented.
 
-User scripts or shared modules can have an YAML of the same name for configuration if necessary.
+Few user scripts or shared modules can have an YAML of the same name for configuration if necessary.
 
 
 # Filesystem tree
