@@ -1,6 +1,6 @@
 # Overview
 
-The system is intended as a personal audio system based on a PC. It is based on the former **FIRtro** and the current **pre.di.c** projects. Its main features:
+The system is intended as a personal audio system based on a PC. It is based on the former **FIRtro** and the current **pre.di.c** projects. Its main features are:
 
 - Digital crossover for sophysticated loudspeakers management
 - Preamplifier with loudness compensated and calibrated volume control.
@@ -71,8 +71,6 @@ when named as follows:
 DRC pcm files must be named:
 
     drc.<X>.DRCSETNAME.pcm   where X must be L | R
-
-
 
 
 XO pcm files must be named:
