@@ -92,6 +92,19 @@ target_pha: target_pha_+3.0-1.0.dat
 
 # =================== MISCEL: =================================
 
+# Startup settings (leave blank to restore from the last state)
+init_bass:              0
+init_treble:            0
+init_balance:           0
+init_loudness_track:    on
+init_midside:           off
+init_solo:              off
+init_level:             
+init_max_level:         -20
+init_xo:
+init_drc:
+init_input:
+
 # Max digital gain (dB) authorised for the convolver output
 gain_max: 6
 
