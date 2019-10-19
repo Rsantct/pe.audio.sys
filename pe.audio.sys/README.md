@@ -44,13 +44,11 @@ User scripts or shared modules can have an YAML of the same name for configurati
     |
     |-- config.yml          the main configuration file
     |
-    |-- pasysctrl           command line to control the system
+    |-- pasysctrl           command line tool to control the system
     |
     |-- start.py            this starts up the whole system
     |
-    |-- core/               the core modules
-    |
-    |-- share/              general purpose modules and files
+    |-- share/              core and general purpose modules and associated files
     |
     |-- eq/                 tone, loudness and target curves .dat files
     |
@@ -61,7 +59,7 @@ User scripts or shared modules can have an YAML of the same name for configurati
     |
     |-- scripts/            additional scripts to launch at start up
     |
-    \-- www/                the control web page
+    \-- www/                The web interface to control the system
 
 
 # The loudspeaker
