@@ -30,41 +30,105 @@
 
     This is optional, but recommended.
 
-    Cards to be prepared are declared under 'sound_cards_prepare.yml'
+    Cards to be prepared are 'system_card' and 'external_cards'
+    as defined under pe.audio.sys (config.yml)
 
-    ALSA mixer setting must be available under ~/pe.audio.sys/asound.XXXXX
-    where XXXXX stands for the card name.
+    ALSA mixer setting must be previously available under
+
+        ~/pe.audio.sys/asound.XXXXX
+
+    where XXXXX stands for the alsa card name (without 'hw:' prefix)
+
+    Example:
+
+    Prepare your alsamixer settings for MYCARD, then execute the following:
+
+        alsactl -f ~/pe.audio.sys/asound.MYCARD store MYCARD
     
 """
 import os, sys
 import subprocess as sp
 import yaml
 
-UHOME = os.path.expanduser("~")
-THISPATH = os.path.dirname(os.path.abspath(__file__))
-with open(f'{THISPATH}/sound_cards_prepare.yml', 'r') as f:
-    cfg = yaml.load(f)
-
-for card in cfg:
-
-    card = cfg[card]
-
-    # Release the card from pulseaudio
+def get_pulse_cards():
+    pa_cards = {}
     try:
-        sp.Popen( f'pactl set-card-profile {card["pulse_name"]} off'.split() )
+        tmp = sp.check_output( 'pactl list cards'.split() ).decode().split('\n')
+        new_card = False
+        for line in tmp:
+
+            if line.startswith("Card #"):
+                new_card = True
+                cardN = line.strip()
+                pa_cards[ cardN ] = {}
+
+            if new_card and 'Name: ' in line:
+                pa_cards[cardN]['pa_name'] = line.split(':')[-1].strip()
+
+            if new_card and 'alsa.card_name' in line:
+                pa_cards[cardN]['alsa_name'] = line.split('=')[-1].strip() \
+                                                .replace('"','')
+
+    except:
+        pass
+
+    return pa_cards
+
+def get_config_yml_cards():
+    cards = []
+    with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+        CONFIG = yaml.load( f )
+
+    cards.append( CONFIG["system_card"] )
+
+    if CONFIG["external_cards"]:
+        for ecard in CONFIG["external_cards"]:
+            cards.append( CONFIG["external_cards"][ecard]["alsacard"] )
+
+    return cards
+
+def PA_release_card( pa_name ):
+    """ Release the card from pulseaudio """
+    try:
+        sp.Popen( f'pactl set-card-profile {pa_name} off'.split() )
     except:
         print(  f'(sound_cards_prepare) PROBLEMS releasing '
-                f'\'{card["pulse_name"]}\' in pulseaudio' )
+                f'\'{pa_name}\' in pulseaudio' )
 
-    # Restore our ALSA mixer settigs for the card
-    asound_file = f'{UHOME}/pe.audio.sys/asound.{card["alsa_name"]}'
-    try:
-        if os.path.isfile( asound_file ):
-            sp.Popen( f'alsactl -f {asound_file} \
-                        restore {card["alsa_name"]}'.split() )
-        else:
-            raise
-    except:
-        print(  f'(sound_cards_prepare) PROBLEMS restoring alsa: '
-                f'\'{card["alsa_name"]}\'' )
+
+if __name__ == "__main__":
+
+    if sys.argv[1:]:
+        print(__doc__)
+        sys.exit()
+
+    UHOME = os.path.expanduser("~")
+
+    pa_cards        = get_pulse_cards()
+    config_cards    = get_config_yml_cards()
+
+    # Release cards from pulseaudio
+    if pa_cards:
+        for pa_card in pa_cards:
+            for config_card in config_cards:
+                #print (config_card, pa_cards[pa_card]["alsa_name"],
+                #       pa_cards[pa_card]["pa_name"])
+                if pa_cards[pa_card]["alsa_name"] in config_card:
+                        PA_release_card( pa_cards[pa_card]["pa_name"] )
+
+
+    # Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
+    for card in config_cards:
+        bareCardName = card.split(':')[-1].split(',')[0]
+
+        asound_file = f'{UHOME}/pe.audio.sys/asound.{bareCardName}'
+        try:
+            if os.path.isfile( asound_file ):
+                sp.Popen( f'alsactl -f {asound_file} \
+                            restore {bareCardName}'.split() )
+            else:
+                raise
+        except:
+            print(  f'(sound_cards_prepare) PROBLEMS restoring alsa: '
+                    f'\'{bareCardName}\'' )
     
