@@ -592,7 +592,7 @@ UHOME           = os.path.expanduser("~")
 CONFIG          = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
 LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH      = f'{UHOME}/pe.audio.sys/.state.yml'
-EQ_FOLDER       = f'{UHOME}/pe.audio.sys/eq'
+EQ_FOLDER       = f'{UHOME}/pe.audio.sys/share/eq'
 EQ_CURVES       = {
     'freqs'   : np.loadtxt( f'{EQ_FOLDER}/R20_ext-freq.dat'         ), 
     'loud_mag': np.loadtxt( f'{EQ_FOLDER}/R20_ext-loudness_mag.dat' ), 
