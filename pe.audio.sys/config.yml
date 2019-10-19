@@ -103,7 +103,7 @@ init_level:
 init_max_level:         -20
 init_xo:
 init_drc:
-init_input:
+init_input:             none
 
 # Max digital gain (dB) authorised for the convolver output
 gain_max: 6
