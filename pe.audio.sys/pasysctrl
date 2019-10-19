@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#
+# A command line tool to control the system
+#
+
 # Reading addresses and ports from the simplepre config file
 SRV_ADDR=$( grep pasysctrl_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
