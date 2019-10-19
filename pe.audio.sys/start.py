@@ -212,7 +212,8 @@ if __name__ == "__main__":
        
         # (i) Importing core.py needs JACK to be running
         from core.core import   jack_loops_prepare,     \
-                                restore_state,          \
+                                init_audio_settings,    \
+                                init_source,            \
                                 jack_connect_bypattern
         # BRUTEFIR
         start_brutefir()
@@ -225,16 +226,14 @@ if __name__ == "__main__":
             jack_loops_prepare()
             sleep(1) # this is necessary, or checking for ports to be activated
 
+        # RESTORE: audio settings and conecting source as set under config.yml
+        init_audio_settings()
+        init_source()
+
         # THE TCP SERVERS:
         # (i) the system control service 'pasysctl.py' needs jack to be running.
         for service in get_services():
             start_service(service)
-
-        # WIRING pre_out   -->   system
-        jack_connect_bypattern('pre_out',  'system')
-
-        # RESTORE: audio settings and conecting source --> pre_in
-        restore_state()
 
         # Running USER SCRIPTS
         run_scripts()
