@@ -99,8 +99,9 @@ def PA_release_card( pa_name ):
 if __name__ == "__main__":
 
     if sys.argv[1:]:
-        print(__doc__)
-        sys.exit()
+        if '-h' in sys.argv[1]:
+            print(__doc__)
+            sys.exit()
 
     UHOME = os.path.expanduser("~")
 
