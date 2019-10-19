@@ -317,7 +317,6 @@ def init_source():
     save_yaml( core.state, STATE_PATH )
     
     del(core)
-
     
 def init_audio_settings():
     """ Forcing if indicated on config.yml or restoring last state from disk
@@ -325,7 +324,11 @@ def init_audio_settings():
 
     core = Core()
     lspk = Lspk()
-    
+
+    if CONFIG["init_mute"]:
+        core.set_mute       (   CONFIG["init_mute"]             )
+    else:
+        core.set_mute       (   core.state['muted']             )
 
     if CONFIG["init_level"]:         
         core.set_level      (   CONFIG["init_level"]            )
