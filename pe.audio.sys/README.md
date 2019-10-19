@@ -54,9 +54,9 @@ User scripts or shared modules can have an YAML of the same name for configurati
     |
     |-- eq/                 tone, loudness and target curves .dat files
     |
-    |-- loudspeakers/       loudspeaker files: brutefir_config, xo & drc FIRs
+    |-- loudspeakers/       
     |   |
-    |   |-- lspk1                                          
+    |   |-- lspk1           loudspeaker files: brutefir_config, xo & drc pcm FIRs
     |   |-- ...
     |
     |-- scripts/            additional scripts to launch at start up
