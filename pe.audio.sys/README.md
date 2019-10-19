@@ -6,7 +6,7 @@ The system is intended as a personal audio system based on a PC. It is based on 
 - Preamplifier with loudness compensated and calibrated volume control.
 - Web page for system control (only on FIRtro)
 
- Additional features on pe.audio.sys:
+ Additional features on **pe.audio.sys**:
 
 - Music players management.
 - Auxiliary system functions management.
