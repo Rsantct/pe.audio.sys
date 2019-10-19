@@ -32,7 +32,7 @@
 
     Cards to be prepared are declared under 'sound_cards_prepare.yml'
 
-    ALSA mixer setting must be available under share/asound.XXXXX
+    ALSA mixer setting must be available under ~/pe.audio.sys/asound.XXXXX
     where XXXXX stands for the card name.
     
 """
@@ -57,7 +57,7 @@ for card in cfg:
                 f'\'{card["pulse_name"]}\' in pulseaudio' )
 
     # Restore our ALSA mixer settigs for the card
-    asound_file = f'{UHOME}/pe.audio.sys/share/asound.{card["alsa_name"]}'
+    asound_file = f'{UHOME}/pe.audio.sys/asound.{card["alsa_name"]}'
     try:
         if os.path.isfile( asound_file ):
             sp.Popen( f'alsactl -f {asound_file} \
