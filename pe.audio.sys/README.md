@@ -55,8 +55,8 @@ Few user scripts or shared modules can have an YAML of the same name for configu
     |-- start.py            this starts up the whole system
     |
     |-- share/              core and general purpose modules and associated files
-    |
-    |-- eq/                 tone, loudness and target curves .dat files
+    |   |
+    |   \-- eq/             tone, loudness and target curves .dat files
     |
     |-- loudspeakers/       
     |   |
@@ -70,7 +70,9 @@ Few user scripts or shared modules can have an YAML of the same name for configu
 
 # The loudspeaker
 
-XO and DRC pcms will be scanned from the list of files found under the loudspeker folder,
+Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as system card wiring and delays on each port.
+
+For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder,
 when named as follows:
 
 
