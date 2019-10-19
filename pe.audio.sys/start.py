@@ -211,7 +211,7 @@ if __name__ == "__main__":
     if is_jack_running():
        
         # (i) Importing core.py needs JACK to be running
-        from core.core import   jack_loops_prepare,     \
+        from share.core import  jack_loops_prepare,     \
                                 init_audio_settings,    \
                                 init_source,            \
                                 jack_connect_bypattern
