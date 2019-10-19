@@ -303,23 +303,86 @@ def jack_loops_prepare():
                                 args=['pre_in_loop', 2]   )
     jloop.start()
 
-def restore_source():
-    state = read_yaml( STATE_PATH )
-    source = state['input']
-    sport = CONFIG['sources'][source]['capture_port']
-    print('(core) restoring source:', sport)
-    jack_connect_bypattern(sport, 'preamp_loop')
-
 # THE CORE: AUDIO PROCESSOR AND SELECTOR:
-def restore_state():
-    """ restoring state from disk """
+def init_source():
+    """ Forcing if indicated on config.yml or restoring last state from disk
+    """
     core = Core()
-    core.set_level      (   core.state['level']       )
-    core.set_balance    (   core.state['balance']       )
-    core.set_bass       (   core.state['bass']          )
-    core.set_treble     (   core.state['treble']        )
-    core.set_loud_ref   (   core.state['loudness_ref']  )
-    core.select_source  (   core.state['input']         )
+
+    if CONFIG["init_input"]:
+        core.select_source  (   CONFIG["init_input"]            )
+    else:
+        core.select_source  (   core.state['input']             )
+
+    save_yaml( core.state, STATE_PATH )
+    
+    del(core)
+
+    
+def init_audio_settings():
+    """ Forcing if indicated on config.yml or restoring last state from disk
+    """
+
+    core = Core()
+    lspk = Lspk()
+    
+
+    if CONFIG["init_level"]:         
+        core.set_level      (   CONFIG["init_level"]            )
+    else:
+        core.set_level      (   core.state['level']             )
+
+    if CONFIG["init_max_level"]:
+        core.set_level(  min( CONFIG["init_max_level"], core.state['level'] ) )
+
+    if CONFIG["init_bass"]:
+        core.set_bass       (   CONFIG["init_bass"]             )
+    else:
+        core.set_bass       (   core.state['bass']              )
+
+    if CONFIG["init_treble"]:        
+        core.set_treble     (   CONFIG["init_treble"]           )
+    else:
+        core.set_treble     (   core.state['treble']            )
+
+    if CONFIG["init_balance"]:       
+        core.set_balance    (   CONFIG["init_balance"]          )
+    else:
+        core.set_balance    (   core.state['balance']           )
+
+    if CONFIG["init_loudness_track"]:
+        core.set_loud_track (   CONFIG["init_loudness_track"]   )
+    else:
+        core.set_loud_track (   core.state['loudness_track']    )
+
+    if CONFIG["init_loudness_ref"]:
+        core.set_loud_ref   (   CONFIG["init_loudness_ref"]     )
+    else:
+        core.set_loud_ref   (   core.state['loudness_ref']      )
+
+    if CONFIG["init_midside"]:       
+        core.set_midside    (   CONFIG["init_midside"]          )
+    else:
+        core.set_midside    (   core.state['midside']           )
+
+    if CONFIG["init_solo"]:          
+        core.set_solo       (   CONFIG["init_solo"]             )
+    else:
+        core.set_solo       (   core.state['solo']              )
+
+    if CONFIG["init_xo"]:
+        lspk.set_xo         (   CONFIG["init_xo"]               )
+    else:
+        lspk.set_xo         (   core.state['xo_set']                )
+
+    if CONFIG["init_drc"]:
+        lspk.set_drc        (   CONFIG["init_drc"]              )
+    else:
+        lspk.set_drc        (   core.state['drc_set']               )
+
+    save_yaml( core.state, STATE_PATH )
+
+    del(lspk)
     del(core)
 
 class Core(object):
@@ -493,7 +556,7 @@ class Lspk(object):
             if not x[6:-4] in self.xo_sets:
                 self.xo_sets.append( x[6:-4] )
         
-        # ------  WAYS (filters) ------
+        # ------  WAYS (brutefir filters) ------
         self.filters = []
         for x in tmp:
             if not x[3:5] in self.filters:
