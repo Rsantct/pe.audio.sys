@@ -35,7 +35,7 @@
 
     ALSA mixer setting must be previously available under
 
-        ~/pe.audio.sys/asound.XXXXX
+        ~/pe.audio.sys/.asound.XXXXX
 
     where XXXXX stands for the alsa card name (without 'hw:' prefix)
 
@@ -43,7 +43,7 @@
 
     Prepare your alsamixer settings for MYCARD, then execute the following:
 
-        alsactl -f ~/pe.audio.sys/asound.MYCARD store MYCARD
+        alsactl -f ~/pe.audio.sys/.asound.MYCARD store MYCARD
     
 """
 import os, sys
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     for card in config_cards:
         bareCardName = card.split(':')[-1].split(',')[0]
 
-        asound_file = f'{UHOME}/pe.audio.sys/asound.{bareCardName}'
+        asound_file = f'{UHOME}/pe.audio.sys/.asound.{bareCardName}'
         try:
             if os.path.isfile( asound_file ):
                 sp.Popen( f'alsactl -f {asound_file} \
