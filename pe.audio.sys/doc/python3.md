@@ -1,20 +1,18 @@
-## Requirements
+# Requirements
 
-### Python >= 3.6
+## Python >= 3.6
 
-More info under `doc/` folder
-
-### Python3 packages
+## Python3 packages
 
 - Distro installation
 
 First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 
 ```
-    sudo apt install python3-numpy 
-    sudo apt install python3-yaml python3-mpd python3-jack-client
-    # recommended:
-    sudo apt install python3-scipy python3-matplotlib python3-ruamel.yaml
+    sudo apt install python3-pip python3-yaml python3-ruamel.yaml python3-jack-client python3-mpd
+    sudo apt install python3-numpy python3-scipy python3-matplotlib
+    sudo python3 -m pip install --upgrade setuptools
+    sudo pip3 install sounddevice watchdog
 ```
 
 - PIP standard installation:
