@@ -49,35 +49,35 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
 
     pe.audio.sys/
     |
-    |-- README.md           this file
+    |-- README.md           This file
     |
-    |-- config.yml          the main configuration file
+    |-- config.yml          The main configuration file
     |
-    |-- xxxx.yml            other configuration files
+    |-- xxxx.yml            Other configuration files
     |
     |-- .asound.XXX         ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
     |
-    |-- pasysctrl           command line tool to control the system
+    |-- pasysctrl           Command line tool to control the system
     |
-    |-- start.py            this starts up or shutdown the whole system
+    |-- start.py            This starts up or shutdown the whole system
     |
-    |-- macros              end user general purpose macro scripts (can have web interface buttons)
+    |-- macros              End user general purpose macro scripts (can have web interface buttons)
     |
-    |-- doc                 help documents
+    |-- doc                 Help documents
     |
-    |-- share/              system modules (the core and the tcp server)
+    |-- share/              System modules (the core and the tcp server)
     |   |
-    |   |-- eq/             tone, loudness and target curves .dat files
+    |   |-- eq/             Tone, loudness and target curves .dat files
     |   |
-    |   |-- services/       services provided under the server (system control and others)
+    |   |-- services/       Services provided through by the tcp server (system control and others)
     |   |
-    |   |-- scripts/        additional scripts that can be launched at start up
+    |   |-- scripts/        Additional scripts that can be launched at start up
     |   |
-    |   \-- www/            a web interface to control the system
+    |   \-- www/            A web interface to control the system
     |
     \-- loudspeakers/       
         |
-        |-- lspk1/          loudspeaker files: brutefir_config, xo & drc pcm FIRs
+        |-- lspk1/          Loudspeaker files: brutefir_config, xo & drc pcm FIRs
         |-- lspk2/
         |-- ...
      
