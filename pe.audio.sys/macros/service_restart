@@ -7,6 +7,11 @@ if [[ -z $svc ]]; then
     exit 0
 fi
 
+# a little trick, you can use the former 'control' service name
+if [[ $svc = 'control' ]]; then
+    svc=pasysctrl
+fi
+
 # Killing the running service:
 # (triple quoted is needed for this to work)
 pkill -KILL -f """server.py $svc"""
