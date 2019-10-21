@@ -45,7 +45,7 @@ Few user scripts or shared modules can have an YAML of the same name for configu
 
 1st level contains 1st hand files (system  configuration and the system start script) and folders (loudspeakers, user macros).
 
-Deeper levels contains runtime files you don't need to access to.
+Deeper `share/` levels contains runtime files you don't usually need to access to.
 
     pe.audio.sys/
     |
@@ -55,7 +55,7 @@ Deeper levels contains runtime files you don't need to access to.
     |
     |-- xxxx.yml            other configuration files
     |
-    |-- .asound.XXX         ALSA sound cards restore settings (see sound_cards_prepare.py under scripts/)
+    |-- .asound.XXX         ALSA sound cards restore settings, see sound_cards_prepare.py under scripts/
     |
     |-- pasysctrl           command line tool to control the system
     |
