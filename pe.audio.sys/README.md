@@ -63,6 +63,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- macros              end user general purpose macro scripts (can have web interface buttons)
     |
+    |-- doc                 help documents
+    |
     |-- share/              system modules (the core and the tcp server)
     |   |
     |   |-- eq/             tone, loudness and target curves .dat files
