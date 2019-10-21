@@ -1,4 +1,4 @@
-# ======== pe.audio.sys services TCP addressing  ===============
+# ======== pe.audio.sys SERVICES LAUNCHER and tcp addressing  ==========
 # adressing pairs listed here will trigger the tcp server
 # to run the underlying service
 
@@ -6,18 +6,17 @@ services_addressing:
   # <service>_address:    x.x.x.x | localhost
   # <service>_port:       N
 
-    # the MAIN service to control the audio and preamp
+    # the MAIN service to control the audio and preamp (MANDATORY)
     pasysctrl_address:      0.0.0.0
     pasysctrl_port:         9989
 
-    # Auxiliary functions service
+    # Auxiliary functions service (optional)
     aux_address:            localhost
     aux_port:               9988
 
-    # Players management service
+    # Players management service (optional)
     players_address:        localhost
     players_port:           9987
-
 
 # =================  SOUND CARDS =====================================
 
