@@ -1,8 +1,0 @@
-# A config file for the 'aux.py' module
-
-# Configure here your scripts to SWITCH ON/OFF your AMPLIFIER.
-# (i) It is expected that the scripts will store the amplifier state 'on' or 'off'
-#     into the file '~/.amplifier' so that the control web page could display it.
-amp_on_cmdline:  /home/predic/bin/ampli.sh on
-amp_off_cmdline: /home/predic/bin/ampli.sh off
-
