@@ -113,7 +113,7 @@ if [ "$keepConfig" ]; then
     mv .mplayer/channels.conf.LAST  .mplayer/channels.conf  >/dev/null 2>&1
 
     echo "(i) Restoring pe.audio.sys config files"
-    cd "$HOME"pe.audio.sys
+    cd "$HOME"/pe.audio.sys
     for file in *yml.LAST ; do
         nfile=${file%.LAST}         # removes trailing .LAST '%'
         echo "    "$nfile
@@ -124,7 +124,7 @@ if [ "$keepConfig" ]; then
 # If NO KEEPING CONFIG, then overwrite:
 ########################################################################
 else
-    cd "$HOME"pe.audio.sys
+    cd "$HOME"/pe.audio.sys
 
     cp .state.yml.sample         .state.yml
     cp config.yml.example        config.yml
