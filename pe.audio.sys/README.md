@@ -52,6 +52,8 @@ Few user scripts or shared modules can have an YAML of the same name for configu
     |
     |-- xxxx.yml            other configuration files
     |
+    |-- .asound.XXX         ALSA sound cards restore settings
+    |
     |-- pasysctrl           command line tool to control the system
     |
     |-- start.py            this starts up or shutdown the whole system
