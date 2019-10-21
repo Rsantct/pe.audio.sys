@@ -55,7 +55,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- xxxx.yml            other configuration files
     |
-    |-- .asound.XXX         ALSA sound cards restore settings, see sound_cards_prepare.py under scripts/
+    |-- .asound.XXX         ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
     |
     |-- pasysctrl           command line tool to control the system
     |
