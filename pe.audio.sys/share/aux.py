@@ -39,14 +39,14 @@ LOUDNESS_CTRL = f'{MAIN_FOLDER}/.loudness_control'
 
 # Reading some user configs for auxilary tasks
 try:
-    with open( f'{MAIN_FOLDER}/share/aux.yml' , 'r' ) as f:
+    with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
         cfg = yaml.load( f )
-    AMP_ON_CMDLINE =  cfg['amp_on_cmdline']
-    AMP_OFF_CMDLINE = cfg['amp_off_cmdline']
+    AMP_ON_CMDLINE =  cfg['aux']['amp_on_cmdline']
+    AMP_OFF_CMDLINE = cfg['aux']['amp_off_cmdline']
 except:
     # This will be printed out to the terminal to advice the user:
-    AMP_ON_CMDLINE =  'echo For amp switching please configure config/aux.yml'
-    AMP_OFF_CMDLINE = 'echo For amp switching please configure config/aux.yml'
+    AMP_ON_CMDLINE =  'echo For amp switching please configure config.yml'
+    AMP_OFF_CMDLINE = 'echo For amp switching please configure config.yml'
 
 
 def do(task):
