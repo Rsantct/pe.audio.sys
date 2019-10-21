@@ -1,0 +1,4 @@
+#!/bin/bash
+
+$HOME/pe.audio.sys/share/scripts/istreams.py preset 1
+echo "input istreams" | nc -N localhost 9989
