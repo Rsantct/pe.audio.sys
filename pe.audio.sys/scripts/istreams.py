@@ -32,7 +32,7 @@
     Also used to change on the fly the played stream.
 
     Internet stream presets can be configured inside:
-        config/istreams.yml
+        pe.audio.sys/istreams.yml
 
     Use:    istreams    start  [ <preset_num> | <preset_name> ]
                         stop
@@ -113,12 +113,12 @@ def stop():
 if __name__ == '__main__':
 
     ### Reading the stations presets file
-    with open(f'{UHOME}/pe.audio.sys/scripts/istreams.yml', 'r') as f:
-        try:
-            presets = yaml.load(f)
-        except:
-            print ( '(istreams.py) ERROR reading \'istream.yml\'' )
-            sys.exit()
+    try:
+        with open(f'{UHOME}/pe.audio.sys/istreams.yml', 'r') as f:
+        presets = yaml.load(f)
+    except:
+        print ( '(istreams.py) ERROR reading \'pe.audio.sys/istream.yml\'' )
+        sys.exit()
 
     ### Reading the command line
     if sys.argv[1:]:
