@@ -149,7 +149,7 @@ scripts:
     # Releases cards from Pulseaudio and restore alsa mixer settings:
     - sound_cards_prepare.py
     # Runs MPD:
-    - mpd.sh
+    - mpd.py
     # An internet streams player based on Mplayer:
     - istreams.py
     # Set Pulseaudio apps to sound through by JACK:
