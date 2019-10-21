@@ -154,7 +154,7 @@ def prepare_extra_cards( channels = 2 ):
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
         print( f'(start.py) will {mode} the script \'{script}\' ...' )
-        sp.Popen( f'{UHOME}/pe.audio.sys/scripts/{script} {mode}', shell=True)
+        sp.Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} {mode}', shell=True)
         if mode == 'stop':
             sleep(.5) # this is necessary because of asyncronous stopping
 
