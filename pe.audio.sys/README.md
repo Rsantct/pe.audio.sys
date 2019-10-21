@@ -36,7 +36,7 @@ The system core is mainly based on:
 
 # Configuration
 
-All system features are configured under `config.yml`. This file is self commented.
+All system features are configured under **`config.yml`**. We provide a self commented **`config.yml.example`** file.
 
 Few user scripts or shared modules can have an YAML of the same name for configuration if necessary.
 
