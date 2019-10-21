@@ -415,8 +415,12 @@ class Core(object):
         bf_set_gains( self.state )
         return 'done'
 
-    def set_balance(self, value):
-        self.state['balance'] = round(float(value), 2)
+    def set_balance(self, value, relative=False):
+        if relative:
+            self.state['balance'] += round(float(value), 2)
+        else:
+            self.state['balance'] =  round(float(value), 2)
+            
         bf_set_gains( self.state )
         return 'done'
 
