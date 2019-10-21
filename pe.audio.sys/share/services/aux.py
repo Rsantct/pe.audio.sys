@@ -34,7 +34,7 @@ import os
 
 UHOME = os.path.expanduser("~")
 MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
-MACROS_FOLDER = f'{MAIN_FOLDER}/www/macros'
+MACROS_FOLDER = f'{MAIN_FOLDER}/macros'
 LOUDNESS_CTRL = f'{MAIN_FOLDER}/.loudness_control'
 
 # Reading some user configs for auxilary tasks
@@ -102,7 +102,7 @@ def do(task):
     # https://www.aelius.com/njh/jackminimix/
     elif task[:6] == 'mixer ':
         try:
-            cmd = f'{MAIN_FOLDER}/scripts/jackminimix_ctrl.py { task[6:] }'
+            cmd = f'{MAIN_FOLDER}/share/scripts/jackminimix_ctrl.py { task[6:] }'
             sp.run( cmd.split() )
             return b'done'
         except:
