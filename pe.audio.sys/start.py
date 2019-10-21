@@ -102,8 +102,10 @@ def start_service( service ):
     try:
         address = CONFIG["services_addressing"][f"{service}_address"]
         port =    CONFIG["services_addressing"][f"{service}_port"]
+        # use shell=True to release python process if you want to
+        # restart any service in runtime.
         sp.Popen( f'python3 {UHOME}/pe.audio.sys/share/server.py {service} \
-                   {address} {port}'.split() )
+                   {address} {port}', shell=True)
         print( f'(start.py) starting SERVICE: \'{service}\'' )
 
     except:
