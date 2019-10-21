@@ -114,7 +114,7 @@ def process_commands( full_command ):
         return core.set_bass(x, relative=add)
 
     def set_balance(x):
-        return core.set_balance(x)
+        return core.set_balance(x, relative=add)
 
     def set_level(x):
         return core.set_level(x, relative=add)
