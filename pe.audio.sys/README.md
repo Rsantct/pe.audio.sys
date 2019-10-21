@@ -43,6 +43,9 @@ Few user scripts or shared modules can have an YAML of the same name for configu
 
 # Filesystem tree
 
+1st level contains 1st hand files (system  configuration and the system start script) and folders (loudspeakers, user macros).
+
+Deeper levels contains runtime files you don't need to access to.
 
     pe.audio.sys/
     |
@@ -52,24 +55,30 @@ Few user scripts or shared modules can have an YAML of the same name for configu
     |
     |-- xxxx.yml            other configuration files
     |
-    |-- .asound.XXX         ALSA sound cards restore settings
+    |-- .asound.XXX         ALSA sound cards restore settings (see sound_cards_prepare.py under scripts/)
     |
     |-- pasysctrl           command line tool to control the system
     |
     |-- start.py            this starts up or shutdown the whole system
     |
-    |-- share/              core and general purpose modules and associated files
+    |-- macros              end user general purpose macro scripts (can have web interface buttons)
+    |
+    |-- share/              system modules (the core and the tcp server)
     |   |
-    |   \-- eq/             tone, loudness and target curves .dat files
-    |
-    |-- loudspeakers/       
+    |   |-- eq/             tone, loudness and target curves .dat files
     |   |
-    |   |-- lspk1/          loudspeaker files: brutefir_config, xo & drc pcm FIRs
-    |   |-- ...
+    |   |-- services/       services provided under the server (system control and others)
+    |   |
+    |   |-- scripts/        additional scripts that can be launched at start up
+    |   |
+    |   \-- www/            a web interface to control the system
     |
-    |-- scripts/            additional scripts that can be launched at start up
-    |
-    \-- www/                The web interface to control the system
+    \-- loudspeakers/       
+        |
+        |-- lspk1/          loudspeaker files: brutefir_config, xo & drc pcm FIRs
+        |-- lspk2/
+        |-- ...
+     
 
 
 # The loudspeaker
