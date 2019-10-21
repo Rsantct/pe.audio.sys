@@ -1,11 +1,4 @@
-# Python 3 packages
-
-Install the needed Python 3 packages:
-
-    sudo apt install python3-pip python3-yaml python3-ruamel.yaml python3-numpy python3-jack-client python3-mpd
-    sudo python3 -m pip install --upgrade setuptools
-    sudo pip3 install sounddevice watchdog
-
+(obsolete info)
 
 # Python 3 on Raspberry Pi Raspbian
 
