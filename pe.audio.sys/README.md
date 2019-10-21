@@ -97,3 +97,86 @@ DRC pcm files must be named:
 XO pcm files must be named:
 
     xo.<XX>.XOSETNAME.pcm    where XX must be fr | lo | mi | hi | sw
+
+# The config.yml file
+
+This file allows to configure the whole system. We provide a *`config.yml.example`* with comments.
+
+This is an uncommented example for `config.yml`:
+
+    services_addressing:
+
+        pasysctrl_address:      0.0.0.0
+        pasysctrl_port:         9989
+
+        aux_address:            localhost
+        aux_port:               9988
+
+        players_address:        localhost
+        players_port:           9987
+
+    system_card: hw:UDJ6
+
+    external_cards:
+
+    jack_options:           -R -d alsa
+    jack_backend_options:   -d system_card -r 48000 -P -o 6
+
+    loudspeaker: SeasFlat
+
+    ref_level_gain: 0
+
+    target_mag: target_mag_+3.0-1.0.dat
+    target_pha: target_pha_+3.0-1.0.dat
+
+
+    init_mute:              'off'
+    init_level:             
+    init_max_level:         -20
+    init_bass:              0
+    init_treble:            0
+    init_balance:           0
+    init_loudness_track:    'on'
+    init_loudness_ref:      0
+    init_midside:           'off'
+    init_solo:              'off'
+    init_xo:                mp
+    init_drc:               drc1
+    init_input:             none
+
+    gain_max: 6
+
+    loudness_flat_curve_index: 7
+
+
+    sources:
+        spotify:
+            capture_port:   alsa_loop
+            gain:           0.0
+            xo:             mp
+        mpd:
+            capture_port:   mpd_loop
+            gain:           0.0
+            xo:             mp
+        istreams:
+            capture_port:   istreams_loop
+            gain:           0.0
+            xo:             mp
+
+    source_monitors:
+
+    scripts:
+        - sound_cards_prepare.py
+        - mpd.py
+        - istreams.py
+        - pulseaudio-jack-sink.py
+        - librespot.py
+
+    aux:
+        amp_on_cmdline:  /home/peaudiosys/bin/ampli.sh on
+        amp_off_cmdline: /home/peaudiosys/bin/ampli.sh off
+
+
+
+
+
