@@ -100,7 +100,7 @@ XO pcm files must be named:
 
 # The config.yml file
 
-This file allows to configure the whole system. We provide a *`config.yml.example`* with comments.
+This file allows to configure the whole system. We provide a **`config.yml.example`** with clarifying comments.
 
 This is an uncommented example for `config.yml`:
 
