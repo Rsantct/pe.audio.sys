@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 # Copyright (c) 2019 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
@@ -24,11 +24,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
+"""
+    start or stop MPD
+    
+    (i) will run by loading the standard user configuration file ~/.mpdconf
+    
+"""
+import sys
+import subprocess as sp
 
-if [[ $1 == 'stop' ]]; then
-    mpd --kill
-    exit 0
-fi
+if __name__ == '__main__':
 
-mpd
 
+    if sys.argv[1:]:
+        if sys.argv[1] in ['stop', 'off']:
+            sp.Popen( 'mpd --kill'.split() )
+            sys.exit()
+
+        elif sys.argv[1] in ['start', 'on']:
+            sp.Popen( 'mpd'.split() )
+
+        else:
+            print(__doc__)
+
+    else:
+        print(__doc__)
