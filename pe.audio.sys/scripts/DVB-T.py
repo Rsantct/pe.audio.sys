@@ -34,7 +34,8 @@
     DVB-T tuned channels are ussually stored at
         ~/.mplayer/channels.conf
 
-    User settings (presets, default) can be configured at DVB-T.yml
+    User settings (presets, default) can be configured at
+        pe.audio.sys/DVB-T.yml
 
     Usage:      DVB   start   [ <preset_num> | <channel_name> ]
                       stop
@@ -142,11 +143,11 @@ def dump_yaml(d, fpath):
 if __name__ == '__main__':
 
     ### Reading the DVB-T config file
-    fpath = f'{UHOME}/pe.audio.sys/scripts/DVB-T.yml'
+    fpath = f'{UHOME}/pe.audio.sys/DVB-T.yml'
     try:
         DVB_config = load_yaml(fpath)
     except:
-        print ( '(DVB-T.py) ERROR reading \'DVB-T.yml\'' )
+        print ( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
         sys.exit()
 
     
