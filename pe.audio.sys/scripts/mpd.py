@@ -28,13 +28,17 @@
     start or stop MPD
     
     (i) will run by loading the standard user configuration file ~/.mpdconf
+        edit this script if you need to load any else.
     
 """
-import sys
+import sys, os
 import subprocess as sp
 
-if __name__ == '__main__':
+UHOME = os.path.expanduser("~")
 
+MPDCONF = f'{UHOME}/.mpdconf'
+
+if __name__ == '__main__':
 
     if sys.argv[1:]:
         if sys.argv[1] in ['stop', 'off']:
@@ -42,7 +46,7 @@ if __name__ == '__main__':
             sys.exit()
 
         elif sys.argv[1] in ['start', 'on']:
-            sp.Popen( 'mpd'.split() )
+            sp.Popen( f'mpd {MPDCONF}'.split() )
 
         else:
             print(__doc__)
