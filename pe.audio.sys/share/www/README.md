@@ -2,9 +2,10 @@
 
 Not needed.
 
-Just be aware about if you decide to install the pre.di.c folder under an user home different than `/home/predic` you'll need to update the Apache's pre.di.c web site file accordingly:
+Just be aware about if you decide to install the pe.audio.sys folder under an user home
+different than `/home/peaudiosys` you'll need to update the Apache's pe.audio.sys web site file accordingly:
 
-    /etc/apache2/sites-available/pre.di.c.conf
+    /etc/apache2/sites-available/pe.audio.sys.conf
 
 This detail is advertised when you run the updating script.
 
