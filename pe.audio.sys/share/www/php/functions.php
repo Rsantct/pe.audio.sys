@@ -38,7 +38,7 @@
     // GLOBAL VARIABLES:
     $HOME = get_home();
     $CFG_FOLDER = $HOME.'/pe.audio.sys/';
-    $MACROS_FOLDER = $HOME.'/pe.audio.sys/www/macros';
+    $MACROS_FOLDER = $HOME.'/pe.audio.sys/macros';
     $LSPKNAME = get_config('loudspeaker');
     $LSPK_FOLDER = $HOME.'/pe.audio.sys/loudspeakers/'.$LSPKNAME;
     /////////////////////////////////////////////////////////////////////
@@ -194,11 +194,13 @@
     // PLAYERS related commands are handled by the 'players' server
     elseif ( substr( $command, 0, 7 ) === "player_" ) {
         // The expected playback control syntax is: 'player_play', 'player_pause', etc
-        echo system_socket( 'players', $command );
+        //echo system_socket( 'players', $command );
+        // TEMPORARY DEACTIVATED:
+        echo "{}";
     }
     elseif ( substr( $command, 0, 4 ) === "http" ) {
         // A stream url to be played back
-        echo system_socket( 'players', $command );
+        // echo system_socket( 'players', $command );
     }
 
     // ONLY FOR DEBUGGING
