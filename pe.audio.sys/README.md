@@ -38,7 +38,7 @@ The system core is mainly based on:
 
 All system features are configured under **`config.yml`**. We provide a self commented **`config.yml.example`** file.
 
-Few user scripts or shared modules can have an its own xxx.yml file of the same base name for configuration if necessary.
+Few user scripts or shared modules can have an its own `xxx.yml` file of the same base name for configuration if necessary.
 
 
 # Filesystem tree
