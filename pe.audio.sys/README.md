@@ -73,22 +73,22 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- doc/                Help documents
     |
-    |-- share/              System modules (the core and the tcp server)
+    |-- loudspeakers/       
     |   |
-    |   |-- eq/             Tone, loudness and target curves .dat files
-    |   |
-    |   |-- services/       Services provided through by the tcp server (system control and others)
-    |   |
-    |   |-- scripts/        Additional scripts that can be launched at start up
-    |   |
-    |   \-- www/            A web interface to control the system
+    |   |-- lspk1/          Loudspeaker files: brutefir_config, xo & drc pcm FIRs
+    |   |-- lspk2/
+    |   |-- ...
     |
-    \-- loudspeakers/       
+    \-- share/              System modules (the core and the tcp server)
         |
-        |-- lspk1/          Loudspeaker files: brutefir_config, xo & drc pcm FIRs
-        |-- lspk2/
-        |-- ...
-     
+        |-- eq/             Tone, loudness and target curves .dat files
+        |
+        |-- services/       Services provided through by the tcp server (system control and others)
+        |
+        |-- scripts/        Additional scripts that can be launched at start up
+        |
+        \-- www/            A web interface to control the system
+
 
 
 # The loudspeaker
