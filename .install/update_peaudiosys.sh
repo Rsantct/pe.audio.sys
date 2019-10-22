@@ -78,9 +78,10 @@ cd "$HOME"
 cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
 cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
-mkdir -p $HOME/pe.audio.sys                         >/dev/null 2>&1
+mkdir $HOME/pe.audio.sys                            >/dev/null 2>&1
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # some utils are provided inside ~/bin
+mkdir $HOME/bin                                     >/dev/null 2>&1
 cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
 
 #########################################################
