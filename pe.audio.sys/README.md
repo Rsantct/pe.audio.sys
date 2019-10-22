@@ -45,6 +45,10 @@ Few user scripts or shared modules can have an its own `xxx.yml` file of the sam
 
 # Filesystem tree
 
+All files are hosted under **`$HOME/pe.audio.sys`**, so that you can run `pe.audio.sys` under any user name.
+
+That way you can keep any `~/bin` an other files and directories under your home directory.
+
 1st level contains firsthand files (system  configuration and the system start script) and firsthand folders (loudspeakers, user macros).
 
 Deeper `share/` levels contains runtime files you don't usually need to access to.
