@@ -8,8 +8,7 @@ if [ -z $1 ] ; then
 fi
 
 branch=$1
-DEST=$HOME
-ORIG=$DEST/tmp/pe.audio.sys-$branch
+ORIG=$HOME/tmp/pe.audio.sys-$branch
 
 # If not found the requested branch
 if [ ! -d $ORIG ]; then
@@ -42,76 +41,56 @@ if [ "$tmp" != "y" ] && [ "$tmp" != "Y" ]; then
 fi
 
 #########################################################
-# BACK UP
+# BACK UP USER CONFIG FILES
 #########################################################
-
-cd "$DEST"
-
-echo "(i) backing up user home folder config files"
+cd "$HOME"
 
 # HOME:
-cp .asoundrc                .asoundrc.LAST                >/dev/null 2>&1
-cp .mpdconf                 .mpdconf.LAST                 >/dev/null 2>&1
+# .asoundrc .mpdconf and .mplyer/* are distributed as .sample files
 
-# MPLAYER
-cp .mplayer/config          .mplayer/config.LAST          >/dev/null 2>&1
-cp .mplayer/channels.conf   .mplayer/channels.conf.LAST   >/dev/null 2>&1
+# PE.AUDIO.SYS:
+# use .LAST instead of .bak in order to respect any existing bak file if so.
+if [ -d "pe.audio.sys" ]; then
+    echo "(i) backing up pe.audio.sys config files"
+    for file in pe.audio.sys/*.yml ; do
+        cp "$file" "$file.LAST"
+    done
+fi
 
-# PE.AUDIO.SYS
-echo "(i) backing up pe.audio.sys config files"
-for file in pe.audio.sys/*.yml ; do
-    cp "$file" "$file.LAST"
-done
-
-# WWW does not contains any configurable file
+# WWW: does not contains any configurable file
 
 #########################################################
 # CLEANING
 #########################################################
-echo "(i) Removing old files,"
-echo "    but keeping the user maintained ones:"
-echo "      - scripts/ except those from this distro"
-echo "      - web buttons macros"
-
-cd $HOME
-
-# remove old files
-rm -r   pe.audio.sys/doc/               >/dev/null 2>&1
-rm      pe.audio.sys/share/*            >/dev/null 2>&1
-rm      pe.audio.sys/www/index.html     >/dev/null 2>&1
-rm -rf  pe.audio.sys/www/php            >/dev/null 2>&1
-rm -rf  pe.audio.sys/www/js             >/dev/null 2>&1
+cd "$HOME"
+if [ -d "pe.audio.sys" ]; then
+    echo "(i) Removing old distro files"
+    rm -rf  pe.audio.sys/doc/               >/dev/null 2>&1
+fi
 
 #########################################################
 # COPYING THE NEW STUFF
 #########################################################
-echo "(i) Copying from $ORIG to $DEST"
-cp -r $ORIG/*             $DEST/
+echo "(i) Copying from $ORIG ..."
+cd "$HOME"
 # hidden files must be explicited each one to be copied
-cp    $ORIG/.mpdconf      $DEST/           >/dev/null 2>&1
-cp -r $ORIG/.mplayer*     $DEST/           >/dev/null 2>&1
+cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
+cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
+cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
+mkdir -p $HOME/pe.audio.sys                         >/dev/null 2>&1
+cp -r $ORIG/pe.audio.sys        $HOME/pe.audio.sys  >/dev/null 2>&1
 
 #########################################################
 # RESTORING PREVIOUS CONFIG IF DESIRED
 #########################################################
 if [ "$keepConfig" ]; then
 
-    cd $HOME
+    cd "$HOME"
 
-    echo "(i) Restoring user home config files"
-
-    echo "    ".asoundrc
-    mv .asoundrc.LAST               .asoundrc               >/dev/null 2>&1
-
-    echo "    ".mpdconf
-    mv .mpdconf.LAST                .mpdconf                >/dev/null 2>&1
-
-    echo "    ".mplayer/config
-    mv .mplayer/config.LAST         .mplayer/config         >/dev/null 2>&1
+    # HOME
+    # .asoundrc .mpdconf and .mplyer/* are distributed as .sample files
  
-    echo "    ".mplayer/channels.conf
-    mv .mplayer/channels.conf.LAST  .mplayer/channels.conf  >/dev/null 2>&1
-
+    # PE.AUDIO.SYS
     echo "(i) Restoring pe.audio.sys config files"
     cd "$HOME"/pe.audio.sys
     for file in *yml.LAST ; do
@@ -133,24 +112,12 @@ else
     echo "(i) New config.yml and .state files NEED to be adapted"
 fi
 
-
-cd "$HOME"
-
-#########################################################
-# Restoring FIFOs
-#########################################################
-echo "(i) Making fifos for mplayer services"
-rm -f  pe.audio.sys/.*fifo
-mkfifo pe.audio.sys/.dvb_fifo         # DVB-T
-mkfifo pe.audio.sys/.cdda_fifo        # CDDA
-mkfifo pe.audio.sys/.istreams_fifo    # internet streams
-
 #########################################################
 # Restoring exec permissions
 #########################################################
-
-chmod -x -R pe.audio.sys/*                  >/dev/null 2>&1
-chmod +x -R pe.audio.sys/*.py               >/dev/null 2>&1
+cd "$HOME"
+chmod +x    pe.audio.sys/start.py           >/dev/null 2>&1
+chmod +x    pe.audio.sys/pasysctrl          >/dev/null 2>&1
 chmod +x    pe.audio.sys/macros/*           >/dev/null 2>&1
 chmod -x    pe.audio.sys/macros/*.md        >/dev/null 2>&1
 chmod +x    pe.audio.sys/share/scripts/*    >/dev/null 2>&1
@@ -168,7 +135,7 @@ echo ""
 #########################################################
 # And updates the updater script
 #########################################################
-cp "$ORIG"/.install/update_peaudiosys.sh "$DEST"/tmp/
+cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 
 #########################################################
 # END
