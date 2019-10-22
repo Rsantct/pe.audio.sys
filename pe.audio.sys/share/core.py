@@ -36,6 +36,7 @@ import numpy as np
 import threading
 from time import sleep
 
+
 # YAML FILES MANAGEMENT:
 def read_yaml(filepath):
     """ returns a dictionary from an YAML file """
@@ -174,6 +175,46 @@ def bf_set_xo( filters, xo ):
         cmd = ( f'cfc "f.{f}.L" "xo.{f}.{xo}"; cfc "f.{f}.R" "xo.{f}.{xo}";' )
         bf_cli( cmd )
 
+def find_eq_curves():
+    """ Scans share/eq/ and try to collect the whole set of EQ curves
+        needed for the EQ stage under Brutefir
+    """
+    EQ_CURVES = {}
+    eq_files = os.listdir(EQ_FOLDER)
+
+    pendings = 7
+    for ctype in ('loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
+                  'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
+                  'freq.dat'):
+
+        files = [ x for x in eq_files if ctype in x]
+        if files:
+            if len (files) == 1:
+                EQ_CURVES[ctype] = np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
+                pendings -= 1
+            else:
+                print(f'(core.py) too much \'...{ctype}\' files under share/eq/')
+        else:
+                print(f'(core.py) ERROR finding a \'...{ctype}\' file under share/eq/')
+
+    try:
+        EQ_CURVES['targ_mag'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_mag"]}' )
+    except:
+        print(f'(core.py) ERROR finding a \'{CONFIG["target_mag"]}\' file under share/eq/')
+        pendings += 1
+    
+    try:
+        EQ_CURVES['targ_pha'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_pha"]}' )
+    except:
+        print(f'(core.py) ERROR finding a \'{CONFIG["target_pha"]}\' file under share/eq/')
+        pendings += 1
+    
+    if not pendings:
+        return EQ_CURVES
+    else:
+        return {}
+
+
 # JACK MANAGEMENT:
 def jack_loop(clientname, nports=2):
     """ creates a jack loop with given 'clientname'
@@ -285,7 +326,6 @@ def jack_clear_preamp():
             for mon_port in mon_ports:
                 for client in JCLI.get_all_connections(mon_port):
                     jack_connect( client, mon_port, mode='off' )
-
     
 def jack_loops_prepare():
     """ The preamp will have the courtesy to prepare the loops
@@ -302,6 +342,7 @@ def jack_loops_prepare():
     jloop = threading.Thread(   target = jack_loop,
                                 args=['pre_in_loop', 2]   )
     jloop.start()
+
 
 # THE CORE: AUDIO PROCESSOR AND SELECTOR:
 def init_source():
@@ -597,14 +638,8 @@ CONFIG          = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
 LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH      = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER       = f'{UHOME}/pe.audio.sys/share/eq'
-EQ_CURVES       = {
-    'freqs'   : np.loadtxt( f'{EQ_FOLDER}/R20_ext-freq.dat'         ), 
-    'loud_mag': np.loadtxt( f'{EQ_FOLDER}/R20_ext-loudness_mag.dat' ), 
-    'loud_pha': np.loadtxt( f'{EQ_FOLDER}/R20_ext-loudness_pha.dat' ), 
-    'bass_mag': np.loadtxt( f'{EQ_FOLDER}/R20_ext-bass_mag.dat'     ), 
-    'bass_pha': np.loadtxt( f'{EQ_FOLDER}/R20_ext-bass_pha.dat'     ), 
-    'treb_mag': np.loadtxt( f'{EQ_FOLDER}/R20_ext-treble_mag.dat'   ), 
-    'treb_pha': np.loadtxt( f'{EQ_FOLDER}/R20_ext-treble_pha.dat'   ),
-    'targ_mag': np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_mag"]}'   ),
-    'targ_pha': np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_pha"]}'   )
-    }
+EQ_CURVES       = find_eq_curves()
+
+if not EQ_CURVES:
+    print( '(core.py) ERROR loading EQ_CURVES from share/eq/' )
+    sys.exit()
