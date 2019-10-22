@@ -3,5 +3,5 @@
 # More info:     server.py --help
 
 paths:
-    - pe.audio.sys/services
-    - pe.audio.sys/scripts
+    - pe.audio.sys/share/services
+    - pe.audio.sys/share/scripts
