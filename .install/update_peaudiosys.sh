@@ -79,7 +79,7 @@ cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
 cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
 mkdir -p $HOME/pe.audio.sys                         >/dev/null 2>&1
-cp -r $ORIG/pe.audio.sys        $HOME/pe.audio.sys  >/dev/null 2>&1
+cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 
 #########################################################
 # RESTORING PREVIOUS CONFIG IF DESIRED
@@ -120,6 +120,7 @@ cd "$HOME"
 chmod +x    pe.audio.sys/start.py           >/dev/null 2>&1
 chmod +x    pe.audio.sys/pasysctrl          >/dev/null 2>&1
 chmod +x    pe.audio.sys/macros/*           >/dev/null 2>&1
+chmod +x    pe.audio.sys/macros.example/*   >/dev/null 2>&1
 chmod -x    pe.audio.sys/macros/*.md        >/dev/null 2>&1
 chmod +x    pe.audio.sys/share/scripts/*    >/dev/null 2>&1
 chmod +x    pe.audio.sys/share/server.py    >/dev/null 2>&1
