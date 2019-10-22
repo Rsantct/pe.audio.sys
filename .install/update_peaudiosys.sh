@@ -66,6 +66,7 @@ cd "$HOME"
 if [ -d "pe.audio.sys" ]; then
     echo "(i) Removing old distro files"
     rm -rf  pe.audio.sys/doc/               >/dev/null 2>&1
+    rm      pe.audio.sys/*BRANCH            >/dev/null 2>&1    
 fi
 
 #########################################################
