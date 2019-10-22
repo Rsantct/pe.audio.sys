@@ -10,7 +10,7 @@ Its main features are:
 
 - Digital crossover for sophysticated loudspeakers management
 - Preamplifier with loudness compensated and calibrated volume control.
-- Web page for system control (only on FIRtro)
+- Web page for system control (FIRtro)
 
  Additional features on **pe.audio.sys** are extended to involve:
 
@@ -38,12 +38,12 @@ The system core is mainly based on:
 
 All system features are configured under **`config.yml`**. We provide a self commented **`config.yml.example`** file.
 
-Few user scripts or shared modules can have an YAML of the same name for configuration if necessary.
+Few user scripts or shared modules can have an its own xxx.yml file of the same base name for configuration if necessary.
 
 
 # Filesystem tree
 
-1st level contains 1st hand files (system  configuration and the system start script) and folders (loudspeakers, user macros).
+1st level contains firsthand files (system  configuration and the system start script) and firsthand folders (loudspeakers, user macros).
 
 Deeper `share/` levels contains runtime files you don't usually need to access to.
 
@@ -61,9 +61,9 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- start.py            This starts up or shutdown the whole system
     |
-    |-- macros              End user general purpose macro scripts (can have web interface buttons)
+    |-- macros/             End user general purpose macro scripts (can have web interface buttons)
     |
-    |-- doc                 Help documents
+    |-- doc/                Help documents
     |
     |-- share/              System modules (the core and the tcp server)
     |   |
@@ -87,8 +87,9 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
 
 Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as system card wiring and delays on each port.
 
-For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder,
-when named as follows:
+So *keep only useful files* under your loudspeaker folder, and *name them meaningfully*.
+
+For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder. Please name files as follows:
 
 
 DRC pcm files must be named:
@@ -100,11 +101,18 @@ XO pcm files must be named:
 
     xo.<XX>.XOSETNAME.pcm    where XX must be fr | lo | mi | hi | sw
 
+(fr: full range; lo,mi,hi: low, mid, high; sw: subwoofer)
+
 # The config.yml file
 
 This file allows to configure the whole system. We provide a **`config.yml.example`** with clarifying comments.
 
-This is an uncommented example for `config.yml`:
+Some points:
+
+- The list of service addressing here will trigger each service to be launched. The **`pasysctlr`** service is mandatory.
+- The preamp loop ports will be automagically spawn under jack when named xxx_loop, so your player scripts have not to be aware of create loops, just configure the players to point to these loops accordingly.
+
+Here you are an uncommented example for `config.yml`:
 
     services_addressing:
 
