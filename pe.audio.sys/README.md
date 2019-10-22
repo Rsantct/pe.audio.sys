@@ -101,7 +101,7 @@ XO pcm files must be named:
 
     xo.<XX>.XOSETNAME.pcm    where XX must be fr | lo | mi | hi | sw
 
-(fr: full range; lo,mi,hi: low, mid, high; sw: subwoofer)
+(fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
 # The config.yml file
 
