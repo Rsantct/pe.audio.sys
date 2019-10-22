@@ -53,8 +53,10 @@ That way you can keep any `~/bin` an other files and directories under your home
 
 Deeper `share/` levels contains runtime files you don't usually need to access to.
 
-    pe.audio.sys/
-    |
+    $HOME/pe.audio.sys/
+          |
+     ____/
+    /
     |-- README.md           This file
     |
     |-- config.yml          The main configuration file
