@@ -11,7 +11,7 @@ https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-
 
 Usually it is enough:
 
-- add the **`predic`** user to your system, this is optional so you can run pre.di.c under any existent user account if you want so.
+- add the **`peaudiosys`** user to your system, this is optional because you can run the **pe.audio.sys** system under **ANY USER ACCOUNT** if you want so.
 
     `sudo adduser predic`
 
@@ -21,8 +21,6 @@ Usually it is enough:
 
 Update your `~/.profile`:
 
-    export PYTHONPATH="$PYTHONPATH:$HOME/pre.di.c/bin:$HOME/pre.di.c/clients/bin"
-    export PATH="$PATH:$HOME/pre.di.c/bin"
     export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
 
 
@@ -50,4 +48,4 @@ Also install the following packages on your linux installation:
     sudo apt install jackd2 brutefir ecasound ecatools python-ecasound mpd mpc mplayer
     sudo apt install ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
-**For the python3 needed packages, please refer to the file `pre.di.c/README.md`**
+**For the python3 needed packages, please refer to the doc files here**
