@@ -163,4 +163,4 @@ if __name__ == "__main__":
         run_server( host=addr, port=int(port), verbose=verbose )
 
     except:
-        print( f'(server.py) stopped after \'{service}\' module has broken. Bye' )
+        print( f'(server.py) STOPPED after \'{service}\' module has broken. BYE :-/' )
