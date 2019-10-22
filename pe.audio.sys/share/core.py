@@ -177,25 +177,37 @@ def bf_set_xo( filters, xo ):
 
 def find_eq_curves():
     """ Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage under Brutefir
+        needed for the EQ stage on Brutefir
     """
     EQ_CURVES = {}
     eq_files = os.listdir(EQ_FOLDER)
 
-    pendings = 7
-    for ctype in ('loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
-                  'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
-                  'freq.dat'):
+    fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
+                'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
+                'freq.dat' )
 
-        files = [ x for x in eq_files if ctype in x]
+    cnames = {  'loudness_mag.dat'  : 'loud_mag',
+                'bass_mag.dat'      : 'bass_mag',
+                'treble_mag.dat'    : 'treb_mag',
+                'loudness_pha.dat'  : 'loud_pha',
+                'bass_pha.dat'      : 'bass_pha',
+                'treble_pha.dat'    : 'treb_pha',
+                'freq.dat'          : 'freqs'     }
+
+    pendings = len(fnames)
+    for fname in fnames:
+
+        # Only one file named as <fname> must be found
+        files = [ x for x in eq_files if fname in x]
         if files:
             if len (files) == 1:
-                EQ_CURVES[ctype] = np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
+                EQ_CURVES[ cnames[fname] ] = \
+                                       np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
                 pendings -= 1
             else:
-                print(f'(core.py) too much \'...{ctype}\' files under share/eq/')
+                print(f'(core.py) too much \'...{fname}\' files under share/eq/')
         else:
-                print(f'(core.py) ERROR finding a \'...{ctype}\' file under share/eq/')
+                print(f'(core.py) ERROR finding a \'...{fname}\' file under share/eq/')
 
     try:
         EQ_CURVES['targ_mag'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_mag"]}' )
