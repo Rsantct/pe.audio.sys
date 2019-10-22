@@ -2,7 +2,7 @@
 
 A PC based personal audio system: preamp, digital crossover and media players management.
 
-This is based on **FIRtro** https://github.com/AudioHumLab/FIRtro/wiki and  **pre.di.c**  https://github.com/rripio/pre.di.c, a PC based digital preamplifier and crossover projects.
+This is based on **FIRtro** https://github.com/AudioHumLab/FIRtro/wiki and  **pre.di.c**  https://github.com/rripio/pre.di.c, a PC based digital preamplifier and crossover projects, designed by the pioneer @rripio and later others contributors.
 
 Some *end user* and *user friendly* features has been added here.
 
