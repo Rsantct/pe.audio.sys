@@ -53,6 +53,8 @@ That way you can keep any `~/bin` an other files and directories under your home
 
 Deeper `share/` levels contains runtime files you don't usually need to access to.
 
+    $HOME/bin/              Some tools will be added to your ~/bin
+
     $HOME/pe.audio.sys/
           |
      ____/
