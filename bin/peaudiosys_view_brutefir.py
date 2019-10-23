@@ -74,17 +74,14 @@ def read_config():
     outputIniciado = False
     outputJackIniciado = False
     outputsTmp= ''
-    outputsMap = []
 
     # Coeff storage
     coeffIndex = -1
     coeffIniciado = False
-    coeffs = []
 
     # Filters Storage
     filterIndex = -1
     filterIniciado = False
-    filters_at_start = []
 
     # Loops reading lines in brutefir.config
     for linea in lineas:
@@ -154,7 +151,7 @@ def read_running():
     """ Running filters in Brutefir process
     """
     global filters_running
-    filters_running = []
+
     findex = -1
 
     ###########################################################
@@ -212,45 +209,69 @@ if __name__ == "__main__" :
     HOME = os.path.expanduser("~")
     sys.path.append(HOME + "/bin")
 
+    # Read the loudspeaker folder where brutefir has been launched
     try:
         tmp = sp.check_output( 'pwdx $(pgrep brutefir)', shell=True ).decode()
         LSPK_FOLDER = tmp.split('\n')[0].split(' ')[-1]
         BRUTEFIR_CONFIG_PATH = f'{LSPK_FOLDER}/brutefir_config'
-        print( f'\n--- Brutefir process runs:' )
-        print( f'{BRUTEFIR_CONFIG_PATH}')
     except:
         print( 'ERROR reading brutefir process' )
         sys.exit() 
 
+    outputsMap          = []
+    coeffs              = []
+    filters_at_start    = []
+    filters_running     = []
+
+    # reading outputsMap, coeffs and filters_at_start
     read_config()
 
+    # reading filters_running
     read_running()
 
-    ################################
-    print( "\n--- Outputs map:" )
-    ################################
+    print()
+    print( f'--- Brutefir process runs:' )
+    print( f'{BRUTEFIR_CONFIG_PATH}')
+
+    print()
+    print( "--- Outputs map:" )
     for output in outputsMap:
         print( output[0].ljust(10), '-->   ', output[1] )
 
-    ################################
-    print( "\n--- Coeffs available:\n" )
-    ################################
-    print( "                             coeff# coeff                coeffAtten pcm_name" )
-    print( "                             ------ -----                ---------- --------" )
+    print()
+    print( "--- Coeff available:" )
+    print( "                       c# coeff                cAtten pcm_name" )
+    print( "                       -- -----                ------ --------" )
     for c in coeffs:
-        a = '{:+6.2f}'.format( float(c['atten']) )
-        print( " "*29 + c['index'].rjust(4) +"   "+ c['name'].ljust(21) + a.ljust(11) + c['pcm'] )
-
-    ################################
-    print( "\n--- Filters Running:\n" )
-    ################################
-    print( "fil# filterName  atten pol   coeff# coeff                coeffAtten pcm_name" )
-    print( "---- ----------  ----- ---   ------ -----                ---------- --------" )
-    for f in filters_running:
-        fa = '{:+6.2f}'.format( float(f['atten']) )
-        ca = '{:+6.2f}'.format( float(f['catten']) )
-        print( f['index'].rjust(4) +" "+ f['fname'].ljust(11) + fa + f['pol'].rjust(4) + \
-              f['cset'].rjust(7) +"   "+ f['cname'].ljust(21) + ca.ljust(11) + f['cpcm'] )
+        
+        cidx    = c['index'].rjust(2)
+        cname   = c['name'].ljust(20)
+        catt    = '{:+6.2f}'.format( float(c['atten']) )
+        pcm     = c['pcm']
+        cline_chunk = cidx + ' ' + cname + ' ' + catt + ' ' + pcm
+        print( ' ' * 23 + cline_chunk )
 
     print()
+    print( "--- Filters running:" )
+    print( "f# filter  f.atten pol c# coeff                cAtten pcm_name" )
+    print( "-- ------  ------- --- -- -----                ------ --------" )
+    for f in filters_running:
 
+        # {'index': '0',   'fname': 'f.eq.L',        'cset': '0',
+        #  'atten': '0.0',   'pol': '1',
+        #  'cname': 'c.eq', 'cpcm': 'dirac pulse', 'catten': '0.0'}
+
+        fidx    = f['index'].rjust(2)
+        fname   = f['fname'].ljust(8)
+        fatt    = '{:+6.2f}'.format( float(f['atten']) )
+        fpol    = f['pol'].ljust(2)
+        fline_chunk = fidx + ' ' + fname + ' ' + fatt + '  ' + fpol + ' '
+        cset    = f['cset'].rjust(2)
+        cname   = f['cname'].ljust(20)
+        catt    = '{:+6.2f}'.format( float(f['catten'] ) )
+        pcm     = f['cpcm']
+        cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm
+
+        print( fline_chunk + cline_chunk )
+            
+    print()
