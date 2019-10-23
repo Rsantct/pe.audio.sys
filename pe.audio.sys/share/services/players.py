@@ -32,13 +32,15 @@
 
 # TODO: a command line interface could be useful
 
+import os
 import subprocess as sp
 import yaml
 import mpd
 import time
 import json
 
-import basepaths as bp
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 # A global variable to store the CD Audio info
 cd_info = {}
@@ -119,7 +121,7 @@ def mpd_client(query):
 
         # As an add-on, we will update an event file on the flavour of mplayer or librespot,
         # to be monitored by any event changes service as for example lcd_service.py
-        with open( f'{bp.main_folder}/.mpd_events', 'w' ) as file:
+        with open( f'{MAINFOLDER}/.mpd_events', 'w' ) as file:
             file.write( json.dumps( md ) )
 
         return json.dumps( md )
@@ -258,14 +260,14 @@ def mplayer_cmd(cmd, service):
                 cd_info[track_num]['length'] = track_length
                 cd_info[track_num]['title']  = track_title
 
-        with open( f'{bp.main_folder}/.cdda_info', 'w') as f:
+        with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cd_info ) )
     
     # Aux function to check if Mplayer is playing the disk
     def a_file_is_loaded():
         # Querying Mplayer to get the FILENAME (if it results void it means no playing)
-        sp.Popen( f'echo "get_file_name" > {bp.main_folder}/cdda_fifo', shell=True )
-        with open(f'{bp.main_folder}/.cdda_events', 'r') as f:
+        sp.Popen( f'echo "get_file_name" > {MAINFOLDER}/cdda_fifo', shell=True )
+        with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         time.sleep(.5)
         for line in tmp[-2::-1]:
@@ -302,7 +304,7 @@ def mplayer_cmd(cmd, service):
             # save disk info into a json file
             save_cd_info()
             # flushing the mplayer events file
-            sp.Popen( f'echo "" > {bp.main_folder}/.cdda_events', shell=True)
+            sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
             cmd = f'loadfile \'cdda://1-100:1\''
 
         elif cmd.startswith('play_track_'):
@@ -313,10 +315,10 @@ def mplayer_cmd(cmd, service):
                     # save disk info into a json file
                     save_cd_info()
                     # flushing the mplayer events file
-                    sp.Popen( f'echo "" > {bp.main_folder}/.cdda_events', shell=True)
+                    sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
                     # Loading the disk but pausing
                     tmp = f'pausing loadfile \'cdda://1-100:1\''
-                    tmp = f'echo "{tmp}" > {bp.main_folder}/{service}_fifo'
+                    tmp = f'echo "{tmp}" > {MAINFOLDER}/{service}_fifo'
                     sp.Popen( tmp, shell=True)
                     # Waiting for the disk to be loaded:
                     n = 0
@@ -336,14 +338,14 @@ def mplayer_cmd(cmd, service):
         return
     
     # sending the command to the corresponding fifo
-    tmp = f'echo "{cmd}" > {bp.main_folder}/{service}_fifo'
+    tmp = f'echo "{cmd}" > {MAINFOLDER}/{service}_fifo'
     #print(tmp) # debug
     sp.Popen( tmp, shell=True)
 
     if cmd == 'stop' and service == 'cdda':
         # clearing cdda_events in order to forget last track
         try:
-            sp.Popen( f'echo "" > {bp.main_folder}/.cdda_events', shell=True)
+            sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
         except:
             pass
 
@@ -360,7 +362,7 @@ def mplayer_meta(service, readonly=False):
 
     # This is the file were Mplayer standard output has been redirected to,
     # so we can read there any answer when required to Mplayer slave daemon:
-    mplayer_redirection_path = f'{bp.main_folder}/.{service}_events'
+    mplayer_redirection_path = f'{MAINFOLDER}/.{service}_events'
 
     # Communicates to Mplayer trough by its input fifo to get the current media filename and bitrate:
     if not readonly:
@@ -436,8 +438,8 @@ def cdda_meta():
         t = 0
         # (!) Must use the prefix 'pausing_keep', otherwise pause will be released
         #     when querying 'get_property ...' or anything else.
-        sp.Popen( f'echo "pausing_keep get_property chapter" > {bp.main_folder}/cdda_fifo', shell=True )
-        with open(f'{bp.main_folder}/.cdda_events', 'r') as f:
+        sp.Popen( f'echo "pausing_keep get_property chapter" > {MAINFOLDER}/cdda_fifo', shell=True )
+        with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-10:]:
             if line.startswith('ANS_chapter='):
@@ -470,8 +472,8 @@ def cdda_meta():
         timePos  = 0
 
         # Querying Mplayer to get the timePos over the whole disk
-        sp.Popen( f'echo "pausing_keep get_time_pos" > {bp.main_folder}/cdda_fifo', shell=True )
-        with open(f'{bp.main_folder}/.cdda_events', 'r') as f:
+        sp.Popen( f'echo "pausing_keep get_time_pos" > {MAINFOLDER}/cdda_fifo', shell=True )
+        with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-10:]:
             if line.startswith('ANS_TIME_POSITION='):
@@ -495,7 +497,7 @@ def cdda_meta():
     
     # Reading the CD info from a json file previously dumped when playing started.
     try:
-        with open(f'{bp.main_folder}/.cdda_info', 'r') as f:
+        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
             tmp = f.read()
         cd_info = json.loads(tmp)
     except:
@@ -535,7 +537,7 @@ def cdda_meta():
 
 # Spotify Desktop metadata
 def spotify_meta():
-    """ Gets the metadata info retrieved by the daemon init/spotify_monitor
+    """ Gets the metadata info retrieved by the daemon scripts/spotify_monitor
         which monitorizes a Spotify Desktop Client
     """
     md = METATEMPLATE.copy()
@@ -543,7 +545,7 @@ def spotify_meta():
     md['bitrate'] = spotify_bitrate
 
     try:
-        events_file = f'{bp.main_folder}/.spotify_events'
+        events_file = f'{MAINFOLDER}/.spotify_events'
         f = open( events_file, 'r' )
         tmp = f.read()
         f.close()
@@ -636,7 +638,7 @@ def librespot_meta():
         # example:
         # INFO:librespot_playback::player: Track "Better Days" loaded
         #
-        tmp = sp.check_output( f'tail -n20 {bp.main_folder}/.librespot_events'.split() ).decode()
+        tmp = sp.check_output( f'tail -n20 {MAINFOLDER}/.librespot_events'.split() ).decode()
         tmp = tmp.split('\n')
         # Recently librespot uses to print out some 'AddrNotAvailable, message' mixed with
         # playback info messages, so we will search for the latest 'Track ... loaded' message,
@@ -663,7 +665,7 @@ def player_get_meta(readonly=False):
     #   It is used from the 'change files handler' on lcd_service.py.
 
     metadata = METATEMPLATE.copy()
-    source = predic_source()
+    source = get_source()
 
     if   'librespot' in source or 'spotify' in source.lower():
         if SPOTIFY_CLIENT == 'desktop':
@@ -693,7 +695,7 @@ def player_get_meta(readonly=False):
 def player_control(action):
     """ controls the playback """
 
-    source = predic_source()
+    source = get_source()
     result = ''
 
     if   source == 'mpd':
@@ -721,14 +723,14 @@ def player_control(action):
     return result.encode()
 
 # Gets the current input source on pre.di.c
-def predic_source():
+def get_source():
     """ retrieves the current input source """
     source = None
     # It is possible to fail while state file is updating :-/
     times = 4
     while times:
         try:
-            source = predic_state()['input']
+            source = get_state()['input']
             break
         except:
             times -= 1
@@ -736,9 +738,9 @@ def predic_source():
     return source
 
 # Gets the dictionary of pre.di.c status
-def predic_state():
-    """ returns the YAML pre.di.c's status info """
-    with open( bp.main_folder + 'config/state.yml', 'r') as f:
+def get_state():
+    """ returns the YAML state info """
+    with open( MAINFOLDER + '/.state.yml', 'r') as f:
         return yaml.load( f.read() )
 
 # Auxiliary function to format hh:mm:ss
@@ -769,7 +771,7 @@ def do(task):
         Only certain received 'tasks' will be validated and processed,
         then returns back some useful info to the asking client.
     """
-    
+
     # First clearing the new line
     task = task.replace('\n','')
 
@@ -788,4 +790,4 @@ def do(task):
 
     # A pseudo task, an url to be played back:
     elif task[:7] == 'http://':
-        sp.run( f'{bp.main_folder}/init/istreams url {task}'.split() )
+        sp.run( f'{MAINFOLDER}/share/scripts/istreams url {task}'.split() )
