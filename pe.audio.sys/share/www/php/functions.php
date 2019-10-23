@@ -194,9 +194,8 @@
     // PLAYERS related commands are handled by the 'players' server
     elseif ( substr( $command, 0, 7 ) === "player_" ) {
         // The expected playback control syntax is: 'player_play', 'player_pause', etc
-        //echo system_socket( 'players', $command );
-        // TEMPORARY DEACTIVATED:
-        echo "{}";
+        //echo "{}";
+        echo system_socket( 'players', $command );
     }
     elseif ( substr( $command, 0, 4 ) === "http" ) {
         // A stream url to be played back
