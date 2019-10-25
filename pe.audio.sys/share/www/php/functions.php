@@ -199,7 +199,7 @@
     }
     elseif ( substr( $command, 0, 4 ) === "http" ) {
         // A stream url to be played back
-        // echo system_socket( 'players', $command );
+        echo system_socket( 'players', $command );
     }
 
     // ONLY FOR DEBUGGING
