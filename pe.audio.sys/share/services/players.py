@@ -52,7 +52,7 @@ MPD_PORT    = 6600
 MPD_PASSWD  = None
 
 # The METADATA GENERIC TEMPLATE for pre.di.c clients, for example the web control page:
-# Remember to use copies of this ;-)
+# (!) Remember to use copies of this ;-)
 METATEMPLATE = {
     'player':       '-',
     'time_pos':     '-:-',
@@ -169,6 +169,7 @@ def mpd_client(query):
 
     client = mpd.MPDClient()
     try:
+        client.timeout = 1
         client.connect(MPD_HOST, MPD_PORT)
         if MPD_PASSWD:
             client.password(MPD_PASSWD)
@@ -775,19 +776,23 @@ def do(task):
     # First clearing the new line
     task = task.replace('\n','')
 
+    # task: 'player_get_meta'
     # Tasks querying the current music player.
     if   task == 'player_get_meta':
         return player_get_meta()
 
+    # task: 'player_xxxxxxx'
     # Playback control. (i) Some commands need to be adequated later, depending on the player,
     # e.g. Mplayer does not understand 'previous', 'next' ...
     elif task[7:] in ('eject', 'state', 'stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff'):
         return player_control( task[7:] )
 
+    # task: 'player_play_track_NN'
     # Special command for disk playback control
     elif task[7:18] == 'play_track_':
         return player_control( task[7:] )
 
+    # task: 'http://an/url/stream/to/play
     # A pseudo task, an url to be played back:
     elif task[:7] == 'http://':
         sp.run( f'{MAINFOLDER}/share/scripts/istreams url {task}'.split() )
