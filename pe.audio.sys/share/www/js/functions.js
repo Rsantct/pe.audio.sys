@@ -36,10 +36,12 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /////////////   GLOBALS //////////////
-loud_measure    = 0.0;                      // Initialize, will be updated reading the loudness monitor file.
-ecasound_is_used = check_if_ecasound();     // Boolean indicates if Ecasound is used
-auto_update_interval = 1500;                // Auto-update interval millisec
-advanced_controls = false;                  // Default for showing advanced controls
+loud_measure    = 0.0;                  // Initialize, will be updated reading the loudness monitor file.
+ecasound_is_used = check_if_ecasound(); // Boolean indicates if Ecasound is used
+auto_update_interval = 1500;            // The page auto-update interval in millisec
+auto_update_divider = true;             // This will serve to auto-update some things in alternate mode,
+                                        // e.g. the player metadata info.
+advanced_controls = false;              // Default for showing advanced controls
 
 // Returns boolen as per 'load_ecasound = True|False' inside 'config/config.yml'
 function check_if_ecasound() {
@@ -230,6 +232,14 @@ function update_player_controls() {
 
 // Shows the playing info metadata
 function update_player_info() {
+
+    // We skip updating this alternately
+    if ( auto_update_divider == false) {
+        auto_update_divider = true;
+        return;
+    }
+    auto_update_divider = false;
+    
     var player      = "-";
     var bitrate     = "-";
     var time_pos    = "-:-";
