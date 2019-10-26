@@ -13,7 +13,7 @@ Usually it is enough:
 
 - add the **`peaudiosys`** user to your system, this is optional because you can run the **pe.audio.sys** system under **ANY USER ACCOUNT** if you want so.
 
-    `sudo adduser predic`
+    `sudo adduser peaudiosys`
 
 - then integrate the user which will run pre.di.c into convenient groups:
 
@@ -48,4 +48,10 @@ Also install the following packages on your linux installation:
     sudo apt install jackd2 brutefir ecasound ecatools python-ecasound mpd mpc mplayer
     sudo apt install ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
-**For the python3 needed packages, please refer to the doc files here**
+### NOTICE:
+
+Unlike `pre.di.c` enviroment recommendations, here it is no longer needed to point the PYTHONPATH env variable to your `pe.audio.sys` directories.
+
+### Python3 packages
+
+Please refer to the doc files here
