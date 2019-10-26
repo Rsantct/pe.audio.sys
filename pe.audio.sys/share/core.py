@@ -79,13 +79,13 @@ def bf_set_midside( mode ):
     else:
         pass
 
-def bf_set_gains( s ):
+def bf_set_gains( sta ):
     """ Adjust brutefir gain at drc.X stages as per the provided state values """
 
-    level   = s['level']
-    balance = s['balance']
-    solo    = s['solo']
-    muted   = s['muted']
+    level   = sta['level']
+    balance = sta['balance']
+    solo    = sta['solo']
+    muted   = sta['muted']
 
     # (!!!) WARNING THIS IS A PENDING ISSUE
     print( '(core) still managing gain = level')
@@ -112,14 +112,15 @@ def bf_set_gains( s ):
     # print(cmd) # debug
     bf_cli(cmd)
 
-def bf_set_eq( s , target=None):
-    """ Adjust brutefir EQ module as per the provided 's' state values """
+def bf_set_eq( sta , target=None):
+    """ Adjust brutefir EQ module as per the provided 'sta' state values """
 
     freqs = EQ_CURVES['freqs']
     
-    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = s['loudness_ref'] )
-    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = s['bass']         )
-    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = s['treble']       )
+    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
+                                       sta = sta )
+    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = sta['bass']         )
+    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = sta['treble']       )
     
     if target == None:
         targ_mag = EQ_CURVES['targ_mag']
@@ -129,9 +130,9 @@ def bf_set_eq( s , target=None):
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/target_pha_{target}.dat' )
 
 
-    eq_mag = targ_mag + loud_mag * s['loudness_track'] + bass_mag + treb_mag
-    eq_pha = targ_pha + loud_pha * s['loudness_track'] + bass_pha + treb_pha
-    
+    eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
+    eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
+
     mag_pairs = []
     pha_pairs = []
     i = 0
@@ -154,13 +155,28 @@ def bf_read_eq():
     tmp = [x for x in tmp.split('\n') if x]
     return tmp[2:]
 
-def get_eq_curve(prop, value):
+def get_eq_curve(prop, value, sta=None):
+    # note: 'sta' -state- will be used only to retrieve the
+    #        suited loudness index curve, which depends on levels.
+
     # Tone eq curves are provided in [-6...0...+6]
     if prop in ('bass', 'treb'):
         index = 6 - int(round(value))
+
     # For loudness eq curves we have a flat curve index inside config.yml
     elif prop == 'loud':
-        index = int(round(value)) + CONFIG['loudness_flat_curve_index']
+        index_flat  = int(round(value)) + CONFIG['loudness_flat_curve_index']
+        if sta['loudness_track']:
+            index = index_flat - sta['level'] - sta['loudness_ref']
+        else:
+            index = index_flat
+        index = int(round(index))
+
+        # Clamp index to available "loudness deepness" curves
+        index_min = 0
+        index_max = EQ_CURVES['loud_mag'].shape[1] - 1
+        index = max( min(index, index_max), index_min )
+
     return EQ_CURVES[f'{prop}_mag'][:,index], EQ_CURVES[f'{prop}_pha'][:,index]
 
 def bf_set_drc( x ):
