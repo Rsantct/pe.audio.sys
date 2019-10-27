@@ -36,12 +36,20 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /////////////   GLOBALS //////////////
-loud_measure    = 0.0;                  // Initialize, will be updated reading the loudness monitor file.
-ecasound_is_used = check_if_ecasound(); // Boolean indicates if Ecasound is used
-auto_update_interval = 1500;            // The page auto-update interval in millisec
-auto_update_divider = true;             // This will serve to auto-update some things in alternate mode,
-                                        // e.g. the player metadata info.
-advanced_controls = false;              // Default for showing advanced controls
+var loud_measure    = 0.0;                  // Initialize, will be updated reading the loudness monitor file.
+var ecasound_is_used = check_if_ecasound(); // Boolean indicates if Ecasound is used
+var auto_update_interval = 1500;            // Auto-update interval millisec
+var advanced_controls = false;              // Default for showing advanced controls
+var metablank = {
+    'player':       '-',
+    'time_pos':     '-:-',
+    'time_tot':     '-:-',
+    'bitrate':      '-',
+    'artist':       '-',
+    'album':        '-',
+    'title':        '-',
+    'track_num':    '-'
+    }                                       // a player's metadata dictionary 
 
 // Returns boolen as per 'load_ecasound = True|False' inside 'config/config.yml'
 function check_if_ecasound() {
@@ -233,46 +241,30 @@ function update_player_controls() {
 // Shows the playing info metadata
 function update_player_info() {
 
-    // We skip updating this alternately
-    if ( auto_update_divider == false) {
-        auto_update_divider = true;
-        return;
-    }
-    auto_update_divider = false;
-    
-    var player      = "-";
-    var bitrate     = "-";
-    var time_pos    = "-:-";
-    var time_tot    = "-:-";
-    var artist      = "-";
-    var album       = "-";
-    var title       = "-";
-    var track       = "-";
-
     var myREQ = new XMLHttpRequest();
     var tmp = '';
     myREQ.open("GET", "php/functions.php?command=player_get_meta", async=false);
     myREQ.send();
     tmp = myREQ.responseText.replace('\n','');
-    if ( ! tmp.includes("failed") && ! tmp.includes("refused") )  {
-		dicci = JSON.parse( tmp );
-		player      = dicci['player'];
-		bitrate     = dicci['bitrate'];
-		time_pos    = dicci['time_pos'];
-		time_tot    = dicci['time_tot'];
-		artist      = dicci['artist'];
-		album       = dicci['album'];
-		title       = dicci['title'];
-		track       = dicci['track_num'];
+
+    // players.py will allways give a dictionary as response, but if
+    // no metadata are available then most fields will be empty, except 'player'
+    if ( ! tmp.includes("failed")  &&
+         ! tmp.includes("refused")    )  {
+
+		d = JSON.parse( tmp );
+
+        if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
+            d = metablank;
+        }
+        
+        document.getElementById("bitrate").innerText    = d['bitrate'] + "\nkbps";
+        document.getElementById("artist").innerText     = d['artist'];
+        document.getElementById("track").innerText      = d['track_num'];
+        document.getElementById("time").innerText       = d['time_pos'] + "\n" + d['time_tot'];
+        document.getElementById("album").innerText      = d['album'];
+        document.getElementById("title").innerText      = d['title'];
 	}
-    // 'player' info not anymore needed because equals to 'input' value
-    // document.getElementById("player").innerText = player + ':';
-    document.getElementById("bitrate").innerText    = bitrate + "\nkbps";
-    document.getElementById("artist").innerText     = artist;
-    document.getElementById("track").innerText      = track;
-    document.getElementById("time").innerText       = time_pos + "\n" + time_tot;
-    document.getElementById("album").innerText      = album;
-    document.getElementById("title").innerText      = title;
 }
 
 //////// PAGE MANAGEMENT ////////
