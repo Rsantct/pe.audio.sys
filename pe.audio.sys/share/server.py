@@ -52,7 +52,7 @@ def run_server(host, port, verbose=False):
     # https://realpython.com/python-sockets/#tcp-sockets
 
     def server_socket(host, port):
-        """ Returns a socket 's' that listen to clients """
+        """ Returns a TCP socket object, binded to host:port """
 
         # We use socket.SO_REUSEADDR to avoid this error:
         # socket.error: [Errno 98] Address already in use
