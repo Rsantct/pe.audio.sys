@@ -108,11 +108,15 @@
         }
         // Sends and receive:
         socket_write($socket, $cmd, strlen($cmd));
-        $out = socket_read($socket, 4096);
+        //
+        // (!) read ENOUGH BYTES approx 1024 to avoid large responses to be truncated.
+        //
+        $out = socket_read($socket, 1024);
+        //  (i) sending quit and empty the buffer currently not in use, just close:
         // Tells the server to close the connection from its end:
-        socket_write($socket, "quit", strlen("quit"));
+        //socket_write($socket, "quit", strlen("quit"));
         // Empties the receiving buffer:
-        socket_read($socket, 4096);
+        //socket_read($socket, 1024);
         // And close this end socket:
         socket_close($socket);
         return $out;
