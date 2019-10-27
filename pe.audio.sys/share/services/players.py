@@ -54,14 +54,14 @@ MPD_PASSWD  = None
 # The METADATA GENERIC TEMPLATE for pre.di.c clients, for example the web control page:
 # (!) Remember to use copies of this ;-)
 METATEMPLATE = {
-    'player':       '-',
-    'time_pos':     '-:-',
-    'time_tot':     '-:-',
-    'bitrate':      '-',
-    'artist':       '-',
-    'album':        '-',
-    'title':        '-',
-    'track_num':    '-'
+    'player':       '',
+    'time_pos':     '',
+    'time_tot':     '',
+    'bitrate':      '',
+    'artist':       '',
+    'album':        '',
+    'title':        '',
+    'track_num':    ''
     }
 
 # Check for the SPOTIFY Client in use:
@@ -169,7 +169,6 @@ def mpd_client(query):
 
     client = mpd.MPDClient()
     try:
-        client.timeout = 1
         client.connect(MPD_HOST, MPD_PORT)
         if MPD_PASSWD:
             client.password(MPD_PASSWD)
