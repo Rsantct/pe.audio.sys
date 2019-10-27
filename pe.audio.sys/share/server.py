@@ -49,6 +49,8 @@ def run_server(host, port, verbose=False):
         to perform actions and giving results.
     """
 
+    # https://realpython.com/python-sockets/#tcp-sockets
+
     def server_socket(host, port):
         """ Returns a socket 's' that listen to clients """
 
@@ -70,71 +72,71 @@ def run_server(host, port, verbose=False):
         # returns the socket object
         return s
 
-    # Creates the socket
-    mysocket = server_socket(host, port)
+    # Instance a binded socket object
+    s = server_socket(host, port)
 
     # MAIN LOOP to proccess connections
-    maxconns = 10
     while True:
-        # Listen for a queue of connections
-        mysocket.listen(maxconns)
+        # initiate the socket in listen (server) mode
+        s.listen()
         if verbose:
             print( f'(server.py [{service}]) listening on \'localhost\':{port}' )
 
         # Waits for a client to be connected:
-        sc, remote = mysocket.accept()
+        # 'conn' is a socket itself
+        conn, address = s.accept()
         if verbose:
-            print( f'(server.py [{service}]) connected to client {remote[0]}' )
+            print( f'(server.py [{service}]) connected to client {address[0]}:{address[1]}' )
 
         # A buffer loop to proccess received data
         while True:
-            # Reception
-            data = sc.recv(4096).decode()
+            # Reception of 1024
+            data = conn.recv(1024).decode()
+
+            if verbose:
+                print  ('>>> ' + data )
 
             if not data:
                 # Nothing in buffer, then will close because the client has disconnected too soon.
                 if verbose:
-                    print (f'(server.py [{service}]) Client disconnected. \
-                             Closing connection...' )
-                sc.close()
+                    print (f'(server.py [{service}]) Client disconnected, ' 
+                             'closing connection...' )
+                conn.close()
                 break
 
             # Reserved words for controling the communication ('quit' or 'shutdown')
             elif data.rstrip('\r\n') == 'quit':
-                sc.send(b'OK\n')
+                #conn.send(b'OK\n')
                 if verbose:
                     print( f'(server.py [{service}]) closing connection...' )
-                sc.close()
+                conn.close()
                 break
 
             elif data.rstrip('\r\n') == 'shutdown':
-                sc.send(b'OK\n')
+                #conn.send(b'OK\n')
                 if verbose:
                     print( f'(server.py [{service}]) Shutting down the server...' )
-                sc.close()
-                mysocket.close()
+                conn.close()
+                s.close()
                 sys.exit(1)
 
             # If not a reserved word, then process the received data as a command:
             else:
-                if verbose:
-                    print  ('>>> ' + data )
                 
                 #######################################################################
                 # PROCESSING by using the IMPORTED MODULE when starting up this server,
                 # always must use the the module do() function.
                 result = MODULE.do(data)
                 #######################################################################
-
+                if verbose:
+                    print( 'RESULT:', result )
                 # And sending back the result
                 # NOTICE: it is expected to receive a result as a bytes-like object
                 if result:
-                    sc.send( result )
+                    conn.send( result )
                 else:
-                    sc.send( b'' )
-
-                if verbose:
-                    print( f'(server.py [{service}]) connected to client {remote[0]}' )
+                    # sending crlf instead of empty because will hang the php side
+                    conn.send( b'\r\n' )
 
 
 if __name__ == "__main__":
@@ -145,7 +147,13 @@ if __name__ == "__main__":
     except:
         print(__doc__)
         sys.exit(-1)
-        
+
+    # Optional -v for verbose printing (debug)
+    try:
+        if '-v' in sys.argv[4]:
+            verbose = True
+    except:
+        pass
     
     # Read paths where to look for processing plugins
     UHOME = os.path.expanduser("~")
