@@ -15,7 +15,7 @@ Usually it is enough:
 
     `sudo adduser peaudiosys`
 
-- then integrate the user which will run pre.di.c into convenient groups:
+- then integrate the user which will run pe.audio.sys into convenient groups:
 
     `sudo usermod -a -G cdrom,audio,video,plugdev YourUserHere`
 
