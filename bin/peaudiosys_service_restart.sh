@@ -3,7 +3,7 @@
 svc=$1
 
 if [[ -z $svc ]]; then
-    echo "usage:    service_restart <service> [stop]"
+    echo "usage:    peaudiosys_service_restart.sh   <service>  [stop]"
     exit 0
 fi
 
@@ -27,4 +27,4 @@ SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
 SRV_PORT=$( grep "$svc"_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 
 # Launching again the service:
-python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" &
+python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" "$2" &
