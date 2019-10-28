@@ -198,5 +198,23 @@ Here you are an uncommented example for `config.yml`:
 
 
 
+# The share/eq folder
+
+This folder contains the set of curves that will be used to apply "soft" EQ to the system, i.e.: tone, loudness compensation and psychoacoustic room dimension equalization (aka 'target').
+
+The curves will be rendered under the EQ stage on Brutefir.
+
+Similar to the loudspeaker folder, some rules here must be observed when naming files:
+
+- Frequencies: `xxxxxxfreq.dat`
+- Tone: `xxxxxxbass_mag.dat xxxxxxbass_pha.dat xxxxxxtreble_mag.dat xxxxxxtreble_pha.dat` 
+- Loudness: `xxxxxxloudness_mag.dat xxxxxxloudness_pha.dat`
+- Target: `yyyyyytarget_mag.dat yyyyyytarget_pha.dat` ... ...
+
+On freq, tone and loudness files the xxxxxx part is optional.
+
+On target files yyyyyyy is also optional but neccessary if more than one target set is desired.
+
+You can issue the commands `get_target_sets` and `set_target yyyyyytarget` to manage the target eq.
 
 
