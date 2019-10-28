@@ -10,6 +10,8 @@ Some *end user* and *user friendly* features has been added here.
 
 ## Highlights
 
+- pe.audio.sys is hosted in a subfolder under your home folder, so it is independent of the user and you can have your stuff along with it.
+
 - Install scripts to update your machine from github
 
 - A lightweitght single page control web:
