@@ -4,7 +4,7 @@
     the Brutefir EQ stage of FIRtro/pre.di.c/pe.audio.sys
 
     usage:
-        brutefir_view_eq_curvespy  <pattern>  [/path/to/folder]
+        brutefir_view_eq_curves <pattern> [/path/to/folder]
     
 """
 
@@ -62,17 +62,26 @@ if __name__ == '__main__':
     mags = np.loadtxt( f'{EQ_FOLDER}/{mag_fname}' )
     freq = np.loadtxt( f'{EQ_FOLDER}/{freq_fname}' )
 
+    if 'target' in mag_fname:
+        mags = mags.transpose()
+
     # Prepare the plot
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 
-    # Looping over the curves inside the .dat file
-    for idx in range( mags.shape[1] ):
-        ax.semilogx ( freq, mags[:,idx], label=idx)
+    # A single target curve kind of
+    if len( mags.shape ) == 1:
+        ax.semilogx ( freq, mags )
+        ax.set_ylim(-6,12)
 
-    ax.legend( loc="center", bbox_to_anchor=(1.15, 1.05) )
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], labels[::-1])
+    # Multiple curves tone or loudness kind of.
+    # Looping over the curves inside the .dat file
+    else:
+        for idx in range( mags.shape[1] ):
+            ax.semilogx ( freq, mags[:,idx], label=idx)
+        ax.legend( loc="center", bbox_to_anchor=(1.15, 1.05) )
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[::-1], labels[::-1])
 
     ax.set_title( mag_fname )
 
