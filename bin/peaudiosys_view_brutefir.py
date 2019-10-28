@@ -206,9 +206,6 @@ def read_running():
 
 if __name__ == "__main__" :
 
-    HOME = os.path.expanduser("~")
-    sys.path.append(HOME + "/bin")
-
     # Read the loudspeaker folder where brutefir has been launched
     try:
         tmp = sp.check_output( 'pwdx $(pgrep brutefir)', shell=True ).decode()
