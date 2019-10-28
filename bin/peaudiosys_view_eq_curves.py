@@ -4,7 +4,7 @@
     the Brutefir EQ stage of FIRtro/pre.di.c/pe.audio.sys
 
     usage:
-        brutefir_view_eq_curves <pattern> [/path/to/folder]
+        peaudiosys_view_eq_curves.py <pattern> [/path/to/folder]
     
 """
 
