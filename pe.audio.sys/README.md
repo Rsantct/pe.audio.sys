@@ -215,6 +215,6 @@ On freq, tone and loudness files the xxxxxx part is optional.
 
 On target files yyyyyyy is also optional but neccessary if more than one target set is desired.
 
-You can issue the commands `get_target_sets` and `set_target yyyyyytarget` to manage the target eq.
+You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`** to manage the target eq.
 
 
