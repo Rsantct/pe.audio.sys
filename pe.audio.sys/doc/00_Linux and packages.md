@@ -31,8 +31,8 @@ Enable your user to access the sound card under the dbus system enviroment:
     sudo nano /etc/dbus-1/system-local.conf
     
         <busconfig>
-          <!-- pre.di.c -->
-            <policy user="predic">
+          <!-- pe.audio.sys -->
+            <policy user="YourUserHere">
               <allow own="org.freedesktop.ReserveDevice1.Audio0"/>
               <allow own="org.freedesktop.ReserveDevice1.Audio1"/>
               <allow own="org.freedesktop.ReserveDevice1.Audio2"/>
