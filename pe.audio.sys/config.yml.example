@@ -84,10 +84,10 @@ drc_init:    lp_multipV1
 #     not only on the loudspeaker itself.
 ref_level_gain: 0
 
-# ========== TARGET EQ FILENAMES TO LOAD AT STARTUP: ==========
-
-target_mag: target_mag_+3.0-1.0.dat
-target_pha: target_pha_+3.0-1.0.dat
+# ========== TARGET EQ FILE TO LOAD AT STARTUP: ==========
+# put here just whatever the target filename prefix,
+# w/o '_mag.dat' neither '_pha.dat'
+target: +3.0-1.0_target
 
 # =================== MISCEL: =================================
 
