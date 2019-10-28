@@ -19,6 +19,8 @@ Usually it is enough:
 
     `sudo usermod -a -G cdrom,audio,video,plugdev YourUserHere`
 
+Unlike `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories.
+
 Update your `~/.profile`:
 
     export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
@@ -48,9 +50,6 @@ Also install the following packages on your linux installation:
     sudo apt install jackd2 brutefir ecasound ecatools python-ecasound mpd mpc mplayer
     sudo apt install ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
-### NOTICE:
-
-Unlike `pre.di.c` enviroment recommendations, here it is no longer needed to point the PYTHONPATH env variable to your `pe.audio.sys` directories.
 
 ### Python3 packages
 
