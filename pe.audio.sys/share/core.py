@@ -121,13 +121,13 @@ def bf_set_eq( sta , target=None):
                                        sta = sta )
     bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = sta['bass']         )
     treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = sta['treble']       )
-    
+
     if target == None:
         targ_mag = EQ_CURVES['targ_mag']
         targ_pha = EQ_CURVES['targ_pha']
     else:
-        targ_mag = np.loadtxt( f'{EQ_FOLDER}/target_mag_{target}.dat' )
-        targ_pha = np.loadtxt( f'{EQ_FOLDER}/target_pha_{target}.dat' )
+        targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target}_mag.dat' )
+        targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target}_pha.dat' )
 
 
     eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
@@ -210,6 +210,7 @@ def find_eq_curves():
                 'treble_pha.dat'    : 'treb_pha',
                 'freq.dat'          : 'freqs'     }
 
+    # pendings curver to find ( freq + 2x loud + 4x tones = 7 )
     pendings = len(fnames)
     for fname in fnames:
 
@@ -225,16 +226,17 @@ def find_eq_curves():
         else:
                 print(f'(core.py) ERROR finding a \'...{fname}\' file under share/eq/')
 
+    # and the target ones:
     try:
-        EQ_CURVES['targ_mag'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_mag"]}' )
+        EQ_CURVES['targ_mag'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target"]}_mag.dat' )
     except:
-        print(f'(core.py) ERROR finding a \'{CONFIG["target_mag"]}\' file under share/eq/')
+        print(f'(core.py) ERROR finding a \'{CONFIG["target"]}_mag.dat\' file under share/eq/')
         pendings += 1
     
     try:
-        EQ_CURVES['targ_pha'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target_pha"]}' )
+        EQ_CURVES['targ_pha'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target"]}_pha.dat' )
     except:
-        print(f'(core.py) ERROR finding a \'{CONFIG["target_pha"]}\' file under share/eq/')
+        print(f'(core.py) ERROR finding a \'{CONFIG["target"]}_pha.dat\' file under share/eq/')
         pendings += 1
     
     if not pendings:
@@ -466,15 +468,16 @@ class Core(object):
 
         # The target curves available under the 'eq' folder
         # (i) target files must be named:
-        #    target_mag_TARGETIDNAME.dat
-        #    target_pha_TARGETIDNAME.dat
+        #    [TARGETIDNAME]target_mag.dat
+        #    [TARGETIDNAME]target_pha.dat
+        #     so the id part is optional.
         #
         self.target_sets = []
         files = os.listdir( EQ_FOLDER )
-        tmp = [ x for x in files if x[:7] == 'target_'  ]
+        tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
         for x in tmp:
-            if not x[11:-4] in self.target_sets:
-                self.target_sets.append( x[11:-4] )
+            if not x[:-8] in self.target_sets:
+                self.target_sets.append( x[:-8] )
 
     def set_level(self, value, relative=False):
         if relative:
