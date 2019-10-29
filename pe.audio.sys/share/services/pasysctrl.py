@@ -168,30 +168,33 @@ def process_commands( full_command ):
     # Parsing the command to his related function from the above set of functions
     try:
         result = {
+            'state':            get_state,
+            'status':           get_state,
+            'get_state':        get_state,
+            'get_eq':           get_eq,
+            'get_target_sets':  get_target_sets,
+            'get_drc_sets':     get_drc_sets,
+            'get_xo_sets':      get_xo_sets,
+
             'input':            set_source,
             'source':           set_source,
             'solo':             set_solo,
             'mono':             set_mono,
             'midside':          set_midside,
             'mute':             set_mute,
+
+            'level':            set_level,
+            'balance':          set_balance,
+            'treble':           set_treble,
+            'bass':             set_bass,
             'loudness':         set_loud_track,
             'loudness_track':   set_loud_track,
             'loudness_ref':     set_loud_ref,
-            'treble':           set_treble,
-            'bass':             set_bass,
-            'balance':          set_balance,
-            'level':            set_level,
-            'get_eq':           get_eq,
-            'state':            get_state,
-            'get_state':        get_state,
-            'status':           get_state,
-            'get_drc_sets':     get_drc_sets,
+
             'set_drc':          set_drc,
             'drc':              set_drc,
-            'get_xo_sets':      get_xo_sets,
             'xo':               set_xo,
             'set_xo':           set_xo,
-            'get_target_sets':  get_target_sets,
             'set_target':       set_target
             } [ command ] ( arg )
     
