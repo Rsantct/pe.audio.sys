@@ -119,10 +119,6 @@ def process_commands( full_command ):
     def set_level(x):
         return core.set_level(x, relative=add)
 
-    def set_gain(x):
-        # WORK IN PROGRESS
-        return 'not implemented'
-
     def get_eq(dummyarg):
         return yaml.dump( core.get_eq(), default_flow_style=False )
     
@@ -186,7 +182,6 @@ def process_commands( full_command ):
             'bass':             set_bass,
             'balance':          set_balance,
             'level':            set_level,
-            'gain':             set_gain,
             'get_eq':           get_eq,
             'state':            get_state,
             'get_state':        get_state,
