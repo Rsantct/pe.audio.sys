@@ -89,18 +89,6 @@ You can also use the above getting info commands, through by any TCP connection.
 
 Some nice tools are provided under your `~/bin` folder, below a brief description.
 
-
-
-# Filesystem tree
-
-All files are hosted under **`$HOME/pe.audio.sys`**, so that you can run `pe.audio.sys` under any user name.
-
-That way you can keep any `~/bin` an other files and directories under your home directory.
-
-1st level contains firsthand files (system  configuration and the system start script) and firsthand folders (loudspeakers, user macros).
-
-Deeper `share/` levels contains runtime files you don't usually need to access to.
-
     $HOME/bin/              Some tools will be installed under your ~/bin
           |
      ____/
@@ -115,6 +103,18 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |-- peaudiosys_view_eq_curves.py        A tool to plot the curves under the share/eq folder
     |
     |-- peaudiosys_do_target.py             Make target curves
+
+
+
+# Filesystem tree
+
+All files are hosted under **`$HOME/pe.audio.sys`**, so that you can run `pe.audio.sys` under any user name.
+
+That way you can keep any `~/bin` an other files and directories under your home directory.
+
+1st level contains the firsthand files (system configuration and the system start script) and the firsthand folders (loudspeakers, user macros).
+
+Deeper `share/` levels contains runtime files you don't usually need to access to.
 
 
     $HOME/pe.audio.sys/
