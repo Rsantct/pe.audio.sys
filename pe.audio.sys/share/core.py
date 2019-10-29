@@ -412,7 +412,7 @@ def init_audio_settings():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
 
-    preamp = Preamp()
+    preamp    = Preamp()
     convolver = Convolver()
 
     if CONFIG["init_mute"]:
@@ -472,6 +472,11 @@ def init_audio_settings():
         convolver.set_drc     (   CONFIG["init_drc"]              )
     else:
         convolver.set_drc     (   preamp.state['drc_set']         )
+
+    if CONFIG["init_target"]:
+        preamp.set_target     (   CONFIG["init_target"]           )
+    else:
+        preamp.set_target     (   preamp.state['target']          )
 
     save_yaml( preamp.state, STATE_PATH )
 
@@ -660,7 +665,6 @@ class Convolver(object):
         #    drc.X.DRCSETNAME.pcm   where X must be L | R
         #    0123456.........-4    
         #
-        self.drc_init   = CONFIG['drc_init']
         self.drc_sets       = []
         tmp = [ x for x in files if x[:4] == 'drc.'  ]
         for x in tmp:
@@ -672,7 +676,6 @@ class Convolver(object):
         #    xo.XY.XOSETNAME.pcm   where XY must be fr | lo | mi | hi | sw
         #    0123456........-4    
         #
-        self.xo_init    = CONFIG['xo_init']
         self.xo_sets        = []
         tmp = [ x for x in files if x[:3] == 'xo.' ]
         for x in tmp:
