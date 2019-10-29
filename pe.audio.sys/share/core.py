@@ -50,9 +50,10 @@ def save_yaml(dic, filepath):
         yaml.dump( dic, f, default_flow_style=False )
 
 def find_target_sets():
-    """ Returns the uniques target filenames w/o the suffix _mag.dat or _pha.dat
+    """ Returns the uniques target filenames w/o the suffix _mag.dat or _pha.dat,
+        also will add 'none' as an additional set.
     """
-    result = []
+    result = ['none']
     files = os.listdir( EQ_FOLDER )
     tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
     for x in tmp:
@@ -138,7 +139,8 @@ def find_loudness_flat_curve_index():
 
 def calc_eq( sta ):
     """ Calculate the eq curves to be applied on the Brutefir EQ module,
-        as per the provided 'sta' state values """
+        as per the provided 'sta' state values
+    """
 
     loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
                                        sta = sta )
@@ -146,8 +148,12 @@ def calc_eq( sta ):
     treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = sta['treble']       )
 
     target_name = sta['target']
-    targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
-    targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
+    if target_name == 'none':
+        targ_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
+        targ_pha = np.zeros( EQ_CURVES['freqs'].shape[0] )
+    else:
+        targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
+        targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
     eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
     eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
@@ -571,6 +577,7 @@ class Preamp(object):
     def set_target(self, value):
         candidate = self.state.copy()
         if value in self.target_sets:
+            candidate['target'] = value
             return self._validate( candidate )
         else:
             return f'target \'{value}\' not available'
