@@ -155,21 +155,23 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
 
 # The loudspeaker
 
-Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as system card wiring and delays on each port.
+Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
 
 So *keep only useful files* under your loudspeaker folder, and *name them meaningfully*.
 
-For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder. Please name files as follows:
+For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder.
+
+Please name files as follows:
 
 
 DRC pcm files must be named:
 
-    drc.<X>.DRCSETNAME.pcm   where X must be L | R
+    drc.<X>.DRCSETNAME.pcm   where X must be:    L | R
 
 
 XO pcm files must be named:
 
-    xo.<XX>.XOSETNAME.pcm    where XX must be fr | lo | mi | hi | sw
+    xo.<XX>.XOSETNAME.pcm    where XX must be:  fr | lo | mi | hi | sw
 
 (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
