@@ -35,6 +35,42 @@ The system core is mainly based on:
     - EQ: bass, treble, dynamic loudness curves, in-room target eq curves.
     - LEVEL control
 
+# Controling the system
+
+The control of the system works through by **a TCP listening socket** that accepts **a set of commands**. Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
+
+
+### Getting info:
+
+    state | status | get_state returns the whole system status parameters (.state.yml)
+    get_eq                     returns the current Brutefir EQ stage (mag & pha)
+    get_target_sets            list of target curves sets found under the loudspeaker folder
+    get_drc_sets               list of drc sets
+    get_xo_sets                list of xover sets
+
+### Selector stage:
+
+    input | source  <name>
+    solo            off | l | r
+    mono            off | on            ( aka mid )
+    midside         off | mid | side
+    mute            off | on
+
+### Gain and Eq stage:
+
+    level           xx [add]    xx dB, use add for a relative adjustment
+    balance         xx [add]
+    treble          xx [add]
+    bass            xx [add]
+    loudness_ref    xx [add]
+    loudness | loudness_track   on | off   The loudness compensation
+    set_target      <name>      selects a target curve
+
+### Convolver stages:
+
+    set_drc | drc   <name>      selects a DRC FIR set
+    set_xo  | xo    <name>      selects a XOVER FIR set
+
 
 # Configuration
 
