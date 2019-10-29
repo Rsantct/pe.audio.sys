@@ -37,7 +37,13 @@ The system core is mainly based on:
 
 # Controling the system
 
-The control of the system works through by **a TCP listening socket** that accepts **a set of commands**. Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
+A web page front end is provided so you can easily control the system as well your integrated music players.
+
+**@rripio** has also an IR interface than can be adapted to control through by an infrared remote.
+
+Anyway The control of the system works through by **a TCP listening socket** that accepts **a set of commands**.
+
+Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
 
 
 ### Getting info:
