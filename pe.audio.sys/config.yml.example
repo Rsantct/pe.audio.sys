@@ -1,4 +1,4 @@
-# ======== pe.audio.sys SERVICES LAUNCHER and tcp addressing  ==========
+# ============ pe.audio.sys SERVICES LAUNCHER and tcp addressing  ==============
 # adressing pairs listed here will trigger the tcp server
 # to run the underlying service
 
@@ -15,10 +15,11 @@ services_addressing:
     aux_port:               9988
 
     # Players management service (optional)
-    players_address:        localhost
+    players_address:        0.0.0.0
     players_port:           9987
 
-# =================  SOUND CARDS =====================================
+
+# ===========================  SOUND CARDS =====================================
 
 # Main system card
 system_card: hw:UDJ6
@@ -32,29 +33,29 @@ system_card: hw:UDJ6
 external_cards:
 
     # sintax:
-    #<descriptorName>  will be used to name the belonging jack ports
-    #    alsacard:    <hw:ALSANAME>
-    #    resampler:   <zita-a2j | zita-j2a | alsa_in | alsa_out>
+    #<descriptor_name>  will be used to name the belonging jack ports
+    #    alsacard: <hw:ALSANAME>
+    #    resampler: <zita-a2j | zita-j2a | alsa_in | alsa_out>
     #    resamplingQ: <NN>
     #    misc_params: <''>
 
     # some examples:
-    # This is used to resampled capture
+    # This is used to capture
     #LineIN:
-    #    alsacard:    hw:CODEC
-    #    resampler:   zita-a2j
+    #    alsacard: hw:CODEC
+    #    resampler: zita-a2j
     #    resamplingQ: 96
     #    misc_params: ''
     
     # This is used just to RTA external monitoring
     #DEQ2496:
-    #    alsacard:    hw:CODEC
-    #    resampler:   zita-j2a
+    #    alsacard: hw:CODEC
+    #    resampler: zita-j2a
     #    resamplingQ: 48
     #    misc_params: ''
 
 
-# =================  JACK SOUND CARD CONFIGURATION  ==================
+# ===================  JACK SOUND CARD CONFIGURATION  ==========================
 
 # DUMMY backend for testing:
 #jack_options:           -R -d dummy
@@ -65,47 +66,7 @@ jack_options:           -R -d alsa
 jack_backend_options:   -d system_card -r 48000 -P -o 6
 
 
-# ==================== THE LOUDSPEAKER  ====================
-loudspeaker: SeasFlat
-
-# (i): XO and DRC sets will be scanned from the list of xo......pcm and
-#      drc........pcm files found under the loudspeaker folder.
-
-# Put here the common IDSTRING that identifies the XO filters at start up.
-# ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
-xo_init:     mp
-
-# Put here the IDSTRING that identifies the DRC filters at start up.
-# ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
-drc_init:    lp_multipV1
-
-# The system gain in dB for nominal SPL
-# (i) This is a parameter dependent on the system amplifiers gains,
-#     not only on the loudspeaker itself.
-ref_level_gain: 0
-
-# ========== TARGET EQ FILE TO LOAD AT STARTUP: ==========
-# put here just whatever the target filename prefix,
-# w/o '_mag.dat' neither '_pha.dat'
-target: +3.0-1.0_target
-
-# =================== MISCEL: =================================
-
-# STARTUP settings (leave blank to restore from the last state)
-# (i) please use 'off' or 'on' with quotes.
-init_mute:              'off'
-init_level:             
-init_max_level:         -20
-init_bass:              0
-init_treble:            0
-init_balance:           0
-init_loudness_track:    'on'
-init_loudness_ref:      0
-init_midside:           'off'
-init_solo:              'off'
-init_xo:
-init_drc:
-init_input:             none
+# =========================  LIMITS  ===========================================
 
 # Max balance setting authorised
 balance_max:   6.0
@@ -116,8 +77,46 @@ ref_level_gain: -10.0
 # Max gain authorised at convolver output
 gain_max:    0.0
 
+# ========================== THE LOUDSPEAKER  ==================================
+# (i)  XO and DRC sets will be scanned from the list of xo......pcm and
+#      drc........pcm files found under the loudspeaker folder.
 
-# ========================== SOURCES:  ===============================
+# Put here your loudspeaker folder name
+loudspeaker: SeasFlat
+
+
+# ========================= STARTUP BEHAVOIR: ==================================
+# (i) Leave blank these fields to restore from the last state,
+#     or indicate a value to force.
+#     Please use 'off' or 'on' with quotes.
+
+# Put here the common IDSTRING that identifies the XO filters at start up.
+# ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
+init_xo:     mp
+
+# Put here the IDSTRING that identifies the DRC filters at start up.
+# ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
+init_drc:    mp_multipV1
+
+# Put here just whatever the target filename prefix,
+# w/o '_mag.dat' neither '_pha.dat'
+init_target: +3.0-1.0_target
+
+# Others settings:
+init_mute:              'off'
+init_level:             
+init_max_level:         -20
+init_bass:              0
+init_treble:            0
+init_balance:           0
+init_loudness_track:    'on'
+init_loudness_ref:      0
+init_midside:           'off'
+init_solo:              'off'
+init_input:             salon
+
+
+# ============================  SOURCES  =======================================
 # (i) If capture_ports here are named 'xxxxloop', then the preamp will
 # automagically spawn them for the sources can connect into. Obviously the
 # sources must be configured accordingly.
@@ -135,16 +134,19 @@ sources:
         capture_port:   istreams_loop
         gain:           0.0
         xo:             mp
+    salon:
+        capture_port:   zita-n2j
+        gain:           0.0
+        xo:             mp
 
-# ==================== SOURCE MONITOR PORTS ============================
-# The source selector will connect the source also to below jack ports.
-# If an external card is used, then the port name must be the same as
-# used for <descriptorName> at the avobe 'external_cards' section.
+# ========================== SOURCE MONITOR PORTS ==============================
+# The source selector will connect the source also here.
+# If an external card is used, then the 
 source_monitors:
     # - <monitorName>
     #- DEQ2496
 
-# ============= SCRIPTS YOU WANT TO RUN (players, etc...)  =============
+# ================ SCRIPTS YOU WANT TO RUN (players, etc...)  ==================
 # The scripts files are located under the scripts folder.
 # Files must be executable, also must accept at least 'stop' as
 # command line argument in order to be stopped if necessary.
@@ -153,21 +155,21 @@ scripts:
     - sound_cards_prepare.py
     # Runs MPD:
     - mpd.py
-    # An internet streams player based on Mplayer:
     - istreams.py
     # Set Pulseaudio apps to sound through by JACK:
     - pulseaudio-jack-sink.py
     # DVB-T player based in Mplayer, useful for DVB-T radio stations:
-    - DVB-T.py
+    #- DVB-T.py
     # librespot (Spotify Connect client) plays music from an Spotify premium account
     - librespot.py
+    # An audio multicast receiver
+    - zita-n2j_mcast.py
 
-# ============= AUX SERVICES CONFIGURATION =======================
+# ==================== AUX SERVICES CONFIGURATION ==============================
 aux:
     # Configure here your command line orders to SWITCH ON/OFF your AMPLIFIER.
     # (i) It is expected that the scripts will store the amplifier state 'on' or 'off'
     #     into the file '~/.amplifier' so that others processes could know about.
     amp_on_cmdline:  /home/predic/bin/ampli.sh on
     amp_off_cmdline: /home/predic/bin/ampli.sh off
-
 
