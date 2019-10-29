@@ -262,7 +262,45 @@
     </div>
 
 
-    <!-- ADVANCED CONTROLS (will be displayed through by a button)
+    <!-- LEVEL butttons -->
+    <div class="level_buttons" id="level_buttons" align="center" >
+        <table id="level_buttons_table">
+        <tr>
+            <td id="level_buttons11">
+            </td>
+            <!-- 1 dB MAIN VOLUME and MUTE buttons -->
+            <td id="level_buttons12">
+                <button type="button" onmousedown="control_cmd('level -1 add')" >
+                        &nbsp;-1&nbsp;</button>
+                <button type="button" onmousedown="control_cmd('mute toggle')" id="buttonMute" >
+                        &nbsp;&nbsp;0&nbsp;&nbsp;</button>            
+                <button type="button" onmousedown="control_cmd('level +1 add')" >
+                        &nbsp;+1&nbsp;</button>
+            </td>
+            <td id="level_buttons13">
+                &nbsp;&nbsp;mon:&nbsp;&nbsp;
+            </td>
+        <tr>
+        </tr>
+            <td id="level_buttons21">
+            </td>
+            <!-- 3 dB MAIN VOLUME buttons -->
+            <td id="level_buttons22">
+                <button type="button" onmousedown="control_cmd('level -3 add')" >
+                        &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
+                <button type="button" onmousedown="control_cmd('level +3 add')" >
+                        &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
+            </td>
+            <!-- 2 dB MONITOR VOLUME buttons -->
+            <td id="level_buttons23">
+                <button type="button" id="MON_vol_down"  onmousedown="MON_vol('-2dB')">-</button>
+                <button type="button" id="MON_vol_up"    onmousedown="MON_vol('+2dB')">+</button>
+            </td>
+        </tr>
+        </table>
+    </div>
+
+    <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button)
             loudness adjusting
             treble        balance
             bass          target
@@ -342,44 +380,6 @@
         </tr>
     </table>
     </div><!-- EOF ADVANCED CONTROLS -->
-
-    <!-- LEVEL butttons -->
-    <div class="level_buttons" id="level_buttons" align="center" >
-        <table id="level_buttons_table">
-        <tr>
-            <td id="level_buttons11">
-            </td>
-            <!-- 1 dB MAIN VOLUME and MUTE buttons -->
-            <td id="level_buttons12">
-                <button type="button" onmousedown="control_cmd('level -1 add')" >
-                        &nbsp;-1&nbsp;</button>
-                <button type="button" onmousedown="control_cmd('mute toggle')" id="buttonMute" >
-                        &nbsp;&nbsp;0&nbsp;&nbsp;</button>            
-                <button type="button" onmousedown="control_cmd('level +1 add')" >
-                        &nbsp;+1&nbsp;</button>
-            </td>
-            <td id="level_buttons13">
-                &nbsp;&nbsp;mon:&nbsp;&nbsp;
-            </td>
-        <tr>
-        </tr>
-            <td id="level_buttons21">
-            </td>
-            <!-- 3 dB MAIN VOLUME buttons -->
-            <td id="level_buttons22">
-                <button type="button" onmousedown="control_cmd('level -3 add')" >
-                        &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
-                <button type="button" onmousedown="control_cmd('level +3 add')" >
-                        &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
-            </td>
-            <!-- 2 dB MONITOR VOLUME buttons -->
-            <td id="level_buttons23">
-                <button type="button" id="MON_vol_down"  onmousedown="MON_vol('-2dB')">-</button>
-                <button type="button" id="MON_vol_up"    onmousedown="MON_vol('+2dB')">+</button>
-            </td>
-        </tr>
-        </table>
-    </div>
 
     <!-- PLAYING INFO -->
     <div>
