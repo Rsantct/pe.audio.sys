@@ -107,11 +107,12 @@ init_xo:
 init_drc:
 init_input:             none
 
-# Max digital gain (dB) authorised for the convolver output
+# Max digital gain (dB) authorised at the convolver output
 gain_max: 0
 
-# The index of the flat curve into the 'eq/loudness.dat' curves file
-loudness_flat_curve_index: 7
+# Max balance setting authorised
+balance_max:   6
+
 
 # ========================== SOURCES:  ===============================
 # (i) If capture_ports here are named 'xxxxloop', then the preamp will
