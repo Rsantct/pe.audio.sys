@@ -387,92 +387,92 @@ def jack_loops_prepare():
     jloop.start()
 
 
-# THE CORE: AUDIO PROCESSOR AND SELECTOR:
+# THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER
 def init_source():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
-    core = Core()
+    preamp = Preamp()
 
     if CONFIG["init_input"]:
-        core.select_source  (   CONFIG["init_input"]            )
+        preamp.select_source  (   CONFIG["init_input"]            )
     else:
-        core.select_source  (   core.state['input']             )
+        preamp.select_source  (   core.state['input']             )
 
-    save_yaml( core.state, STATE_PATH )
+    save_yaml( preamp.state, STATE_PATH )
     
-    del(core)
+    del(preamp)
     
 def init_audio_settings():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
 
-    core = Core()
-    lspk = Lspk()
+    preamp = Preamp()
+    convolver = Convolver()
 
     if CONFIG["init_mute"]:
-        core.set_mute       (   CONFIG["init_mute"]             )
+        preamp.set_mute       (   CONFIG["init_mute"]             )
     else:
-        core.set_mute       (   core.state['muted']             )
+        preamp.set_mute       (   preamp.state['muted']           )
 
     if CONFIG["init_level"]:         
-        core.set_level      (   CONFIG["init_level"]            )
+        preamp.set_level      (   CONFIG["init_level"]            )
     else:
-        core.set_level      (   core.state['level']             )
+        preamp.set_level      (   preamp.state['level']           )
 
     if CONFIG["init_max_level"]:
-        core.set_level(  min( CONFIG["init_max_level"], core.state['level'] ) )
+        preamp.set_level(  min( CONFIG["init_max_level"], preamp.state['level'] ) )
 
     if CONFIG["init_bass"]:
-        core.set_bass       (   CONFIG["init_bass"]             )
+        preamp.set_bass       (   CONFIG["init_bass"]             )
     else:
-        core.set_bass       (   core.state['bass']              )
+        preamp.set_bass       (   preamp.state['bass']            )
 
     if CONFIG["init_treble"]:        
-        core.set_treble     (   CONFIG["init_treble"]           )
+        preamp.set_treble     (   CONFIG["init_treble"]           )
     else:
-        core.set_treble     (   core.state['treble']            )
+        preamp.set_treble     (   preamp.state['treble']          )
 
     if CONFIG["init_balance"]:       
-        core.set_balance    (   CONFIG["init_balance"]          )
+        preamp.set_balance    (   CONFIG["init_balance"]          )
     else:
-        core.set_balance    (   core.state['balance']           )
+        preamp.set_balance    (   preamp.state['balance']         )
 
     if CONFIG["init_loudness_track"]:
-        core.set_loud_track (   CONFIG["init_loudness_track"]   )
+        preamp.set_loud_track (   CONFIG["init_loudness_track"]   )
     else:
-        core.set_loud_track (   core.state['loudness_track']    )
+        preamp.set_loud_track (   preamp.state['loudness_track']  )
 
     if CONFIG["init_loudness_ref"]:
-        core.set_loud_ref   (   CONFIG["init_loudness_ref"]     )
+        preamp.set_loud_ref   (   CONFIG["init_loudness_ref"]     )
     else:
-        core.set_loud_ref   (   core.state['loudness_ref']      )
+        preamp.set_loud_ref   (   preamp.state['loudness_ref']    )
 
     if CONFIG["init_midside"]:       
-        core.set_midside    (   CONFIG["init_midside"]          )
+        preamp.set_midside    (   CONFIG["init_midside"]          )
     else:
-        core.set_midside    (   core.state['midside']           )
+        preamp.set_midside    (   preamp.state['midside']         )
 
     if CONFIG["init_solo"]:          
-        core.set_solo       (   CONFIG["init_solo"]             )
+        preamp.set_solo       (   CONFIG["init_solo"]             )
     else:
-        core.set_solo       (   core.state['solo']              )
+        preamp.set_solo       (   preamp.state['solo']            )
 
     if CONFIG["init_xo"]:
-        lspk.set_xo         (   CONFIG["init_xo"]               )
+        convolver.set_xo      (   CONFIG["init_xo"]               )
     else:
-        lspk.set_xo         (   core.state['xo_set']                )
+        convolver.set_xo      (   preamp.state['xo_set']          )
 
     if CONFIG["init_drc"]:
-        lspk.set_drc        (   CONFIG["init_drc"]              )
+        convolver.set_drc     (   CONFIG["init_drc"]              )
     else:
-        lspk.set_drc        (   core.state['drc_set']               )
+        convolver.set_drc     (   preamp.state['drc_set']         )
 
-    save_yaml( core.state, STATE_PATH )
+    save_yaml( preamp.state, STATE_PATH )
 
-    del(lspk)
-    del(core)
+    del(convolver)
+    del(preamp)
 
-class Core(object):
+class Preamp(object):
 
     def __init__(self):
 
@@ -491,8 +491,8 @@ class Core(object):
     def _validate( self, candidate ):
         
         g               = calc_gain( candidate )
-        b               = candidate[ 'balance' ]
-        eq_mag, eq_pha  = calc_eq( candidate )
+        b               = candidate['balance']
+        eq_mag, eq_pha  = calc_eq(candidate)
 
         headroom = self.gmax - g - np.max(eq_mag) - np.abs(b/2.0)
 
@@ -641,8 +641,8 @@ class Core(object):
             return f'source \'{value}\' not defined'
 
 
-# LOUDSPEAKER MANAGEMENT
-class Lspk(object):
+# THE CONVOLVER: DRC and XO Brutefir stages management
+class Convolver(object):
 
     def __init__(self):
         self.name = CONFIG['loudspeaker']
