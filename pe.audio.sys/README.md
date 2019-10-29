@@ -87,7 +87,7 @@ You can also use the above getting info commands, through by any TCP connection.
 
 ## Tools
 
-Some nice tools are provided under your `~/bin` folder
+Some nice tools are provided under your `~/bin` folder, below a brief description.
 
 
 
@@ -101,7 +101,21 @@ That way you can keep any `~/bin` an other files and directories under your home
 
 Deeper `share/` levels contains runtime files you don't usually need to access to.
 
-    $HOME/bin/              Some tools will be added to your ~/bin
+    $HOME/bin/              Some tools will be installed under your ~/bin
+          |
+     ____/
+    /
+    |-- peaudiosys_control                  A command line tool to issue commands to the system
+    |
+    |-- peaudiosys_service_restart.sh       Restart or stop a service (more info on config.yml)
+    |
+    |-- peaudiosys_view_brutefir.py         Shows the running Brutefir configuration:
+    |                                       mapping to sound card ports, coeffs and filters running.
+    |
+    |-- peaudiosys_view_eq_curves.py        A tool to plot the curves under the share/eq folder
+    |
+    |-- peaudiosys_do_target.py             Make target curves
+
 
     $HOME/pe.audio.sys/
           |
@@ -114,8 +128,6 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |-- xxxx.yml            Other configuration files
     |
     |-- .asound.XXX         ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
-    |
-    |-- pasysctrl           Command line tool to control the system
     |
     |-- start.py            This starts up or shutdown the whole system
     |
