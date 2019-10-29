@@ -108,7 +108,7 @@ init_drc:
 init_input:             none
 
 # Max digital gain (dB) authorised for the convolver output
-gain_max: 6
+gain_max: 0
 
 # The index of the flat curve into the 'eq/loudness.dat' curves file
 loudness_flat_curve_index: 7
