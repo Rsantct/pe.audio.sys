@@ -216,8 +216,8 @@ def bf_set_gains( sta ):
     gain_L = (gain - balance/2.0)
     gain_R = (gain + balance/2.0)
     
-    # We compute from dB to multiplier,
-    # so will no adjust the inverse attenuation values on Brutefir
+    # We compute from dB to a multiplier, this is an alternative to 
+    # adjusting the attenuation on 'cffa' command syntax
     m_gain_L = 10**(gain_L/20.0) * m_mute * m_solo_L
     m_gain_R = 10**(gain_R/20.0) * m_mute * m_solo_R
 
