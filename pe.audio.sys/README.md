@@ -77,6 +77,18 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
     set_drc | drc   <name>                 selects a DRC FIR set
     set_xo  | xo    <name>                 selects a XOVER FIR set
 
+## Monitoring the system
+
+The provided web page will show the system status as well music player's information.
+
+An LCD service is provided to plug a LCD display to show the system status as well metadata from players.
+
+You can also use the above getting info commands, through by any TCP connection.
+
+## Tools
+
+Some nice tools are provided under your `~/bin` folder
+
 
 # Configuration
 
