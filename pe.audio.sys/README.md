@@ -90,12 +90,6 @@ You can also use the above getting info commands, through by any TCP connection.
 Some nice tools are provided under your `~/bin` folder
 
 
-# Configuration
-
-All system features are configured under **`config.yml`**. We provide a self commented **`config.yml.example`** file.
-
-Few user scripts or shared modules can have an its own `xxx.yml` file of the same base name for configuration if necessary.
-
 
 # Filesystem tree
 
@@ -167,9 +161,15 @@ XO pcm files must be named:
 
 (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
-# The config.yml file
 
-This file allows to configure the whole system. We provide a **`config.yml.example`** with clarifying comments.
+
+# Configuration: the config.yml file
+
+All system features are configured under **`config.yml`**. We provide a **`config.yml.example`** with clarifying comments.
+
+Few user scripts or shared modules can have an its own `xxx.yml` file of the same base name for configuration if necessary.
+
+This file allows to configure the whole system.
 
 Some points:
 
