@@ -107,11 +107,14 @@ init_xo:
 init_drc:
 init_input:             none
 
-# Max digital gain (dB) authorised at the convolver output
-gain_max: 0
-
 # Max balance setting authorised
-balance_max:   6
+balance_max:   6.0
+
+# Ref_level at convolver output to obtain the reference SPL
+ref_level_gain: -10.0
+
+# Max gain authorised at convolver output
+gain_max:    0.0
 
 
 # ========================== SOURCES:  ===============================
