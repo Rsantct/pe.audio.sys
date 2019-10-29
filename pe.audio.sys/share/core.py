@@ -37,7 +37,7 @@ import threading
 from time import sleep
 
 
-# YAML FILES MANAGEMENT:
+# AUX FOR FILES MANAGEMENT:
 def read_yaml(filepath):
     """ returns a dictionary from an YAML file """
     with open(filepath) as f:
@@ -47,6 +47,15 @@ def read_yaml(filepath):
 def save_yaml(dic, filepath):
     with open( filepath, 'w' ) as f:
         yaml.dump( dic, f, default_flow_style=False )
+
+def find_target_sets():
+    result = []
+    files = os.listdir( EQ_FOLDER )
+    tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
+    for x in tmp:
+        if not x[:-8] in result:
+            result.append( x[:-8] )
+    return result
 
 
 # BRUTEFIR MANAGEMENT:          
@@ -88,7 +97,6 @@ def bf_set_gains( sta ):
     muted   = sta['muted']
 
     # (!!!) WARNING THIS IS A PENDING ISSUE
-    print( '(core) still managing gain = level')
     gain = float(level)
     balance = float(balance)
 
@@ -112,11 +120,9 @@ def bf_set_gains( sta ):
     # print(cmd) # debug
     bf_cli(cmd)
 
-def bf_set_eq( sta , target=None):
+def bf_calc_eq( sta , target=None):
     """ Adjust brutefir EQ module as per the provided 'sta' state values """
 
-    freqs = EQ_CURVES['freqs']
-    
     loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
                                        sta = sta )
     bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = sta['bass']         )
@@ -133,6 +139,11 @@ def bf_set_eq( sta , target=None):
     eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
     eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
 
+    return eq_mag, eq_pha
+
+def bf_set_eq( eq_mag, eq_pha ):
+    """ Adjust the Brutefir EQ module  """
+    freqs = EQ_CURVES['freqs']
     mag_pairs = []
     pha_pairs = []
     i = 0
@@ -142,7 +153,6 @@ def bf_set_eq( sta , target=None):
         i += 1
     mag_str = ', '.join(mag_pairs)
     pha_str = ', '.join(pha_pairs)
-    
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
@@ -463,78 +473,86 @@ class Core(object):
 
     def __init__(self):
 
-        # The STATE dictionaty
+        # The state dictionary
         self.state = read_yaml( STATE_PATH )
+        # and also provide the target curves available under the 'eq' folder
+        self.target_sets = find_target_sets()
 
-        # The target curves available under the 'eq' folder
-        # (i) target files must be named:
-        #    [TARGETIDNAME]target_mag.dat
-        #    [TARGETIDNAME]target_pha.dat
-        #     so the id part is optional.
-        #
-        self.target_sets = []
-        files = os.listdir( EQ_FOLDER )
-        tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
-        for x in tmp:
-            if not x[:-8] in self.target_sets:
-                self.target_sets.append( x[:-8] )
+
+    def _validate_gains( self, candidate ):
+        
+        gmax            = CONFIG['gain_max']
+        g               = candidate['level']
+        b               = candidate['balance']
+        eq_mag, eq_pha  = bf_calc_eq(candidate)
+
+        headroom = gmax - g - np.max(eq_mag) - np.abs(b/2.0)
+
+        if headroom >= 0:
+            bf_set_gains( candidate )
+            bf_set_eq( eq_mag, eq_pha )
+            self.state = candidate
+            return 'done'
+        else:
+            return 'not enough headroom'
 
     def set_level(self, value, relative=False):
+        candidate = self.state.copy()
         if relative:
-            self.state['level'] += round(float(value), 2)
+            candidate['level'] += round(float(value), 2)
         else:
-            self.state['level'] =  round(float(value), 2)
-        bf_set_gains( self.state )
-        return 'done'
+            candidate['level'] =  round(float(value), 2)
+        return self._validate_gains( candidate )
 
     def set_balance(self, value, relative=False):
+        candidate = self.state.copy()
         if relative:
-            self.state['balance'] += round(float(value), 2)
+            candidate['balance'] += round(float(value), 2)
         else:
-            self.state['balance'] =  round(float(value), 2)
-            
-        bf_set_gains( self.state )
-        return 'done'
+            candidate['balance'] =  round(float(value), 2)
+        return self._validate_gains( candidate )
+
+    def set_bass(self, value, relative=False):
+        candidate = self.state.copy()
+        if relative:
+            candidate['bass'] += round(float(value), 2)
+        else:
+            candidate['bass'] =  round(float(value), 2)
+        return self._validate_gains( candidate )
+        
+    def set_treble(self, value, relative=False):
+        candidate = self.state.copy()
+        if relative:
+            candidate['treble'] += round(float(value), 2)
+        else:
+            candidate['treble'] =  round(float(value), 2)
+        return self._validate_gains( candidate )
 
     def set_loud_ref(self, value):
+        candidate = self.state.copy()
+        # this try just validate the given value
         try:
-            self.state['loudness_ref'] = round(float(value), 2)
-            bf_set_eq( self.state )
-            return 'done'
+            candidate['loudness_ref'] = round(float(value), 2)
+            return self._validate_gains( candidate )
         except:
             return 'bad value'
 
     def set_loud_track(self, value):
+        candidate = self.state.copy()
+        # this try just validate the given value
         try:
             value = { 'on':True , 'off':False, 'true':True, 'false':False,
                       'toggle': {True:False, False:True}[self.state['loudness_track']]
                     } [ value.lower() ]
-            self.state['loudness_track'] = value
-            bf_set_eq( self.state )
-            return 'done'
+            candidate['loudness_track'] = value
+            return self._validate_gains( candidate )
         except:
             return 'bad option'
 
-    def set_bass(self, value, relative=False):
-        if relative:
-            self.state['bass'] += round(float(value), 2)
-        else:
-            self.state['bass'] =  round(float(value), 2)
-        bf_set_eq( self.state )
-        return 'done'
-        
-    def set_treble(self, value, relative=False):
-        if relative:
-            self.state['treble'] += round(float(value), 2)
-        else:
-            self.state['treble'] =  round(float(value), 2)
-        bf_set_eq( self.state )
-        return 'done'
-
     def set_target(self, value):
+        candidate = self.state.copy()
         if value in self.target_sets:
-            bf_set_eq ( self.state, target=value )
-            return 'done'
+            return self._validate_gains( candidate )
         else:
             return f'target \'{value}\' not available'
 
