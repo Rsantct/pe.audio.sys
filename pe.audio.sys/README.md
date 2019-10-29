@@ -58,7 +58,7 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 
     input | source  <name>
     solo            off | l | r
-    mono            off | on               ( aka mid )
+    mono            off | on               ( aka midside => mid )
     midside         off | mid | side
     mute            off | on
 
