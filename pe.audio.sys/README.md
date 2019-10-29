@@ -166,6 +166,7 @@ Some points:
 
 Here you are an uncommented example for `config.yml`:
 
+
     services_addressing:
 
         pasysctrl_address:      0.0.0.0
@@ -174,7 +175,7 @@ Here you are an uncommented example for `config.yml`:
         aux_address:            localhost
         aux_port:               9988
 
-        players_address:        localhost
+        players_address:        0.0.0.0
         players_port:           9987
 
     system_card: hw:UDJ6
@@ -184,13 +185,17 @@ Here you are an uncommented example for `config.yml`:
     jack_options:           -R -d alsa
     jack_backend_options:   -d system_card -r 48000 -P -o 6
 
+
+    balance_max:    6.0
+    ref_level_gain: -10.0
+    gain_max:       0.0
+
+
     loudspeaker: SeasFlat
 
-    ref_level_gain: 0
-
-    target_mag: target_mag_+3.0-1.0.dat
-    target_pha: target_pha_+3.0-1.0.dat
-
+    init_xo:                mp
+    init_drc:               mp_multipV1
+    init_target:            +3.0-1.0_target
 
     init_mute:              'off'
     init_level:             
@@ -202,14 +207,7 @@ Here you are an uncommented example for `config.yml`:
     init_loudness_ref:      0
     init_midside:           'off'
     init_solo:              'off'
-    init_xo:                mp
-    init_drc:               drc1
-    init_input:             none
-
-    gain_max: 6
-
-    loudness_flat_curve_index: 7
-
+    init_input:             salon
 
     sources:
         spotify:
@@ -224,6 +222,10 @@ Here you are an uncommented example for `config.yml`:
             capture_port:   istreams_loop
             gain:           0.0
             xo:             mp
+        salon:
+            capture_port:   zita-n2j
+            gain:           0.0
+            xo:             mp
 
     source_monitors:
 
@@ -233,11 +235,11 @@ Here you are an uncommented example for `config.yml`:
         - istreams.py
         - pulseaudio-jack-sink.py
         - librespot.py
+        - zita-n2j_mcast.py
 
     aux:
-        amp_on_cmdline:  /home/peaudiosys/bin/ampli.sh on
-        amp_off_cmdline: /home/peaudiosys/bin/ampli.sh off
-
+        amp_on_cmdline:  /home/predic/bin/ampli.sh on
+        amp_off_cmdline: /home/predic/bin/ampli.sh off
 
 
 # The share/eq folder
