@@ -26,20 +26,19 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from core import Core, Lspk, save_yaml, STATE_PATH
+from core import Preamp, Convolver, save_yaml, STATE_PATH
 import yaml
 
-# INITIATE THE MAIN OBJECT THAT MANAGES 
-# THE AUDIO PROCESSOR AND THE SOURCES SELECTOR
-core = Core()
+# INITIATE A PREAMP INSTANCE
+preamp = Preamp()
 
-# INITIATE THE LOUDSPEAKER OBJECT (XO and DRC management)
-lspk = Lspk()
+# INITIATE A CONVOLVER INSTANCE (XO and DRC management)
+convolver = Convolver()
 
 # INTERFACE FUNCTION TO PLUG THIS ON SERVER.PY
 def do( cmdline ):
     result = process_commands( cmdline )
-    save_yaml( core.state, STATE_PATH )
+    save_yaml( preamp.state, STATE_PATH )
     # The server needs bytes-like (encoded) things
     return result.encode()
 
@@ -80,7 +79,7 @@ def process_commands( full_command ):
     # The actions to be done when a command is parsed below
 
     def set_solo(x):
-        return core.set_solo(x)
+        return preamp.set_solo(x)
 
     def set_mono(x):
         # the 'mono' command gracefully accepts to be toggled ;-)
@@ -89,70 +88,70 @@ def process_commands( full_command ):
             x = {   'on':       'mid', 
                     'off':      'off',
                     'toggle':   { 'off':'mid', 'side':'off', 'mid':'off'
-                                } [ core.state['midside'] ]
+                                } [ preamp.state['midside'] ]
                 } [x]
             return set_midside(x)
         except:
             return 'bad option'
 
     def set_midside(x):
-        return core.set_midside(x)
+        return preamp.set_midside(x)
 
     def set_mute(x):
-        return core.set_mute(x)
+        return preamp.set_mute(x)
 
     def set_loud_track(x):
-        return core.set_loud_track(x)
+        return preamp.set_loud_track(x)
 
     def set_loud_ref(x):
-        return core.set_loud_ref(x)
+        return preamp.set_loud_ref(x)
 
     def set_treble(x):
-        return core.set_treble(x, relative=add)
+        return preamp.set_treble(x, relative=add)
 
     def set_bass(x):
-        return core.set_bass(x, relative=add)
+        return preamp.set_bass(x, relative=add)
 
     def set_balance(x):
-        return core.set_balance(x, relative=add)
+        return preamp.set_balance(x, relative=add)
 
     def set_level(x):
-        return core.set_level(x, relative=add)
+        return preamp.set_level(x, relative=add)
 
     def get_eq(dummyarg):
-        return yaml.dump( core.get_eq(), default_flow_style=False )
+        return yaml.dump( preamp.get_eq(), default_flow_style=False )
     
     def get_state(dummyarg):
-        return yaml.dump( core.state, default_flow_style=False )
+        return yaml.dump( preamp.state, default_flow_style=False )
 
     def set_source(x):
-        return core.select_source(x)
+        return preamp.select_source(x)
 
     def get_drc_sets(dummyarg):
-        return '\n'.join(lspk.drc_sets)
+        return '\n'.join(convolver.drc_sets)
 
     def set_drc(x):
-        result = lspk.set_drc(x)
+        result = convolver.set_drc(x)
         if result == 'done':
-            core.state['drc_set'] = x
+            preamp.state['drc_set'] = x
         return result
 
     def get_xo_sets(dummyarg):
-        return '\n'.join(lspk.xo_sets)
+        return '\n'.join(convolver.xo_sets)
 
     def set_xo(x):
-        result = lspk.set_xo(x)
+        result = convolver.set_xo(x)
         if result == 'done':
-            core.state['xo_set'] = x
+            preamp.state['xo_set'] = x
         return result
 
     def get_target_sets(dummyarg):
-        return '\n'.join(core.target_sets)
+        return '\n'.join(preamp.target_sets)
 
     def set_target(x):
-        result = core.set_target(x)
+        result = preamp.set_target(x)
         if result == 'done':
-            core.state['target'] = x
+            preamp.state['target'] = x
         return result
         
 
