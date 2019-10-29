@@ -129,6 +129,7 @@ def find_eq_curves():
         return {}
 
 def find_loudness_flat_curve_index():
+    """ scan all curves under the file xxx_loudness_mag.dat to find the flat one """
     index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
     index_flat = -1
     for i in range(index_max):
@@ -243,6 +244,8 @@ def bf_set_eq( eq_mag, eq_pha ):
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
 def bf_read_eq():
+    """ returns a raw printout from issuing an eq info query to the Brutefir's EQ module  
+    """
     try:
         cmd = 'lmc eq "c.eq" info; quit'
         tmp = sp.check_output( f'echo \'{cmd}\' | nc localhost 3000', shell=True ).decode()
@@ -251,16 +254,16 @@ def bf_read_eq():
     tmp = [x for x in tmp.split('\n') if x]
     return tmp[2:]
 
-def bf_set_drc( x ):
-    if x == 'none':
-        cmd = ( f'cfc "f.drc.L" -1         ; cfc "f.drc.R" -1         ;' )
+def bf_set_drc( drcID ):
+    if drcID == 'none':
+        cmd = ( f'cfc "f.drc.L" -1             ; cfc "f.drc.R" -1             ;' )
     else:
-        cmd = ( f'cfc "f.drc.L" "drc.L.{x}"; cfc "f.drc.R" "drc.R.{x}";' )
+        cmd = ( f'cfc "f.drc.L" "drc.L.{drcID}"; cfc "f.drc.R" "drc.R.{drcID}";' )
     bf_cli( cmd )
 
-def bf_set_xo( filters, xo ):
+def bf_set_xo( filters, xoID ):
     for f in filters:
-        cmd = ( f'cfc "f.{f}.L" "xo.{f}.{xo}"; cfc "f.{f}.R" "xo.{f}.{xo}";' )
+        cmd = ( f'cfc "f.{f}.L" "xo.{f}.{xoID}"; cfc "f.{f}.R" "xo.{f}.{xoID}";' )
         bf_cli( cmd )
 
 
@@ -321,6 +324,7 @@ def jack_loop(clientname, nports=2):
             print('\n(core.jack_loop)  Terminated')
 
 def jack_connect(p1, p2, mode='connect', wait=1):
+    """ low level tool to connect / disconnect a pair of ports, by retriyng dor a while  """
     # Will retry during <wait> seconds, this is useful when a
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
@@ -342,7 +346,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     return False
         
 def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
-
+    """ High level tool to connect/disconnect a given port name patterns  """
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input= True )
     if not cap_ports or not pbk_ports:
@@ -660,7 +664,7 @@ class Convolver(object):
         self.name = CONFIG['loudspeaker']
         files = os.listdir(LSPK_FOLDER)
 
-        # ------ DRC sets ------
+        # ------ DRC sets (Brutefir coeffs) ------
         # DRC pcm files must be named:
         #    drc.X.DRCSETNAME.pcm   where X must be L | R
         #    0123456.........-4    
@@ -671,7 +675,7 @@ class Convolver(object):
             if not x[6:-4] in self.drc_sets:
                 self.drc_sets.append( x[6:-4] )
 
-        # ------  XO sets ------
+        # ------  XO sets (Brutefir coeffs) ------
         # XO pcm files must be named:
         #    xo.XY.XOSETNAME.pcm   where XY must be fr | lo | mi | hi | sw
         #    0123456........-4    
@@ -682,7 +686,7 @@ class Convolver(object):
             if not x[6:-4] in self.xo_sets:
                 self.xo_sets.append( x[6:-4] )
         
-        # ------  WAYS (brutefir filters) ------
+        # ------  LOUDSPEAKER WAYS (Brutefir filters) ------
         self.filters = []
         for x in tmp:
             if not x[3:5] in self.filters:
