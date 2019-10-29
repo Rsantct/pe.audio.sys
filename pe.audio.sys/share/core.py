@@ -39,16 +39,19 @@ from time import sleep
 
 # AUX FOR FILES MANAGEMENT:
 def read_yaml(filepath):
-    """ returns a dictionary from an YAML file """
+    """ Returns a dictionary from an YAML file """
     with open(filepath) as f:
         d = yaml.load(f)
     return d
 
 def save_yaml(dic, filepath):
+    """ Save a dict to disk """
     with open( filepath, 'w' ) as f:
         yaml.dump( dic, f, default_flow_style=False )
 
 def find_target_sets():
+    """ Returns the uniques target filenames w/o the suffix _mag.dat or _pha.dat
+    """
     result = []
     files = os.listdir( EQ_FOLDER )
     tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
@@ -56,6 +59,100 @@ def find_target_sets():
         if not x[:-8] in result:
             result.append( x[:-8] )
     return result
+
+def get_eq_curve(prop, value, sta=None):
+    """ Retrieves the tone or loudness curve of the desired value 
+        'sta' -state- will be used only to retrieve the
+        suited loudness index curve, which depends on levels.
+    """
+    # Tone eq curves are provided in [-6...0...+6]
+    if prop in ('bass', 'treb'):
+        index = 6 - int(round(value))
+
+    # For loudness eq curves we have a flat curve index inside config.yml
+    elif prop == 'loud':
+
+        index_min   = 0
+        index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
+        index_flat  = LOUD_FLAT_CURVE_INDEX
+
+        if sta['loudness_track']:
+            index = index_flat - sta['level'] - sta['loudness_ref']
+        else:
+            index = index_flat
+        index = int(round(index))
+
+        # Clamp index to available "loudness deepness" curves
+        index = max( min(index, index_max), index_min )
+
+    return EQ_CURVES[f'{prop}_mag'][:,index], EQ_CURVES[f'{prop}_pha'][:,index]
+
+def find_eq_curves():
+    """ Scans share/eq/ and try to collect the whole set of EQ curves
+        needed for the EQ stage on Brutefir
+    """
+    EQ_CURVES = {}
+    eq_files = os.listdir(EQ_FOLDER)
+
+    fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
+                'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
+                'freq.dat' )
+
+    cnames = {  'loudness_mag.dat'  : 'loud_mag',
+                'bass_mag.dat'      : 'bass_mag',
+                'treble_mag.dat'    : 'treb_mag',
+                'loudness_pha.dat'  : 'loud_pha',
+                'bass_pha.dat'      : 'bass_pha',
+                'treble_pha.dat'    : 'treb_pha',
+                'freq.dat'          : 'freqs'     }
+
+    # pendings curves to find ( freq + 2x loud + 4x tones = 7 )
+    pendings = len(fnames)
+    for fname in fnames:
+
+        # Only one file named as <fname> must be found
+        files = [ x for x in eq_files if fname in x]
+        if files:
+            if len (files) == 1:
+                EQ_CURVES[ cnames[fname] ] = \
+                                       np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
+                pendings -= 1
+            else:
+                print(f'(core.py) too much \'...{fname}\' files under share/eq/')
+        else:
+                print(f'(core.py) ERROR finding a \'...{fname}\' file under share/eq/')
+    
+    if not pendings:
+        return EQ_CURVES
+    else:
+        return {}
+
+def find_loudness_flat_curve_index():
+    index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
+    index_flat = -1
+    for i in range(index_max):
+        if np.sum( abs(EQ_CURVES['loud_mag'][:,i]) ) <= 0.1:
+            index_flat = i
+            break
+    return index_flat
+
+def calc_eq( sta ):
+    """ Calculate the eq curves to be applied on the Brutefir EQ module,
+        as per the provided 'sta' state values """
+
+    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
+                                       sta = sta )
+    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = sta['bass']         )
+    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = sta['treble']       )
+
+    target_name = sta['target']
+    targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
+    targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
+
+    eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
+    eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
+
+    return eq_mag, eq_pha
 
 
 # BRUTEFIR MANAGEMENT:          
@@ -120,27 +217,6 @@ def bf_set_gains( sta ):
     # print(cmd) # debug
     bf_cli(cmd)
 
-def bf_calc_eq( sta , target=None):
-    """ Adjust brutefir EQ module as per the provided 'sta' state values """
-
-    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
-                                       sta = sta )
-    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = sta['bass']         )
-    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = sta['treble']       )
-
-    if target == None:
-        targ_mag = EQ_CURVES['targ_mag']
-        targ_pha = EQ_CURVES['targ_pha']
-    else:
-        targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target}_mag.dat' )
-        targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target}_pha.dat' )
-
-
-    eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
-    eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
-
-    return eq_mag, eq_pha
-
 def bf_set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module  """
     freqs = EQ_CURVES['freqs']
@@ -165,30 +241,6 @@ def bf_read_eq():
     tmp = [x for x in tmp.split('\n') if x]
     return tmp[2:]
 
-def get_eq_curve(prop, value, sta=None):
-    # note: 'sta' -state- will be used only to retrieve the
-    #        suited loudness index curve, which depends on levels.
-
-    # Tone eq curves are provided in [-6...0...+6]
-    if prop in ('bass', 'treb'):
-        index = 6 - int(round(value))
-
-    # For loudness eq curves we have a flat curve index inside config.yml
-    elif prop == 'loud':
-        index_flat  = int(round(value)) + CONFIG['loudness_flat_curve_index']
-        if sta['loudness_track']:
-            index = index_flat - sta['level'] - sta['loudness_ref']
-        else:
-            index = index_flat
-        index = int(round(index))
-
-        # Clamp index to available "loudness deepness" curves
-        index_min = 0
-        index_max = EQ_CURVES['loud_mag'].shape[1] - 1
-        index = max( min(index, index_max), index_min )
-
-    return EQ_CURVES[f'{prop}_mag'][:,index], EQ_CURVES[f'{prop}_pha'][:,index]
-
 def bf_set_drc( x ):
     if x == 'none':
         cmd = ( f'cfc "f.drc.L" -1         ; cfc "f.drc.R" -1         ;' )
@@ -200,59 +252,6 @@ def bf_set_xo( filters, xo ):
     for f in filters:
         cmd = ( f'cfc "f.{f}.L" "xo.{f}.{xo}"; cfc "f.{f}.R" "xo.{f}.{xo}";' )
         bf_cli( cmd )
-
-def find_eq_curves():
-    """ Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage on Brutefir
-    """
-    EQ_CURVES = {}
-    eq_files = os.listdir(EQ_FOLDER)
-
-    fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
-                'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
-                'freq.dat' )
-
-    cnames = {  'loudness_mag.dat'  : 'loud_mag',
-                'bass_mag.dat'      : 'bass_mag',
-                'treble_mag.dat'    : 'treb_mag',
-                'loudness_pha.dat'  : 'loud_pha',
-                'bass_pha.dat'      : 'bass_pha',
-                'treble_pha.dat'    : 'treb_pha',
-                'freq.dat'          : 'freqs'     }
-
-    # pendings curver to find ( freq + 2x loud + 4x tones = 7 )
-    pendings = len(fnames)
-    for fname in fnames:
-
-        # Only one file named as <fname> must be found
-        files = [ x for x in eq_files if fname in x]
-        if files:
-            if len (files) == 1:
-                EQ_CURVES[ cnames[fname] ] = \
-                                       np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
-                pendings -= 1
-            else:
-                print(f'(core.py) too much \'...{fname}\' files under share/eq/')
-        else:
-                print(f'(core.py) ERROR finding a \'...{fname}\' file under share/eq/')
-
-    # and the target ones:
-    try:
-        EQ_CURVES['targ_mag'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target"]}_mag.dat' )
-    except:
-        print(f'(core.py) ERROR finding a \'{CONFIG["target"]}_mag.dat\' file under share/eq/')
-        pendings += 1
-    
-    try:
-        EQ_CURVES['targ_pha'] = np.loadtxt( f'{EQ_FOLDER}/{CONFIG["target"]}_pha.dat' )
-    except:
-        print(f'(core.py) ERROR finding a \'{CONFIG["target"]}_pha.dat\' file under share/eq/')
-        pendings += 1
-    
-    if not pendings:
-        return EQ_CURVES
-    else:
-        return {}
 
 
 # JACK MANAGEMENT:
@@ -475,25 +474,32 @@ class Core(object):
 
         # The state dictionary
         self.state = read_yaml( STATE_PATH )
-        # and also provide the target curves available under the 'eq' folder
+        # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
-
-
-    def _validate_gains( self, candidate ):
+        # The available span for tone curves
+        self.bass_span   = int( (EQ_CURVES['bass_mag'].shape[1] - 1) / 2 )
+        self.treble_span = int( (EQ_CURVES['treb_mag'].shape[1] - 1) / 2 )
+        # Max authorised gain
+        self.gmax        = float(CONFIG['gain_max'])
+        # Max authorised balance
+        self.balmax      = float(CONFIG['balance_max'])
         
-        gmax            = CONFIG['gain_max']
+    def _validate( self, candidate ):
+        
         g               = candidate['level']
         b               = candidate['balance']
-        eq_mag, eq_pha  = bf_calc_eq(candidate)
+        eq_mag, eq_pha  = calc_eq(candidate)
 
-        headroom = gmax - g - np.max(eq_mag) - np.abs(b/2.0)
+        headroom = self.gmax - g - np.max(eq_mag) - np.abs(b/2.0)
 
         if headroom >= 0:
+            # APPROVED
             bf_set_gains( candidate )
             bf_set_eq( eq_mag, eq_pha )
             self.state = candidate
             return 'done'
         else:
+            # REFUSED
             return 'not enough headroom'
 
     def set_level(self, value, relative=False):
@@ -502,7 +508,7 @@ class Core(object):
             candidate['level'] += round(float(value), 2)
         else:
             candidate['level'] =  round(float(value), 2)
-        return self._validate_gains( candidate )
+        return self._validate( candidate )
 
     def set_balance(self, value, relative=False):
         candidate = self.state.copy()
@@ -510,15 +516,21 @@ class Core(object):
             candidate['balance'] += round(float(value), 2)
         else:
             candidate['balance'] =  round(float(value), 2)
-        return self._validate_gains( candidate )
-
+        if abs(candidate['balance']) <= self.balmax:
+            return self._validate( candidate )
+        else:
+            return 'too much'
+        
     def set_bass(self, value, relative=False):
         candidate = self.state.copy()
         if relative:
             candidate['bass'] += round(float(value), 2)
         else:
             candidate['bass'] =  round(float(value), 2)
-        return self._validate_gains( candidate )
+        if abs(candidate['bass']) <= self.bass_span:
+            return self._validate( candidate )
+        else:
+            return 'too much'
         
     def set_treble(self, value, relative=False):
         candidate = self.state.copy()
@@ -526,14 +538,17 @@ class Core(object):
             candidate['treble'] += round(float(value), 2)
         else:
             candidate['treble'] =  round(float(value), 2)
-        return self._validate_gains( candidate )
+        if abs(candidate['treble']) <= self.treble_span:
+            return self._validate( candidate )
+        else:
+            return 'too much'
 
     def set_loud_ref(self, value):
         candidate = self.state.copy()
         # this try just validate the given value
         try:
             candidate['loudness_ref'] = round(float(value), 2)
-            return self._validate_gains( candidate )
+            return self._validate( candidate )
         except:
             return 'bad value'
 
@@ -545,14 +560,14 @@ class Core(object):
                       'toggle': {True:False, False:True}[self.state['loudness_track']]
                     } [ value.lower() ]
             candidate['loudness_track'] = value
-            return self._validate_gains( candidate )
+            return self._validate( candidate )
         except:
             return 'bad option'
 
     def set_target(self, value):
         candidate = self.state.copy()
         if value in self.target_sets:
-            return self._validate_gains( candidate )
+            return self._validate( candidate )
         else:
             return f'target \'{value}\' not available'
 
@@ -692,3 +707,10 @@ EQ_CURVES       = find_eq_curves()
 if not EQ_CURVES:
     print( '(core.py) ERROR loading EQ_CURVES from share/eq/' )
     sys.exit()
+
+LOUD_FLAT_CURVE_INDEX = find_loudness_flat_curve_index()
+
+if LOUD_FLAT_CURVE_INDEX < 0:
+    print( f'(core) MISSING FLAT LOUDNESS CURVE. BYE :-/' )        
+    sys.exit()
+
