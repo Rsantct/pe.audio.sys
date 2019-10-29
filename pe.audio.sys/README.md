@@ -52,24 +52,24 @@ The control of the system works through by **a TCP listening socket** that accep
 
     input | source  <name>
     solo            off | l | r
-    mono            off | on            ( aka mid )
+    mono            off | on               ( aka mid )
     midside         off | mid | side
     mute            off | on
 
 ### Gain and Eq stage:
 
-    level           xx [add]    xx dB, use add for a relative adjustment
+    level           xx [add]               xx in dB, use add for a relative adjustment
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
     loudness_ref    xx [add]
-    loudness | loudness_track   on | off   The loudness compensation
-    set_target      <name>      selects a target curve
+    loudness | loudness_track   on | off   loudness compensation
+    set_target      <name>                 selects a target curve
 
 ### Convolver stages:
 
-    set_drc | drc   <name>      selects a DRC FIR set
-    set_xo  | xo    <name>      selects a XOVER FIR set
+    set_drc | drc   <name>                 selects a DRC FIR set
+    set_xo  | xo    <name>                 selects a XOVER FIR set
 
 
 # Configuration
