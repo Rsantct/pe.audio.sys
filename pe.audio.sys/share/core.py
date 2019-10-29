@@ -37,7 +37,7 @@ import threading
 from time import sleep
 
 
-# AUX FOR FILES MANAGEMENT:
+# AUX and FILES MANAGEMENT:
 def read_yaml(filepath):
     """ Returns a dictionary from an YAML file """
     with open(filepath) as f:
@@ -154,7 +154,13 @@ def calc_eq( sta ):
 
     return eq_mag, eq_pha
 
-
+def calc_gain( sta ):
+    """ Calculates the gain from: level, ref_level_gain and the source gain offset
+    """
+    gain    = sta['level'] + float(CONFIG['ref_level_gain']) \
+              + float( CONFIG['sources'][sta['input']]['gain'] )
+    return gain
+    
 # BRUTEFIR MANAGEMENT:          
 def bf_cli(command):
     """ send commands to brutefir and disconnects from it """
@@ -188,17 +194,15 @@ def bf_set_midside( mode ):
 def bf_set_gains( sta ):
     """ Adjust brutefir gain at drc.X stages as per the provided state values """
 
-    level   = sta['level']
-    balance = sta['balance']
+    gain    = calc_gain( sta )
+
+    balance = float( sta['balance'] )
+
+    # Booleans:
     solo    = sta['solo']
     muted   = sta['muted']
-
-    # (!!!) WARNING THIS IS A PENDING ISSUE
-    gain = float(level)
-    balance = float(balance)
-
+ 
     # (i) m_xxxx stands for an unity multiplier
-    
     m_solo_L = {'off': 1, 'l': 1, 'r': 0} [ solo ]
     m_solo_R = {'off': 1, 'l': 0, 'r': 1} [ solo ]
     m_mute   = {True: 0, False: 1}        [ muted ]
@@ -486,9 +490,9 @@ class Core(object):
         
     def _validate( self, candidate ):
         
-        g               = candidate['level']
-        b               = candidate['balance']
-        eq_mag, eq_pha  = calc_eq(candidate)
+        g               = calc_gain( candidate )
+        b               = candidate[ 'balance' ]
+        eq_mag, eq_pha  = calc_eq( candidate )
 
         headroom = self.gmax - g - np.max(eq_mag) - np.abs(b/2.0)
 
