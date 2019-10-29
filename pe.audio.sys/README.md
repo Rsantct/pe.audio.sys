@@ -187,10 +187,11 @@ This file allows to configure the whole system.
 
 Some points:
 
-- The list of service addressing here will trigger each service to be launched. The **`pasysctlr`** service is mandatory.
-- The preamp loop ports will be automagically spawn under jack when source `capture_ports` below are named `xxx_loop`, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
+- The **list of services** addressing here will trigger auto launching each service. The **`pasysctlr`** service is mandatory.
 
-Here you are an uncommented example for `config.yml`:
+- The necessary preamp **loop ports** will be auto spawn under JACK when source `capture_ports` are named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
+
+Here you are an uncommented bare example of `config.yml`:
 
 
     services_addressing:
