@@ -41,7 +41,7 @@ A web page front end is provided so you can easily control the system as well yo
 
 **@rripio** has also an IR interface than can be adapted to control through by an infrared remote.
 
-Anyway The control of the system works through by **a TCP listening socket** that accepts **a set of commands**.
+Anyway the control of the system works through by **a TCP listening socket** that accepts **a set of commands**.
 
 Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
 
@@ -49,7 +49,7 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 ### Getting info:
 
     state | status | get_state returns the whole system status parameters (.state.yml)
-    get_eq                     returns the current Brutefir EQ stage (mag & pha)
+    get_eq                     returns the current Brutefir EQ stage (freq, mag ,pha)
     get_target_sets            list of target curves sets found under the loudspeaker folder
     get_drc_sets               list of drc sets
     get_xo_sets                list of xover sets
@@ -64,7 +64,7 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 
 ### Gain and Eq stage:
 
-    level           xx [add]               xx in dB, use add for a relative adjustment
+    level           xx [add]               'xx' in dB, use 'add' for a relative adjustment
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
@@ -181,7 +181,7 @@ XO pcm files must be named:
 
 All system features are configured under **`config.yml`**. We provide a **`config.yml.example`** with clarifying comments.
 
-Few user scripts or shared modules can have an its own `xxx.yml` file of the same base name for configuration if necessary.
+Few user scripts or shared modules can have its own `xxx.yml` file of the same base name for configuration if necessary.
 
 This file allows to configure the whole system.
 
@@ -265,15 +265,15 @@ Here you are an uncommented bare example of `config.yml`:
         - zita-n2j_mcast.py
 
     aux:
-        amp_on_cmdline:  /home/predic/bin/ampli.sh on
-        amp_off_cmdline: /home/predic/bin/ampli.sh off
+        amp_on_cmdline:  /home/peaudiosys/bin/ampli.sh on
+        amp_off_cmdline: /home/peaudiosys/bin/ampli.sh off
 
 
 # The share/eq folder
 
 This folder contains the set of curves that will be used to apply "soft" EQ to the system, i.e.: tone, loudness compensation and psychoacoustic room dimension equalization (aka 'target').
 
-The curves will be rendered under the EQ stage on Brutefir.
+(i) The curves will be rendered under the EQ stage on Brutefir, so your `brutefir_config` file must have an `"eq"` section properly configured with the same frequency bands as the contained into your xxxxxxxfreq.dat file. More info: https://www.ludd.ltu.se/~torger/brutefir.html#bflogic_eq
 
 Similar to the loudspeaker folder, some rules here must be observed when naming files:
 
