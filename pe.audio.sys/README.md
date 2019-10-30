@@ -69,13 +69,13 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
     treble          xx [add]
     bass            xx [add]
     loudness_ref    xx [add]
-    loudness | loudness_track   on | off   loudness compensation
-    set_target      <name>                 selects a target curve
+    loudness | loudness_track     on | off | toggle   loudness compensation
+    set_target       <name>                           selects a target curve
 
 ### Convolver stages:
 
-    set_drc | drc   <name>                 selects a DRC FIR set
-    set_xo  | xo    <name>                 selects a XOVER FIR set
+    set_drc | drc    <name>                 selects a DRC FIR set
+    set_xo  | xo     <name>                 selects a XOVER FIR set
 
 ## Monitoring the system
 
