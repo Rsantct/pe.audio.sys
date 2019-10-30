@@ -164,10 +164,11 @@ scripts:
     - sound_cards_prepare.py
     # Runs MPD:
     - mpd.py
+    # Internet url audio streams player based on Mplayer:
     - istreams.py
     # Set Pulseaudio apps to sound through by JACK:
     - pulseaudio-jack-sink.py
-    # DVB-T player based in Mplayer, useful for DVB-T radio stations:
+    # DVB-T player based on Mplayer, useful for DVB-T radio stations:
     #- DVB-T.py
     # librespot (Spotify Connect client) plays music from an Spotify premium account
     - librespot.py
