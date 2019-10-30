@@ -93,7 +93,7 @@ You can also use the above getting info commands, through by any TCP connection.
 
 Some nice tools are provided under your `~/bin` folder, below a brief description.
 
-    $HOME/bin/              Some tools will be installed under your ~/bin
+    $HOME/bin/
           |
      ____/
     /
