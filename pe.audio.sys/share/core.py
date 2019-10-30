@@ -425,30 +425,32 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
 
+    # (i) using != None below because 0 values will not be detected
+
     if CONFIG["init_mute"]:
         preamp.set_mute       (   CONFIG["init_mute"]             )
     else:
         preamp.set_mute       (   preamp.state['muted']           )
 
-    if CONFIG["init_level"]:         
+    if CONFIG["init_level"] != None:         
         preamp.set_level      (   CONFIG["init_level"]            )
     else:
         preamp.set_level      (   preamp.state['level']           )
 
-    if CONFIG["init_max_level"]:
+    if CONFIG["init_max_level"] != None:
         preamp.set_level(  min( CONFIG["init_max_level"], preamp.state['level'] ) )
 
-    if CONFIG["init_bass"]:
+    if CONFIG["init_bass"] != None :
         preamp.set_bass       (   CONFIG["init_bass"]             )
     else:
         preamp.set_bass       (   preamp.state['bass']            )
 
-    if CONFIG["init_treble"]:        
+    if CONFIG["init_treble"] != None :        
         preamp.set_treble     (   CONFIG["init_treble"]           )
     else:
         preamp.set_treble     (   preamp.state['treble']          )
 
-    if CONFIG["init_balance"]:       
+    if CONFIG["init_balance"] != None :       
         preamp.set_balance    (   CONFIG["init_balance"]          )
     else:
         preamp.set_balance    (   preamp.state['balance']         )
@@ -458,7 +460,7 @@ def init_audio_settings():
     else:
         preamp.set_loud_track (   preamp.state['loudness_track']  )
 
-    if CONFIG["init_loudness_ref"]:
+    if CONFIG["init_loudness_ref"] != None :
         preamp.set_loud_ref   (   CONFIG["init_loudness_ref"]     )
     else:
         preamp.set_loud_ref   (   preamp.state['loudness_ref']    )
@@ -752,7 +754,7 @@ class Convolver(object):
             return f'xo set \'{xo}\' not available'
 
 
-# JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ======================================
+# JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ================================
 # IMPORTANT: this module core.py needs JACK to be running.
 
 try:
