@@ -288,4 +288,8 @@ On target files yyyyyyy is also optional but neccessary if more than one target 
 
 You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`** to manage the target eq.
 
+The set of curves provided on this distro are the ones from the original **FIRtro** project from the pioneer **@rripio**
+
+You can easily visualize these curves by using the command line tool `peaudiosys_view_eq_curves.py`
+
 
