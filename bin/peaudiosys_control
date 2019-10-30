@@ -4,7 +4,11 @@
 # A command line tool to control the system
 #
 
-# Reading addresses and ports from the config file
+# configure here the control service addr and port:
+SRV_ADDR='myrpi3.local'
+SRV_PORT=9989
+
+# or will try to read from the config file
 SRV_ADDR=$( grep pasysctrl_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
 SRV_PORT=$( grep pasysctrl_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
