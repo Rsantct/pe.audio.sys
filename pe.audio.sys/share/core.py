@@ -494,6 +494,30 @@ def init_audio_settings():
     del(preamp)
 
 class Preamp(object):
+    """ attributes:
+
+            state           state dictionary
+            target_sets     target curves available under the 'eq' folder
+            bass_span       available span for tone curves
+            treble_span
+            gain_max        max authorised gain       
+            balance_max     max authorised balance
+
+        methods:
+
+            set_level
+            set_balance
+            set_bass
+            set_treble
+            set_loud_ref
+            set_loud_track
+            set_target
+            set_solo
+            set_mute
+            set_midside
+            get_eq
+            select_source
+    """
 
     def __init__(self):
 
@@ -505,9 +529,9 @@ class Preamp(object):
         self.bass_span   = int( (EQ_CURVES['bass_mag'].shape[1] - 1) / 2 )
         self.treble_span = int( (EQ_CURVES['treb_mag'].shape[1] - 1) / 2 )
         # Max authorised gain
-        self.gmax        = float(CONFIG['gain_max'])
+        self.gain_max    = float(CONFIG['gain_max'])
         # Max authorised balance
-        self.balmax      = float(CONFIG['balance_max'])
+        self.balance_max = float(CONFIG['balance_max'])
         
     def _validate( self, candidate ):
         """ Validates that the given 'candidate' (new state dictionary)
@@ -518,7 +542,7 @@ class Preamp(object):
         b               = candidate['balance']
         eq_mag, eq_pha  = calc_eq( candidate )
 
-        headroom = self.gmax - g - np.max(eq_mag) - np.abs(b/2.0)
+        headroom = self.gain_max - g - np.max(eq_mag) - np.abs(b/2.0)
 
         if headroom >= 0:
             # APPROVED
@@ -544,7 +568,7 @@ class Preamp(object):
             candidate['balance'] += round(float(value), 2)
         else:
             candidate['balance'] =  round(float(value), 2)
-        if abs(candidate['balance']) <= self.balmax:
+        if abs(candidate['balance']) <= self.balance_max:
             return self._validate( candidate )
         else:
             return 'too much'
@@ -669,9 +693,20 @@ class Preamp(object):
 # THE CONVOLVER: DRC and XO Brutefir stages management =========================
 
 class Convolver(object):
+    """ attributes:
+
+            drc_sets        sets of pcm FIRs for DRC
+            xo_sets         sets of pcm FIRs for XOVER
+            filters         filtering stages (loudspeaker ways)
+
+        methods:
+
+            set_drc
+            set_xo
+    """
 
     def __init__(self):
-        self.name = CONFIG['loudspeaker']
+
         files = os.listdir(LSPK_FOLDER)
 
         # ------ DRC sets (Brutefir coeffs) ------
