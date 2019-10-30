@@ -66,6 +66,7 @@ def read_config():
     """ reads outputsMap, coeffs, filters_at_start
     """
     global outputsMap, coeffs, filters_at_start
+    global sampling_rate, filter_length, float_bits, dither, delay        
 
     f = open(BRUTEFIR_CONFIG_PATH, 'r')
     lineas = f.readlines()
@@ -83,8 +84,32 @@ def read_config():
     filterIndex = -1
     filterIniciado = False
 
+    sampling_rate   = None
+    filter_length   = None
+    float_bits      = None
+    dither          = None
+    delay           = None
+
     # Loops reading lines in brutefir.config
     for linea in lineas:
+
+        if 'sampling_rate' in linea:
+            sampling_rate = linea.strip().split(':')[-1].strip()
+
+        if 'filter_length' in linea:
+            filter_length = linea.strip().split(':')[-1].strip()
+
+        if 'float_bits' in linea:
+            float_bits = linea.strip().split(':')[-1].strip()
+
+        if 'dither' in linea:       
+            dither = linea.strip().split(':')[-1].strip()
+
+        if 'delay' in linea:        
+            delay = linea.strip().split(':')[-1].strip()
+
+
+        
 
         #######################
         # OUTPUTs
@@ -229,6 +254,12 @@ if __name__ == "__main__" :
     print()
     print( f'--- Brutefir process runs:' )
     print( f'{BRUTEFIR_CONFIG_PATH}')
+    print()
+    print( f'sampling_rate  {sampling_rate}')
+    print( f'filter_length  {filter_length}')
+    print( f'float_bits     {float_bits}')
+    print( f'output_dither  {dither}')
+    print( f'outputs_delay  {delay}')
 
     print()
     print( "--- Outputs map:" )
