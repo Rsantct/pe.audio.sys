@@ -131,7 +131,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- start.py            This starts up or shutdown the whole system
     |
-    |-- macros/             End user general purpose macro scripts (can have web interface buttons)
+    |-- macros/             End user general purpose macro scripts (e.g. web interface buttons)
     |
     |-- doc/                Help documents
     |
