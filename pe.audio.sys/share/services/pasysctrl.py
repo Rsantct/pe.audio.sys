@@ -72,8 +72,9 @@ def analize_full_command(full_command):
 # MAIN FUNCTION FOR COMMAND PROCESSING
 def process_commands( full_command ):
     """ Processes commands for audio control
-        - input:  the command phrase
-        - output: execution result, informative warnings
+        - input:  the command phrase.
+        - output: 'done'             for OK command execution
+                  'a warning phrase' for NOK command execution
     """
 
     # The actions to be done when a command is parsed below
@@ -82,8 +83,7 @@ def process_commands( full_command ):
         return preamp.set_solo(x)
 
     def set_mono(x):
-        # the 'mono' command gracefully accepts to be toggled ;-)
-        # 'mono' is a former command, currently it is delegated to 'midside'
+        # 'mono' is a former command, here it is redirected to 'midside'
         try:
             x = {   'on':       'mid', 
                     'off':      'off',
