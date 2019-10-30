@@ -37,7 +37,8 @@ import threading
 from time import sleep
 
 
-# AUX and FILES MANAGEMENT:
+# AUX and FILES MANAGEMENT: ====================================================
+
 def read_yaml(filepath):
     """ Returns a dictionary from an YAML file """
     with open(filepath) as f:
@@ -90,7 +91,7 @@ def get_eq_curve(prop, value, sta=None):
 
 def find_eq_curves():
     """ Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage on Brutefir
+        needed for the EQ stage in Brutefir
     """
     EQ_CURVES = {}
     eq_files = os.listdir(EQ_FOLDER)
@@ -139,8 +140,8 @@ def find_loudness_flat_curve_index():
     return index_flat
 
 def calc_eq( sta ):
-    """ Calculate the eq curves to be applied on the Brutefir EQ module,
-        as per the provided 'sta' state values
+    """ Calculate the eq curves to be applied in the Brutefir EQ module,
+        as per the provided dictionary of state values 'sta'
     """
 
     loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
@@ -168,9 +169,11 @@ def calc_gain( sta ):
               + float( CONFIG['sources'][sta['input']]['gain'] )
     return gain
     
-# BRUTEFIR MANAGEMENT:          
+# BRUTEFIR MANAGEMENT: =========================================================        
+
 def bf_cli(command):
-    """ send commands to brutefir and disconnects from it """
+    """ send commands to Brutefir and disconnects from it """
+    # using 'with' will disconnect the socket when done
     with socket.socket() as s:
         try:
             s.connect( ('localhost', 3000) )
@@ -199,7 +202,7 @@ def bf_set_midside( mode ):
         pass
 
 def bf_set_gains( sta ):
-    """ Adjust brutefir gain at drc.X stages as per the provided state values """
+    """ Adjust Brutefir gain at drc.X stages as per the provided 'sta'te values """
 
     gain    = calc_gain( sta )
 
@@ -244,7 +247,7 @@ def bf_set_eq( eq_mag, eq_pha ):
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
 def bf_read_eq():
-    """ returns a raw printout from issuing an eq info query to the Brutefir's EQ module  
+    """ Returns a raw printout from issuing an 'info' query to the Brutefir's EQ module  
     """
     try:
         cmd = 'lmc eq "c.eq" info; quit'
@@ -255,6 +258,7 @@ def bf_read_eq():
     return tmp[2:]
 
 def bf_set_drc( drcID ):
+    """ Changes the FIR for DRC at runtime """
     if drcID == 'none':
         cmd = ( f'cfc "f.drc.L" -1             ; cfc "f.drc.R" -1             ;' )
     else:
@@ -262,14 +266,16 @@ def bf_set_drc( drcID ):
     bf_cli( cmd )
 
 def bf_set_xo( filters, xoID ):
+    """ Changes the FIRs for Xover at runtime """
     for f in filters:
         cmd = ( f'cfc "f.{f}.L" "xo.{f}.{xoID}"; cfc "f.{f}.R" "xo.{f}.{xoID}";' )
         bf_cli( cmd )
 
 
-# JACK MANAGEMENT:
+# JACK MANAGEMENT: =============================================================
+
 def jack_loop(clientname, nports=2):
-    """ creates a jack loop with given 'clientname'
+    """ Creates a jack loop with given 'clientname'
         NOTICE: this process will keep running until broken,
                 so if necessary you'll need to thread this when calling here.
     """
@@ -324,7 +330,7 @@ def jack_loop(clientname, nports=2):
             print('\n(core.jack_loop)  Terminated')
 
 def jack_connect(p1, p2, mode='connect', wait=1):
-    """ low level tool to connect / disconnect a pair of ports, by retriyng dor a while  """
+    """ Low level tool to connect / disconnect a pair of ports, by retriyng for a while """
     # Will retry during <wait> seconds, this is useful when a
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
@@ -346,7 +352,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     return False
         
 def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
-    """ High level tool to connect/disconnect a given port name patterns  """
+    """ High level tool to connect/disconnect a given port name patterns """
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input= True )
     if not cap_ports or not pbk_ports:
@@ -363,8 +369,8 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
         i += 1
 
 def jack_clear_preamp():
-    """ Force clearing ANY clients, no matter what input was selected
-    """
+    """ Force clearing ANY clients, no matter what input was selected """
+
     # Clients wired to preamp_in:
     preamp_ports = JCLI.get_ports('pre_in_loop', is_input=True)
     for preamp_port in preamp_ports:
@@ -397,7 +403,8 @@ def jack_loops_prepare():
     jloop.start()
 
 
-# THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER
+# THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER ===============
+
 def init_source():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
@@ -504,10 +511,13 @@ class Preamp(object):
         self.balmax      = float(CONFIG['balance_max'])
         
     def _validate( self, candidate ):
+        """ Validates that the given 'candidate' (new state dictionary)
+            does not exceeds gain limits
+        """
         
         g               = calc_gain( candidate )
         b               = candidate['balance']
-        eq_mag, eq_pha  = calc_eq(candidate)
+        eq_mag, eq_pha  = calc_eq( candidate )
 
         headroom = self.gmax - g - np.max(eq_mag) - np.abs(b/2.0)
 
@@ -564,7 +574,7 @@ class Preamp(object):
 
     def set_loud_ref(self, value):
         candidate = self.state.copy()
-        # this try just validate the given value
+        # this try if intended just to validate the given value
         try:
             candidate['loudness_ref'] = round(float(value), 2)
             return self._validate( candidate )
@@ -573,7 +583,7 @@ class Preamp(object):
 
     def set_loud_track(self, value):
         candidate = self.state.copy()
-        # this try just validate the given value
+        # this try if intended just to validate the given value
         try:
             value = { 'on':True , 'off':False, 'true':True, 'false':False,
                       'toggle': {True:False, False:True}[self.state['loudness_track']]
@@ -657,7 +667,8 @@ class Preamp(object):
             return f'source \'{value}\' not defined'
 
 
-# THE CONVOLVER: DRC and XO Brutefir stages management
+# THE CONVOLVER: DRC and XO Brutefir stages management =========================
+
 class Convolver(object):
 
     def __init__(self):
@@ -707,14 +718,16 @@ class Convolver(object):
             return f'xo set \'{xo}\' not available'
 
 
-# THE CLIENT INTERFACE TO THE JACK SERVER
-# IMPORTANT: this module core.py NEEDS JACK to be running.
+# JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ======================================
+# IMPORTANT: this module core.py needs JACK to be running.
+
 try:
     JCLI = jack.Client('tmp', no_start_server=True)
 except:
-    print( '(core.py) ERROR cannot commuticate to JACK SERVER.' )
+    print( '(core.py) ERROR cannot commuticate to the JACK SOUND SERVER.' )
 
-# COMMON USE VARIABLES:
+# COMMON USE VARIABLES: ========================================================
+
 UHOME           = os.path.expanduser("~")
 CONFIG          = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
 LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
