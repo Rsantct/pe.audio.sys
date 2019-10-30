@@ -1,12 +1,14 @@
+# Credits
+
+This is based on the former **FIRtro** and the current **pre.di.c** projects, from the pioneer **@rripio** and others contributors.
+
+### https://github.com/rripio/pre.di.c
+
+### https://github.com/AudioHumLab/FIRtro/wiki
+
 # Overview
 
 The system is intended as a personal audio system based on a PC.
-
-It is based on the former **FIRtro** and the current **pre.di.c** projects, from the pioneer **@rripio** and others contributors.
-
-**https://github.com/AudioHumLab/FIRtro/wiki**
-
-**https://github.com/rripio/pre.di.c**
 
 Its main features are:
 
