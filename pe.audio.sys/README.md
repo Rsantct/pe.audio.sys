@@ -1,10 +1,11 @@
 # Credits
 
-This is based on the former **FIRtro** and the current **pre.di.c** projects, from the pioneer **@rripio** and others contributors.
+This is based on the former **FIRtro** and the current **pre.di.c** projects, as PC based digital preamplifier and crossover projects, designed by the pioneer **@rripio** and later alongside others contributors.
 
 ### https://github.com/rripio/pre.di.c
 
 ### https://github.com/AudioHumLab/FIRtro/wiki
+
 
 # Overview
 
