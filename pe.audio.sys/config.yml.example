@@ -1,10 +1,12 @@
 # ============ pe.audio.sys SERVICES LAUNCHER and tcp addressing  ==============
-# adressing pairs listed here will trigger the tcp server
+# Adressing pairs listed here will trigger the tcp server
 # to run the underlying service
 
 services_addressing:
-  # <service>_address:    x.x.x.x | localhost
-  # <service>_port:       N
+
+    # syntax:
+    # <service>_address:    x.x.x.x | localhost
+    # <service>_port:       N
 
     # the MAIN service to control the audio and preamp (MANDATORY)
     pasysctrl_address:      0.0.0.0
@@ -21,7 +23,7 @@ services_addressing:
 
 # ===========================  SOUND CARDS =====================================
 
-# Main system card
+# Main system card alsa name
 system_card: hw:UDJ6
 
 # Additional cards to be used resampled under jack,
@@ -61,7 +63,7 @@ external_cards:
 #jack_options:           -R -d dummy
 #jack_backend_options:   -r 48000 -P 6 -C 2
 
-# REAL ALSA CARD:
+# ACTUAL ALSA CARD:
 jack_options:           -R -d alsa
 jack_backend_options:   -d system_card -r 48000 -P -o 6
 
@@ -88,13 +90,13 @@ loudspeaker: SeasFlat
 # ========================= STARTUP BEHAVOIR: ==================================
 # (i) Leave blank these fields to restore from the last state,
 #     or indicate a value to force.
-#     Please use 'off' or 'on' with quotes.
+#     Please use 'off' or 'on' with quotes when necessary.
 
-# Put here the common IDSTRING that identifies the XO filters at start up.
+# Put here the common IDSTRING that identifies the XO FIR filters at start up.
 # ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
 init_xo:     mp
 
-# Put here the IDSTRING that identifies the DRC filters at start up.
+# Put here the IDSTRING that identifies the DRC FIR filters at start up.
 # ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
 init_drc:    mp_multipV1
 
@@ -122,6 +124,7 @@ init_input:             salon
 # sources must be configured accordingly.
 
 sources:
+
     spotify:
         capture_port:   alsa_loop
         gain:           0.0
@@ -141,16 +144,22 @@ sources:
 
 # ========================== SOURCE MONITOR PORTS ==============================
 # The source selector will connect the source also here.
-# If an external card is used, then the 
+# If an external card is used, then the <monitorName> must match the
+# <descriptor_name> usen in the above external_cards: section.
+
 source_monitors:
+
+    # syntax
     # - <monitorName>
-    #- DEQ2496
+    # - DEQ2496
 
 # ================ SCRIPTS YOU WANT TO RUN (players, etc...)  ==================
-# The scripts files are located under the scripts folder.
-# Files must be executable, also must accept at least 'stop' as
-# command line argument in order to be stopped if necessary.
+# The scripts files are located under the share/scripts folder.
+# Files must be executable, also must accept 'start' and 'stop' as
+# command line argument in order to be launched and stopped at system startup.
+
 scripts:
+
     # Releases cards from Pulseaudio and restore alsa mixer settings:
     - sound_cards_prepare.py
     # Runs MPD:
@@ -166,7 +175,9 @@ scripts:
     - zita-n2j_mcast.py
 
 # ==================== AUX SERVICES CONFIGURATION ==============================
+
 aux:
+
     # Configure here your command line orders to SWITCH ON/OFF your AMPLIFIER.
     # (i) It is expected that the scripts will store the amplifier state 'on' or 'off'
     #     into the file '~/.amplifier' so that others processes could know about.
