@@ -26,7 +26,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    Launchs '/usr/bin/librespot': a Spotify Connect player client
+    '/usr/bin/librespot': a headless Spotify Connect player daemon
 
     use:    librespot   start | stop
 """
