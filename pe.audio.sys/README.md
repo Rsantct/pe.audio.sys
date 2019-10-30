@@ -21,7 +21,7 @@ The originary main features were:
 
 - Music players management.
 - Auxiliary system functions management (amplifier switching, ...).
-- New control web page behavoir.
+- New control web page layout.
 
 Most of the system is written in Python3, and config files are YAML kind of, thanks **@rripio**.
 
