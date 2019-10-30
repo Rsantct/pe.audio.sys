@@ -170,7 +170,7 @@ scripts:
     - pulseaudio-jack-sink.py
     # DVB-T player based on Mplayer, useful for DVB-T radio stations:
     #- DVB-T.py
-    # librespot (Spotify Connect client) plays music from an Spotify premium account
+    # librespot (a headless Spotify Connect player daemon)
     - librespot.py
     # An audio multicast receiver
     - zita-n2j_mcast.py
