@@ -235,7 +235,7 @@ Here you are an uncommented bare example of `config.yml`:
     init_treble:            0
     init_balance:           0
     init_loudness_track:    'on'
-    init_loudness_ref:      0
+    init_loudness_ref:      6         # most records suffers loudness war mastering
     init_midside:           'off'
     init_solo:              'off'
     init_input:             salon
