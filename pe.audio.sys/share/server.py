@@ -29,14 +29,13 @@
 """
     A general purpose TCP server to run processing modules
 
-    Use:     server.py  <processing_module>  <address>  <port>
+    Usage:   server.py  <processing_module>  <address>  <port> [-v]
 
     e.g:     server.py  control localhost 9999
              server.py  aux     localhost 9998
+             
+    (use -v for verbose debug info printout)
 """
-
-# The 'verbose' option can be useful when debugging:
-verbose = False
 
 import socket
 import sys
@@ -148,14 +147,15 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit(-1)
 
-    # Optional -v for verbose printing (debug)
+    # Optional -v for verbose printing out (debug)
+    verbose = False
     try:
         if '-v' in sys.argv[4]:
             verbose = True
     except:
         pass
     
-    # Read paths where to look for processing plugins
+    # Read the paths where to look for processing plugins
     UHOME = os.path.expanduser("~")
     THISPATH = os.path.dirname(os.path.abspath(__file__))
     with open(f'{THISPATH}/server.yml', 'r') as f:
