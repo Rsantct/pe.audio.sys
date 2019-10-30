@@ -33,7 +33,6 @@ import threading
 import yaml
 import jack
 import numpy as np
-import threading
 from time import sleep
 
 
