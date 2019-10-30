@@ -57,10 +57,10 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 ### Selector stage:
 
     input | source  <name>
-    solo            off | l | r
-    mono            off | on               ( aka midside => mid )
+    solo            off |  l  | r
+    mono            off | on  | toggle     ( aka midside => mid )
     midside         off | mid | side
-    mute            off | on
+    mute            off | on  | toggle
 
 ### Gain and Eq stage:
 
