@@ -77,132 +77,86 @@ def process_commands( full_command ):
                   'a warning phrase' for NOK command execution
     """
 
-    # The actions to be done when a command is parsed below
+    # Bellow we use *dummy to accommodate the parser mechanism wich will
+    # include two arguments when call any function, even when not necessary. 
 
-    def set_solo(x):
-        return preamp.set_solo(x)
-
-    def set_mono(x):
-        # 'mono' is a former command, here it is redirected to 'midside'
+    # 'mono' is a former command, here it is redirected to 'midside'
+    def set_mono(x, *dummy):
         try:
             x = {   'on':       'mid', 
                     'off':      'off',
                     'toggle':   { 'off':'mid', 'side':'off', 'mid':'off'
                                 } [ preamp.state['midside'] ]
                 } [x]
-            return set_midside(x)
+            return preamp.set_midside(x)
         except:
             return 'bad option'
 
-    def set_midside(x):
-        return preamp.set_midside(x)
-
-    def set_mute(x):
-        return preamp.set_mute(x)
-
-    def set_loud_track(x):
-        return preamp.set_loud_track(x)
-
-    def set_loud_ref(x):
-        return preamp.set_loud_ref(x)
-
-    def set_treble(x):
-        return preamp.set_treble(x, relative=add)
-
-    def set_bass(x):
-        return preamp.set_bass(x, relative=add)
-
-    def set_balance(x):
-        return preamp.set_balance(x, relative=add)
-
-    def set_level(x):
-        return preamp.set_level(x, relative=add)
-
-    def get_eq(dummyarg):
-        return yaml.dump( preamp.get_eq(), default_flow_style=False )
-    
-    def get_state(dummyarg):
-        return yaml.dump( preamp.state, default_flow_style=False )
-
-    def set_source(x):
-        return preamp.select_source(x)
-
-    def get_drc_sets(dummyarg):
-        return '\n'.join(convolver.drc_sets)
-
-    def set_drc(x):
+    # XO and DRC management uses the Convolver objet, so we also still need
+    # to update Preamp.state in addition.
+    def set_drc(x, *dummy):
         result = convolver.set_drc(x)
         if result == 'done':
             preamp.state['drc_set'] = x
         return result
 
-    def get_xo_sets(dummyarg):
-        return '\n'.join(convolver.xo_sets)
-
-    def set_xo(x):
+    def set_xo(x, *dummy):
         result = convolver.set_xo(x)
         if result == 'done':
             preamp.state['xo_set'] = x
         return result
 
-    def get_target_sets(dummyarg):
-        return '\n'.join(preamp.target_sets)
 
-    def set_target(x):
-        result = preamp.set_target(x)
-        if result == 'done':
-            preamp.state['target'] = x
-        return result
-        
-
-    # Initiate the command processing
+    # HERE BEGINS THE COMMAND PROCESSING:
     result  = 'nothing has been done'
 
-    # Processing the full_command phrase or doing nothing.
+    # Analize the full_command phrase or doing nothing.
     command, arg, add = analize_full_command(full_command)
     # print('COMMAND:', command, 'ARG', arg, 'ADD', add)      # debug
     if not command:
         # Do nothing
         return result
     
-    # Parsing the command to his related function from the above set of functions
+    # Parsing the command to his related function
     try:
         result = {
-            'state':            get_state,
-            'status':           get_state,
-            'get_state':        get_state,
-            'get_eq':           get_eq,
-            'get_target_sets':  get_target_sets,
-            'get_drc_sets':     get_drc_sets,
-            'get_xo_sets':      get_xo_sets,
 
-            'input':            set_source,
-            'source':           set_source,
-            'solo':             set_solo,
+            'state':            preamp.get_state,
+            'status':           preamp.get_state,
+            'get_state':        preamp.get_state,
+            'get_eq':           preamp.get_eq,
+            'get_target_sets':  preamp.get_target_sets,
+            'get_drc_sets':     convolver.get_drc_sets,
+            'get_xo_sets':      convolver.get_xo_sets,
+
+            'input':            preamp.select_source,
+            'source':           preamp.select_source,
+            'solo':             preamp.set_solo,
             'mono':             set_mono,
-            'midside':          set_midside,
-            'mute':             set_mute,
+            'midside':          preamp.set_midside,
+            'mute':             preamp.set_mute,
 
-            'level':            set_level,
-            'balance':          set_balance,
-            'treble':           set_treble,
-            'bass':             set_bass,
-            'loudness':         set_loud_track,
-            'loudness_track':   set_loud_track,
-            'loudness_ref':     set_loud_ref,
+            'level':            preamp.set_level,
+            'balance':          preamp.set_balance,
+            'treble':           preamp.set_treble,
+            'bass':             preamp.set_bass,
+            'loudness':         preamp.set_loud_track,
+            'loudness_track':   preamp.set_loud_track,
+            'loudness_ref':     preamp.set_loud_ref,
+            'set_target':       preamp.set_target,
 
             'set_drc':          set_drc,
             'drc':              set_drc,
             'xo':               set_xo,
-            'set_xo':           set_xo,
-            'set_target':       set_target
-            } [ command ] ( arg )
+            'set_xo':           set_xo
+
+            } [ command ] ( arg, add )
     
     except KeyError:
         result = f'unknown command: {command}'
     
     except:
         result = f'problems processing command: {command}'
-
+    
     return result
 
