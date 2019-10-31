@@ -51,12 +51,12 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 
 ### Getting info:
 
-    state | status | get_state  returns the whole system status parameters,
-                                also stored in .state.yml
-    get_eq                      returns the current Brutefir EQ stage (freq, mag ,pha)
-    get_target_sets             list of target curves sets available under the eq folder
-    get_drc_sets                list of drc sets available under the loudspeaker folder
-    get_xo_sets                 list of xover sets available under the loudspeaker folder
+    state | status | get_state  Returns the whole system status parameters,
+                                as per stored in .state.yml
+    get_eq                      Returns the current Brutefir EQ stage (freq, mag ,pha)
+    get_target_sets             List of target curves sets available under the eq folder
+    get_drc_sets                List of drc sets available under the loudspeaker folder
+    get_xo_sets                 List of xover sets available under the loudspeaker folder
 
 ### Selector stage:
 
@@ -73,13 +73,13 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
     treble          xx [add]
     bass            xx [add]
     loudness_ref    xx [add]
-    loudness | loudness_track     on | off | toggle   loudness compensation
-    set_target       <name>                           selects a target curve
+    loudness | loudness_track     on | off | toggle   Loudness compensation
+    set_target       <name>                           Select a target curve
 
 ### Convolver stages:
 
-    set_drc | drc    <name>                 selects a DRC FIR set
-    set_xo  | xo     <name>                 selects a XOVER FIR set
+    set_drc | drc    <name>                 Select a DRC FIR set
+    set_xo  | xo     <name>                 Select a XOVER FIR set
 
 ## Monitoring the system
 
