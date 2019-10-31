@@ -296,6 +296,6 @@ You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`
 
 The set of tone and loudness curves provided on this distro are the ones from the original **FIRtro** project from the pioneer **@rripio**
 
-You can easily visualize these curves by using the command line tool `peaudiosys_view_eq_curves.py`
+You can easily visualize these curves by using the command line tool `peaudiosys_plot_eq_curves.py`
 
 
