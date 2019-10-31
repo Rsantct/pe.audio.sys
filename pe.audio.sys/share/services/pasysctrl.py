@@ -49,7 +49,8 @@ def analize_full_command(full_command):
 
     command, arg, add = None, None, False
     
-    # The full_command sintax:  <command> <arg> add
+    # The full_command sintax:  <command> [arg [add] ]
+    # 'arg' is given only with some commands
     # 'add' is given as an option for relative values ordering
     add = False
     cmd_list = full_command.replace('\r','').replace('\n','').split()
@@ -63,7 +64,6 @@ def analize_full_command(full_command):
         if cmd_list[2:]:
             if cmd_list[2] == 'add':
                 add = True
-            # 
             else:
                 return (None, None, False)
 
@@ -77,8 +77,8 @@ def process_commands( full_command ):
                   'a warning phrase' for NOK command execution
     """
 
-    # Bellow we use *dummy to accommodate the parser mechanism wich will
-    # include two arguments when call any function, even when not necessary. 
+    # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
+    # will include  two arguments for any call here, even when not necessary. 
 
     # 'mono' is a former command, here it is redirected to 'midside'
     def set_mono(x, *dummy):
@@ -112,7 +112,6 @@ def process_commands( full_command ):
 
     # Analize the full_command phrase or doing nothing.
     command, arg, add = analize_full_command(full_command)
-    # print('COMMAND:', command, 'ARG', arg, 'ADD', add)      # debug
     if not command:
         # Do nothing
         return result
