@@ -164,8 +164,9 @@ def calc_eq( sta ):
 def calc_gain( sta ):
     """ Calculates the gain from: level, ref_level_gain and the source gain offset
     """
-    gain    = sta['level'] + float(CONFIG['ref_level_gain']) \
-              + float( CONFIG['sources'][sta['input']]['gain'] )
+    gain    = sta['level'] + float(CONFIG['ref_level_gain'])
+    if sta['input'] != 'none':
+        gain += float( CONFIG['sources'][sta['input']]['gain'] )
     return gain
     
 # BRUTEFIR MANAGEMENT: =========================================================        
@@ -507,6 +508,7 @@ class Preamp(object):
 
         methods:
 
+            select_source
             set_level
             set_balance
             set_bass
@@ -517,8 +519,10 @@ class Preamp(object):
             set_solo
             set_mute
             set_midside
+
+            get_state
+            get_target_sets
             get_eq
-            select_source
     """
 
     def __init__(self):
@@ -555,6 +559,15 @@ class Preamp(object):
         else:
             # REFUSED
             return 'not enough headroom'
+
+    # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
+    # will include two arguments for any function call, even when not necessary. 
+
+    def get_state(self, *dummy):
+        return yaml.dump( self.state, default_flow_style=False )
+
+    def get_target_sets(self, *dummy):
+        return '\n'.join( self.target_sets )
 
     def set_level(self, value, relative=False):
         candidate = self.state.copy()
@@ -597,16 +610,19 @@ class Preamp(object):
         else:
             return 'too much'
 
-    def set_loud_ref(self, value):
+    def set_loud_ref(self, value, relative=False):
         candidate = self.state.copy()
         # this try if intended just to validate the given value
         try:
-            candidate['loudness_ref'] = round(float(value), 2)
+            if relative:
+                candidate['loudness_ref'] += round(float(value), 2)
+            else:
+                candidate['loudness_ref'] =  round(float(value), 2)
             return self._validate( candidate )
         except:
             return 'bad value'
 
-    def set_loud_track(self, value):
+    def set_loud_track(self, value, *dummy):
         candidate = self.state.copy()
         # this try if intended just to validate the given value
         try:
@@ -618,7 +634,7 @@ class Preamp(object):
         except:
             return 'bad option'
 
-    def set_target(self, value):
+    def set_target(self, value, *dummy):
         candidate = self.state.copy()
         if value in self.target_sets:
             candidate['target'] = value
@@ -626,7 +642,7 @@ class Preamp(object):
         else:
             return f'target \'{value}\' not available'
 
-    def set_solo(self, value):
+    def set_solo(self, value, *dummy):
         if value.lower() in ['off', 'l', 'r']:
             self.state['solo'] = value.lower()
             bf_set_gains( self.state )
@@ -634,7 +650,7 @@ class Preamp(object):
         else:
             return 'bad option'
 
-    def set_mute(self, value):
+    def set_mute(self, value, *dummy):
         if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
             value = { 'false':False, 'off':False, 
                       'true' :True,  'on' :True,
@@ -646,7 +662,7 @@ class Preamp(object):
         else:
             return 'bad option'
 
-    def set_midside(self, value):
+    def set_midside(self, value, *dummy):
         if   value.lower() in [ 'mid', 'side', 'off' ]:
             bf_set_midside( value.lower() )
             self.state['midside'] = value.lower()
@@ -654,10 +670,10 @@ class Preamp(object):
             return 'bad option'
         return 'done'
 
-    def get_eq(self):
-        return bf_read_eq()
+    def get_eq(self, *dummy):
+        return yaml.dump( bf_read_eq(), default_flow_style=False )
 
-    def select_source(self, value):
+    def select_source(self, value, *dummy):
         """ this is the source selector """
         
         def source_select(source):
@@ -705,6 +721,9 @@ class Convolver(object):
 
             set_drc
             set_xo
+            
+            get_drc_sets
+            get_xo_sets
     """
 
     def __init__(self):
@@ -739,19 +758,28 @@ class Convolver(object):
             if not x[3:5] in self.filters:
                 self.filters.append( x[3:5] )
         
-    def set_drc(self, drc):
+    # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
+    # will include two arguments for any function call, even when not necessary. 
+
+    def set_drc(self, drc, *dummy):
         if drc in self.drc_sets or drc == 'none':
             bf_set_drc( drc )
             return 'done'
         else:
             return f'drc set \'{drc}\' not available'
 
-    def set_xo(self, xo):
+    def set_xo(self, xo, *dummy):
         if xo in self.xo_sets:
             bf_set_xo( self.filters, xo )
             return 'done'
         else:
             return f'xo set \'{xo}\' not available'
+
+    def get_drc_sets(self, *dummy):
+        return '\n'.join( self.drc_sets)
+
+    def get_xo_sets(self, *dummy):
+        return '\n'.join( self.xo_sets)
 
 
 # JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ================================
