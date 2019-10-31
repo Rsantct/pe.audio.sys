@@ -4,7 +4,10 @@
     the Brutefir EQ stage of FIRtro / pre.di.c / pe.audio.sys
 
     usage:
-        peaudiosys_plot_eq_curves.py <pattern> [/path/to/folder]
+    
+    peaudiosys_plot_eq_curves.py <pattern> [/path/to/folder] [-pha]
+    
+        -pha    adds the phase plot
     
 """
 
@@ -45,45 +48,69 @@ if __name__ == '__main__':
     EQ_FOLDER = f'{HOME}/pe.audio.sys/share/eq'
     EQ_FILES = os.listdir(EQ_FOLDER)
 
-    # Try to read the optional /path/to/eq_files_folder
-    try:
-        EQ_FOLDER = sys.argv[2]
-    except:
-        pass
+    # Try to read the optionals /path/to/eq_files_folder
+    #                           -pha
+    pha = False
+    if sys.argv[2:]:
+        for opc in sys.argv[2:]:
+            if '-pha' in opc:
+                pha = True
+            elif '-h' in opc[0:]:
+                print(__doc__)
+                exit()
+            else:
+                EQ_FOLDER = opc
 
     # Read the filename pattern (mandatory)
     try:
-        freq_fname, mag_fname = get_curves(sys.argv[1])
+        freq_fname, mag_fname = get_curves( sys.argv[1] )
+        pha_fname = mag_fname.replace('_mag','_pha')
     except:
         print(__doc__)
         exit()
 
     # A .dat file can have one o more curves inside.
-    mags = np.loadtxt( f'{EQ_FOLDER}/{mag_fname}' )
     freq = np.loadtxt( f'{EQ_FOLDER}/{freq_fname}' )
+    mags = np.loadtxt( f'{EQ_FOLDER}/{mag_fname}' )
+    phas = np.loadtxt( f'{EQ_FOLDER}/{pha_fname}' )
 
     if 'target' in mag_fname:
         mags = mags.transpose()
+        phas = phas.transpose()
 
     # Prepare the plot
     fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+    if not pha:
+        ax1 = fig.add_subplot(1, 1, 1)
+    else:
+        ax1 = fig.add_subplot(2, 1, 1)
+        ax2 = fig.add_subplot(2, 1, 2)
+        fig.subplots_adjust(hspace=.4)
+        
 
     # A single target curve kind of
     if len( mags.shape ) == 1:
-        ax.semilogx ( freq, mags )
-        ax.set_ylim(-6,12)
+        ax1.semilogx ( freq, mags )
+        ax1.set_ylim(-6,12)
+        if pha:
+            ax2.semilogx ( freq, phas )
 
     # Multiple curves tone or loudness kind of.
     # Looping over the curves inside the .dat file
     else:
         for idx in range( mags.shape[1] ):
-            ax.semilogx ( freq, mags[:,idx], label=idx)
-        ax.legend( loc="center", bbox_to_anchor=(1.15, 1.05) )
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[::-1], labels[::-1])
+            ax1.semilogx ( freq, mags[:,idx], label=idx)
+        if not pha:
+            ax1.legend( loc="center", bbox_to_anchor=(1.15, 1.05) )
+            handles, labels = ax1.get_legend_handles_labels()
+            ax1.legend(handles[::-1], labels[::-1])
+        if pha:
+            for idx in range( phas.shape[1] ):
+                ax2.semilogx ( freq, phas[:,idx], label=idx)
 
-    ax.set_title( mag_fname )
+    ax1.set_title( mag_fname )
+    if pha:
+        ax2.set_title( pha_fname )
 
     plt.show()
 
