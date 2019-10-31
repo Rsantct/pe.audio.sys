@@ -102,9 +102,11 @@ Some nice tools are provided under your `~/bin` folder, below a brief descriptio
     |-- peaudiosys_service_restart.sh       Restart or stop a service (more info on config.yml)
     |
     |-- peaudiosys_view_brutefir.py         Shows the running Brutefir configuration:
-    |                                       mapping to sound card ports, coeffs and filters running.
+    |                                       mapping to sound card ports, coeffs and filters running
     |
-    |-- peaudiosys_view_eq_curves.py        A tool to plot the curves under the share/eq folder
+    |-- peaudiosys_plot_brutefir_eq.py      Plot the runtime EQ module in Brutefir
+    |
+    |-- peaudiosys_plot_eq_curves.py        A tool to plot the curves under the share/eq folder
     |
     |-- peaudiosys_do_target.py             Make target curves
 
