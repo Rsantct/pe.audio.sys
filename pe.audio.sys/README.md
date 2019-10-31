@@ -99,7 +99,7 @@ Some nice tools are provided under your `~/bin` folder, below a brief descriptio
     /
     |-- peaudiosys_control                  A command line tool to issue commands to the system
     |
-    |-- peaudiosys_service_restart.sh       Restart or stop a service (more info on config.yml)
+    |-- peaudiosys_service_restart.sh       Restart or stop a service (for more info see config.yml)
     |
     |-- peaudiosys_view_brutefir.py         Shows the running Brutefir configuration:
     |                                       mapping to sound card ports, coeffs and filters running
