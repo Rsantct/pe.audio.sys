@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
     Plots the curves inside a .dat file of those used in
-    the Brutefir EQ stage of FIRtro/pre.di.c/pe.audio.sys
+    the Brutefir EQ stage of FIRtro / pre.di.c / pe.audio.sys
 
     usage:
-        peaudiosys_view_eq_curves.py <pattern> [/path/to/folder]
+        peaudiosys_plot_eq_curves.py <pattern> [/path/to/folder]
     
 """
 
