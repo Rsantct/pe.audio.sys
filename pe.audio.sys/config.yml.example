@@ -160,21 +160,31 @@ source_monitors:
 
 scripts:
 
-    # Releases cards from Pulseaudio and restore alsa mixer settings:
+    ## Releases cards from Pulseaudio and restore alsa mixer settings:
     - sound_cards_prepare.py
-    # Runs MPD:
+    ## Runs MPD:
     - mpd.py
-    # Internet url audio streams player based on Mplayer:
+    ## Internet url audio streams player based on Mplayer:
     - istreams.py
-    # Set Pulseaudio apps to sound through by JACK:
+    ## Set Pulseaudio apps to sound through by JACK:
     - pulseaudio-jack-sink.py
-    # DVB-T player based on Mplayer, useful for DVB-T radio stations:
+    ## DVB-T player based on Mplayer, useful for DVB-T radio stations:
     #- DVB-T.py
-    # librespot (a headless Spotify Connect player daemon)
-    - librespot.py
-    # An audio multicast receiver
-    - zita-n2j_mcast.py
-
+    ## A Mplayer based CDDA player:
+    #- CDDA.py
+    ## librespot (a headless Spotify Connect player daemon)
+    #- librespot.py
+    ## A LAN multicast audio receiver
+    #- zita-n2j_mcast.py
+    ## A LAN multicast audio sender
+    #- zita-n2j_mcast.py
+    ## A Spotify Desktop monitor
+    #- spotify_monitor.py
+    ## Controls the volume by a mouse
+    #-mouse_volume.py
+    # A daemon client used by the web page and the lcd display
+    #-loudness_monitor.py
+    
 # ==================== AUX SERVICES CONFIGURATION ==============================
 
 aux:
