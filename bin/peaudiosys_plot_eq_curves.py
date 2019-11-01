@@ -15,7 +15,7 @@ import sys, os
 import numpy as np
 from matplotlib import pyplot as plt
 
-def get_curves(fpattern):
+def get_curve_files(fpattern):
 
     try:
         freq_files = [x for x in EQ_FILES if 'freq.dat' in x ]
@@ -62,9 +62,9 @@ if __name__ == '__main__':
                 EQ_FOLDER = opc
                 EQ_FILES = os.listdir(EQ_FOLDER)
 
-    # Read the filename pattern (mandatory)
+    # Read the filenames set for the given pattern
     try:
-        freq_fname, mag_fname = get_curves( sys.argv[1] )
+        freq_fname, mag_fname = get_curve_files( sys.argv[1] )
         pha_fname = mag_fname.replace('_mag','_pha')
     except:
         print(__doc__)
