@@ -60,6 +60,7 @@ if __name__ == '__main__':
                 exit()
             else:
                 EQ_FOLDER = opc
+                EQ_FILES = os.listdir(EQ_FOLDER)
 
     # Read the filename pattern (mandatory)
     try:
