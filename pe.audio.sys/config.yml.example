@@ -177,7 +177,7 @@ scripts:
     ## A LAN multicast audio receiver
     #- zita-n2j_mcast.py
     ## A LAN multicast audio sender
-    #- zita-n2j_mcast.py
+    #- zita-j2n_mcast.py
     ## A Spotify Desktop monitor
     #- spotify_monitor.py
     ## Controls the volume by a mouse
