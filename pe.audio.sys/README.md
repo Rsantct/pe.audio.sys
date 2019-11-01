@@ -129,6 +129,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     /
     |-- README.md           This file
     |
+    |-- .state.yml          The file that keeps the run-time system state
+    |
     |-- config.yml          The main configuration file
     |
     |-- xxxx.yml            Other configuration files
