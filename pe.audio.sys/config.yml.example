@@ -182,7 +182,7 @@ scripts:
     #- spotify_monitor.py
     ## Controls the volume by a mouse
     #-mouse_volume.py
-    # A daemon client used by the web page and the lcd display
+    ## A daemon client used by the web page and the lcd display
     #-loudness_monitor.py
     
 # ==================== AUX SERVICES CONFIGURATION ==============================
