@@ -39,7 +39,9 @@ def get_curve_files(fpattern):
                f'at \'{EQ_FOLDER}\'' )
         exit()
 
-    return freq_file, mag_file
+    pha_file = mag_file.replace('_mag', '_pha')
+
+    return freq_file, mag_file, pha_file
 
 
 if __name__ == '__main__':
@@ -64,8 +66,7 @@ if __name__ == '__main__':
 
     # Read the filenames set for the given pattern
     try:
-        freq_fname, mag_fname = get_curve_files( sys.argv[1] )
-        pha_fname = mag_fname.replace('_mag','_pha')
+        freq_fname, mag_fname, pha_fname = get_curve_files( sys.argv[1] )
     except:
         print(__doc__)
         exit()
