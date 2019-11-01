@@ -60,7 +60,7 @@ def start_jackd():
     tmplist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
               f'{jack_backend_options}'.split() + \
               '>/dev/null 2>&1'.split()
-    # print( ' '.join(tmplist) ) ; sys.exit() # DEBUG
+    #print( ' '.join(tmplist) ) ; sys.exit() # DEBUG
     
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
         tmplist = ['pasuspender', '--'] + tmplist
@@ -158,7 +158,7 @@ def run_scripts(mode='start'):
         print( f'(start.py) will {mode} the script \'{script}\' ...' )
         sp.Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} {mode}', shell=True)
         if mode == 'stop':
-            sleep(.5) # this is necessary because of asyncronous stopping
+            sleep(.2) # this is necessary because of asyncronous stopping
 
 def kill_bill():
     """ killing any previous instance of this,
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     
     # KILLING ANY PREVIOUS INSTANCE OF THIS
     kill_bill() 
-    
+
     # READING OPTIONS FROM COMMAND LINE
     run_level = ''
     if sys.argv[1:]:
@@ -202,10 +202,11 @@ if __name__ == "__main__":
             if not start_jackd():
                 print('(start.py) Problems starting JACK ')
                 sys.exit()
-
-        elif '-h' in sys.argv[1]:
+            
+        else:
             print(__doc__)
             sys.exit()
+
     else:
         print(__doc__)
         sys.exit()
