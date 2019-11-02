@@ -241,7 +241,8 @@ if __name__ == "__main__":
         # Running USER SCRIPTS
         run_scripts()
 
-        # (i) Leaving this for last: it depends on Brutefir ports to become active
+        # PREAMP_IN_LOOP --> BRUTEFIR
+        # (i) Leaving this for last because it depends on Brutefir ports to become active
         # pre_in    -->   brutefir
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
         # (i) ANYWAY you can undo this later if you want to insert any processor before Brutefir,
