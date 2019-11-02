@@ -308,7 +308,7 @@ Here you are a typical wiring JACK screenshot.
 
 The loudspeakers are a two way set, connected at the last sound card ports. The selected source is an MPD player wich is configured to point to the mpd_loop preamp ports.
 
-If you want to add another audio processor, e.g. a parametric eq like an Ecasound eq plugin, you can prepare an script to INSERT it after the pre_in_loop and before the Brutefir input.
+If you want to add another audio processor, e.g. an Ecasound parametric EQ plugin, you can prepare an script to INSERT it after the pre_in_loop and before the Brutefir input.
 
 ![jack_wiring](https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/jack_routing_sample.png)
 
