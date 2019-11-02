@@ -162,30 +162,6 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
 
 
 
-# The loudspeaker
-
-Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
-
-So *keep only useful files* under your loudspeaker folder, and *name them meaningfully*.
-
-For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder.
-
-Please name files as follows:
-
-
-DRC pcm files must be named:
-
-    drc.<X>.DRCSETNAME.pcm   where X must be:    L | R
-
-
-XO pcm files must be named:
-
-    xo.<XX>.XOSETNAME.pcm    where XX must be:  fr | lo | mi | hi | sw
-
-(fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
-
-
-
 # Configuration: the `config.yml` file
 
 All system features are configured under **`config.yml`**.
@@ -317,5 +293,27 @@ Brutefir is the last element and the only one that interfaces with the sound car
 
 ![jack_wiring](https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/jack_routing_sample.png)
 
+
+# The loudspeaker
+
+Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
+
+So *keep only useful files* under your loudspeaker folder, and *name them meaningfully*.
+
+For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder.
+
+Please name files as follows:
+
+
+DRC pcm files must be named:
+
+    drc.<X>.DRCSETNAME.pcm   where X must be:    L | R
+
+
+XO pcm files must be named:
+
+    xo.<XX>.XOSETNAME.pcm    where XX must be:  fr | lo | mi | hi | sw
+
+(fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
 
