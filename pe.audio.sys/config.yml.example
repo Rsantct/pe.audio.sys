@@ -181,7 +181,7 @@ scripts:
     ## A Spotify Desktop monitor
     #- spotify_monitor.py
     ## Controls the volume by a mouse
-    #- mouse_volume.py
+    #- mouse_volume_daemon.py
     ## A daemon client used by the web page and the lcd display
     #- loudness_monitor.py
     
