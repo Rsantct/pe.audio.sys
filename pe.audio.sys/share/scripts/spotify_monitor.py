@@ -40,8 +40,8 @@
 import sys, os
 from subprocess import Popen, check_output
 
-HOME = os.path.expanduser("~")
-SCRIPTSFOLDER = f'{HOME}/pe.audio.sys/share/scripts'
+UHOME = os.path.expanduser("~")
+SCRIPTSFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/spotify_monitor'
 
 def get_playerctl_version():
     try:
