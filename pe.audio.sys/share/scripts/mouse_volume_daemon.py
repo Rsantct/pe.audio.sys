@@ -33,7 +33,6 @@
 # v0.2beta: beeps by running the synth from SoX (play)
 # v0.3beta: beeps by running 'aplay beep.wav'
 # v0.4beta: from FIRtro to pre.di.c (python3 and writen as a module)
-# v0.5    : from pre.di.c to pe.audio.sys
 
 import os
 import sys
@@ -46,7 +45,7 @@ import yaml
 HOME =      os.path.expanduser("~")
 hostDir =   os.path.dirname( os.path.realpath(__file__) )
 
-####################### USER SETTINGS: ###################
+####################### USER SETTINGS: #################################
 STEPdB      = 2.0
 alertdB     = -6.0
 beep        = False
@@ -54,7 +53,7 @@ beepPath    = f'{hostDir}/mouse_volume_3beeps.wav'
 alsaplugin  = 'brutefir'
 # NOTE: the above needs to you to configure your .asondrc
 #       to have a jack plugin that connects to brutefir
-##########################################################
+########################################################################
 
 
 def getMouseEvent():
@@ -124,7 +123,8 @@ def beeps():
     sp.Popen( ['aplay', f'-D{alsaplugin}', beepPath],
               stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 
-def get_control_port():    
+def get_control_port():
+    
     with open(f'{HOME}/pe.audio.sys/config.yml', 'r') as f:
         config = yaml.load(f)
     return str( config['services_addressing']['pasysctrl_port'] )
@@ -133,8 +133,8 @@ def main_loop(alertdB=alertdB, beep=beep):
 
     level_ups = False
     beeped =    False
-    port = get_control_port()
-    cmd_string = f'echo "level XX add" | nc -N localhost {port}'
+    cmd_level = f'echo "level XX add" | nc -N localhost {control_port}'
+    cmd_mute  = f'echo "mute toggle"  | nc -N localhost {control_port}'
 
     while True:
 
@@ -144,21 +144,21 @@ def main_loop(alertdB=alertdB, beep=beep):
         # Dending the order to pre.di.c
         if   ev == 'buttonLeftDown':
             # Level --
-            tmp = cmd_string.replace('XX',f'-{str(STEPdB)}')
+            tmp = cmd_level.replace('XX',f'-{str(STEPdB)}')
             sp.Popen( tmp, shell=True,
                       stdout=sp.DEVNULL, stderr=sp.DEVNULL )
             level_ups = False
 
         elif ev == 'buttonRightDown':
             # Level ++
-            tmp = cmd_string.replace('XX',f'+{str(STEPdB)}')
+            tmp = cmd_level.replace('XX',f'+{str(STEPdB)}')
             sp.Popen( tmp, shell=True,
                       stdout=sp.DEVNULL, stderr=sp.DEVNULL )
             level_ups = True
 
         elif ev == 'buttonMid':
             # Mute toggle
-            sp.Popen( ['control', 'mute toggle'],
+            sp.Popen( cmd_mute, shell=True,
                       stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 
         # Alert if crossed the headroom threshold
@@ -177,6 +177,12 @@ def stop():
     sp.Popen( 'pkill -KILL -f mouse_volume_daemon.py'.split() )
 
 if __name__ == "__main__":
+    
+    try:
+        control_port = get_control_port()
+    except:
+        print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
+        exit()
     
     if sys.argv[1:]:
 
