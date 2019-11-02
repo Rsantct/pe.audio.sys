@@ -155,7 +155,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
         |
         |-- services/       Services provided through by the tcp server (system control and others)
         |
-        |-- scripts/        Additional scripts to launch at start up when issued at config.yml
+        |-- scripts/        Additional scripts to launch at start up when issued at config.yml,
+        |                   advanced users can write their own here.
         |
         \-- www/            A web interface to control the system
 
