@@ -61,12 +61,12 @@ def stop():
 
     
 if sys.argv[1:]:
-    if True:
+    try:
         option = {
             'start' : start,
             'stop'  : stop
             }[ sys.argv[1] ]()
-    #except:
-    #    print( '(init/loudness_monitor) bad option' )
+    except:
+        print( '(init/loudness_monitor) bad option' )
 else:
     print(__doc__)
