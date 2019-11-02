@@ -31,7 +31,7 @@
 """
 
 #################### NOTICE #############################
-# spotify_monitor_daaemon_v2.py works with playerctl v2.x
+# spotify_monitor_daemon_v2.py works with playerctl v2.x
 #########################################################
 
 import sys, os
