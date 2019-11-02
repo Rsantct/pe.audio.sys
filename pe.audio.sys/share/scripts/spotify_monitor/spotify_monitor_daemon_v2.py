@@ -31,7 +31,7 @@
 """
 
 #################### NOTICE #############################
-# spotify_monitor_daemon_v2.py works with playerctl v2.x
+# spotify_monitor_daaemon_v2.py works with playerctl v2.x
 #########################################################
 
 import sys, os
@@ -43,8 +43,8 @@ import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-HOME = os.path.expanduser("~")
-MAINFOLDER = f'{HOME}/pe.audio.sys'
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 # Will watch for files changed on this folder and subfolders:
 WATCHED_DIR      = MAINFOLDER
