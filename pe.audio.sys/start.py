@@ -149,7 +149,7 @@ def prepare_extra_cards( channels = 2 ):
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
-        print( '(start.py) LOADING RESAMPLED EXTRA CARDS' )
+        print( f'(start.py) loading resampled extra card: {card}' )
         #print(cmd) # DEBUG
         sp.Popen( cmd.split() ) 
 
@@ -241,12 +241,9 @@ if __name__ == "__main__":
         # Running USER SCRIPTS
         run_scripts()
 
-        # PREAMP_IN_LOOP --> BRUTEFIR
-        # (i) Leaving this for last because it depends on Brutefir ports to become active
+        # (i) Leaving this for last: it depends on Brutefir ports to become active
         # pre_in    -->   brutefir
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
-        # (i) ANYWAY you can undo this later if you want to insert any processor before Brutefir,
-        #     e.g. a parametric eq (ecasound+eq_plugin)
         
     else:
         print( '(start.py) JACK not detected')
