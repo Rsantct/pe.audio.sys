@@ -33,6 +33,7 @@
 # v0.2beta: beeps by running the synth from SoX (play)
 # v0.3beta: beeps by running 'aplay beep.wav'
 # v0.4beta: from FIRtro to pre.di.c (python3 and writen as a module)
+# v0.5    : from pre.di.c to pe.audio.sys
 
 import os
 import sys
@@ -123,12 +124,10 @@ def beeps():
     sp.Popen( ['aplay', f'-D{alsaplugin}', beepPath],
               stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 
-def get_control_port():
-    
+def get_control_port():    
     with open(f'{HOME}/pe.audio.sys/config.yml', 'r') as f:
         config = yaml.load(f)
     return str( config['services_addressing']['pasysctrl_port'] )
-
 
 def main_loop(alertdB=alertdB, beep=beep):
 
