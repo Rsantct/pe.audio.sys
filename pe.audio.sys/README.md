@@ -187,7 +187,9 @@ XO pcm files must be named:
 
 # Configuration: the `config.yml` file
 
-All system features are configured under **`config.yml`**. We provide a **`config.yml.example`** with clarifying comments.
+All system features are configured under **`config.yml`**.
+
+We provide a **`config.yml.example`** with clarifying comments, please take a look on it because you'll find there some useful info.
 
 Few user scripts or shared modules can have its own `xxx.yml` file of the same base name for configuration if necessary.
 
