@@ -305,7 +305,7 @@ You can easily visualize these curves by using the command line tool `peaudiosys
 
 # The audio routing
 
-Here you are a typical wiring JACK screenshot.
+Here you are a typical JACK wiring screenshot.
 
 The loudspeakers are a two way set, connected at the last sound card ports. The selected source is an MPD player wich is configured to point to the mpd_loop preamp ports.
 
