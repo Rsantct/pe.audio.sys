@@ -1,0 +1,47 @@
+## This file was written by cme command.
+## You can run 'cme edit lcdproc' to modify this file.
+## You may also modify the content of this file with your favorite editor.
+
+## http://lcdproc.sourceforge.net/docs/current-user.html
+## NEW site: https://github.com/lcdproc/lcdproc
+
+# See below (*) lines for FIRtro & pre.di.c LCD settings
+# https://github.com/AudioHumLab/FIRtro/wiki/855-Display-LCD
+
+[server]
+
+# (*) Uncomment depending on your machine AMD/Intel or ARM (Raspberry Pi etc)
+#DriverPath=/usr/lib/x86_64-linux-gnu/lcdproc/
+DriverPath=/usr/lib/arm-linux-gnueabihf/lcdproc/
+# The following is for custom build and install lcdproc from sources
+#DriverPath=/usr/local/lib/lcdproc/
+
+# (*) This is the driver to manage our LDC display:
+Driver=hd44780
+# (*) Disables the background beating heart:
+Heartbeat = off
+# (*) Alow clients to adjust backlight:
+Backlight = open
+# (*) Disabling the info server screen under the screen rotation scheme: 
+ServerScreen = no
+# (*) Our standby screen:
+GoodBye="____________________"
+GoodBye="    github.com/     "
+GoodBye="    AudioHumLab     "
+GoodBye="____________________"
+
+NextScreenKey=Right
+PrevScreenKey=Left
+ReportToSyslog=yes
+ToggleRotateKey=Enter
+
+
+[menu]
+DownKey=Down
+EnterKey=Enter
+MenuKey=Escape
+UpKey=Up
+
+# (*) Options for the driver hd44780
+[hd44780]
+ConnectionType=usb4all
