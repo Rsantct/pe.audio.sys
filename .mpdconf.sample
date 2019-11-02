@@ -52,8 +52,8 @@ input {
 # --- SALIDAS ---    
 audio_output {
     type        "jack"
-    name        "mpd_jack"
-    client_name "mpd_jack"
+    name        "jack"
+    client_name "mpd"
     destination_ports "mpd_loop:input_1,mpd_loop:input_2"
 #    format          "*:*:6"
 #    Control de volumen:
