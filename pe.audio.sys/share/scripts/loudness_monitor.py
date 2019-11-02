@@ -67,6 +67,6 @@ if sys.argv[1:]:
             'stop'  : stop
             }[ sys.argv[1] ]()
     except:
-        print( '(init/loudness_monitor) bad option' )
+        print( '(loudness_monitor) ERROR cannot start' )
 else:
     print(__doc__)
