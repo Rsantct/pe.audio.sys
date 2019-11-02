@@ -2,15 +2,6 @@
 
 # Copyright (c) 2019 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
-
-# This is based on 'pre.di.c,' a preamp and digital crossover
-# https://github.com/rripio/pre.di.c
-# Copyright (C) 2018 Roberto Ripio
-# 'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
-# https://github.com/AudioHumLab/FIRtro
-# Copyright (c) 2006-2011 Roberto Ripio
-# Copyright (c) 2011-2016 Alberto Miguélez
-# Copyright (c) 2016-2018 Rafael Sánchez
 #
 # 'pe.audio.sys' is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,7 +59,7 @@ import binascii
 import yaml
 #import struct # only to debug see below
 
-HOME =      os.path.expanduser("~")
+UHOME =      os.path.expanduser("~")
 hostDir =   os.path.dirname( os.path.realpath(__file__) )
 
 ####################### USER SETTINGS: #################################
@@ -130,7 +121,7 @@ def check_level():
     # To avoid reading issues while state.yml is written
     i = 0
     while i < 20:
-        f = open( f'{HOME}/pe.audio.sys/.state.yml', 'r')
+        f = open( f'{UHOME}/pe.audio.sys/.state.yml', 'r')
         conte = f.read()
         f.close()
         try:
@@ -151,7 +142,7 @@ def beeps():
 
 def get_control_port():
     
-    with open(f'{HOME}/pe.audio.sys/config.yml', 'r') as f:
+    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
         config = yaml.load(f)
     return str( config['services_addressing']['pasysctrl_port'] )
 
