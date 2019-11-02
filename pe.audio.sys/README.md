@@ -302,4 +302,13 @@ The set of tone and loudness curves provided on this distro are the ones from th
 
 You can easily visualize these curves by using the command line tool `peaudiosys_plot_eq_curves.py`
 
+# The audio routing
+
+Here you are a typical wiring JACK screenshot.
+
+The loudspeakers are a two way set, connected at the last sound card ports. The selected source is an MPD player wich is configured to point to the mpd_loop preamp ports.
+
+![jack_wiring](https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/jack_routing_sample.png)
+
+
 
