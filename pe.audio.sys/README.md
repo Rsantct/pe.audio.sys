@@ -307,9 +307,13 @@ You can easily visualize these curves by using the command line tool `peaudiosys
 
 Here you are a typical JACK wiring screenshot.
 
-The loudspeakers are a two way set, connected at the last sound card ports. The selected source is an MPD player wich is configured to point to the mpd_loop preamp ports.
+The selected source is an MPD player wich is configured to point to the mpd_loop ports.
+
+The preamp has a unique entrance point: the pre_in_loop. This loops feeds the main audio processor, i.e Brutefir.
 
 If you want to add another audio processor, e.g. an Ecasound parametric EQ plugin, you can prepare an script to INSERT it after the pre_in_loop and before the Brutefir input.
+
+Brutefir is the last element and the only one that interfaces with the sound card Jack ports. The loudspeakers are a two way set, connected at the last sound card ports. 
 
 ![jack_wiring](https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/jack_routing_sample.png)
 
