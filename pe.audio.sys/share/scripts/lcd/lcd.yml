@@ -1,0 +1,5 @@
+# The live time for temporary info screens
+info_screen_timeout:    2
+
+# number of movements per rendering stroke (8 times/second)
+scroller_speed:         2
