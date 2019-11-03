@@ -48,6 +48,9 @@ Anyway the control of the system works through by **a TCP listening socket** tha
 
 Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
 
+### Geeting help
+ 
+    help                        This help
 
 ### Getting info:
 
