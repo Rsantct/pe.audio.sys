@@ -203,6 +203,10 @@ def update_state():
                 else:
                     lab = ''
 
+            # Special case: tone will be rounded to integer
+            elif key == 'bass' or key == 'treble':
+                lab += str( int(round(value,0)) ).rjust(2)
+
             # Special case: midside (formerly 'mono')
             elif key == 'midside':
                 if data['midside'] == 'off':
