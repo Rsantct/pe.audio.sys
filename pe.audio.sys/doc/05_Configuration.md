@@ -47,7 +47,7 @@ Use the distro `.state.yml.sample`
 
 ## [  ] Environment variables
 
-(i) If you comes from pre.di.c or FIRtro, please remove any pre.dic.c directory from your $PYTHONPATH environment variable under your `.profile'
+(i) If you comes from pre.di.c or FIRtro, please remove any pre.dic.c directory from your $PYTHONPATH environment variable under your `.profile`
 
 
 ## [ ] 1st time start up the system
@@ -56,7 +56,7 @@ Be sure you have set the DUMMY backend for jack, then run:
 
   **`pe.audio.sys/start.py all`**
 
-The provided tool `bin/peaudiosys_view_brutefir.py` will help you on mapping outputs, delays, coeefs and filters running.
+The provided tool `bin/peaudiosys_view_brutefir.py` will help you on mapping outputs, delays, coeefs, filters running, polarity and gains.
 
 When things seems to be ok, you can try to use the actual alsa sound card, but **still keep your AMP switched off**:
 
