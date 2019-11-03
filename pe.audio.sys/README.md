@@ -284,6 +284,12 @@ The set of tone and loudness curves provided on this distro are the ones from th
 
 You can easily visualize these curves by using the command line tool `peaudiosys_plot_eq_curves.py`
 
+### Optional share/eq files
+
+If you want to use another sound processors, you can hold here some more files.
+
+For instance, you can use Ecasound to add a parametric EQ processor before Brutefir, for more info see the section `scripts:` under the provided `config.yml.example` file.
+
 # The audio routing
 
 Here you are a typical JACK wiring screenshot.
