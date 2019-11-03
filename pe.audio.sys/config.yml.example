@@ -161,6 +161,8 @@ source_monitors:
 
 scripts:
 
+    ## Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
+    #- ecasound_peq.py
     ## Releases cards from Pulseaudio and restore alsa mixer settings:
     - sound_cards_prepare.py
     ## Runs MPD:
