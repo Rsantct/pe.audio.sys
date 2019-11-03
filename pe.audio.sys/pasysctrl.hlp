@@ -1,0 +1,39 @@
+                //////                                 \\\\\\
+                ||||||   pe.audio.sys commands list    ||||||
+                \\\\\\                                 //////
+
+--- Getting info:
+
+    state | status | get_state  Returns the whole system status parameters,
+                                as per stored in .state.yml
+    get_eq                      Returns the current Brutefir EQ stage (freq, mag ,pha)
+    get_target_sets             List of target curves sets available under the eq folder
+    get_drc_sets                List of drc sets available under the loudspeaker folder
+    get_xo_sets                 List of xover sets available under the loudspeaker folder
+
+
+--- Selector stage:
+
+    input | source  <name>
+    solo            off |  l  | r
+    mono            off | on  | toggle     ( aka midside => mid )
+    midside         off | mid | side
+    mute            off | on  | toggle
+
+
+--- Gain and Eq stage:
+
+    level           xx [add]               'xx' in dB, use 'add' for a relative adjustment
+    balance         xx [add]
+    treble          xx [add]
+    bass            xx [add]
+    loudness_ref    xx [add]
+    loudness | loudness_track     on | off | toggle   Loudness compensation
+    set_target       <name>                           Select a target curve
+
+
+--- Convolver stages:
+
+    set_drc | drc    <name>                 Select a DRC FIR set
+    set_xo  | xo     <name>                 Select a XOVER FIR set
+
