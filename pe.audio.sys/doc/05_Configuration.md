@@ -3,7 +3,7 @@
 Before turn on your amp, here we propose some check points to help you to prepare your pe.audio.sys to be ready to work.
 
 
-## [  ] config.yml
+## [  ] The `config.yml` file
 
 Take the given `config.yml.example` as a guide for your custom config.
 
