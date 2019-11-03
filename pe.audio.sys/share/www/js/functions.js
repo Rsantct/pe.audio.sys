@@ -483,13 +483,17 @@ function fills_inputs_selector() {
 
     var inputs = [];
 
-    // Reads "config.yml" and looking for sources definitions:
+    // Reading "config.yml" and looking for sources definitions:
     var source_section = false;
     var clines = get_file('config').split('\n');
     var line = '';
     
     for ( i in clines) {
         line = clines[i];
+        
+        // continue if blank line
+        if (line.length == 0){ continue; }
+        
         if (line.substr(0,).trim() == 'sources:') {
             source_section = true;
         }
