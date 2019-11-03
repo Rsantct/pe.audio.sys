@@ -16,22 +16,31 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
-    'fil' plugin is a 4-band parametric eq from Fons Adriaensen, more info:
-    http://kokkinizita.linuxaudio.org/
+"""
+    Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound.
+    'fil' plugin is an excellent 4-band parametric eq from Fons Adriaensen,
+    for more info see:
+        http://kokkinizita.linuxaudio.org/
     
-        options:  start | stop
+    Options:  start | stop
+        
+    Notes:  You need to define the xxxxxx.ecs to load at the belonging
+            script line under config.yml, e.g:
+
+            -scripts
+                - ecasound_peq.py: xxxxxx.ecs
+                ...
+                ...
+                
+            The xxxxxx.ecs file must be available under the 'share/eq' folder.
 """
 import subprocess as sp
 import os, sys
 from time import sleep
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+import yaml
 
-#########   YOUR CONFIG:   ############
-LSPKFOLDER  = f'{MAINFOLDER}/loudspeakers/dipojorns'
-ECSFILE     = 'dj_estant.ecs'
-#########################################
+UHOME       = os.path.expanduser("~")
+EQFOLDER    = f'{UHOME}/pe.audio.sys/share/eq'
 
 def init_ecasound():
 
@@ -39,7 +48,7 @@ def init_ecasound():
     print( f'(ecasound_peq_dipojorns) Loading: \'{ECSFILE}\'' )
     
     # Launching ecasound
-    ecsCmd = f'-q --server -s:{LSPKFOLDER}/{ECSFILE}'
+    ecsCmd = f'-q --server -s:{EQFOLDER}/{ECSFILE}'
     sp.Popen( f'ecasound {ecsCmd}'.split() )
     sleep(3)
     
@@ -70,7 +79,20 @@ def stop():
                     stdout=fnull, stderr=fnull )
 
 if __name__ == '__main__':
-
+    
+    try:
+        with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+            config = yaml.load(f)
+            scripts_lists = config['scripts']
+            for script in scripts_lists:
+                if type(script) == dict:
+                    if 'ecasound_peq.py' in script.keys():
+                        ECSFILE = script['ecasound_peq.py']
+                        break
+    except:
+        print(  f'(ecasound_peq) unable to read your .ecs file from config.yml' )
+        sys.exit()
+    
     if sys.argv[1:]:
         option = sys.argv[1]
         if option == 'start':
