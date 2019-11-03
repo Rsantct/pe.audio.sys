@@ -161,8 +161,8 @@ def run_scripts(mode='start'):
             script = list(script.keys())[0]
         print( f'(start.py) will {mode} the script \'{script}\' ...' )
         sp.Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} {mode}', shell=True)
-        if mode == 'stop':
-            sleep(.1) # this is necessary because of asyncronous stopping
+    if mode == 'stop':
+        sleep(.5) # this is necessary because of asyncronous stopping
 
 def kill_bill():
     """ killing any previous instance of this,
