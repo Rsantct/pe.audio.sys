@@ -230,8 +230,10 @@ def update_state():
             LEVEL_OLD = data['level']
 
     with open(STATE_file, 'r') as f:
-        state = yaml.load(f)
-        show_state( state )
+        state = yaml.load(f) 
+        # avoid updating when some times can be read an empty file:
+        if state:
+            show_state( state )
         
 def update_loudness_monitor():
     """ Reads the monitored value inside the file .loudness_monitor
