@@ -132,6 +132,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     /
     |-- README.md           This file
     |
+    |-- pasysctrl.hlp       Help on system control commands
+    |
     |-- .state.yml          The file that keeps the run-time system state
     |
     |-- config.yml          The main configuration file
@@ -144,7 +146,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- macros/             End user general purpose macro scripts (e.g. web interface buttons)
     |
-    |-- doc/                Help documents
+    |-- doc/                Support documents
     |
     |-- loudspeakers/       
     |   |
