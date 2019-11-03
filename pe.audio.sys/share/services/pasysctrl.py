@@ -28,6 +28,8 @@
 
 from core import Preamp, Convolver, save_yaml, STATE_PATH
 import yaml
+from os.path import expanduser
+UHOME = expanduser("~")
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -106,6 +108,9 @@ def process_commands( full_command ):
             preamp.state['xo_set'] = x
         return result
 
+    def print_help(*dummy):
+        with open( f'{UHOME}/pe.audio.sys/pasysctrl.hlp', 'r') as f:
+            return f.read()
 
     # HERE BEGINS THE COMMAND PROCESSING:
     result  = 'nothing has been done'
@@ -147,7 +152,9 @@ def process_commands( full_command ):
             'set_drc':          set_drc,
             'drc':              set_drc,
             'xo':               set_xo,
-            'set_xo':           set_xo
+            'set_xo':           set_xo,
+            
+            'help':             print_help
 
             } [ command ] ( arg, add )
     
