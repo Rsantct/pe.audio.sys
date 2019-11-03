@@ -155,10 +155,14 @@ def prepare_extra_cards( channels = 2 ):
 
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
+        #(i) Some elements on the scripts list from config.yml can be a dict, 
+        #    e.g the ecasound_peq, so we need to extract the script name.
+        if type(script) == dict:
+            script = list(script.keys())[0]
         print( f'(start.py) will {mode} the script \'{script}\' ...' )
         sp.Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} {mode}', shell=True)
         if mode == 'stop':
-            sleep(.2) # this is necessary because of asyncronous stopping
+            sleep(.1) # this is necessary because of asyncronous stopping
 
 def kill_bill():
     """ killing any previous instance of this,
