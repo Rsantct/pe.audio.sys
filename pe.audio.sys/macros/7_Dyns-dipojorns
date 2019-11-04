@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+
+"""
+    Alternates between two loudspeaker sets
+"""
+##############################################
+############### USER SETTINGS ################
+##############################################
+
+lspk_A = {  'name':         'dipojorns',
+            'drc_set':      'estant_mp',
+            'xo_set':       'mp'}
+
+lspk_B = {  'name':         'DynC5+AMRsub',
+            'drc_set':      'lp_c5+sub_multip',
+            'xo_set':       'mp_60Hz'}
+
+#### DETAILS:
+#
+#    (i) FOA please prepare a set of copies of config.yml,
+#        appropiately configured, e.g:
+#           config.yml.dipojorns
+#           config.yml.DynC5+AMRsub
+#
+#    diffs:
+#        > loudspeaker:      dipojorns       DynC5+AMRsub
+#        > init_xo:          mp              mp_60Hz
+#        < init_drc:         estant_mp       lp_c5+sub_multip
+#        > ecasound_peq.py:  dj_estant.ecs     -not set-
+#
+#    Macro procedure:
+#    
+#        - stop pasysctrl.py service
+#        - stop ecasound script
+#        - stop Brutefir process
+#        - copy config.yml.YOURLSPK --> config.yml
+#        - adjust .state.yml
+#        - restart Brutefir (cd to your lspk folder)
+#           (!) be SURE that your brutefir_config has a 50 dB initial level atten.
+#        - restart ecasound script if necessary
+#        - resuming audio settings from .state.yml (but leaving current input)
+#        - restart pasysctrl.py service
+
+from subprocess import Popen
+from shutil import copyfile
+import os, sys
+
+# ruamel.yaml preserves comments and items order when dumping to a file.
+# https://yaml.readthedocs.io/en/latest/basicuse.html
+# It is needed because we will modify the user commented out file 'config.yml'
+# This file is not updated in a pre.di.c standard installation,
+# but will do here.
+from ruamel.yaml import YAML
+import subprocess as sp
+from time import sleep
+
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append( f'{MAINFOLDER}/share' )
+import core
+
+def load_yaml(fpath, typ='rt'):
+    # (i) use typ='safe' to avoid the default behavoir
+    #     loading string 'xxxx:off' as {xxx:False}
+    try:
+        yaml = YAML(typ=typ, pure=(True if typ=='safe' else False) )
+        with open(fpath, 'r') as f:
+            d = yaml.load( f.read() )
+        return d
+    except:
+        print ( 'YAML error loading ' + fpath )
+
+def dump_yaml(d, fpath, typ='rt'):
+    # (!) use typ='safe' to save a key {xxxx:'off'} properly,
+    #     instead of 'xxx:False' string, as per default behavoir.
+    try:
+        yaml = YAML(typ=typ)
+        yaml.default_flow_style = False
+        with open(fpath, 'w') as f:
+            yaml.dump( d, f )
+    except:
+        print ( 'YAML error dumping ' + fpath )
+
+def check_Dyn_AMP(outlets=[1]):
+    accu = []
+    for o in outlets:
+        tmp = sp.check_output( (f'sispmctl -m {str(o)}').split() ) \
+              .split()[-1].decode()
+        if tmp == 'on':
+            accu.append(True)
+        else:
+            accu.append(False)
+    return all( accu )
+
+def turn_on__Dyn_AMP(outlets=[1]):
+    for o in outlets:
+        sp.call( f'sispmctl -o {str(o)}'.split() )
+        sleep(.5)
+
+if __name__ == "__main__":
+    
+    configPath   = f'{MAINFOLDER}/config.yml'
+    configPath_A = f'{MAINFOLDER}/config.yml.{lspk_A["name"]}'
+    configPath_B = f'{MAINFOLDER}/config.yml.{lspk_B["name"]}'
+    statePath = f'{MAINFOLDER}/.state.yml'
+
+    # Reading pe.audio.sys configuration
+    current_config = load_yaml( configPath )
+
+    # Toggling thinks
+    if current_config["loudspeaker"] == lspk_A["name"]:
+        lspk_New = lspk_B
+    else:
+        lspk_New = lspk_A
+        
+    # Turning on Dynaudio AMP if needed
+    if 'DynC5' in lspk_New["name"]:
+        if not check_Dyn_AMP(outlets=[1,4]):        
+            turn_on__Dyn_AMP(outlets=[1,4])
+
+    #  Macro procedure:
+
+    # 1- Stop pasysctrl.py service
+    Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl stop'.split() )
+       
+
+    # 2- Stop ecasound script
+    ecasound_in_use = False
+    for item in current_config["scripts"]:
+        if 'ecasound_peq.py' in item:
+            ecasound_in_use = True
+    if ecasound_in_use:
+        Popen( f'{MAINFOLDER}/share/scripts/ecasound_peq.py stop'.split() )
+
+    # 3- Stop Brutefir process
+    Popen( f'pkill -f -KILL brutefir'.split() )
+    sleep(.25)
+    
+    # 4- Copy config.yml.YOURLSPK --> config.yml
+    copyfile( f'{MAINFOLDER}/config.yml.{lspk_New["name"]}', 
+              f'{MAINFOLDER}/config.yml')
+    
+    # 5- Adjust .state.yml
+    # (i) It is needed to use typ='safe' to avoid 'off' as False
+    new_state = load_yaml( statePath, typ='safe')
+    new_state["drc_set"] = lspk_New["drc_set"]
+    new_state["xo_set"]  = lspk_New["xo_set"]
+    # (i) It is needed to use typ='safe' to ensure
+    #     xxx:'off' instead of xxx:off
+    dump_yaml(new_state, statePath, typ='safe')
+
+    # 6- Restart Brutefir (cd to your lspk folder)
+    #    (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
+    os.chdir( f'{MAINFOLDER}/loudspeakers/{lspk_New["name"]}' )
+    sp.Popen( 'brutefir brutefir_config'.split() )
+    os.chdir ( UHOME )
+    sleep(.5) # wait a while for Brutefir to start ...
+    sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split() )
+    sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split() )
+    
+    # 7- Restart ecasound script if necessary
+    #    (will automatically instert before Brutefir ports)
+    current_config = load_yaml( configPath )
+    ecasound_wanted = False
+    for item in current_config["scripts"]:
+        if 'ecasound_peq.py' in item:
+            ecasound_wanted = True
+    if ecasound_wanted:
+        Popen( f'{MAINFOLDER}/share/scripts/ecasound_peq.py start'.split() )
+
+    # 8- resuming audio settings (but leaving current input)
+    core.init_audio_settings()
+    #core.init_source() # NO
+        
+    # 9- restart pasysctrl.py service
+    Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl'.split() )
+
+    # Also reseting SPDIF to recover any DAC out of sync condition
+    #tmp = sp.check_output( "amixer -cDX sset 'IEC958' 'off'".split() ).decode()
+    #print(tmp)
+    #sleep(.25)
+    #tmp = sp.check_output( "amixer -cDX sset 'IEC958' 'on'".split() ).decode()
+    #print(tmp)
+
