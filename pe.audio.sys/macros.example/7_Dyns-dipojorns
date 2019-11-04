@@ -175,7 +175,7 @@ if __name__ == "__main__":
     sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split() )
     
     # 7- Restart ecasound script if necessary
-    #    (will automatically instert before Brutefir ports)
+    #    ( ecasound_eq.py will automagically insert it before Brutefir ports )
     current_config = load_yaml( configPath )
     ecasound_wanted = False
     for item in current_config["scripts"]:
