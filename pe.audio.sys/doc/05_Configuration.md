@@ -34,6 +34,23 @@ Review the README.md for **naming conventions and files under your loudspaker fo
         [  ] check carefully 'to_outputs': the polarity and attenuation you need on each way.
 
 
+Once your `brutefir_config` file is ready, you can test it:
+
+
+- Run Jack with a dummy backend:
+
+    jackd -d dummy -P8 -C2 -r44100 &  # 8+2 channels
+
+- Run Brutefir
+    
+    cd pe.audio.sys/loudspeaker/YOURLOUDSPEAKERFOLDER
+    brutefir brutefir_config &
+
+- Check Brutefir running process:
+
+    bin/peaudiosys_view_brutefir.py
+
+
 
 ## [  ] EQ folder
 
