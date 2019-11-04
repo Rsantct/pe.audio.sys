@@ -175,11 +175,11 @@ def kill_bill():
     except:
         return
     if pids:
+        pids.sort(reverse=False)
         pids.pop()
     for pid in pids:
         sp.Popen( f'kill -KILL {pid}'.split() )
         sleep(.1)
-        
 
 if __name__ == "__main__":
     
@@ -233,9 +233,8 @@ if __name__ == "__main__":
             jack_loops_prepare()
             sleep(1) # this is necessary, or checking for ports to be activated
 
-        # RESTORE: audio settings and conecting source as set under config.yml
+        # RESTORE: audio settings
         init_audio_settings()
-        init_source()
 
         # THE TCP SERVERS:
         # (i) the system control service 'pasysctl.py' needs jack to be running.
@@ -249,5 +248,9 @@ if __name__ == "__main__":
         # pre_in    -->   brutefir
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
         
+        # RESTORE source as set under config.yml
+        sleep(3)  # salon setting PENDING to investigate pulse_sink needs to wait
+        init_source()
+
     else:
         print( '(start.py) JACK not detected')
