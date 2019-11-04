@@ -131,7 +131,6 @@ coeff "xo.lo.mp" {
 # ---------------------------------------------------------
 # ---------------- CONVOLVER:  EQ filters  ----------------
 # Madatory filters "f.eq.L" "f.eq.R" for VOLUME & EQ curves
-# STARTUP attenuation: 100 dB  ;-)
 # ---------------------------------------------------------
 
 filter "f.eq.L" {
@@ -149,20 +148,22 @@ filter "f.eq.R" {
     
 # --------------------------------------------------------------
 # ------------------- CONVOLVER: DRC filters -------------------
-# Madatory filters "f.drc.L" "f.drc.R" for DRC
+# Madatory filters "f.drc.L" "f.drc.R" for DRC and LEVEL CONTROL
+# WARNING: set here a 50 dB atten for a SAFE STARTUP LEVEL  
 # --------------------------------------------------------------
 
 filter "f.drc.L" {
-    from_filters: "f.eq.L";
+    from_filters: "f.eq.L"/50.0;
     to_filters:   "f.lo.L", "f.hi.L";
-    coeff:        "drc.L.mp_multipV1";
+    coeff:        -1;
 };
 
 filter "f.drc.R" {
-    from_filters: "f.eq.R";
+    from_filters: "f.eq.R"/50.0;
     to_filters:   "f.lo.R", "f.hi.R";
-    coeff:        "drc.R.mp_multipV1";
+    coeff:        -1;
 };
+
 
 # ----------------------------------------------------------
 # ------------ CONVOLVER: XOVER filters --------------------
