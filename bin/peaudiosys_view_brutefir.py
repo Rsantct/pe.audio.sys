@@ -233,7 +233,8 @@ if __name__ == "__main__" :
 
     # Read the loudspeaker folder where brutefir has been launched
     try:
-        tmp = sp.check_output( 'pwdx $(pgrep brutefir)', shell=True ).decode()
+        tmp = sp.check_output( 'pwdx $(pgrep -f "brutefir brutefir_config")',
+                                shell=True ).decode()
         LSPK_FOLDER = tmp.split('\n')[0].split(' ')[-1]
         BRUTEFIR_CONFIG_PATH = f'{LSPK_FOLDER}/brutefir_config'
     except:
