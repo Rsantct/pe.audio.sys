@@ -33,6 +33,14 @@ Review the README.md for **naming conventions and files under your loudspaker fo
     [  ] filter stages (*)
         [  ] check carefully 'to_outputs': the polarity and attenuation you need on each way.
 
+    [  ] WARNING: set a 50 dB atten for a SAFE STARTUP LEVEL:
+           
+            filter "f.drc.L" {
+                from_filters: "f.eq.L"/50.0;
+            ... ...
+            filter "f.drc.R" {
+                from_filters: "f.eq.R"/50.0;
+
 
 Once your `brutefir_config` file is ready, you can test it:
 
