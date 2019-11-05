@@ -73,19 +73,16 @@ jack_backend_options:   -d system_card -r 48000 -P -o 6
 # Max balance setting authorised
 balance_max:   6.0
 
-# Ref_level at convolver output to obtain the reference SPL
-ref_level_gain: -10.0
-
 # Max gain authorised at convolver output
 gain_max:    0.0
 
 # ========================== THE LOUDSPEAKER  ==================================
-# (i)  XO and DRC sets will be scanned from the list of xo......pcm and
-#      drc........pcm files found under the loudspeaker folder.
 
 # Put here your loudspeaker folder name
 loudspeaker: SeasFlat
 
+# Ref_level dBFS at convolver output to obtain the reference SPL
+ref_level_gain: -10.0
 
 # ========================= STARTUP BEHAVOIR: ==================================
 # (i) Leave blank these fields to restore from the last state,
