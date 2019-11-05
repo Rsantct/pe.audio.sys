@@ -24,7 +24,7 @@
 ##############################################
 
 lspk_A = {  'name':         'dipojorns',
-            'drc_set':      'estant_mp',
+            'drc_set':      'djestan_multiV2_mp',
             'xo_set':       'mp'}
 
 lspk_B = {  'name':         'DynC5+AMRsub',
