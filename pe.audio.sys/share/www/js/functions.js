@@ -50,6 +50,7 @@ var metablank = {
     'title':        '-',
     'track_num':    '-'
     }                                       // a player's metadata dictionary 
+var last_loudspeaker = get_loudspeaker_name(); // If changed, then force a full page reload
 
 // Returns boolen as per 'load_ecasound = True|False' inside 'config/config.yml'
 function check_if_ecasound() {
@@ -320,7 +321,19 @@ function get_system_response(cmd) {
 
 // Gets the system status and updates the page
 function refresh_system_status() {
+    var curr_loudspeaker = get_loudspeaker_name();
+    if ( last_loudspeaker != curr_loudspeaker ){
+        // Pausing some seconds because the service pasysctrl
+        // will be restarter when changing the loudspaker set,
+        // so socket errors can occur when queriyng info for update.
+        setTimeout( dummy , 5000);
+        last_loudspeaker = curr_loudspeaker;
+        location.reload(forceGet=true);
+        page_initiate();
+    }
     page_update( get_system_response('status') );
+}
+function dummy(){
 }
 
 // Dumps system status into the web page
