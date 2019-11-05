@@ -73,7 +73,6 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append( f'{MAINFOLDER}/share' )
-import core
 
 def load_yaml(fpath, typ='rt'):
     # (i) use typ='safe' to avoid the default behavoir
@@ -184,7 +183,11 @@ if __name__ == "__main__":
     if ecasound_wanted:
         Popen( f'{MAINFOLDER}/share/scripts/ecasound_peq.py start'.split() )
 
-    # 8- resuming audio settings (but leaving current input)
+    # 8- Resuming audio settings (but leaving current input)
+    #    (i) import core must be done here, because core needs to know
+    #        the new config.yml to calculate properly the
+    #        loudspeaker ref_level_gain.
+    import core
     core.init_audio_settings()
     #core.init_source() # NO
         
