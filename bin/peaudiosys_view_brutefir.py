@@ -59,8 +59,8 @@ def read_config():
     global outputsMap, coeffs, filters_at_start
     global sampling_rate, filter_length, float_bits, dither, delay        
 
-    f = open(BRUTEFIR_CONFIG_PATH, 'r')
-    lineas = f.readlines()
+    with open(BRUTEFIR_CONFIG_PATH, 'r') as f:
+        lineas = f.readlines()
 
     # Outputs storage
     outputIniciado = False
@@ -163,68 +163,86 @@ def read_config():
                 filterIniciado = False
 
 
-def read_running():
-    """ Running filters in Brutefir process
-    """
-    global filters_running
+def add_atten_pol(f):
+    
+    at = 0.0 # atten total
+    pol = 1
+    
+    for key in ['from inputs', 'to outputs', 'from filters', 'to filters']:
+        tmp = f[key].split()
+        # index/atten/multiplier, for instance:
+        # 0/0.0    1/inf
+        # 3/0.0
+        # 4/-9.0/-1
+        for item in [ x for x in tmp if '/' in x ]:
 
-    findex = -1
+            # atten
+            a = item.split('/')[1]
+            if a != 'inf':
+                at += float(a)
 
-    ###########################################################
-    # Get filters running (query 'lf' to Brutefir)
-    ###########################################################
-    printado = bfcli("lf; quit")
+            # multiplier (polarity)
+            try:
+                tmp = item.split('/')[2]
+                pol *= (int( tmp ) )
+            except:
+                pass
+    
+    f["atten tot"]  = at
+    f["pol"]        = pol
+    
+    return f
 
-    for linea in printado.split("\n"):
-        atten = ''
-        pol   = ''
-        if ': "' in linea:
-            findex += 1
-            fname = linea.split('"')[-2]
-        if "coeff set:" in linea:
-            cset = linea.split(":")[1].split()[0]
-        if "to outputs:" in linea:
-            # NOTA: Se asume que se sale a una única output.
-            #       Podría no ser cierto en configuraciones experimentales que
-            #       mezclen vías sobre un mismo canal de la tarjet de sonido
-            if linea.strip() != "to outputs:":
-                if linea.count('/') == 2:
-                    pol   = linea.split('/')[-1].strip()
-                    atten = linea.split('/')[-2].strip()
-                else:
-                    pol   = '1'
-                    atten = linea.split('/')[-1].strip()
-            # El caso de las etapas eq y drc que no son salidas finales.
-            else:
-                pol   = '1'
-                atten = '0.0'
+def get_running():
+    
+    filters = []
+    f_blank = { 'f_num':    None,
+                'f_name':   None,
+                }
+    
+    # query list of filter in Brutefir
+    lines = bfcli('lf').split('\n')
+    
+    # scanning filters
+    f = {}
+    for line in lines:
 
-            filters_running.append( {'index':str(findex), 'fname':fname, 'cset':cset, 'atten':atten, 'pol':pol} )
+        if line and line[3] == ':':
 
-    #####################################
-    # cross relate filter and  coeffs
-    #####################################
-    # Tenemos los nombres de los filtros con el número de coeficiente cargado en cada filtro,
-    # ahora añadiremos el nombre , el pcm y la atenn del coeficiente.
-    for frun in filters_running:
-        for coeff in coeffs:
-            if frun['cset'] == coeff['index']:
-                frun['cname']  = coeff['name']
-                frun['cpcm']   = coeff['pcm']
-                frun['catten'] = coeff['atten']
-        # Completamos campos para posibles filtros con coeff: -1;
-        # que no habrán sido detectados en el cruce de arriba 'for coeff in coeffs'
-        if int(frun['cset']) < 0:
-            frun['cset']    = ''
-            frun['cname']   = '-1'
-            frun['cpcm']    = '-1'
-            frun['catten']  = '0.0'
+            if f:
+                f = add_atten_pol(f)
+                filters.append( f )
 
+            f = f_blank.copy()
+            f["f_num"]  = line.split(':')[0].strip()
+            f["f_name"] = line.split(':')[1].strip().replace('"','')
+        
+        if 'coeff set:' in line:
+            f["coeff set"] = line.split(':')[1].strip()
+        if 'delay blocks:' in line:
+            f["delay blocks"] = line.split(':')[1].strip()
+        if 'from inputs:' in line:
+            f["from inputs"] = line.split(':')[1].strip()
+        if 'to outputs:' in line:
+            f["to outputs"] = line.split(':')[1].strip()
+        if 'from filters:' in line:
+            f["from filters"] = line.split(':')[1].strip()
+        if 'to filters:' in line:
+            f["to filters"] = line.split(':')[1].strip()
+
+    # addding the last
+    if f:
+        f = add_atten_pol(f)
+        filters.append( f )
+
+    return filters
+    
+    
 if __name__ == "__main__" :
 
     # Read the loudspeaker folder where brutefir has been launched
     try:
-        tmp = sp.check_output( 'pwdx $(pgrep -f "brutefir brutefir_config")',
+        tmp = sp.check_output( 'pwdx $(pgrep -f "brutefir\ brutefir_config")',
                                 shell=True ).decode()
         LSPK_FOLDER = tmp.split('\n')[0].split(' ')[-1]
         BRUTEFIR_CONFIG_PATH = f'{LSPK_FOLDER}/brutefir_config'
@@ -235,14 +253,13 @@ if __name__ == "__main__" :
     outputsMap          = []
     coeffs              = []
     filters_at_start    = []
-    filters_running     = []
 
     # reading outputsMap, coeffs and filters_at_start
     read_config()
 
     # reading filters_running
-    read_running()
-
+    filters_running = get_running()
+    
     print()
     print( f'--- Brutefir process runs:' )
     print( f'{BRUTEFIR_CONFIG_PATH}')
@@ -260,38 +277,48 @@ if __name__ == "__main__" :
 
     print()
     print( "--- Coeff available:" )
-    print( "                       c# coeff                cAtten pcm_name" )
-    print( "                       -- -----                ------ --------" )
+    print( "                       c# coeff                    cAtten pcm_name" )
+    print( "                       -- -----                    ------ --------" )
     for c in coeffs:
         
         cidx    = c['index'].rjust(2)
-        cname   = c['name'].ljust(20)
+        cname   = c['name'].ljust(24)
         catt    = '{:+6.2f}'.format( float(c['atten']) )
         pcm     = c['pcm']
         cline_chunk = cidx + ' ' + cname + ' ' + catt + ' ' + pcm
         print( ' ' * 23 + cline_chunk )
 
     print()
-    print( "--- Filters running:" )
-    print( "f# filter  f.atten pol c# coeff                cAtten pcm_name" )
-    print( "-- ------  ------- --- -- -----                ------ --------" )
+    print( "--- Filters running: (totAttn sumarizes all atten in filter)\n" )
+    print( "f# filter  totAttn pol c# coeff                    cAtten pcm_name" )
+    print( "-- ------  ------- --- -- -----                    ------ --------" )
     for f in filters_running:
 
-        # {'index': '0',   'fname': 'f.eq.L',        'cset': '0',
-        #  'atten': '0.0',   'pol': '1',
-        #  'cname': 'c.eq', 'cpcm': 'dirac pulse', 'catten': '0.0'}
+        # 'f_num': '8', 'f_name': 'f.sw', 'coeff set': '8', 
+        # 'delay blocks': '0 (0 samples)', 
+        # 'from inputs': '', 'to outputs': '7/0.0', 
+        # 'from filters': '2/3.0 3/3.0', 'to filters': '', 'atten tot': 6.0
 
-        fidx    = f['index'].rjust(2)
-        fname   = f['fname'].ljust(8)
-        fatt    = '{:+6.2f}'.format( float(f['atten']) )
-        fpol    = f['pol'].ljust(2)
+        fidx    = f['f_num'].rjust(2)
+        fname   = f['f_name'].ljust(8)
+        fatt    = '{:+6.2f}'.format( float(f['atten tot']) )
+        fpol    = str(f['pol']).rjust(2)
+
         fline_chunk = fidx + ' ' + fname + ' ' + fatt + '  ' + fpol + ' '
-        cset    = f['cset'].rjust(2)
-        cname   = f['cname'].ljust(20)
-        catt    = '{:+6.2f}'.format( float(f['catten'] ) )
-        pcm     = f['cpcm']
-        cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm
+
+        cset    = f['coeff set'].rjust(2)
+        
+        cname = [ c["name"] for c in coeffs if c['index'] == f['coeff set'] ]
+        cname   = cname[0].ljust(24)
+    
+        catt  = [ c["atten"] for c in coeffs if c['index'] == f['coeff set'] ]
+        catt    = '{:+6.2f}'.format( float(catt[0]) )
+
+        pcm   = [ c["pcm"] for c in coeffs if c['index'] == f['coeff set'] ]
+
+        cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm[0]
 
         print( fline_chunk + cline_chunk )
+         
             
     print()
