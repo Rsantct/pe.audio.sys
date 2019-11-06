@@ -165,18 +165,36 @@ def run_scripts(mode='start'):
         sleep(.5) # this is necessary because of asyncronous stopping
 
 def kill_bill():
-    """ killing any previous instance of this,
-        becasue some residual try can be alive
+    """ killing any previous instance of this, becasue
+        some residual try can be alive accidentaly.
     """
-    pids = []
+
+    # List processes like this one
+    processString = f'python3 {UHOME}/pe.audio.sys/start.py'
+    rawpids = []
+    cmd = ( f'ps -eo etimes,pid,cmd' +
+            f' | grep "{processString}"' +
+            f' | grep -v grep'  )
     try:
-        pids = sp.check_output( f'pgrep -f pe.audio.sys/start'.split()
-                               ).decode().split()
+        rawpids = sp.check_output( cmd, shell=True ).decode().split('\n')
     except:
-        return
-    if pids:
-        pids.sort(reverse=False)
-        pids.pop()
+        pass
+    # Discard blanks and strip spaces:
+    rawpids = [ x.strip().replace('\n','')  for x in rawpids if x]
+    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 2th:comand_string
+    # Sorting by 1st_field:etimes (elapsed time seconds, see 'man ps'):
+    rawpids.sort( key=lambda x: int(x.split()[0]) )
+    # Now we have the 'rawpids' ordered the oldest the last.
+    #print(rawpids) #debug
+
+    # Discard the last one because it is **the own pid**
+    if rawpids:
+        rawpids.pop()
+
+    # Extracting just the 'pid' at 2ndfield [1]:
+    pids = [ x.split()[1] for x in rawpids ]
+
+    # Killing the remaining pids, if any:
     for pid in pids:
         sp.Popen( f'kill -KILL {pid}'.split() )
         sleep(.1)
