@@ -8,6 +8,6 @@ loudness_track: true
 midside: 'off'
 muted: false
 solo: 'off'
-target: +3.0-1.0
+target: +3.0-1.5_target
 treble: 0.0
 xo_set: mp
