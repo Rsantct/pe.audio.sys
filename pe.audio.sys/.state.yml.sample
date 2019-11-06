@@ -1,7 +1,6 @@
 balance: 0.0
 bass: 0.0
 drc_set: drc1
-headroom: 26.0
 input: none
 level: -20.0
 loudness_ref: 0.0
