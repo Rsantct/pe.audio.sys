@@ -32,6 +32,8 @@ import sys, os
 import subprocess as sp
 import socket
 
+UHOME = os.path.expanduser("~")
+
 class color:
    PURPLE = '\033[95m'
    CYAN = '\033[96m'
@@ -174,6 +176,26 @@ def read_config():
                 filters_at_start.append( {'index':filterIndex, 'name':fName, 'coeff':cName} )
                 filterIniciado = False
 
+
+    with open( f'{UHOME}/.brutefir_defaults', 'r') as f:
+        lines = f.read().split('\n')
+        
+    for line in lines:
+
+        if not sampling_rate:
+            if 'sampling_rate' in line:
+                sampling_rate = line.strip().split(':')[-1].strip() \
+                                + color.BOLD + ' (DEFAULT)' + color.END
+
+        if not filter_length:
+            if 'filter_length' in line:
+                filter_length = line.strip().split(':')[-1].strip() \
+                                + color.BOLD + ' (DEFAULT)' + color.END
+
+        if not float_bits:
+            if 'float_bits' in line:
+                float_bits = line.strip().split(':')[-1].strip() \
+                                + color.BOLD + ' (DEFAULT)' + color.END
 
 def add_atten_pol(f):
     
