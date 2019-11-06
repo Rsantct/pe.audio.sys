@@ -37,7 +37,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 /////////////   GLOBALS //////////////
 var loud_measure    = 0.0;                  // Initialize, will be updated reading the loudness monitor file.
-var ecasound_is_used = check_if_ecasound(); // Boolean indicates if Ecasound is used
+var ecasound_ecs = get_ecasound_ecs();      // The .ecs filename if ecasound is used
 var auto_update_interval = 1500;            // Auto-update interval millisec
 var advanced_controls = false;              // Default for showing advanced controls
 var metablank = {
@@ -52,18 +52,16 @@ var metablank = {
     }                                       // a player's metadata dictionary 
 var last_loudspeaker = get_loudspeaker_name(); // If changed, then force a full page reload
 
-// Returns boolen as per 'load_ecasound = True|False' inside 'config/config.yml'
-function check_if_ecasound() {
+// Returns the ecs file to be loaded with ecasound as per in '/config.yml'
+function get_ecasound_ecs() {
     var config  = get_file('config');
     var lines   = config.split('\n');
-    var result  = false
+    var result  = null
     var line    = ''
     for (i in lines) {
         line = lines[i];
-        if ( line.trim().split(':')[0].trim() == 'load_ecasound' ){
-            if ( line.trim().split(':')[1].trim().toLowerCase() == 'true' ) {
-                result = true;
-            }
+        if ( line.trim().split(':')[0].trim() == '- ecasound_peq.py' ){
+            result = line.trim().split(':')[1].trim().replace('.ecs','');
         }
     }
     return result
@@ -281,11 +279,14 @@ function page_initiate() {
     fills_target_selector();
     fills_xo_selector();
     fills_drc_selector();
-    if ( ecasound_is_used == true){
-        insert_peq_selector();
-        fills_peq_selector();  
+    if ( ecasound_ecs != null){
+        document.getElementById("peq").style.color = "white";
+        document.getElementById("peq").innerHTML = "PEQ: " + ecasound_ecs;
     }
-
+    else {
+        document.getElementById("peq").style.color = "grey";
+        document.getElementById("peq").innerHTML = "(no peq)";
+    }
     // Web header shows the loudspeaker name
     document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' + get_loudspeaker_name() + ' ::';
 
@@ -358,9 +359,6 @@ function page_update(status) {
     document.getElementById("inputsSelector").value =            status_decode(status, 'input');
     document.getElementById("xoSelector").value     =            status_decode(status, 'xo_set');
     document.getElementById("drcSelector").value    =            status_decode(status, 'drc_set');
-    if ( ecasound_is_used == true){
-        document.getElementById("peqSelector").value    =           status_decode(status, 'PEQ_set');
-    }
 
     // MONO, LOUDNESS buttons text lower case if deactivated ( not used but leaving this code here)
     //document.getElementById("buttonMono").innerHTML = UpLow( 'mono', status_decode(status, 'mono') );
