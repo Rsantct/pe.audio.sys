@@ -32,6 +32,18 @@ import sys, os
 import subprocess as sp
 import socket
 
+class color:
+   PURPLE = '\033[95m'
+   CYAN = '\033[96m'
+   DARKCYAN = '\033[36m'
+   BLUE = '\033[94m'
+   GREEN = '\033[92m'
+   YELLOW = '\033[93m'
+   RED = '\033[91m'
+   BOLD = '\033[1m'
+   UNDERLINE = '\033[4m'
+   END = '\033[0m'
+
 
 def bfcli(cmds=''):
     """ send commands to brutefir CLI and receive its responses
@@ -289,7 +301,7 @@ if __name__ == "__main__" :
         print( ' ' * 23 + cline_chunk )
 
     print()
-    print( "--- Filters running: (totAttn sumarizes all atten in filter)\n" )
+    print( "--- Filters running: (totAttn sumarizes all atten found in filter)\n" )
     print( "f# filter  totAttn pol c# coeff                    cAtten pcm_name" )
     print( "-- ------  ------- --- -- -----                    ------ --------" )
     for f in filters_running:
@@ -300,23 +312,32 @@ if __name__ == "__main__" :
         # 'from filters': '2/3.0 3/3.0', 'to filters': '', 'atten tot': 6.0
 
         fidx    = f['f_num'].rjust(2)
+
         fname   = f['f_name'].ljust(8)
+
         fatt    = '{:+6.2f}'.format( float(f['atten tot']) )
+        if float(fatt) < 0:
+            fatt = color.BOLD + fatt + color.END
+
         fpol    = str(f['pol']).rjust(2)
+        if f["pol"] < 0:
+            fpol = color.BOLD + fpol + color.END
 
         fline_chunk = fidx + ' ' + fname + ' ' + fatt + '  ' + fpol + ' '
 
         cset    = f['coeff set'].rjust(2)
         
-        cname = [ c["name"] for c in coeffs if c['index'] == f['coeff set'] ]
-        cname   = cname[0].ljust(24)
+        cname = [ c["name"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+        cname   = cname.ljust(24)
     
-        catt  = [ c["atten"] for c in coeffs if c['index'] == f['coeff set'] ]
-        catt    = '{:+6.2f}'.format( float(catt[0]) )
+        catt  = [ c["atten"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+        catt    = '{:+6.2f}'.format( float(catt) )
+        if float(catt) < 0:
+            catt = color.BOLD + catt + color.END
 
-        pcm   = [ c["pcm"] for c in coeffs if c['index'] == f['coeff set'] ]
+        pcm   = [ c["pcm"] for c in coeffs if c['index'] == f['coeff set'] ][0]
 
-        cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm[0]
+        cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm
 
         print( fline_chunk + cline_chunk )
          
