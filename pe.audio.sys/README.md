@@ -25,7 +25,7 @@ The originary main features were:
 
 Most of the system is written in Python3, and config files are YAML kind of, thanks **@rripio**.
 
-The control of the system is based on a tcp server architecture.
+The control of the system is based on a tcp server architecture, thanks **@amr**.
 
 The system core is mainly based on:
 
