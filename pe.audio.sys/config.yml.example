@@ -116,9 +116,11 @@ init_input:             salon
 
 
 # ============================  SOURCES  =======================================
-# (i) If capture_ports here are named 'xxxxloop', then the preamp will
-# automagically spawn them for the sources can connect into. Obviously the
-# sources must be configured accordingly.
+# (i) - If capture_ports here are named 'xxxxloop', then the preamp will
+#       automagically spawn them for the sources can connect into. Obviously the
+#       sources must be configured accordingly.
+#     - xo field is optional or can be left blank, if given will try to load the
+#       belonging xover filters set  
 
 sources:
 
