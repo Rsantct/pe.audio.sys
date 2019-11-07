@@ -326,4 +326,31 @@ XO pcm files must be named:
 
 (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
+### Full range loudspeaker w/o correction 'xo' filter
+
+If you want not to use any xo filter at all, you simply do:
+
+- configure brutefir_config with coeff -1:
+
+        filter "f.fr.L" {
+            from_filters: "f.drc.L";
+            to_outputs:   "fr.L"/0.0/+1;
+            coeff:        -1;
+        };
+
+        filter "f.fr.R" {
+            from_filters: "f.drc.R";
+            to_outputs:   "fr.R"/0.0/+1;
+            coeff:        -1;
+        };
+
+- Leave blank `xo_init:` inside `config.yml`
+
+- Leave blank `xo_set:` inside `.state.yml`
+
+- Ommit any xo....pcm file inside your loudspeaker folder.
+
+
+
+
 
