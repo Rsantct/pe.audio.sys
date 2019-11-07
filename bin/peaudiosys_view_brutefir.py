@@ -349,15 +349,25 @@ if __name__ == "__main__" :
 
         cset    = f['coeff set'].rjust(2)
         
-        cname = [ c["name"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+        try:
+            cname = [ c["name"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+        except:
+            cname = ''
         cname   = cname.ljust(24)
     
-        catt  = [ c["atten"] for c in coeffs if c['index'] == f['coeff set'] ][0]
-        catt    = '{:+6.2f}'.format( float(catt) )
-        if float(catt) < 0:
-            catt = color.BOLD + catt + color.END
+        # The filter can be set to coeff: -1 (no filter), so no matches with coeffs.
+        try:
+            catt  = [ c["atten"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+            catt    = '{:+6.2f}'.format( float(catt) )
+            if float(catt) < 0:
+                catt = color.BOLD + catt + color.END
+        except:
+            catt = ''
 
-        pcm   = [ c["pcm"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+        try:
+            pcm   = [ c["pcm"] for c in coeffs if c['index'] == f['coeff set'] ][0]
+        except:
+            pcm = ''
 
         cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm
 
