@@ -676,15 +676,15 @@ class Preamp(object):
     def select_source(self, value, *dummy):
         """ this is the source selector """
         
-        def source_select(source):
+        def try_select(source):
 
             if source == 'none':
                 jack_clear_preamp()
-                return True
+                return 'done'
 
             if not source in CONFIG['sources']:
                 # do nothing
-                return False
+                return f'source \'{source}\' not defined'
 
             # clearing 'preamp' connections
             jack_clear_preamp()
@@ -693,19 +693,38 @@ class Preamp(object):
             jack_connect_bypattern( CONFIG['sources'][source]['capture_port'],
                                     'pre_in' )
 
-            # and connecting also to the MONITORS:
+            # connecting also to the MONITORS:
             if CONFIG["source_monitors"]:
                 for monitor in CONFIG["source_monitors"]:
                     jack_connect_bypattern( CONFIG['sources'][source]['capture_port'],
                                             monitor )
 
-            return True
+            # last, trying to set the desired xo for this source 
+            try:
+                xo = CONFIG["sources"][source]['xo']
+            except:
+                return 'done'
 
-        if source_select(value):
+            if not xo:
+                return 'done'
+
+            else:
+                c = Convolver()
+                if c.set_xo( xo ) == 'done':
+                    self.state['xo_set'] = xo
+                    del(c)
+                    return 'done'
+                else:
+                    del(c)
+                    return f'\'xo: {xo}\' in \'{source}\' is not valid'
+
+
+        result = try_select(value)
+        if result:
             self.state['input'] = value
-            return 'done'
+            return result
         else:
-            return f'source \'{value}\' not defined'
+            return f'something was wrong selecting \'{value}\''
 
 
 # THE CONVOLVER: DRC and XO Brutefir stages management =========================
