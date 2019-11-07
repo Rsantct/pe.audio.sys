@@ -199,7 +199,25 @@ def kill_bill():
         sp.Popen( f'kill -KILL {pid}'.split() )
         sleep(.1)
 
+def check_state_file():
+    
+    STATEFILE = f'{UHOME}/pe.audio.sys/.state.yml' 
+    with open( STATEFILE, 'r') as f:
+        state = f.read()
+        # if th file is ok
+        if 'xo_set:' in state:
+            sp.Popen( f'cp {STATEFILE} {STATEFILE}.BAK'.split() )
+            print( f'(start.py) (i) .state.yml copied to .state.yml.BAK' )
+        # if it is damaged:
+        else:
+            print( f'(start.py) ERROR \'state.yml\' is damaged, ' + 
+                    'you can restore it from \'.state.yml.BAK\'' )
+            sys.exit()
+
 if __name__ == "__main__":
+    
+    # Lets backup .state.yml to help us if it get damaged.
+    check_state_file()
     
     # KILLING ANY PREVIOUS INSTANCE OF THIS
     kill_bill() 
@@ -250,6 +268,7 @@ if __name__ == "__main__":
         if run_level == 'all':
             jack_loops_prepare()
             sleep(1) # this is necessary, or checking for ports to be activated
+
 
         # RESTORE: audio settings
         init_audio_settings()
