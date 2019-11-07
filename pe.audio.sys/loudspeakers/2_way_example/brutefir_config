@@ -3,8 +3,11 @@
 # -----------------------------------------
 logic:
 
+# The cli module activates Brutefir CLI (command line interface) by listening on a TCP port.
 "cli" { port: 3000; },
 
+# The eq module provides a filter coeff to render a run-time EQ.
+# (i) Bands here must match with the ones at your xxxxfreq.dat file.
 "eq"  {
 #debug_dump_filter: "/tmp/brutefir-rendered-%d";
  {
