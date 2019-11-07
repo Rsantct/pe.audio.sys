@@ -286,7 +286,6 @@ if __name__ == "__main__":
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
         
         # RESTORE source as set under config.yml
-        sleep(3)  # salon setting PENDING to investigate pulse_sink needs to wait
         init_source()
 
     else:
