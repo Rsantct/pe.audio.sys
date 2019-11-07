@@ -330,7 +330,7 @@ XO pcm files must be named:
 
 If you want not to use any xo filter at all, you simply do:
 
-- configure brutefir_config with coeff -1:
+- configure `brutefir_config` with coeff -1:
 
         filter "f.fr.L" {
             from_filters: "f.drc.L";
@@ -348,7 +348,7 @@ If you want not to use any xo filter at all, you simply do:
 
 - Leave blank `xo_set:` inside `.state.yml`
 
-- Ommit any xo....pcm file inside your loudspeaker folder.
+- Omit any xo....pcm file inside your loudspeaker folder.
 
 
 
