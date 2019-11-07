@@ -672,6 +672,9 @@ def player_get_meta(readonly=False):
             metadata = spotify_meta()
         elif SPOTIFY_CLIENT == 'librespot':
             metadata = librespot_meta()
+        # source is spotify like but no client running has been detected: 
+        else:
+            metadata = json.dumps( metadata )
 
     elif source == 'mpd':
         metadata = mpd_client('get_meta')
