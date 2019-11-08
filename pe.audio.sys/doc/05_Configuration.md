@@ -23,13 +23,15 @@ Review the README.md for **naming conventions and files under your loudspaker fo
 
 ### The `brutefir_config` file
 
+You can begin from one of the provided loudspeaker examples as a template for customizing your `brutefir_config` file.
+
     [  ] Sound card out channels map
     
     [  ] output dither
     
     [  ] output delays
     
-    [  ] coeffs definition (*), use relative path at the filename: field (just the pcm filename)
+    [  ] coeffs definition, use relative path at the 'filename:' field (just the pcm filename)
 
         [  ] Declare coeffs for DRC
 
