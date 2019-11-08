@@ -308,6 +308,8 @@ Brutefir is the last element and the only one that interfaces with the sound car
 
 Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
 
+( for more info on `brutefir_config` please see `doc/Configuration.md` )
+
 So *keep only useful files* under your loudspeaker folder, and *name them meaningfully*.
 
 For control purposes, XO and DRC pcms will be scanned from the list of files found under the loudspeker folder.
