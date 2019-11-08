@@ -265,12 +265,64 @@ def bf_set_drc( drcID ):
         cmd = ( f'cfc "f.drc.L" "drc.L.{drcID}"; cfc "f.drc.R" "drc.R.{drcID}";' )
     bf_cli( cmd )
 
-def bf_set_xo( filters, xoID ):
-    """ Changes the FIRs for Xover at runtime """
-    for f in filters:
-        cmd = ( f'cfc "f.{f}.L" "xo.{f}.{xoID}"; cfc "f.{f}.R" "xo.{f}.{xoID}";' )
-        bf_cli( cmd )
+def bf_set_xo( ways, xo_coeffs, xoID ):
+    """ Changes the FIRs for XOVER at runtime """
 
+    # example:    
+    #   ways:       
+    #               f.lo.L f.hi.L f.lo.R f.hi.R f.sw
+    #   xo_coeffs:  
+    #               xo.hi.L.mp  xo.hi.R.lp 
+    #               xo.hi.R.mp  xo.hi.L.lp
+    #               xo.lo.mp    xo.lo.lp 
+    #               xo.sw.mp    xo.sw.lp
+    #   xo_sets:    
+    #               mp          lp
+    # NOTICE:
+    #   This example has dedicated coeff FIRs for hi.L and hi.R,
+    #   so when seleting the appropiate coeff we will try 'best matching'
+    
+    def find_best_match_coeff(way):
+
+        found = ''
+        # lets try matching coeff with way[2:] including the channel id
+        for coeff in xo_coeffs:
+            if way[2:] in coeff[3:] and xoID == coeff.split('.')[-1]:
+                found = coeff
+
+        # if not matches, then try just the way[2:4], e.g. 'lo'
+        if not found:
+            for coeff in xo_coeffs:
+                if way[2:4] in coeff[3:] and xoID == coeff.split('.')[-1]:
+                    found = coeff
+                
+        return found
+        
+    cmd = ''
+    for way in ways:
+        BMcoeff = find_best_match_coeff(way)
+        cmd += f'cfc "{way}" "{BMcoeff}"; ' 
+    
+    #print (cmd)
+    bf_cli( cmd )
+
+def get_brutefir_config(prop):
+    """ returns a property from brutefir_config file
+        (BETA: currently only works for ludspeaker ways)
+    """
+    with open(f'{LSPK_FOLDER}/brutefir_config','r') as f:
+        lines = f.read().split('\n')
+    
+    if prop == 'ways':
+        ways = []
+        for line in [ x for x in lines if x and 'filter' in x.strip().split() ]:
+            if not '"f.eq.' in line and not '"f.drc.' in line and \
+               line.startswith('filter'):
+                   way = line.split()[1].replace('"','')
+                   ways.append( way )
+        return ways
+    else:
+        return []
 
 # JACK MANAGEMENT: =============================================================
 
@@ -732,9 +784,11 @@ class Preamp(object):
 class Convolver(object):
     """ attributes:
 
-            drc_sets        sets of pcm FIRs for DRC
-            xo_sets         sets of pcm FIRs for XOVER
-            filters         filtering stages (loudspeaker ways)
+            drc_coeffs      list of pcm FIRs for DRC
+            xo_coeffs       list of pcm FIRs for XOVER
+            drc_sets        sets of FIRs for DRC
+            xo_sets         sets of FIRs for XOVER
+            ways            filtering stages (loudspeaker ways)
 
         methods:
 
@@ -747,35 +801,40 @@ class Convolver(object):
 
     def __init__(self):
 
-        files = os.listdir(LSPK_FOLDER)
-
-        # ------ DRC sets (Brutefir coeffs) ------
         # DRC pcm files must be named:
         #    drc.X.DRCSETNAME.pcm   where X must be L | R
-        #    0123456.........-4    
         #
-        self.drc_sets       = []
-        tmp = [ x for x in files if x[:4] == 'drc.'  ]
-        for x in tmp:
-            if not x[6:-4] in self.drc_sets:
-                self.drc_sets.append( x[6:-4] )
-
-        # ------  XO sets (Brutefir coeffs) ------
         # XO pcm files must be named:
-        #    xo.XY.XOSETNAME.pcm   where XY must be fr | lo | mi | hi | sw
-        #    0123456........-4    
-        #
-        self.xo_sets        = []
-        tmp = [ x for x in files if x[:3] == 'xo.' ]
-        for x in tmp:
-            if not x[6:-4] in self.xo_sets:
-                self.xo_sets.append( x[6:-4] )
+        #   xo.XX[.C].XOSETNAME.pcm     where XX must be:  fr | lo | mi | hi | sw
+		#								and channel C is **OPTIONAL**
+        #                               can be: L | R 
+        #   Using C allows to have dedicated FIR per channel if necessary  
+
+        files   = os.listdir(LSPK_FOLDER)
+        coeffs  = [ x.replace('.pcm','') for x in files ]
+        self.drc_coeffs = [ x for x in coeffs if x[:4] == 'drc.'  ]
+        self.xo_coeffs  = [ x for x in coeffs if x[:3] == 'xo.'   ]
+        #print('\nxo_coeffs:', xo_coeffs) # debug
         
-        # ------  LOUDSPEAKER WAYS (Brutefir filters) ------
-        self.filters = []
-        for x in tmp:
-            if not x[3:5] in self.filters:
-                self.filters.append( x[3:5] )
+        # The available DRC sets
+        self.drc_sets = []
+        for drc_coeff in self.drc_coeffs:
+            drcSetName = drc_coeff[6:]
+            if not drcSetName in self.drc_sets:
+                self.drc_sets.append( drcSetName )
+
+        # The available XO sets, i.e the last part of a xo_coeff
+        self.xo_sets = []
+        for xo_coeff in self.xo_coeffs:
+            xoSetName = xo_coeff.split('.')[-1]
+            if not xoSetName in self.xo_sets:
+                self.xo_sets.append( xoSetName )
+        #print('xo_sets:', self.xo_sets) # debug
+        
+        # Ways are the XO filter stages definded inside brutefir_config
+        # 'f.WW.C' where WW:fr|lo|mi|hi|sw and C:L|R 
+        self.ways = get_brutefir_config('ways')
+        # print('ways:', self.ways) # debug
         
     # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
     # will include two arguments for any function call, even when not necessary. 
@@ -787,12 +846,12 @@ class Convolver(object):
         else:
             return f'drc set \'{drc}\' not available'
 
-    def set_xo(self, xo, *dummy):
-        if xo in self.xo_sets:
-            bf_set_xo( self.filters, xo )
+    def set_xo(self, xo_set, *dummy):
+        if xo_set in self.xo_sets:
+            bf_set_xo( self.ways, self.xo_coeffs, xo_set )
             return 'done'
         else:
-            return f'xo set \'{xo}\' not available'
+            return f'xo set \'{xo_set}\' not available'
 
     def get_drc_sets(self, *dummy):
         return '\n'.join( self.drc_sets)
