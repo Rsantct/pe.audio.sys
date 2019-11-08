@@ -188,9 +188,10 @@ if __name__ == "__main__":
     #        the new config.yml to calculate properly the
     #        loudspeaker ref_level_gain.
     import core
-    core.init_audio_settings()
-    #core.init_source() # NO
-        
+    state = core.init_audio_settings()
+    core.save_yaml(state, core.STATE_PATH)
+    #state = core.init_source() # NO
+    
     # 9- restart pasysctrl.py service
     #  (i) From now on, 'pasysctl.py' is the ONLY OWNER of STATE_PATH.
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl'.split() )
