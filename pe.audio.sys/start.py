@@ -292,6 +292,11 @@ if __name__ == "__main__":
         # pre_in    -->   brutefir
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
         
+        # Some sources depends on scripts to launch ports in Jack, so we need
+        # to sleep a bit then retry to connect its ports to the preamp
+        sleep(3)
+        sp.Popen( f'{UHOME}/bin/peaudiosys_control input {state["input"]}'.split() )
+
 
     else:
         print( '(start.py) JACK not detected')
