@@ -257,7 +257,9 @@ if __name__ == "__main__":
         from share.core import  jack_loops_prepare,     \
                                 init_audio_settings,    \
                                 init_source,            \
-                                jack_connect_bypattern
+                                jack_connect_bypattern, \
+                                save_yaml, STATE_PATH
+
         # BRUTEFIR
         start_brutefir()
 
@@ -269,12 +271,17 @@ if __name__ == "__main__":
             jack_loops_prepare()
             sleep(1) # this is necessary, or checking for ports to be activated
 
-
         # RESTORE: audio settings
-        init_audio_settings()
+        state = init_audio_settings()
+        save_yaml(state, STATE_PATH)
+        
+        # RESTORE source as set under config.yml
+        state = init_source()
+        save_yaml(state, STATE_PATH)
 
         # THE TCP SERVERS:
-        # (i) the system control service 'pasysctl.py' needs jack to be running.
+        # (i) - The system control service 'pasysctl.py' needs jack to be running.
+        #     - From now on, 'pasysctl.py' MUST BE the ONLY OWNER of STATE_PATH.
         for service in get_services():
             start_service(service)
 
@@ -285,8 +292,6 @@ if __name__ == "__main__":
         # pre_in    -->   brutefir
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
         
-        # RESTORE source as set under config.yml
-        init_source()
 
     else:
         print( '(start.py) JACK not detected')
