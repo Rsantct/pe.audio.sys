@@ -297,7 +297,9 @@ The selected source is an MPD player wich is configured to point to the mpd_loop
 
 The preamp has a unique entrance point: the pre_in_loop. This loops feeds the main audio processor, i.e Brutefir.
 
-If you want to add another audio processor, e.g. an Ecasound parametric EQ plugin, you can prepare an script to INSERT it after the pre_in_loop and before the Brutefir input.
+You can add another audio processor, e.g. an Ecasound parametric EQ plugin. We provide hera a script that INSERTS it after the pre_in_loop and before the Brutefir input.
+
+You are free to insert any other sound processor, Jack is your friend. To automate it on start up, you can prepare an appropriate script.
 
 Brutefir is the last element and the only one that interfaces with the sound card Jack ports. The loudspeakers are a two way set, connected at the last sound card ports. 
 
