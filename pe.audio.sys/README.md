@@ -317,12 +317,12 @@ Please name files as follows:
 
 DRC pcm files must be named:
 
-    drc.X.DRCSETNAME.pcm   where X must be L | R
+    drc.X.DRCSETNAME.pcm      where X must be L | R
 
 XO pcm files must be named:
 
-    xo.XX[.C].XOSETNAME.pcm     where XX must be:  fr | lo | mi | hi | sw
-		                and channel C is OPTIONAL, can be: L | R
+    xo.XX[.C].XOSETNAME.pcm   where XX must be:  fr | lo | mi | hi | sw
+                              and channel C is OPTIONAL, can be: L | R
 
     Using C allows to have DEDICATED FIR PER CHANNEL if desired.  
 
