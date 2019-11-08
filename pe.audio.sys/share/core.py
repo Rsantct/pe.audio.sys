@@ -466,10 +466,12 @@ def init_source():
         preamp.select_source  (   CONFIG["init_input"]            )
     else:
         preamp.select_source  (   core.state['input']             )
-
-    save_yaml( preamp.state, STATE_PATH )
     
+    state = preamp.state
     del(preamp)
+
+    return state
+
     
 def init_audio_settings():
     """ Forcing if indicated on config.yml or restoring last state from disk
@@ -543,10 +545,12 @@ def init_audio_settings():
     else:
         preamp.set_target     (   preamp.state['target']          )
 
-    save_yaml( preamp.state, STATE_PATH )
+    state = preamp.state
 
     del(convolver)
     del(preamp)
+    
+    return state
 
 class Preamp(object):
     """ attributes:
