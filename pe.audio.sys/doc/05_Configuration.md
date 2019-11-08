@@ -23,15 +23,25 @@ Review the README.md for **naming conventions and files under your loudspaker fo
 
 ### The `brutefir_config` file
 
-    [  ] sound card out channels map
+    [  ] Sound card out channels map
+    
     [  ] output dither
+    
     [  ] output delays
-    [  ] coeffs definition (*), use relative path just the pcm filename
-        [  ] coeffs for DRC
-        [  ] coeffs for XOVER (if a multiway speaker is used)
+    
+    [  ] coeffs definition (*), use relative path at the filename: field (just the pcm filename)
 
-    [  ] filter stages (*)
-        [  ] check carefully 'to_outputs': the polarity and attenuation you need on each way.
+        [  ] Declare coeffs for DRC
+
+        [  ] Declare coeffs for XOVER (if a multiway speaker is used)
+
+             For clarity and management reasons, both drc an xover coeff names
+             MUST be the same as the pcm file w/o the .pcm extension
+
+
+    [  ] filter stages (xover filtering and routing)
+    
+        [  ] Check carefully 'to_outputs': the polarity and attenuation you need on each way.
 
     [  ] WARNING: set a 50 dB atten for a SAFE STARTUP LEVEL:
            
