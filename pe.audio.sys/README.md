@@ -317,14 +317,16 @@ Please name files as follows:
 
 DRC pcm files must be named:
 
-    drc.<X>.DRCSETNAME.pcm   where X must be:    L | R
-
+    drc.X.DRCSETNAME.pcm   where X must be L | R
 
 XO pcm files must be named:
 
-    xo.<XX>.XOSETNAME.pcm    where XX must be:  fr | lo | mi | hi | sw
+    xo.XX[.C].XOSETNAME.pcm     where XX must be:  fr | lo | mi | hi | sw
+		                         					and channel C is **OPTIONAL**, can be: L | R
 
-(fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
+    Using C allows to have **dedicated FIR per channel** if necessary  
+
+    (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
 ### Full range loudspeaker w/o correction 'xo' filter
 
