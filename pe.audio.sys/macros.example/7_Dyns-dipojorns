@@ -192,6 +192,7 @@ if __name__ == "__main__":
     #core.init_source() # NO
         
     # 9- restart pasysctrl.py service
+    #  (i) From now on, 'pasysctl.py' is the ONLY OWNER of STATE_PATH.
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl'.split() )
 
     # Also reseting SPDIF to recover any DAC out of sync condition
