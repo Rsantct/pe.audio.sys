@@ -2,10 +2,7 @@
 Copyright (c) 2019 Rafael Sánchez
 This file is part of 'pe.audio.sys', a PC based personal audio system.
 
-This is based on 'pre.di.c,' a preamp and digital crossover
-https://github.com/rripio/pre.di.c
-Copyright (C) 2018 Roberto Ripio
-'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
+This code is based on 'FIRtro', a preamp and digital crossover
 https://github.com/AudioHumLab/FIRtro
 Copyright (c) 2006-2011 Roberto Ripio
 Copyright (c) 2011-2016 Alberto Miguélez
