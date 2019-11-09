@@ -146,19 +146,16 @@ function list_macros() {
     myREQ.open("GET", "php/functions.php?command=list_macros", async=false);
     myREQ.send();
     list = JSON.parse( myREQ.responseText );
-    // Remove '.' and '..' from the list ...
-    if ( list.length > 2 ) {
-        list = list.slice(2, );
-        // ... and discard any disabled item, i.e. not named as 'N_xxxxx'
-        for (i in list) {
-            if ( isNumeric( list[i].split('_')[0] ) ) {
-                list2.push( list[i] );
-            }
+
+    // clean leaving valid items to fill buttons 1...9
+    for (i in list) {
+        if (    parseInt( list[i].split('_')[0] ) >= 1 &&
+                parseInt( list[i].split('_')[0] ) <= 9 &&
+                list[i][1] == '_'                          ) {
+            list2.push( list[i] );
         }
-        return list2;
     }
-    // if no elements, but '.' and '..', then returns an empty list
-    else { return [];}
+    return list2;
 }
 
 // Filling the user's macros buttons
