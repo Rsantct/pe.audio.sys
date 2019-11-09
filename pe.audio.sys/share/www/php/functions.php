@@ -4,7 +4,7 @@
     Copyright (c) 2019 Rafael Sánchez
     This file is part of 'pe.audio.sys', a PC based personal audio system.
     
-    This code is based on 'FIRtro', a preamp and digital crossover
+    This code is based on @amr web code on 'FIRtro'
     https://github.com/AudioHumLab/FIRtro
     Copyright (c) 2006-2011 Roberto Ripio
     Copyright (c) 2011-2016 Alberto Miguélez
