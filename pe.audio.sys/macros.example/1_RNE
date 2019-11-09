@@ -3,7 +3,3 @@
 $HOME/pe.audio.sys/share/scripts/istreams.py preset 1
 echo "input istreams" | nc -N localhost 9989
 
-# RNE has high compression broadcast sound, loudness war,
-# so it is better to deactivate loudness compensation
-echo "loudness off" | nc -N localhost 9989
-
