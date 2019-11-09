@@ -56,6 +56,7 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 
     state | status | get_state  Returns the whole system status parameters,
                                 as per stored in .state.yml
+    get_inputs                  List of available inputs
     get_eq                      Returns the current Brutefir EQ stage (freq, mag ,pha)
     get_target_sets             List of target curves sets available under the eq folder
     get_drc_sets                List of drc sets available under the loudspeaker folder
