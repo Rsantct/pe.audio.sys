@@ -492,36 +492,39 @@ function UpLow(prop, truefalse) {
 // INPUTS selector
 function fills_inputs_selector() {
 
-    var inputs = [];
+    //var inputs = [];
+    //
+    //// Reading "config.yml" and looking for sources definitions:
+    //var source_section = false;
+    //var clines = get_file('config').split('\n');
+    //var line = '';
+    //
+    //for ( i in clines) {
+    //    line = clines[i];
+    //    
+    //    // continue if blank line
+    //    if (line.length == 0){ continue; }
+    //    
+    //    if (line.substr(0,).trim() == 'sources:') {
+    //        source_section = true;
+    //    }
+    //    if (source_section == true){
+    //        
+    //        if ( (line.substr(-1)  == ":"   )     && 
+    //             (line.substr(0,4) == "    ")     ) {
+    //            inputs.push( line.trim().slice(0,-1) );
+    //        }
+    //
+    //        if ( (line.substr(0,1) != " ")              &&
+    //             (line.substr(0,).trim() != 'sources:') && 
+    //             (line.indexOf('#') < 0 )               ) {
+    //            source_section = false;
+    //        }
+    //    }
+    //}
 
-    // Reading "config.yml" and looking for sources definitions:
-    var source_section = false;
-    var clines = get_file('config').split('\n');
-    var line = '';
-    
-    for ( i in clines) {
-        line = clines[i];
-        
-        // continue if blank line
-        if (line.length == 0){ continue; }
-        
-        if (line.substr(0,).trim() == 'sources:') {
-            source_section = true;
-        }
-        if (source_section == true){
-            
-            if ( (line.substr(-1)  == ":"   )     && 
-                 (line.substr(0,4) == "    ")     ) {
-                inputs.push( line.trim().slice(0,-1) );
-            }
-
-            if ( (line.substr(0,1) != " ")              &&
-                 (line.substr(0,).trim() != 'sources:') && 
-                 (line.indexOf('#') < 0 )               ) {
-                source_section = false;
-            }
-        }
-    }
+    // getting the inputs list from running core
+    var inputs = get_system_response( 'get_inputs' ).split('\n');
 
     // Filling the options in the inputs selector
     // https://www.w3schools.com/jsref/met_select_add.asp
