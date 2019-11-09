@@ -128,6 +128,7 @@ def process_commands( full_command ):
             'state':            preamp.get_state,
             'status':           preamp.get_state,
             'get_state':        preamp.get_state,
+            'get_inputs':       preamp.get_inputs,
             'get_eq':           preamp.get_eq,
             'get_target_sets':  preamp.get_target_sets,
             'get_drc_sets':     convolver.get_drc_sets,
