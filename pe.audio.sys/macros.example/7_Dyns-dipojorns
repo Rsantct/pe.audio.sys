@@ -17,7 +17,8 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    Alternates between two loudspeaker sets
+    Alternates between two loudspeaker sets, both attached to differents
+    channels ports from the same system sound card.
 """
 ##############################################
 ############### USER SETTINGS ################
@@ -34,7 +35,7 @@ lspk_B = {  'name':         'DynC5+AMRsub',
 #### DETAILS:
 #
 #    (i) FOA please prepare a set of copies of config.yml,
-#        appropiately configured, e.g:
+#        appropiately configured, and named as follow:
 #           config.yml.dipojorns
 #           config.yml.DynC5+AMRsub
 #
@@ -112,6 +113,12 @@ def turn_on__Dyn_AMP(outlets=[1]):
         sp.call( f'sispmctl -o {str(o)}'.split() )
         sleep(.5)
 
+def peaudiosys_command(cmd):
+    addr = current_config["services_addressing"]["pasysctrl_address"]
+    port = current_config["services_addressing"]["pasysctrl_port"]
+    Popen( f'echo "{cmd}" | nc -N {addr} {str(port)}', shell=True )
+
+
 if __name__ == "__main__":
     
     configPath   = f'{MAINFOLDER}/config.yml'
@@ -134,6 +141,9 @@ if __name__ == "__main__":
             turn_on__Dyn_AMP(outlets=[1,4])
 
     #  Macro procedure:
+
+    # MUTE
+    peaudiosys_command('mute on')
 
     # 1- Stop pasysctrl.py service
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl stop'.split() )
@@ -195,6 +205,10 @@ if __name__ == "__main__":
     # 9- restart pasysctrl.py service
     #  (i) From now on, 'pasysctl.py' is the ONLY OWNER of STATE_PATH.
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl'.split() )
+
+    # UNMUTE
+    peaudiosys_command('mute off')
+
 
     # Also reseting SPDIF to recover any DAC out of sync condition
     #tmp = sp.check_output( "amixer -cDX sset 'IEC958' 'off'".split() ).decode()
