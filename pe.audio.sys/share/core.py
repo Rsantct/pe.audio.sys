@@ -556,6 +556,7 @@ class Preamp(object):
     """ attributes:
 
             state           state dictionary
+            inputs          the available inputs dict.
             target_sets     target curves available under the 'eq' folder
             bass_span       available span for tone curves
             treble_span
@@ -577,12 +578,15 @@ class Preamp(object):
             set_midside
 
             get_state
+            get_inputs
             get_target_sets
             get_eq
     """
 
     def __init__(self):
-
+        
+        # The available inputs
+        self.inputs = CONFIG['sources']
         # The state dictionary
         self.state = read_yaml( STATE_PATH )
         # The target curves available under the 'eq' folder
@@ -738,7 +742,7 @@ class Preamp(object):
                 jack_clear_preamp()
                 return 'done'
 
-            if not source in CONFIG['sources']:
+            if not source in self.inputs:
                 # do nothing
                 return f'source \'{source}\' not defined'
 
@@ -782,7 +786,9 @@ class Preamp(object):
         else:
             return f'something was wrong selecting \'{value}\''
 
-
+    def get_inputs(self, *dummy):
+        return '\n'.join( self.inputs )
+        
 # THE CONVOLVER: DRC and XO Brutefir stages management =========================
 
 class Convolver(object):
