@@ -4,14 +4,14 @@
 # A command line tool to control the system
 #
 
-# configure here the control service addr and port:
-SRV_ADDR='myrpi3.local'
-SRV_PORT=9989
-
-# or will try to read from the config file
+# will try to read the control service addr and port from the config file:
 SRV_ADDR=$( grep pasysctrl_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
 SRV_PORT=$( grep pasysctrl_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+
+# or you can force here:
+#SRV_ADDR='myrpi3.local'
+#SRV_PORT=9989
 
 if [[ $(uname) == *'Linux'* ]];then
     # 'nc' on Linux: -N shutdown the network socket after EOF on the input.
