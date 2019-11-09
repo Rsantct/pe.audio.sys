@@ -41,7 +41,7 @@ from time import sleep
 def start():
     tmp = "pactl load-module module-jack-sink channels=2 client_name=pulse_sink connect=False"
     Popen( tmp.split() )
-    sleep(.5)
+    sleep(.2)
     tmp = "pacmd set-default-sink jack_out"
     Popen( tmp.split() )
 
