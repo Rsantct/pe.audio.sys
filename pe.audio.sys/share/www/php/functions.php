@@ -4,10 +4,7 @@
     Copyright (c) 2019 Rafael Sánchez
     This file is part of 'pe.audio.sys', a PC based personal audio system.
     
-    This is based on 'pre.di.c,' a preamp and digital crossover
-    https://github.com/rripio/pre.di.c
-    Copyright (C) 2018 Roberto Ripio
-    'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
+    This code is based on 'FIRtro', a preamp and digital crossover
     https://github.com/AudioHumLab/FIRtro
     Copyright (c) 2006-2011 Roberto Ripio
     Copyright (c) 2011-2016 Alberto Miguélez
@@ -50,7 +47,7 @@
     //echo '---'.$LSPKNAME.'---';
     //echo '---'.$LSPK_FOLDER.'---';
     
-    // Gets the base folder where php code and pre.di.c are located
+    // Gets the base folder where php code and pe.audio.sys are located
     function get_home() {
         $phpdir = getcwd();
         $pos = strpos($phpdir, 'pe.audio.sys');
@@ -62,7 +59,7 @@
         return json_encode( scandir( $folder ) );
     }
 
-    // Gets single line configured items from pre.di.c 'config.yml' file
+    // Gets single line configured items from pe.audio.sys 'config.yml' file
     function get_config($item) {
         // to have access to variables outside
         global $CFG_FOLDER;
@@ -157,7 +154,7 @@
         readfile($fpath);
     }
     elseif ( $command == "read_loudness_monitor_file" ) {
-        $fpath = $HOME."/pre.di.c/.loudness_monitor";
+        $fpath = $HOME."/pe.audio.sys/.loudness_monitor";
         readfile($fpath);
     }
     
