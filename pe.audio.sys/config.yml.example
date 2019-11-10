@@ -109,10 +109,22 @@ init_bass:              0
 init_treble:            0
 init_balance:           0
 init_loudness_track:    'on'
-init_loudness_ref:      6          # most records suffers loudness war mastering
+init_loudness_ref:      6.0     # most records suffers loudness war mastering
 init_midside:           'off'
 init_solo:              'off'
 init_input:             salon
+
+# =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
+# (i) Leave blank these fields or indicate a value to force.
+#     Please use 'off' or 'on' with quotes when necessary.
+
+on_change_input:
+    bass:           0.0
+    treble:         0.0
+    loudness_track: True
+    loudness_ref:   6.0         # most records suffers loudness war mastering
+    midside:        'off'
+    solo:           'off'
 
 
 # ============================  SOURCES  =======================================
