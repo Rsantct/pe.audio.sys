@@ -6,6 +6,10 @@ You need **Python>=3.6** and all python stuff as indicated in **[README.md](http
 
 ## First install:
 
+0- If you comes from the old version of this distro, please remove any stuff under `~/tmp` 
+
+    `rm -r tmp/pe.audio.sys-*`
+
 1- Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it:
 
 ```
