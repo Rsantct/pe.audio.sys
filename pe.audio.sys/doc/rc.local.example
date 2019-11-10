@@ -1,10 +1,10 @@
 
 # switch on your amplifier:
-su -l peasys -c "/home/peaudiosys/bin/ampli.sh on"
+su -l YourUser -c "/home/YourUser/bin/ampli.sh on"
 
 
 # starts pe.audio.sys
-su -l peasys -c "python3 /home/peaudiosys/pe.audio.sys/start.py all"
+su -l YourUser -c "python3 /home/YourUser/pe.audio.sys/start.py all"
 
 
 exit 0
