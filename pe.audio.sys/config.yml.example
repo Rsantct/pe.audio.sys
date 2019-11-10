@@ -84,7 +84,7 @@ loudspeaker: SeasFlat
 # Ref_level dBFS at convolver output to obtain the reference SPL
 ref_level_gain: -10.0
 
-# ========================= STARTUP BEHAVOIR: ==================================
+# ========================= STARTUP BEHAVIOR: ==================================
 # (i) Leave blank these fields to restore from the last state,
 #     or indicate a value to force.
 #     Please use 'off' or 'on' with quotes when necessary.
