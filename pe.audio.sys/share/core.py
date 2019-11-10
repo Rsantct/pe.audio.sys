@@ -735,6 +735,18 @@ class Preamp(object):
 
     def select_source(self, value, *dummy):
         """ this is the source selector """
+
+        def on_change_input_behavior():
+            candidate = self.state.copy()
+            try:
+                options = CONFIG["on_change_input"]
+                for option in options:
+                    value = CONFIG["on_change_input"][option]
+                    if value != None:
+                        candidate[option] = value
+            except:
+                print( '(config.yml) missing \'on_change_input\' options' )
+            return candidate
         
         def try_select(source):
 
@@ -782,6 +794,7 @@ class Preamp(object):
         result = try_select(value)
         if result:
             self.state['input'] = value
+            self._validate( on_change_input_behavior() )
             return result
         else:
             return f'something was wrong selecting \'{value}\''
