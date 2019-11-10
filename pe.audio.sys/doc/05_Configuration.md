@@ -105,4 +105,13 @@ When things seems to be ok, you can try to use the actual alsa sound card, but *
 
 - **`pe.audio.sys/start.py all`**
 
+## [ ] Autorun on power on
+
+On Debian systems, you can simply add a line inside your `/etc/rc.local`
+
+    su -l YourUser -c "/home/YourUser/pe.audio.sys/start.py all"
+
+
+
+
 
