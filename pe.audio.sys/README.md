@@ -184,6 +184,11 @@ Some points:
 
 - The necessary preamp **loop ports** will be auto spawn under JACK when source `capture_ports` are named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
 
+- You can force some audio **settings at start up**, see `init_xxxxx` options.
+
+- You can force some audio **settings when change the input source**, see `on_change_input:` section.
+
+
 Here you are an uncommented bare example of `config.yml`:
 
 
@@ -223,10 +228,18 @@ Here you are an uncommented bare example of `config.yml`:
     init_treble:            0
     init_balance:           0
     init_loudness_track:    'on'
-    init_loudness_ref:      6         # most records suffers loudness war mastering
+    init_loudness_ref:      6.0    # most records suffers loudness war mastering
     init_midside:           'off'
     init_solo:              'off'
     init_input:             salon
+
+    on_change_input:
+        bass:           0.0
+        treble:         0.0
+        loudness_track: True
+        loudness_ref:   6.0        # most records suffers loudness war mastering
+        midside:        'off'
+        solo:           'off'
 
     sources:
         spotify:
