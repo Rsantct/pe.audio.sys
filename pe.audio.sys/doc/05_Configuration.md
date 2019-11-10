@@ -84,7 +84,9 @@ Use the distro `.state.yml.sample`
 
 ## [  ] Environment variables
 
-(i) If you comes from pre.di.c or FIRtro, please remove any `pre.di.c` directory reference from your `$PYTHONPATH` and `$PATH` environment variables under your `.profile`
+(i) If you comes from pre.di.c or FIRtro, please remove any `pre.di.c` directory reference from your `$PYTHONPATH` and `$PATH` environment variables under your `.profile`.
+
+Then relogin.
 
 
 ## [ ] 1st time start up the system
