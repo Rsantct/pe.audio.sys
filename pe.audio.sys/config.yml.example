@@ -128,7 +128,7 @@ on_change_input:
 
 
 # ============================  SOURCES  =======================================
-# (i) - If capture_ports here are named 'xxxxloop', then the preamp will
+# (i) - If capture_ports here are named 'xxxx_loop', then the preamp will
 #       automagically spawn them for the sources can connect into. Obviously the
 #       sources must be configured accordingly.
 #     - xo field is optional or can be left blank, if given will try to load the
