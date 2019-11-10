@@ -154,6 +154,9 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 #########################################################
 forig=$ORIG"/.install/apache-site/pe.audio.sys.conf"
 fdest="/etc/apache2/sites-available/pe.audio.sys.conf"
+# updating your HOME path inside pe.audio.sys.conf
+sed -i s/peaudiosys/$(basename $HOME)/g  $forig
+
 updateWeb=1
 echo ""
 echo "(i) Checking the website 'pe.audio.sys'"
@@ -171,16 +174,11 @@ if [ -f $fdest ]; then
 fi
 if [ "$updateWeb" ]; then
     echo "(!) You need admin privilegies (sudo)"
-    echo "(i) ... or maybe you don't want to update pe.audio.sys.conf"
-    echo "        because your home dir is not /home/peaudiosys"
     echo "( ^C to cancel the website update )\n"
     sudo cp $forig $fdest
-    sudo a2ensite pre.di.c.conf
     sudo a2dissite 000-default.conf
+    # a helper when migrating from pre.di.c
+    sudo a2dissite pre.di.c.conf
+    sudo a2ensite pe.audio.sys.conf
     sudo service apache2 reload
 fi
-echo ""
-echo "(i) NOTICE:"
-echo "    If you install pe.audio.sys under a home other than '/home/peaudiosys'"
-echo "    please update accordingly:"
-echo "        ""$fdest"
