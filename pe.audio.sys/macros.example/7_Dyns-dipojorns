@@ -1,36 +1,22 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2019 Rafael Sánchez
-# This file is part of 'pe.audio.sys', a PC based personal audio system.
-#
-# 'pe.audio.sys' is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# 'pe.audio.sys' is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
-
 """
     Alternates between two loudspeaker sets, both attached to differents
     channels ports from the same system sound card.
 """
 ##############################################
-############### USER SETTINGS ################
-##############################################
+############### USER SETTINGS: ###############
 
 lspk_A = {  'name':         'dipojorns',
             'drc_set':      'djestan_multiV2_mp',
-            'xo_set':       'mp'}
+            'xo_set':       'lp'}
 
 lspk_B = {  'name':         'DynC5+AMRsub',
             'drc_set':      'lp_c5+sub_multip',
-            'xo_set':       'mp_60Hz'}
+            'xo_set':       'lp_60Hz'}
+
+
+
 
 #### DETAILS:
 #
@@ -51,12 +37,14 @@ lspk_B = {  'name':         'DynC5+AMRsub',
 #        - stop ecasound script
 #        - stop Brutefir process
 #        - copy config.yml.YOURLSPK --> config.yml
-#        - adjust .state.yml
+#        - adjust .state.yml so that resuming audio settings later works properly.
 #        - restart Brutefir (cd to your lspk folder)
 #           (!) be SURE that your brutefir_config has a 50 dB initial level atten.
 #        - restart ecasound script if necessary
 #        - resuming audio settings from .state.yml (but leaving current input)
 #        - restart pasysctrl.py service
+#        - if config.yml 'on_init:' section indicates any drc or xo , 
+#          we still need to set the wanted here lspk_A/B
 
 from subprocess import Popen
 from shutil import copyfile
@@ -114,9 +102,7 @@ def turn_on__Dyn_AMP(outlets=[1]):
         sleep(.5)
 
 def peaudiosys_command(cmd):
-    addr = current_config["services_addressing"]["pasysctrl_address"]
-    port = current_config["services_addressing"]["pasysctrl_port"]
-    Popen( f'echo "{cmd}" | nc -N {addr} {str(port)}', shell=True )
+    Popen( f'echo "{cmd}" | nc -N {control_addr} {str(control_port)}', shell=True )
 
 
 if __name__ == "__main__":
@@ -128,6 +114,8 @@ if __name__ == "__main__":
 
     # Reading pe.audio.sys configuration
     current_config = load_yaml( configPath )
+    control_addr = current_config["services_addressing"]["pasysctrl_address"]
+    control_port = current_config["services_addressing"]["pasysctrl_port"]
 
     # Toggling thinks
     if current_config["loudspeaker"] == lspk_A["name"]:
@@ -141,9 +129,6 @@ if __name__ == "__main__":
             turn_on__Dyn_AMP(outlets=[1,4])
 
     #  Macro procedure:
-
-    # MUTE
-    peaudiosys_command('mute on')
 
     # 1- Stop pasysctrl.py service
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl stop'.split() )
@@ -165,7 +150,7 @@ if __name__ == "__main__":
     copyfile( f'{MAINFOLDER}/config.yml.{lspk_New["name"]}', 
               f'{MAINFOLDER}/config.yml')
     
-    # 5- Adjust .state.yml
+    # 5- Adjust .state.yml so that init_audio_settings can do its job later
     # (i) It is needed to use typ='safe' to avoid 'off' as False
     new_state = load_yaml( statePath, typ='safe')
     new_state["drc_set"] = lspk_New["drc_set"]
@@ -173,7 +158,7 @@ if __name__ == "__main__":
     # (i) It is needed to use typ='safe' to ensure
     #     xxx:'off' instead of xxx:off
     dump_yaml(new_state, statePath, typ='safe')
-
+    
     # 6- Restart Brutefir (cd to your lspk folder)
     #    (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
     os.chdir( f'{MAINFOLDER}/loudspeakers/{lspk_New["name"]}' )
@@ -199,21 +184,18 @@ if __name__ == "__main__":
     #        loudspeaker ref_level_gain.
     import core
     state = core.init_audio_settings()
-    core.save_yaml(state, core.STATE_PATH)
+    core.save_yaml(state, statePath)
     #state = core.init_source() # NO
     
     # 9- restart pasysctrl.py service
     #  (i) From now on, 'pasysctl.py' is the ONLY OWNER of STATE_PATH.
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl'.split() )
+    sleep(2)
+    
+    # 10- If config.yml 'on_init:' section indicates any drc or xo , 
+    #     we still need to set the wanted here at the very beginning
+    #     for lspk_A or lspk_B
+    peaudiosys_command( f'set_drc {lspk_New["drc_set"]}' )
+    peaudiosys_command( f'set_xo  {lspk_New["xo_set"]}'  )
 
-    # UNMUTE
-    peaudiosys_command('mute off')
-
-
-    # Also reseting SPDIF to recover any DAC out of sync condition
-    #tmp = sp.check_output( "amixer -cDX sset 'IEC958' 'off'".split() ).decode()
-    #print(tmp)
-    #sleep(.25)
-    #tmp = sp.check_output( "amixer -cDX sset 'IEC958' 'on'".split() ).decode()
-    #print(tmp)
 
