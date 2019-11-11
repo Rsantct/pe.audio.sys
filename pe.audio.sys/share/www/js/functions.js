@@ -66,6 +66,8 @@ function get_ecasound_ecs() {
 
 // Used from buttons to send commands to the control server
 function control_cmd(cmd, update=true) {
+    // avoids http socket lossing some symbols (eg. if '+' is used in a drc or xo name)
+    cmd = http_prepare(cmd);
     // Sends the command through by the server's PHP:
     // https://www.w3schools.com/js/js_ajax_http.asp
     var myREQ = new XMLHttpRequest();
@@ -724,7 +726,7 @@ function fills_target_selector() {
 
 // Auxiliary function to avoid http socket lossing some symbols
 function http_prepare(x) {
-    x = x.replace(' ', '%20')
+    //x = x.replace(' ', '%20')  # leaving spaces as they are
     x = x.replace('!', '%21')
     x = x.replace('"', '%22')
     x = x.replace('#', '%23')
