@@ -480,11 +480,11 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
 
-    # (i) using != None below to detect 0 values
+    # (i) using != None below to detect 0 or False values
 
     on_init = CONFIG["on_init"]
 
-    if on_init["muted"]:
+    if on_init["muted"] != None:
         preamp.set_mute       (   on_init["muted"]                )
     else:
         preamp.set_mute       (   preamp.state['muted']           )
@@ -512,7 +512,7 @@ def init_audio_settings():
     else:
         preamp.set_balance    (   preamp.state['balance']         )
 
-    if on_init["loudness_track"]:
+    if on_init["loudness_track"] != None:
         preamp.set_loud_track (   on_init["loudness_track"]       )
     else:
         preamp.set_loud_track (   preamp.state['loudness_track']  )
@@ -534,11 +534,13 @@ def init_audio_settings():
 
     if on_init["xo"]:
         convolver.set_xo      (   on_init["xo"]                   )
+        preamp.state["xo_set"] = on_init["xo"]
     else:
         convolver.set_xo      (   preamp.state['xo_set']          )
 
     if on_init["drc"]:
         convolver.set_drc     (   on_init["drc"]                  )
+        preamp.state["drc_set"] = on_init["drc"]
     else:
         convolver.set_drc     (   preamp.state['drc_set']         )
 
@@ -548,7 +550,6 @@ def init_audio_settings():
         preamp.set_target     (   preamp.state['target']          )
 
     state = preamp.state
-
     del(convolver)
     del(preamp)
     
@@ -686,6 +687,8 @@ class Preamp(object):
 
     def set_loud_track(self, value, *dummy):
         candidate = self.state.copy()
+        if type(value) == bool:
+            value = str(value)
         try:
             value = { 'on':True , 'off':False, 'true':True, 'false':False,
                       'toggle': {True:False, False:True}[self.state['loudness_track']]
@@ -712,6 +715,8 @@ class Preamp(object):
             return 'bad option'
 
     def set_mute(self, value, *dummy):
+        if type(value) == bool:
+            value = str(value)
         try:
             if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
                 value = { 'false':False, 'off':False, 
