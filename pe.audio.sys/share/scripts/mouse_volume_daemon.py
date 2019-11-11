@@ -72,6 +72,34 @@ alsaplugin  = 'brutefir'
 #       to have a jack plugin that connects to brutefir
 ########################################################################
 
+def get_mouse_handlers():
+    """ try to find your system's mouse handler
+    """
+
+    with open('/proc/bus/input/devices', 'r') as f:
+        lines = f.read().split('\n')
+    
+    handlers = []
+    found = False
+    for line in lines:
+        if 'N: Name=' in line:
+            if 'mouse' in line.lower():
+                found = True
+        if found:
+            if 'H: Handlers=' in line:
+                handlers = line.split('=')[-1].split()
+                break
+    found = False
+    if not handlers:
+        for line in lines:
+            if 'mouse' in line.lower():
+                found = True
+            if found:
+                if 'H: Handlers=' in line:
+                    handlers = line.split('=')[-1].split()
+                    break
+
+    return handlers
 
 def getMouseEvent():
     """
@@ -85,7 +113,7 @@ def getMouseEvent():
         0x0aXXYY --> buttonRightDown
         0x0cXXYY --> buttonMid
 
-    To see the correspondence of files /dev/input/xxxx
+    To see the correspondence of files /dev/input/xxxx do:
 
         $ cat /proc/bus/input/devices
         I: Bus=0003 Vendor=046d Product=c03d Version=0110
@@ -100,10 +128,9 @@ def getMouseEvent():
         B: REL=103
         B: MSC=10
     """
-    # ////      CONFIG HERE YOUR MOUSE PATH       \\\\\
-    #      as per seen at /proc/bus/input/devices
-    mouse_path = "/dev/input/mouse1"
-    # \\\\\\\\\\\\\\\\\\\\\\\\/////////////////////////
+    #  as per seen at /proc/bus/input/devices
+    mousedevice = get_mouse_handlers()[0]
+    mouse_path = f"/dev/input/{mousedevice}"
 
     fmice =     open( mouse_path, "rb" )
     buff = fmice.read(3);
