@@ -155,7 +155,7 @@ def calc_eq( sta ):
     else:
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
-
+    
     eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
     eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
 
@@ -462,8 +462,8 @@ def init_source():
     """
     preamp = Preamp()
 
-    if CONFIG["init_input"]:
-        preamp.select_source  (   CONFIG["init_input"]            )
+    if CONFIG["on_init"]["input"]:
+        preamp.select_source  (   CONFIG["on_init"]["input"]      )
     else:
         preamp.select_source  (   core.state['input']             )
     
@@ -480,73 +480,76 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
 
-    # (i) using != None below because 0 values will not be detected
+    # (i) using != None below to detect 0 or False values
 
-    if CONFIG["init_mute"]:
-        preamp.set_mute       (   CONFIG["init_mute"]             )
+    on_init = CONFIG["on_init"]
+
+    if on_init["muted"] != None:
+        preamp.set_mute       (   on_init["muted"]                )
     else:
         preamp.set_mute       (   preamp.state['muted']           )
 
-    if CONFIG["init_level"] != None:         
-        preamp.set_level      (   CONFIG["init_level"]            )
+    if on_init["level"] != None:         
+        preamp.set_level      (   on_init["level"]                )
     else:
         preamp.set_level      (   preamp.state['level']           )
 
-    if CONFIG["init_max_level"] != None:
-        preamp.set_level(  min( CONFIG["init_max_level"], preamp.state['level'] ) )
+    if on_init["max_level"] != None:
+        preamp.set_level(  min( on_init["max_level"], preamp.state['level'] ) )
 
-    if CONFIG["init_bass"] != None :
-        preamp.set_bass       (   CONFIG["init_bass"]             )
+    if on_init["bass"] != None :
+        preamp.set_bass       (   on_init["bass"]                 )
     else:
         preamp.set_bass       (   preamp.state['bass']            )
 
-    if CONFIG["init_treble"] != None :        
-        preamp.set_treble     (   CONFIG["init_treble"]           )
+    if on_init["treble"] != None :        
+        preamp.set_treble     (   on_init["treble"]               )
     else:
         preamp.set_treble     (   preamp.state['treble']          )
 
-    if CONFIG["init_balance"] != None :       
-        preamp.set_balance    (   CONFIG["init_balance"]          )
+    if on_init["balance"] != None :       
+        preamp.set_balance    (   on_init["balance"]              )
     else:
         preamp.set_balance    (   preamp.state['balance']         )
 
-    if CONFIG["init_loudness_track"]:
-        preamp.set_loud_track (   CONFIG["init_loudness_track"]   )
+    if on_init["loudness_track"] != None:
+        preamp.set_loud_track (   on_init["loudness_track"]       )
     else:
         preamp.set_loud_track (   preamp.state['loudness_track']  )
 
-    if CONFIG["init_loudness_ref"] != None :
-        preamp.set_loud_ref   (   CONFIG["init_loudness_ref"]     )
+    if on_init["loudness_ref"] != None :
+        preamp.set_loud_ref   (   on_init["loudness_ref"]         )
     else:
         preamp.set_loud_ref   (   preamp.state['loudness_ref']    )
 
-    if CONFIG["init_midside"]:       
-        preamp.set_midside    (   CONFIG["init_midside"]          )
+    if on_init["midside"]:       
+        preamp.set_midside    (   on_init["midside"]              )
     else:
         preamp.set_midside    (   preamp.state['midside']         )
 
-    if CONFIG["init_solo"]:          
-        preamp.set_solo       (   CONFIG["init_solo"]             )
+    if on_init["solo"]:          
+        preamp.set_solo       (   on_init["solo"]                 )
     else:
         preamp.set_solo       (   preamp.state['solo']            )
 
-    if CONFIG["init_xo"]:
-        convolver.set_xo      (   CONFIG["init_xo"]               )
+    if on_init["xo"]:
+        convolver.set_xo      (   on_init["xo"]                   )
+        preamp.state["xo_set"] = on_init["xo"]
     else:
         convolver.set_xo      (   preamp.state['xo_set']          )
 
-    if CONFIG["init_drc"]:
-        convolver.set_drc     (   CONFIG["init_drc"]              )
+    if on_init["drc"]:
+        convolver.set_drc     (   on_init["drc"]                  )
+        preamp.state["drc_set"] = on_init["drc"]
     else:
         convolver.set_drc     (   preamp.state['drc_set']         )
 
-    if CONFIG["init_target"]:
-        preamp.set_target     (   CONFIG["init_target"]           )
+    if on_init["target"]:
+        preamp.set_target     (   on_init["target"]               )
     else:
         preamp.set_target     (   preamp.state['target']          )
 
     state = preamp.state
-
     del(convolver)
     del(preamp)
     
@@ -684,7 +687,8 @@ class Preamp(object):
 
     def set_loud_track(self, value, *dummy):
         candidate = self.state.copy()
-        # this try if intended just to validate the given value
+        if type(value) == bool:
+            value = str(value)
         try:
             value = { 'on':True , 'off':False, 'true':True, 'false':False,
                       'toggle': {True:False, False:True}[self.state['loudness_track']]
@@ -711,15 +715,18 @@ class Preamp(object):
             return 'bad option'
 
     def set_mute(self, value, *dummy):
-        if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
-            value = { 'false':False, 'off':False, 
-                      'true' :True,  'on' :True,
-                      'toggle': {False:True, True:False} [ self.state['muted'] ]
-                    } [ value.lower() ]
-            self.state['muted'] = value
-            bf_set_gains( self.state )
-            return 'done'
-        else:
+        if type(value) == bool:
+            value = str(value)
+        try:
+            if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
+                value = { 'false':False, 'off':False, 
+                          'true' :True,  'on' :True,
+                          'toggle': {False:True, True:False} [ self.state['muted'] ]
+                        } [ value.lower() ]
+                self.state['muted'] = value
+                bf_set_gains( self.state )
+                return 'done'
+        except:
             return 'bad option'
 
     def set_midside(self, value, *dummy):
@@ -739,9 +746,7 @@ class Preamp(object):
         def on_change_input_behavior():
             candidate = self.state.copy()
             try:
-                options = CONFIG["on_change_input"]
-                for option in options:
-                    value = CONFIG["on_change_input"][option]
+                for option, value in CONFIG["on_change_input"].items():
                     if value != None:
                         candidate[option] = value
             except:

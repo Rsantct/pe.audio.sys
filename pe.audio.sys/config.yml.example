@@ -87,44 +87,47 @@ ref_level_gain: -10.0
 # ========================= STARTUP BEHAVIOR: ==================================
 # (i) Leave blank these fields to restore from the last state,
 #     or indicate a value to force.
-#     Please use 'off' or 'on' with quotes when necessary.
+#     Use quotes for string type options (midside, solo, input).
 
-# Put here the common IDSTRING that identifies the XO FIR filters at start up.
-# ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
-init_xo:     mp
+on_init:
 
-# Put here the IDSTRING that identifies the DRC FIR filters at start up.
-# ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
-init_drc:    mp_multipV1
+    # Put here the common IDSTRING that identifies the XO FIR filters at start up.
+    # ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
+    xo:     mp
 
-# Put here just whatever the target filename prefix,
-# w/o '_mag.dat' neither '_pha.dat'
-init_target: +3.0-1.0_target
+    # Put here the IDSTRING that identifies the DRC FIR filters at start up.
+    # ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
+    drc:    mp_multipV1
 
-# Others settings:
-init_mute:              'off'
-init_level:             
-init_max_level:         -20
-init_bass:              0
-init_treble:            0
-init_balance:           0
-init_loudness_track:    'on'
-init_loudness_ref:      6.0     # most records suffers loudness war mastering
-init_midside:           'off'
-init_solo:              'off'
-init_input:             salon
+    # Put here just whatever the target filename prefix,
+    # w/o '_mag.dat' neither '_pha.dat'
+    target: +4.0-2.0_target
+
+    # Others settings: (if any max_level will override level)
+    level:              
+    max_level:          -20
+    muted:              false
+    bass:               0
+    treble:             0
+    balance:            0
+    loudness_track:     true
+    loudness_ref:       6.0     # most records suffers loudness war mastering
+    midside:            'off'
+    solo:               'off'
+    input:              'mpd'
+
 
 # =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
 # (i) Leave blank these fields or indicate a value to force.
-#     Please use 'off' or 'on' with quotes when necessary.
+#     Use quotes for string type options (midside and solo).
 
 on_change_input:
-    bass:           0.0
-    treble:         0.0
-    loudness_track: True
-    loudness_ref:   6.0         # most records suffers loudness war mastering
-    midside:        'off'
-    solo:           'off'
+    bass:               0.0
+    treble:             0.0
+    loudness_track:     true
+    loudness_ref:       6.0     # most records suffers loudness war mastering
+    midside:            'off'
+    solo:               'off'
 
 
 # ============================  SOURCES  =======================================

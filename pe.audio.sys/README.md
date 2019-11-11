@@ -217,29 +217,29 @@ Here you are an uncommented bare example of `config.yml`:
     loudspeaker: SeasFlat
     ref_level_gain: -10.0
 
-    init_xo:                mp
-    init_drc:               mp_multipV1
-    init_target:            +3.0-1.0_target
-
-    init_mute:              'off'
-    init_level:             
-    init_max_level:         -20
-    init_bass:              0
-    init_treble:            0
-    init_balance:           0
-    init_loudness_track:    'on'
-    init_loudness_ref:      6.0    # most records suffers loudness war mastering
-    init_midside:           'off'
-    init_solo:              'off'
-    init_input:             salon
+    on_init:
+        xo:                 mp
+        drc:                mp_multipV1
+        target:             +4.0-2.0_target
+        level:              
+        max_level:          -20
+        muted:              false
+        bass:               0
+        treble:             0
+        balance:            0
+        loudness_track:     true
+        loudness_ref:       6.0     # most records suffers loudness war mastering
+        midside:            'off'
+        solo:               'off'
+        input:              'mpd'
 
     on_change_input:
-        bass:           0.0
-        treble:         0.0
-        loudness_track: True
-        loudness_ref:   6.0        # most records suffers loudness war mastering
-        midside:        'off'
-        solo:           'off'
+        bass:               0.0
+        treble:             0.0
+        loudness_track:     True
+        loudness_ref:       6.0     # most records suffers loudness war mastering
+        midside:           'off'
+        solo:              'off'
 
     sources:
         spotify:
