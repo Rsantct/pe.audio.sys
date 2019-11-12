@@ -51,7 +51,7 @@ def start():
         Popen( cmd.split(), stdout=logfile, stderr=logfile )
 
 def stop():
-    Popen( 'pkill -f librespot'.split() )
+    Popen( 'pkill -KILL -f librespot'.split() )
 
 if sys.argv[1:]:
     try:
