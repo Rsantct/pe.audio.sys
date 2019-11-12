@@ -125,7 +125,7 @@ chmod +x    pe.audio.sys/pasysctrl          >/dev/null 2>&1
 chmod +x    pe.audio.sys/macros/*           >/dev/null 2>&1
 chmod +x    pe.audio.sys/macros.example/*   >/dev/null 2>&1
 chmod -x    pe.audio.sys/macros/*.md        >/dev/null 2>&1
-chmod +x    pe.audio.sys/share/scripts/*    >/dev/null 2>&1
+chmod -R +x pe.audio.sys/share/scripts/*    >/dev/null 2>&1
 chmod +x    pe.audio.sys/share/server.py    >/dev/null 2>&1
 chmod +x    bin/*py                         >/dev/null 2>&1
 chmod +x    bin/peaudiosys*                 >/dev/null 2>&1
