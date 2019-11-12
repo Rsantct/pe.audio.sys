@@ -46,15 +46,17 @@ def start():
         with open(CONFIGFNAME, 'r') as f:
             ports = yaml.load( f )['sources'][input_name]['capture_port']
         sounddevice = ports
-        print(f'(loudness_monitor) spawned PortAudio ports in JACK')
     except:
         sounddevice = 'system'
 
-    Popen( f'{MAINFOLDER}/share/scripts/loudness_monitor/'
-            'loudness_monitor_daemon.py'
-           f' --input_device {sounddevice}'
-           f' --control_file  {CTRLFNAME} '
-           f' --output_file {MAINFOLDER}/.loudness_monitor'.split() )
+    cmd = f'{MAINFOLDER}/share/scripts/loudness_monitor/' \
+            'loudness_monitor_daemon.py' \
+           f' --input_device {sounddevice}' \
+           f' --control_file  {CTRLFNAME} ' \
+           f' --output_file {MAINFOLDER}/.loudness_monitor'
+
+    Popen( cmd.split() )
+    print(f'(loudness_monitor) spawned PortAudio ports in JACK')
 
 def stop():
     Popen( 'pkill -f loudness_monitor_daemon.py'.split() )
