@@ -34,7 +34,8 @@ https://jackclient-python.readthedocs.io
     sudo python3 -m pip install JACK-Client
 ```
 
-Optionaly recommended:
+Optionaly recommended if you wan to launch scripts/loudness_monitor.py:
 
     sudo pip3 install sounddevice watchdog
+    sudo apt install libportaudio2
 
