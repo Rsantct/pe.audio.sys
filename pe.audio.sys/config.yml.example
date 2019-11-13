@@ -81,7 +81,7 @@ gain_max:    0.0
 # Put here your loudspeaker folder name
 loudspeaker: SeasFlat
 
-# Ref_level dBFS at convolver output to obtain the reference SPL
+# Gain dBFS at convolver output to obtain the reference SPL (level = 0.0):
 ref_level_gain: -10.0
 
 # ========================= STARTUP BEHAVIOR: ==================================
