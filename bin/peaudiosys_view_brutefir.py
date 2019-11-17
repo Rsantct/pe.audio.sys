@@ -95,8 +95,8 @@ def read_config():
     dither          = None
     delay           = None
 
-    # Loops reading lines in brutefir.config
-    for linea in lineas:
+    # Loops reading lines in brutefir.config (skip lines commented out)
+    for linea in [x for x in lineas if (x.strip() and x.strip()[0] != '#') ]:
 
         if 'sampling_rate' in linea:
             sampling_rate = linea.strip().split(':')[-1].strip()
@@ -114,7 +114,6 @@ def read_config():
             init_delays = linea.strip().split(':')[-1].strip()
 
 
-        
 
         #######################
         # OUTPUTs
