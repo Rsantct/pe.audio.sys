@@ -134,8 +134,8 @@ on_change_input:
 # (i) - If capture_ports here are named 'xxxx_loop', then the preamp will
 #       automagically spawn them for the sources can connect into. Obviously the
 #       sources must be configured accordingly.
-#     - xo field is optional or can be left blank, if given will try to load the
-#       belonging xover filters set  
+#     - xo field can be left blank, or you can force it if you need a
+#       low latency filters set, e.g when listen video.
 
 sources:
 
