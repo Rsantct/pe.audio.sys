@@ -71,7 +71,7 @@ def read_config():
     """ reads outputsMap, coeffs, filters_at_start
     """
     global outputsMap, coeffs, filters_at_start
-    global sampling_rate, filter_length, float_bits, dither, delay        
+    global sampling_rate, filter_length, float_bits, dither, init_delays        
 
     with open(BRUTEFIR_CONFIG_PATH, 'r') as f:
         lineas = f.readlines()
@@ -111,7 +111,7 @@ def read_config():
             dither = linea.strip().split(':')[-1].strip()
 
         if 'delay' in linea:        
-            delay = linea.strip().split(':')[-1].strip()
+            init_delays = linea.strip().split(':')[-1].strip()
 
 
         
@@ -227,7 +227,7 @@ def add_atten_pol(f):
     
     return f
 
-def get_running():
+def get_running_filters():
     
     filters = []
     f_blank = { 'f_num':    None,
@@ -264,14 +264,30 @@ def get_running():
         if 'to filters:' in line:
             f["to filters"] = line.split(':')[1].strip()
 
-    # addding the last
+    # adding the last
     if f:
         f = add_atten_pol(f)
         filters.append( f )
 
     return filters
     
+
+def get_running_delays():
     
+    delays = []
+    # query list of filter in Brutefir
+    lines = bfcli('lo').split('\n')
+
+    for line in lines:
+        if line and line[2].isdigit() and line[3]==':':
+            delay = line.split(')')[0].split()[-1]
+            if delay.split(':')[-1] == '0':
+                delay = delay.split(':')[0]
+            delays.append(delay)
+
+    return ','.join(delays)
+
+
 if __name__ == "__main__" :
 
     # Read the loudspeaker folder where brutefir has been launched
@@ -292,22 +308,26 @@ if __name__ == "__main__" :
     read_config()
 
     # reading filters_running
-    filters_running = get_running()
+    filters_running = get_running_filters()
+
+    # reading current delays
+    curr_delays = get_running_delays()
     
     print()
     print( f'--- Brutefir process runs:' )
     print( f'{BRUTEFIR_CONFIG_PATH}')
     print()
-    print( f'sampling_rate  {sampling_rate}')
-    print( f'filter_length  {filter_length}')
-    print( f'float_bits     {float_bits}')
-    print( f'output_dither  {dither}')
-    print( f'outputs_delay  {delay}')
-
-    print()
     print( "--- Outputs map:" )
     for output in outputsMap:
         print( output[0].ljust(10), '-->   ', output[1] )
+
+    print()
+    print( f'sampling_rate:  {sampling_rate}')
+    print( f'filter_length:  {filter_length}')
+    print( f'float_bits:     {float_bits}')
+    print( f'output_dither:  {dither}')
+    print( f'outputs_delays: {init_delays}   (at init)')
+    print( color.BOLD + f'                {curr_delays};   (CURRENT)' + color.END)
 
     print()
     print( "--- Coeff available:" )
