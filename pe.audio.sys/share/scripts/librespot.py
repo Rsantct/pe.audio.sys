@@ -3,15 +3,6 @@
 # Copyright (c) 2019 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
 
-# This is based on 'pre.di.c,' a preamp and digital crossover
-# https://github.com/rripio/pre.di.c
-# Copyright (C) 2018 Roberto Ripio
-# 'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
-# https://github.com/AudioHumLab/FIRtro
-# Copyright (c) 2006-2011 Roberto Ripio
-# Copyright (c) 2011-2016 Alberto Miguélez
-# Copyright (c) 2016-2018 Rafael Sánchez
-#
 # 'pe.audio.sys' is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +19,7 @@
 """
     '/usr/bin/librespot': a headless Spotify Connect player daemon
 
-    use:    librespot   start | stop
+    use:    librespot.py   start | stop
 """
 
 import sys, os
@@ -60,6 +51,6 @@ if sys.argv[1:]:
             'stop'  : stop
             }[ sys.argv[1] ]()
     except:
-        print( '(init/librespot) bad option' )
+        print( '(scripts/librespot.py) bad option' )
 else:
     print(__doc__)
