@@ -23,10 +23,8 @@
     use:    shairport-sync.py   start | stop
 """
 
-import sys, os
+import sys
 from subprocess import Popen
-
-UHOME = os.path.expanduser("~")
 
 def start():
 
@@ -43,6 +41,6 @@ if sys.argv[1:]:
             'stop'  : stop
             }[ sys.argv[1] ]()
     except:
-        print( '(init/shairport-sync) bad option' )
+        print( '(scripts/shairport-sync) bad option' )
 else:
     print(__doc__)
