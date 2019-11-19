@@ -4,11 +4,11 @@
     the Brutefir EQ stage of FIRtro / pre.di.c / pe.audio.sys
 
     usage:
-    
+
     peaudiosys_plot_eq_curves.py <pattern> [/path/to/folder] [-pha]
-    
+
         -pha    adds the phase plot
-    
+
 """
 
 import sys, os
@@ -47,8 +47,7 @@ def get_curve_files(fpattern):
 if __name__ == '__main__':
 
     HOME = os.path.expanduser("~")
-    EQ_FOLDER = f'{HOME}/pe.audio.sys/share/eq'
-    EQ_FILES = os.listdir(EQ_FOLDER)
+    EQ_FOLDER = ''
 
     # Try to read the optionals /path/to/eq_files_folder
     #                           -pha
@@ -63,6 +62,10 @@ if __name__ == '__main__':
             else:
                 EQ_FOLDER = opc
                 EQ_FILES = os.listdir(EQ_FOLDER)
+
+    if not EQ_FOLDER:
+        EQ_FOLDER = f'{HOME}/pe.audio.sys/share/eq'
+        EQ_FILES = os.listdir(EQ_FOLDER)
 
     # Read the filenames set for the given pattern
     try:
@@ -88,7 +91,7 @@ if __name__ == '__main__':
         ax1 = fig.add_subplot(2, 1, 1)
         ax2 = fig.add_subplot(2, 1, 2)
         fig.subplots_adjust(hspace=.4)
-        
+
 
     # A single target curve kind of
     if len( mags.shape ) == 1:
