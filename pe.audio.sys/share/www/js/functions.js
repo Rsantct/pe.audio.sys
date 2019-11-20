@@ -46,7 +46,7 @@ var metablank = {
     'album':        '-',
     'title':        '-',
     'track_num':    '-'
-    }                                       // a player's metadata dictionary 
+    }                                       // a player's metadata dictionary
 var last_loudspeaker = get_loudspeaker_name(); // If changed, then force a full page reload
 
 // Returns the ecs file to be loaded with ecasound as per in '/config.yml'
@@ -252,7 +252,7 @@ function update_player_info() {
         if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
             d = metablank;
         }
-        
+
         document.getElementById("bitrate").innerText    = d['bitrate'] + "\nkbps";
         document.getElementById("artist").innerText     = d['artist'];
         document.getElementById("track").innerText      = d['track_num'];
@@ -291,7 +291,7 @@ function page_initiate() {
 
     // Queries the system status and updates the page
     refresh_system_status();
-        
+
     // Waits 1 sec, then schedules the auto-update itself:
     // Notice: the function call inside setInterval uses NO brackets)
     setTimeout( setInterval( refresh_system_status, auto_update_interval ), 1000);
@@ -323,14 +323,30 @@ function refresh_system_status() {
         // Pausing some seconds because the service pasysctrl
         // will be restarter when changing the loudspaker set,
         // so socket errors can occur when queriyng info for update.
-        setTimeout( dummy , 5000);
         last_loudspeaker = curr_loudspeaker;
         location.reload(forceGet=true);
         page_initiate();
+        // check here if 'socket_connect() failed: () Connection refused'
+        // is found into the INPUT (also can happen into XO or DRC) selector,
+        // this can happens if trying to initiate while the new loudspeaker
+        // is still loading (the control server is still not running).
+        // If so, then will sleep 1 sec and do repeat the page_initiate:
+        var tmp = document.getElementById("inputsSelector").textContent;
+        if ( tmp.includes('socket_connect') ) {
+            console.log('repeating loading the page');
+            sleep(1000);
+            page_initiate();
+        }
     }
     page_update( get_system_response('status') );
 }
-function dummy(){
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds) {
+            break;
+        }
+    }
 }
 
 // Dumps system status into the web page
@@ -342,7 +358,7 @@ function page_update(status) {
     document.getElementById("bassInfo").innerText   = 'BASS: ' + status_decode(status, 'bass');
     document.getElementById("trebleInfo").innerText = 'TREB: ' + status_decode(status, 'treble');
 
-    // the loudness reference to the slider and the loudness monitor to the meter 
+    // the loudness reference to the slider and the loudness monitor to the meter
     document.getElementById("loud_slider_container").innerText =
                                                      'Loud. Ref: '
                                                       + status_decode(status, 'loudness_ref');
@@ -403,13 +419,13 @@ function page_update(status) {
 
     // Updates the amplifier switch
     update_ampli_switch()
-    
+
     // Updates metadata player info
     update_player_info()
 
     // Highlights player controls when activated
     update_player_controls()
-    
+
     // Displays the [url] button if input == 'iradio' or 'istreams'
     if (status_decode(status, 'input') == "iradio" ||
         status_decode(status, 'input') == "istreams") {
@@ -441,6 +457,7 @@ function page_update(status) {
         document.getElementById( "MON_vol_up").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
     }
+
 }
 
 // Getting predefined files from server
@@ -497,22 +514,22 @@ function fills_inputs_selector() {
     //
     //for ( i in clines) {
     //    line = clines[i];
-    //    
+    //
     //    // continue if blank line
     //    if (line.length == 0){ continue; }
-    //    
+    //
     //    if (line.substr(0,).trim() == 'sources:') {
     //        source_section = true;
     //    }
     //    if (source_section == true){
-    //        
-    //        if ( (line.substr(-1)  == ":"   )     && 
+    //
+    //        if ( (line.substr(-1)  == ":"   )     &&
     //             (line.substr(0,4) == "    ")     ) {
     //            inputs.push( line.trim().slice(0,-1) );
     //        }
     //
     //        if ( (line.substr(0,1) != " ")              &&
-    //             (line.substr(0,).trim() != 'sources:') && 
+    //             (line.substr(0,).trim() != 'sources:') &&
     //             (line.indexOf('#') < 0 )               ) {
     //            source_section = false;
     //        }
@@ -529,13 +546,13 @@ function fills_inputs_selector() {
         var option = document.createElement("option");
         option.text = inputs[i];
         x.add(option);
-    }    
+    }
 
     // And adds the input 'none' as intended into server_process that will disconnet all inputs
     var option = document.createElement("option");
     option.text = 'none';
     x.add(option);
-    
+
 }
 
 // XO selector
@@ -555,7 +572,7 @@ function fills_xo_selector() {
 
 // DRC selector
 function fills_drc_selector() {
-    
+
     // getting the drcs from running core
     var drc_sets = get_system_response( 'get_drc_sets' ).split('\n');
 
