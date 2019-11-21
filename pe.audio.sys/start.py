@@ -185,19 +185,20 @@ def kill_bill():
     # Sorting by 1st_field:etimes (elapsed time seconds, see 'man ps'):
     rawpids.sort( key=lambda x: int(x.split()[0]) )
     # Now we have the 'rawpids' ordered the oldest the last.
-    #print(rawpids) #debug
 
-    # Discard the last one because it is **the own pid**
+    # Discard the first one because it is **the own pid**
     if rawpids:
-        rawpids.pop()
+        rawpids.pop(0)
 
     # Extracting just the 'pid' at 2ndfield [1]:
     pids = [ x.split()[1] for x in rawpids ]
 
     # Killing the remaining pids, if any:
     for pid in pids:
+        print('(start.py) killing old \'start.py\' processes:', pid)
         sp.Popen( f'kill -KILL {pid}'.split() )
         sleep(.1)
+    sleep(.5)
 
 def check_state_file():
     
@@ -220,7 +221,7 @@ if __name__ == "__main__":
     check_state_file()
     
     # KILLING ANY PREVIOUS INSTANCE OF THIS
-    kill_bill() 
+    kill_bill()
 
     # READING OPTIONS FROM COMMAND LINE
     run_level = ''
