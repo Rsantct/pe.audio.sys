@@ -40,7 +40,7 @@ from time import sleep
 import yaml
 
 UHOME = os.path.expanduser("~")
-with open( f'{UHOME}/pe.audio.sys/config.yml' ) as f:
+with open( f'{UHOME}/pe.audio.sys/config.yml', 'r' ) as f:
     CONFIG = yaml.load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
 LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{LOUDSPEAKER}'
