@@ -61,7 +61,7 @@ def start_jackd():
               f'{jack_backend_options}'.split() + \
               '>/dev/null 2>&1'.split()
     #print( ' '.join(tmplist) ) ; sys.exit() # DEBUG
-    
+
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
         tmplist = ['pasuspender', '--'] + tmplist
 
@@ -81,7 +81,7 @@ def start_jackd():
             c -= 1
             sleep(.5)
     return False
-            
+
 def start_brutefir():
     os.chdir( LSPK_FOLDER )
     #os.system('pwd') # debug
@@ -144,18 +144,18 @@ def prepare_extra_cards( channels = 2 ):
             misc = params['misc_params']
         except:
             misc = ''
-        
+
         cmd = f'{resampler} -d{alsacard} -j{jack_name} -c{channels} -q{quality} {misc}'
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
         print( f'(start.py) loading resampled extra card: {card}' )
         #print(cmd) # DEBUG
-        sp.Popen( cmd.split() ) 
+        sp.Popen( cmd.split() )
 
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
-        #(i) Some elements on the scripts list from config.yml can be a dict, 
+        #(i) Some elements on the scripts list from config.yml can be a dict,
         #    e.g the ecasound_peq, so we need to extract the script name.
         if type(script) == dict:
             script = list(script.keys())[0]
@@ -170,7 +170,7 @@ def kill_bill():
     """
 
     # List processes like this one
-    processString = f'python3 {UHOME}/pe.audio.sys/start.py'
+    processString = f'pe.audio.sys/start.py all'
     rawpids = []
     cmd = ( f'ps -eo etimes,pid,cmd' +
             f' | grep "{processString}"' +
@@ -185,10 +185,25 @@ def kill_bill():
     # Sorting by 1st_field:etimes (elapsed time seconds, see 'man ps'):
     rawpids.sort( key=lambda x: int(x.split()[0]) )
     # Now we have the 'rawpids' ordered the oldest the last.
-
     # Discard the first one because it is **the own pid**
     if rawpids:
         rawpids.pop(0)
+
+    # As EXCEPTION, when starting from rc.local it will still remain a
+    # rawpid with etimes field <= ~1 (because of su mechanism)
+    if rawpids:
+        etime0 = int(rawpids[0][0])
+        if etime0 <= 1:
+            rawpids.pop(0)
+
+    # Just display the processes to be killed, if any
+    print( '-'*21 + ' (start.py) killing running before me ' + '-'*21 )
+    for rawpid in rawpids:
+        print(rawpid)
+    print( '-'*80 )
+
+    if not rawpids:
+        return
 
     # Extracting just the 'pid' at 2ndfield [1]:
     pids = [ x.split()[1] for x in rawpids ]
@@ -201,8 +216,8 @@ def kill_bill():
     sleep(.5)
 
 def check_state_file():
-    
-    STATEFILE = f'{UHOME}/pe.audio.sys/.state.yml' 
+
+    STATEFILE = f'{UHOME}/pe.audio.sys/.state.yml'
     with open( STATEFILE, 'r') as f:
         state = f.read()
         # if th file is ok
@@ -211,15 +226,15 @@ def check_state_file():
             print( f'(start.py) (i) .state.yml copied to .state.yml.BAK' )
         # if it is damaged:
         else:
-            print( f'(start.py) ERROR \'state.yml\' is damaged, ' + 
+            print( f'(start.py) ERROR \'state.yml\' is damaged, ' +
                     'you can restore it from \'.state.yml.BAK\'' )
             sys.exit()
 
 if __name__ == "__main__":
-    
+
     # Lets backup .state.yml to help us if it get damaged.
     check_state_file()
-    
+
     # KILLING ANY PREVIOUS INSTANCE OF THIS
     kill_bill()
 
@@ -235,7 +250,7 @@ if __name__ == "__main__":
         elif sys.argv[1] == 'core':
             run_level = 'core'
             stop_processes(jackd=False)
-            
+
         elif sys.argv[1] == 'all':
             run_level = 'all'
             stop_processes(jackd=True)
@@ -243,7 +258,7 @@ if __name__ == "__main__":
             if not start_jackd():
                 print('(start.py) Problems starting JACK ')
                 sys.exit()
-            
+
         else:
             print(__doc__)
             sys.exit()
@@ -253,7 +268,7 @@ if __name__ == "__main__":
         sys.exit()
 
     if is_jack_running():
-       
+
         # (i) Importing core.py needs JACK to be running
         from share.core import  jack_loops_prepare,     \
                                 init_audio_settings,    \
@@ -275,7 +290,7 @@ if __name__ == "__main__":
         # RESTORE: audio settings
         state = init_audio_settings()
         save_yaml(state, STATE_PATH)
-        
+
         # RESTORE source as set under config.yml
         state = init_source()
         save_yaml(state, STATE_PATH)
@@ -292,7 +307,7 @@ if __name__ == "__main__":
         # (i) Leaving this for last: it depends on Brutefir ports to become active
         # pre_in    -->   brutefir
         jack_connect_bypattern('pre_in',   'brutefir', wait=60)
-        
+
         # Some sources depends on scripts to launch ports in Jack, so we need
         # to sleep a bit then retry to connect its ports to the preamp
         sleep(3)
