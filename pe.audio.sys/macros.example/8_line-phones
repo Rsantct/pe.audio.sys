@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+""" Alternates the output of RPiCirrus sound card
+    to LineOut or Headphones.
+    Also restore regular EQ or set flat EQ as appropriate.
+"""
+from subprocess import Popen, check_output
+from os.path import expanduser
+import yaml
+
+UHOME = expanduser("~")
+
+def get_control_switch(control):
+    tmp = check_output(['amixer','cget',f'name={control} Switch'])
+    tmp = tmp.decode()
+    tmp = [x.strip() for x in tmp.split('\n') if x]
+    result = tmp[-1].split('=')[-1].split(',')
+    return result
+
+def set_control_switch(control, mode='on'):
+    with open('/dev/null','w') as fnull:
+        Popen( ['amixer','cset',f'name={control} Switch', f'{mode},{mode}'],
+                stdout=fnull)
+
+def store_EQ():
+    Popen( ['cp', f'{UHOME}/pe.audio.sys/.state.yml',
+            f'{UHOME}/pe.audio.sys/.state.yml.lineOut'] )
+
+def set_flat_EQ():
+    ctrl = 'peaudiosys_control'
+    with open('/dev/null','w') as fnull:
+        Popen( f'{ctrl} bass           0.0'.split()  , stdout=fnull)
+        Popen( f'{ctrl} treble         0.0'.split()  , stdout=fnull)
+        Popen( f'{ctrl} balance        0.0'.split()  , stdout=fnull)
+        Popen( f'{ctrl} set_drc        none'.split() , stdout=fnull)
+        Popen( f'{ctrl} set_target     none'.split() , stdout=fnull)
+        #Popen( f'{ctrl} loudness_track off'.split() , stdout=fnull)
+
+def restore_EQ():
+    with open(f'{UHOME}/pe.audio.sys/.state.yml.lineOut','r') as f:
+        st = yaml.load(f)
+    ctrl = 'peaudiosys_control'
+    with open('/dev/null','w') as fnull:
+        Popen( f'{ctrl} bass           {str(st["bass"])}     '.split(),
+                stdout=fnull )
+        Popen( f'{ctrl} treble         {str(st["treble"])}   '.split(),
+                stdout=fnull )
+        Popen( f'{ctrl} balance        {str(st["balance"])}  '.split(),
+                stdout=fnull )
+        Popen( f'{ctrl} set_drc        {st["drc_set"]}       '.split(),
+                stdout=fnull )
+        Popen( f'{ctrl} set_target     {st["target"]}        '.split(),
+                stdout=fnull )
+        #Popen( f'{ctrl} loudness_track {st["loudness_track"]}'.split(),
+        #        stdout=fnull )
+
+if __name__ == '__main__':
+
+    # amixer names for RPiCirrus sound card
+    HEAD = 'HPOUT1 Digital'
+    LINE = 'HPOUT2 Digital'
+
+    # If headphones activated
+    if 'on' in get_control_switch(HEAD):
+        # restore the eq_state
+        restore_EQ()
+        # go to LineOut
+        set_control_switch(HEAD, 'off')
+        set_control_switch(LINE, 'on' )
+        print(f'(macros) switch to LineOut and regular EQ')
+
+    # If LineOut activated
+    else:
+        # store the current eq_state
+        store_EQ()
+        # set flat_eq
+        set_flat_EQ()
+        # go to Headphones
+        set_control_switch(LINE, 'off')
+        set_control_switch(HEAD, 'on' )
+        print(f'(macros) switch to Headphones and FLAT EQ')
