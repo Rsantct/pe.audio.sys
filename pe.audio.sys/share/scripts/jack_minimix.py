@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-    Runs jackminimix replacing Brutefir  :-O
+    EXPERIMENTAL
+
+    If you don't want the Brutefir high CPU consumption,
+    this runs jackminimix replacing Brutefir  :-O
     
     pre_in_loop    ---- 1 ----\\
                                \\
@@ -8,12 +11,7 @@
                                /
                    ---- 3 ----/
 
-
-    This can be useful if you want to play for instance
-    an internal synth with a midi keyboard together with 
-    some music from your pe.audio.sys sources, but
-    your CPU cannot manage Brutefir with low enough latency.
-
+    
     (!) Only works whith a FULLRANGE loudspeaker
         attached to system:playback_1/2
 
