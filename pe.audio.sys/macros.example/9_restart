@@ -1,0 +1,3 @@
+#!/bin/bash
+
+$HOME/pe.audio.sys/start.py all  &
