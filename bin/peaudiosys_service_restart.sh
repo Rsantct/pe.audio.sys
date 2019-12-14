@@ -26,5 +26,7 @@ SRV_ADDR=$( grep "$svc"_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
 SRV_PORT=$( grep "$svc"_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 
-# Launching again the service:
-python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" "$2" &
+# Launching again the service.
+# (i) It is IMPORTANT to redirect stdout & stderr to keep it 
+# alive even if the launcher session has been closed (e.g. a crontab job)
+python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" "$2" 1>/dev/null 2>&1 &
