@@ -79,7 +79,7 @@ def process_commands( full_command ):
                   'a warning phrase' for NOK command execution
     """
 
-    # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
+    # Below we use *dummy to accommodate the pasysctrl.py parser mechanism wich
     # will include  two arguments for any call here, even when not necessary. 
 
     # 'mono' is a former command, here it is redirected to 'midside'
