@@ -181,7 +181,7 @@ def kill_bill():
         pass
     # Discard blanks and strip spaces:
     rawpids = [ x.strip().replace('\n','')  for x in rawpids if x]
-    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 2th:comand_string
+    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
     # Sorting by 1st_field:etimes (elapsed time seconds, see 'man ps'):
     rawpids.sort( key=lambda x: int(x.split()[0]) )
     # Now we have the 'rawpids' ordered the oldest the last.
