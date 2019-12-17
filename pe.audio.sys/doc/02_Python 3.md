@@ -15,16 +15,18 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 - PIP standard installation:
 
     ```
-    python3 -m pip install numpy
     python3 -m pip install pyaml
     python3 -m pip install ruamel.pyaml
     python3 -m pip install python-mpd2
+    python3 -m pip install numpy
+    python3 -m pip install scipy
+    python3 -m pip install matplotlib
     ```
 
-And Jack-Client
-https://jackclient-python.readthedocs.io
+  And Jack-Client
+  https://jackclient-python.readthedocs.io
 
-```
+    ```
     sudo python3 -m pip install --upgrade setuptools
     
     # maybe necessary:
@@ -32,7 +34,7 @@ https://jackclient-python.readthedocs.io
     
     sudo python3 -m pip install cffi
     sudo python3 -m pip install JACK-Client
-```
+    ```
 
 Optionaly recommended if you wan to launch scripts/loudness_monitor.py:
 
