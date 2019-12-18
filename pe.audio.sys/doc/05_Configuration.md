@@ -109,9 +109,35 @@ When things seems to be ok, you can try to use the actual alsa sound card, but *
 
 On Debian systems, you can simply add a line inside your `/etc/rc.local` before `exit 0`
 
-    su -l YourUser -c "/home/YourUser/pe.audio.sys/start.py all"
-
+    #!/bin/sh -e
+    ...
+    ...
+    su -l YourUser -c "python3 /home/YourUser/pe.audio.sys/start.py all >/home/YourUser/pe.audio.sys/start.py.log 2>&1"
     exit 0
+
+NOTICE: **`start.py.log`** will help you to debug the starting process.
+
+## [ ] Restarting scripts
+
+You may want to prepare some script to restart the whole `pe.audio.sys`, if so please consider as below:
+
+    #!/bin/bash
+
+    # Failed to connect to session bus for device reservation: Unable to autolaunch a dbus-daemon without a
+    # $DISPLAY for X11
+    #
+    # To bypass device reservation via session bus, set JACK_NO_AUDIO_RESERVATION=1 prior to starting jackd.
+    #
+    # Audio device hw:RPiCirrus,0 cannot be acquired...
+    # Cannot initialize driver
+
+    export JACK_NO_AUDIO_RESERVATION=1
+
+    python3 /home/YourUser/pe.audio.sys/start.py all  \
+    1>/home/YourUser/pe.audio.sys/start.py.log \
+    2>&1 &
+
+
 
 
 
