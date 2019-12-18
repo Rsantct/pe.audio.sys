@@ -245,6 +245,9 @@ if __name__ == "__main__":
         if sys.argv[1] in ['stop', 'shutdown']:
             run_level = 'all'
             stop_processes(jackd=True)
+            # WILL RE-LAUNCH ONLY THE 'aux' SERVICE, so that some functions
+            # keeps availabe: amplifier switching and web macros.
+            start_service( 'aux' )
             sys.exit()
 
         elif sys.argv[1] == 'core':
