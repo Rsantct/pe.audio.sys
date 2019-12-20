@@ -196,25 +196,22 @@ def kill_bill():
     # Discard blanks and strip spaces:
     rawpids = [ x.strip().replace('\n','')  for x in rawpids if x]
     # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
-    # Sorting by 1st_field:etimes (elapsed time seconds, see 'man ps'):
-    rawpids.sort( key=lambda x: int(x.split()[0]) )
-    # Now we have the 'rawpids' ordered the oldest the last.
-    # Discard the first one because it is **the own pid**
-    if rawpids:
-        rawpids.pop(0)
 
-    # As EXCEPTION, when starting from rc.local it will still remain a
-    # rawpid with etimes field <= ~1 (because of su mechanism)
-    if rawpids:
-        etime0 = int(rawpids[0][0])
-        if etime0 <= 1:
-            rawpids.pop(0)
-
-    # Just display the processes to be killed, if any
-    print( '-'*21 + ' (start.py) killing running before me ' + '-'*21 )
+    # Removing the own pid
+    own_pid = str(os.getpid())
     for rawpid in rawpids:
-        print(rawpid)
-    print( '-'*80 )
+        if rawpid.split()[1] == own_pid:
+            rawpids.remove(rawpid)
+    
+    # Just display the processes to be killed, if any.
+    # Also write them to a file for debugging purposes.
+    with open(f'{UHOME}/pe.audio.sys/start.py.killbill','w') as f:
+        f.write( '-'*21 + ' (start.py) killing running before me ' + '-'*21 + '\n')
+        print( '-'*21 + ' (start.py) killing running before me ' + '-'*21 )
+        for rawpid in rawpids:
+            print(rawpid)
+            f.write(rawpid + '\n')
+        print( '-'*80 )
 
     if not rawpids:
         return
