@@ -38,6 +38,7 @@ import sys
 import subprocess as sp
 from time import sleep
 import yaml
+import threading
 
 UHOME = os.path.expanduser("~")
 with open( f'{UHOME}/pe.audio.sys/config.yml', 'r' ) as f:
@@ -98,10 +99,21 @@ def get_services():
             services.append(service)
     return services
 
-def start_service( service ):
+def restart_service( service, onlystop=False ):
+    
     try:
         address = CONFIG["services_addressing"][f"{service}_address"]
         port =    CONFIG["services_addressing"][f"{service}_port"]
+
+        # Stop
+        sp.Popen( f'pkill -KILL -f "pe.audio.sys/share/server.py {service}" \
+                   >/dev/null 2>&1', shell=True )
+        if onlystop:
+            print( f'(start.py) stopping SERVICE: \'{service}\'' )
+            return 
+        sleep(.25) # this is necessary because of asyncronous stopping
+        
+        # Start
         # use shell=True to release python process if you want to
         # restart any service in runtime.
         sp.Popen( f'python3 {UHOME}/pe.audio.sys/share/server.py {service}'
@@ -113,17 +125,19 @@ def start_service( service ):
 
 def stop_processes(jackd=False):
 
+    # Stop scripts
     if run_level == 'all':
         run_scripts( mode = 'stop' )
 
-    print( '(start.py) STOPPING CORE' )
-    # Any service:
-    sp.Popen( 'pkill -KILL -f "pe.audio.sys/share/server.py" \
-               >/dev/null 2>&1', shell=True )
-    # Brutefir
+    # Stop services:
+    svcs = get_services()
+    for svc in svcs:
+        restart_service(svc, onlystop=True)
+
+    # Stop Brutefir
     sp.Popen( 'pkill -KILL -f brutefir >/dev/null 2>&1', shell=True )
 
-    # Jack
+    # Stop Jack
     if jackd:
         print( '(start.py) STOPPING JACKD' )
         sp.Popen( 'pkill -KILL -f jackd >/dev/null 2>&1', shell=True )
@@ -245,10 +259,6 @@ if __name__ == "__main__":
         if sys.argv[1] in ['stop', 'shutdown']:
             run_level = 'all'
             stop_processes(jackd=True)
-            # WILL RE-LAUNCH ONLY THE 'aux' SERVICE, so that some functions
-            # keeps availabe: amplifier switching and web macros.
-            start_service( 'aux' )
-            sys.exit()
 
         elif sys.argv[1] == 'core':
             run_level = 'core'
@@ -260,7 +270,6 @@ if __name__ == "__main__":
             # Trying to start JACKD
             if not start_jackd():
                 print('(start.py) Problems starting JACK ')
-                sys.exit()
 
         else:
             print(__doc__)
@@ -290,6 +299,14 @@ if __name__ == "__main__":
             jack_loops_prepare()
             sleep(1) # this is necessary, or checking for ports to be activated
 
+        # PREAMP    -->   BRUTEFIR
+        # (i) Threading this: it depends on Brutefir ports to become active
+        job_pre2bfir = threading.Thread( target=jack_connect_bypattern,
+                                         args=('pre_in_loop',
+                                               'brutefir',
+                                               'connect',60))
+        job_pre2bfir.start()
+
         # RESTORE: audio settings
         state = init_audio_settings()
         save_yaml(state, STATE_PATH)
@@ -298,18 +315,17 @@ if __name__ == "__main__":
         state = init_source()
         save_yaml(state, STATE_PATH)
 
-        # THE TCP SERVERS:
+        # SERVICES (TCP SERVERS):
         # (i) - The system control service 'pasysctl.py' needs jack to be running.
         #     - From now on, 'pasysctl.py' MUST BE the ONLY OWNER of STATE_PATH.
-        for service in get_services():
-            start_service(service)
+        #     - The special 'aux' service will be managed at the end of this script.
+        svcs = get_services()
+        svcs.remove('aux')
+        for svc in svcs:
+            restart_service( svc )
 
         # Running USER SCRIPTS
         run_scripts()
-
-        # (i) Leaving this for last: it depends on Brutefir ports to become active
-        # pre_in    -->   brutefir
-        jack_connect_bypattern('pre_in',   'brutefir', wait=60)
 
         # Some sources depends on scripts to launch ports in Jack, so we need
         # to sleep a bit then retry to connect its ports to the preamp
@@ -319,3 +335,7 @@ if __name__ == "__main__":
 
     else:
         print( '(start.py) JACK not detected')
+
+    # We allways restart the 'aux' service, so that some functions
+    # keeps availabe: amplifier switching and web macros.
+    restart_service( 'aux' )
