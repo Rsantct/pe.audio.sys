@@ -37,7 +37,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 var loud_measure    = 0.0;                  // Initialize, will be updated reading the loudness monitor file.
 var ecasound_ecs = get_ecasound_ecs();      // The .ecs filename if ecasound is used
 var auto_update_interval = 1500;            // Auto-update interval millisec
-var advanced_controls = false;              // Default for showing advanced controls
+var advanced_controls = false;              // Default for displaying advanced controls
 var metablank = {
     'player':       '-',
     'time_pos':     '-:-',
