@@ -27,9 +27,10 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
    NOTICE: remember do not leaving any console.log actives
 */
 
-/* TO REVIEW: At some http request we use sync=false, this is not recommended
-              but this way we get the answer.
-              Maybe it is better to use onreadystatechange as per in refresh_system_status()
+/* TO REVIEW:
+    At some http request we use async=false, this is not recommended
+    but this way we get the answer.
+    Maybe it is better to use onreadystatechange as per in refresh_system_status()
 */
 
 /////////////   GLOBALS //////////////
