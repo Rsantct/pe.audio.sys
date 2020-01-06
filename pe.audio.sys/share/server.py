@@ -167,7 +167,7 @@ if __name__ == "__main__":
     try:
         # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
         MODULE = __import__(service)
-        print( f'(server.py) will run \'{service}\' module ...' )
+        print( f'(server.py) will run \'{service}\' module at {addr}:{port} ...' )
         run_server( host=addr, port=int(port), verbose=verbose )
 
     except:
