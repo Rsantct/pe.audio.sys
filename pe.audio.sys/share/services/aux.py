@@ -25,101 +25,129 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" A module interface that runs miscellaneous local tasks. 
+""" A module interface that runs miscellaneous local tasks.
 """
 
 import yaml
-import subprocess as sp
+import json
+from subprocess import Popen, check_output
 import os
 
 UHOME = os.path.expanduser("~")
 MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
 MACROS_FOLDER = f'{MAIN_FOLDER}/macros'
-LOUDNESS_CTRL = f'{MAIN_FOLDER}/.loudness_control'
+LOUD_MON_CTRL = f'{MAIN_FOLDER}/.loudness_control'
+LOUD_MON_VAL  = f'{MAIN_FOLDER}/.loudness_monitor'
+
+with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
+    CFG = yaml.load( f )
 
 # Reading some user configs for auxilary tasks
 try:
-    with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
-        cfg = yaml.load( f )
-    AMP_ON_CMDLINE =  cfg['aux']['amp_on_cmdline']
-    AMP_OFF_CMDLINE = cfg['aux']['amp_off_cmdline']
+    AMP_MANAGER =  CFG['aux']['amp_manager']
 except:
     # This will be printed out to the terminal to advice the user:
-    AMP_ON_CMDLINE =  'echo For amp switching please configure config.yml'
-    AMP_OFF_CMDLINE = 'echo For amp switching please configure config.yml'
+    AMP_MANAGER =  'echo For amp switching please configure config.yml'
 
 
-def do(task):
+def read_command_phrase(command_phrase):
+    cmd, arg = None, None
+    # This is to avoid empty values when there are more
+    # than on space as delimiter inside the command_phrase:
+    opcs = [x for x in command_phrase.split(' ') if x]
+    try:
+        cmd = opcs[0]
+    except:
+        raise
+    try:
+        arg = opcs[1]
+    except:
+        pass
+    return cmd, arg
+
+# Interface function to plug this on server.py
+def do( command_phrase ):
+    cmd, arg = read_command_phrase( command_phrase
+                                              .replace('\n','').replace('\r','') )
+    result = process( cmd, arg )
+    return json.dumps(result).encode()
+
+# Main function for command processing
+def process( cmd, arg ):
+    """ input:  a tuple (command, arg)
+        output: a result string
     """
-        This do() is the entry interface function from a listening server.
-        Only certain 'tasks' will be validated and processed,
-        then returns back some useful info to the asking client.
-    """
+    result = ''
 
-    # First of all clearing the new line from 'task' command string
-    task = task.replace('\n','')
+    # Loudspeaker name
+    if cmd == 'get_loudspeaker':
+        result = CFG["loudspeaker"]
 
-    ### SWITCHING ON/OFF AN AMPLIFIER
-    # notice: subprocess.check_output(cmd) returns bytes-like,
-    #         but if cmd fails an exception will be raised, so used with 'try'
-    if task == 'amp_on':
-        try:
-            sp.Popen( AMP_ON_CMDLINE.split() )
-            return b'done'
-        except:
-            return b'error'
-    elif task == 'amp_off':
-        try:
-            sp.Popen( AMP_OFF_CMDLINE.split() )
-            return b'done'
-        except:
-            return b'error'
+    # Amplifier switching
+    elif cmd == 'amp_switch':
+        if arg in ('on','off'):
+            print( f'(aux) {AMP_MANAGER.split("/")[-1]} {arg}' )
+            Popen( f'{AMP_MANAGER} {arg}'.split(), shell=False )
+        elif arg == 'state':
+            try:
+                with open( f'{UHOME}/.amplifier', 'r') as f:
+                    result =  f.read().strip()
+            except:
+                result = 'off'
 
-    ### USER MACROS
-    # Macro files are named this way: 'N_macroname',
-    # so N will serve as button keypad position on the web control page.
-    # The task phrase syntax must be like: 'macro_N_macroname',
-    # that is prefixed with the reserved word 'macro_'
-    elif task[:6] == 'macro_':
-        try:
-            cmd = f'{MACROS_FOLDER}/{task[6:]}'
-            sp.run( "'" + cmd + "'", shell=True ) # needs shell to user bash scripts to work
-            return b'done'
-        except:
-            return b'error'
+    # List of macros under macros/ folder
+    elif cmd == 'get_macros':
+        macro_files = []
+        with os.scandir( f'{MACROS_FOLDER}' ) as entries:
+            for entrie in entries:
+                fname = entrie.name
+                if ( fname[0] in [str(x) for x in range(1,10)] ) and fname[1]=='_':
+                    macro_files.append(fname)
+        result = macro_files
 
-    ### LOUDNESS MONITOR RESET
-    elif task == 'loudness_monitor_reset':
+    # Run a macro
+    elif cmd == 'run_macro':
+        print( f'(aux) running macro: {arg}' )
+        Popen( f'{MACROS_FOLDER}/{arg}', shell=True)
+
+    # Send reset to the loudness monitor daemon through by its control file
+    elif cmd == 'loudness_monitor_reset':
         try:
-            with open(LOUDNESS_CTRL, 'w') as f:
+            with open(LOUD_MON_CTRL, 'w') as f:
                 f.write('reset')
-            return b'done'
+            result = 'done'
         except:
-            return b'error'
+            result = 'error'
 
-    ### JACKMINIMIX
-    # If you run jackminimix, you can control the mixer input's gain
-    # https://www.aelius.com/njh/jackminimix/
-    elif task[:6] == 'mixer ':
+    # Get the loudness monitor value from the loudness monitor daemon's output file
+    elif cmd == 'get_loudness_monitor':
         try:
-            cmd = f'{MAIN_FOLDER}/share/scripts/jackminimix_ctrl.py { task[6:] }'
-            sp.run( cmd.split() )
-            return b'done'
+            with open(LOUD_MON_VAL, 'r') as f:
+                result = round( float(f.read().strip()), 1)
         except:
-            return b'error'
+            result = ''
 
-    ### MONITOR LOUDSPEAKER VOLUME CONTROL
-    elif task[:10] == 'mon_volume':
-        vol = task[10:].strip()
-        # I don't know why but '+' is missing :-/
-        if vol[0] != '-':
-            vol = '+' + vol
-        try:
-            # (i) clients/MON_volume.sh needs to be adjusted to point to
-            #     the real script that controls your monitor loudspeaker.
-            cmd = f'{MAIN_FOLDER}/share/MON_volume.sh {vol}'
-            sp.run( cmd.split() )
-            return b'done'
-        except:
-            return b'error'
+    # Get the ecasound.peq file if used
+    elif cmd == 'get_ecasound_ecs':
+        for script in CFG["scripts"]:
+            if type(script) == dict and 'ecasound_peq.py' in script.keys():
+                result = script['ecasound_peq.py']
+
+    # Help
+    elif '-h' in cmd:
+        print(__doc__)
+
+
+    return result
+
+# command line use
+if __name__ == '__main__':
+
+    if sys.argv[1:]:
+
+        command_phrase = ' '.join (sys.argv[1:] )
+        cmd, arg = read_command_phrase( command_phrase )
+        result = process( cmd, arg )
+        print( result )
+
 
