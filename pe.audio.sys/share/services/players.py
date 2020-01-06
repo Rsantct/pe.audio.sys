@@ -197,14 +197,14 @@ def mplayer_cmd(cmd, service):
 
     # See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
-    # Avoiding to process 'state' because Mplayer has not a such function. 
+    # Avoiding to process 'state' because Mplayer has not a such function.
     if cmd == 'state':
         return
 
     eject_disk = False
 
     # Aux function to save the CD info to a json file
-    def save_cd_info():        
+    def save_cd_info():
 
         global cd_info
 
@@ -214,22 +214,22 @@ def mplayer_cmd(cmd, service):
         #   Album name:     All For You
         #   Album artist:   DIANA KRALL
         #   Total tracks:   13      Disc length:    59:19
-        #   
+        #
         #   Track   Length      Title
         #   ----------------------------------------------------------------------------------------------------------
-        #    1:     [ 2:56.13]  I'm An Errand Girl For Rhythm 
-        #    2:     [ 4:07.20]  Gee Baby, Ain't I Good To You 
-        #    3:     [ 4:37.10]  You Call It Madness 
-        #    4:     [ 5:00.52]  Frim Fram Sauce 
-        #    5:     [ 6:27.15]  Boulevard Of Broken Dreams 
-        #    6:     [ 3:36.10]  Baby Baby All The Time 
-        #    7:     [ 4:16.55]  Hit That Jive Jack 
-        #    8:     [ 5:33.10]  You're Looking At Me 
-        #    9:     [ 4:25.73]  I'm Thru With Love 
-        #   10:     [ 3:31.52]  Deed I Do 
-        #   11:     [ 5:12.58]  A Blossom Fell 
-        #   12:   > [ 4:56.67]  If I Had You 
-        #   13:     [ 4:35.00]  When I Grow Too Old To Dream     
+        #    1:     [ 2:56.13]  I'm An Errand Girl For Rhythm
+        #    2:     [ 4:07.20]  Gee Baby, Ain't I Good To You
+        #    3:     [ 4:37.10]  You Call It Madness
+        #    4:     [ 5:00.52]  Frim Fram Sauce
+        #    5:     [ 6:27.15]  Boulevard Of Broken Dreams
+        #    6:     [ 3:36.10]  Baby Baby All The Time
+        #    7:     [ 4:16.55]  Hit That Jive Jack
+        #    8:     [ 5:33.10]  You're Looking At Me
+        #    9:     [ 4:25.73]  I'm Thru With Love
+        #   10:     [ 3:31.52]  Deed I Do
+        #   11:     [ 5:12.58]  A Blossom Fell
+        #   12:   > [ 4:56.67]  If I Had You
+        #   13:     [ 4:35.00]  When I Grow Too Old To Dream
 
         tmp = ''
         cd_info = {}
@@ -250,19 +250,19 @@ def mplayer_cmd(cmd, service):
 
             if line.startswith('Album artist'):
                 cd_info['artist'] = line[16:].strip()
-                
+
             if line and line[2] == ':' and line[8] == '[':
                 track_num       = line[:2].strip()
                 track_length    = line[9:17].strip()
                 track_title     = line[20:].strip()
- 
+
                 cd_info[track_num] = {}
                 cd_info[track_num]['length'] = track_length
                 cd_info[track_num]['title']  = track_title
 
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cd_info ) )
-    
+
     # Aux function to check if Mplayer is playing the disk
     def a_file_is_loaded():
         # Querying Mplayer to get the FILENAME (if it results void it means no playing)
@@ -326,7 +326,7 @@ def mplayer_cmd(cmd, service):
                         if a_file_is_loaded(): break
                         time.sleep(1)
                         n += 1
-                chapter = int(trackNum) -1 
+                chapter = int(trackNum) -1
                 cmd = f'seek_chapter {str(chapter)} 1'
 
         elif cmd == 'eject':
@@ -336,7 +336,7 @@ def mplayer_cmd(cmd, service):
     else:
         print( f'(players.py) unknown Mplayer service \'{service}\'' )
         return
-    
+
     # sending the command to the corresponding fifo
     tmp = f'echo "{cmd}" > {MAINFOLDER}/{service}_fifo'
     #print(tmp) # debug
@@ -411,7 +411,7 @@ def mplayer_meta(service, readonly=False):
     return json.dumps( md )
 
 def cdda_meta():
-    
+
     # Aux to get the current track by using the external program 'cdcd tracks'
     # CURRENTLY NOT USED.
     def get_current_track_from_cdcd():
@@ -427,12 +427,12 @@ def cdda_meta():
             if line and line[6] == '>':
                 t = line[:2].strip()
         return t
-    
-    # (i) When querying Mplayer, always must use the prefix 'pausing_keep', 
+
+    # (i) When querying Mplayer, always must use the prefix 'pausing_keep',
     #     otherwise pause will be released.
-    
+
     # Aux to get the current track by querying Mplayer 'chapter'
-    # NOT USED because it is observed that querying Mplayer with 
+    # NOT USED because it is observed that querying Mplayer with
     # 'get_property chapter' produces cd audio gaps :-/
     def get_current_track_from_mplayer_chapter():
         t = 0
@@ -453,7 +453,7 @@ def cdda_meta():
 
         # Aux to derive the track and the track time position from
         # the whole disk relative time position.
-        def get_track_and_pos(timePos):            
+        def get_track_and_pos(timePos):
             n = 1
             tracksLength = 0.0
             trackPos = 0.0
@@ -466,7 +466,7 @@ def cdda_meta():
                     break
                 n += 1
             return n, trackPos
-            
+
         track    = 1
         trackPos = 0
         timePos  = 0
@@ -481,12 +481,12 @@ def cdda_meta():
 
         # Find the track and track time position
         track, trackPos = get_track_and_pos(timePos)
-        
+
         # Ceiling track to the last available
         last_track = len( [ x for x in cd_info if x.isdigit() ] )
         if track > last_track:
             track = last_track
-        
+
         return str( track ), timeFmt( trackPos )
 
     # Initialize a metadata dictionary
@@ -494,7 +494,7 @@ def cdda_meta():
     md['track_num'] = '1'
     md['bitrate'] = '1411'
     md['player']  = 'Mplayer'
-    
+
     # Reading the CD info from a json file previously dumped when playing started.
     try:
         with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
@@ -528,7 +528,7 @@ def cdda_meta():
             md['title'] = 'Track ' + md['track_num']
 
         md['time_tot']   = cd_info[ md['track_num'] ]['length'][:-3] # omit decimals
-        
+
         # adding last track to track_num metadata
         last_track = len( [ x for x in cd_info if x.isdigit() ] )
         md['track_num'] += f'\n{last_track}'
@@ -672,7 +672,7 @@ def player_get_meta(readonly=False):
             metadata = spotify_meta()
         elif SPOTIFY_CLIENT == 'librespot':
             metadata = librespot_meta()
-        # source is spotify like but no client running has been detected: 
+        # source is spotify like but no client running has been detected:
         else:
             metadata = json.dumps( metadata )
 
@@ -755,7 +755,7 @@ def timeFmt(x):
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
-# Aux to convert a given formatted time string "hh:mm:ss.cc" to seconds 
+# Aux to convert a given formatted time string "hh:mm:ss.cc" to seconds
 def timestring2sec(t):
     s = 0.0
     t = t.split(':')
@@ -775,8 +775,8 @@ def do(task):
         then returns back some useful info to the asking client.
     """
 
-    # First clearing the new line
-    task = task.replace('\n','')
+    # First clearing the taksk phrase
+    task = task.strip()
 
     # task: 'player_get_meta'
     # Tasks querying the current music player.
