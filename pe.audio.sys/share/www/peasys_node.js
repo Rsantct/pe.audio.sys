@@ -18,27 +18,27 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// -----------------------------------------------------------------------------
+// ------------------------------ CONFIG ---------------------------------------
+// -----------------------------------------------------------------------------
+const NODEJS_PORT = 8080;   // The listening HTTP PORT
+// -----------------------------------------------------------------------------
 
-// Enable or disable to printing out some details
-var verbose = false;
-const opcs = process.argv.slice(2);
-if ( opcs.indexOf('-v') != -1 ){
-    verbose = true;
-}
-
-// HARD WIRED CONFIG: the http port and the files to be HTTP served here
-const NODEJS_PORT = 8080;
-const INDEX_HTML_PATH = __dirname + '/index.html';
-const CLISIDE_JS_PATH = __dirname + '/clientside.js';
-
-// importing modules (require)
+// Importing modules (require)
 const http  = require('http');
 const url   = require('url');
 const fs    = require('fs');
 const net   = require('net');
 const yaml = require('js-yaml')
 
-// Reading the pe.audio.sys config.yml file
+// Command line '-v' verbose option
+var verbose = false;        // Defaults to disable to printing out some details
+const opcs = process.argv.slice(2);
+if ( opcs.indexOf('-v') != -1 ){
+    verbose = true;
+}
+
+// Reading addresses and ports from the pe.audio.sys config.yml file
 try {
     const UHOME = require('os').homedir();
     let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config.yml', 'utf8');
@@ -56,7 +56,11 @@ try {
     console.log(e);
 }
 
-// helpers to printout http TX and RX chunks w/o repeating them
+// The files to be HTTP served here
+const INDEX_HTML_PATH = __dirname + '/index.html';
+const CLISIDE_JS_PATH = __dirname + '/clientside.js';
+
+// Helpers to printout http TX and RX chunks w/o repeating them
 var last_cmd_phrase = '';
 var last_http_sent  = '';
 
@@ -109,19 +113,15 @@ function onHttpReq( httpReq, httpRes ){
             }
 
             // if prefix 'aux', remove prefix and point to the AUX server
-            if ( cmd_phrase.split(' ')[0] == 'aux' ){
-                cmd_phrase = cmd_phrase.split(' ').slice(1)
-                                                .toString()
-                                                  .replace(',',' ');
+            if ( cmd_phrase.slice(0,4) == 'aux ' ){
+                cmd_phrase = cmd_phrase.slice(4,);
                 cli_addr = AUX_ADDR;
                 cli_port = AUX_PORT;
 
             }
             // if prefix 'players', remove prefix and point to the PLAYERS server
-            else if ( cmd_phrase.split(' ')[0] == 'players' ){
-                cmd_phrase = cmd_phrase.split(' ').slice(1)
-                                                .toString()
-                                                  .replace(',',' ');
+            else if ( cmd_phrase.slice(0,8) == 'players ' ){
+                cmd_phrase = cmd_phrase.slice(8,);
                 cli_addr = PLAYERS_ADDR;
                 cli_port = PLAYERS_PORT;
 
