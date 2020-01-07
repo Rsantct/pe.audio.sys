@@ -14,9 +14,14 @@ the only needed configuration has to be done inside the `clientside.js` file:
      Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
      or set it '/functions.php' if you use Apache+PHP at server side.
 
+Last, the **HTTP port** needs to be configured under your Apache's `sites-available/` configuration, or inside the `peaudio_node.js` file:
+
+     NODEJS_PORT = 8080; 
+
+
 ## HTTP server launcher
 
-If you use Apache + PHP, you need to set the sites-enabled under your system wide Apache2 configuration. See [FIRtro's Wiki](https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-de-SW#6-página-web-de-control-remoto-opcional-pero-recomendable).
+If you use Apache + PHP, you need to set properly a `sites-available/` file under your system wide Apache2 configuration. See [FIRtro's Wiki](https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-de-SW#6-página-web-de-control-remoto-opcional-pero-recomendable).
 
 If you prefer run Node.js as server side backend, you can run Node.js under your user space, for instance you can launch Node.js  at startup through by setting `/etc/rc.local`:
 
