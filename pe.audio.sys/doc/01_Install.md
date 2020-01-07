@@ -46,7 +46,7 @@ You can access to the control web from some LAN computer or smartphone.
 
     http://yourMachineHostname.local
 
-#### Node.js as server side backend (user space service)
+#### Node.js (user space service)
 
 You need to install the Node.js package, then login as your regular user and run:
 
@@ -55,7 +55,7 @@ You need to install the Node.js package, then login as your regular user and run
 and configure properly the `URL_PREXIX` under `share/www/clientside.js`
 
 
-#### Apache + PHP as server side backend (system wide service)
+#### Apache + PHP (system wide service)
 
 Last step in installing/updating script will update your Apache web server (you'll need sudo credentials).
 
