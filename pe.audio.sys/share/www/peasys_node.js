@@ -45,8 +45,8 @@ try {
     let CFG = yaml.safeLoad(fileContents);
     const SVCS = CFG.services_addressing;
 
-    var ECAPRE_ADDR =   SVCS.pasysctrl_address;
-    var ECAPRE_PORT =   SVCS.pasysctrl_port;
+    var PREAMP_ADDR =   SVCS.pasysctrl_address;
+    var PREAMP_PORT =   SVCS.pasysctrl_port;
     var AUX_ADDR =      SVCS.aux_address;
     var AUX_PORT =      SVCS.aux_port;
     var PLAYERS_ADDR =  SVCS.players_address;
@@ -126,13 +126,13 @@ function onHttpReq( httpReq, httpRes ){
                 cli_port = PLAYERS_PORT;
 
             }
-            // else: a regular preamp will point to the ECAPRE server
+            // else: a regular preamp command will point to the PREAMP server
             else {
-                cli_addr = ECAPRE_ADDR;
-                cli_port = ECAPRE_PORT;
+                cli_addr = PREAMP_ADDR;
+                cli_port = PREAMP_PORT;
             }
 
-            // Create a socket client to ECAPRE, AUX or PLAYERS TCP servers
+            // Create a socket client to PREAMP, AUX or PLAYERS TCP servers
             const client = net.createConnection( { port:cli_port,host:cli_addr },
                                                  () => {
             });
