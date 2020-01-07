@@ -2,7 +2,7 @@
 
 Not needed.
 
-(this web site version is intended to be served from the provided `peasys_node.js` script instead of an Apache http server)
+(this web site version is intended to be served from the provided `peasys_node.js` Node.js script instead of an Apache+PHP server side system)
 
 ## Screenshots
 First screenshot shows advanced controls (hidden by default, toggled by the gear button)
