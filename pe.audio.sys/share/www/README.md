@@ -6,8 +6,8 @@ Please mind that an HTML5 capable browser is needed.
 
 As per it is possible to use two server side backend flavours:
 
-- **Apache+PHP (system wide service) **
-- **Node.js (user space service) **
+- **Apache+PHP (system wide service)**
+- **Node.js (user space service)**
 
 the only needed configuration has to be done under the `clientside.js` file:
 
