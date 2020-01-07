@@ -41,7 +41,7 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // Some globals
 var advanced_controls = false;          // Default for displaying advanced controls
 var ecasound_ecs = get_ecasound_ecs();  // The .ecs filename if ecasound is used
-var metablank = {
+var metablank = {                       // A player's metadata blank dict
     'player':       '-',
     'time_pos':     '-:-',
     'time_tot':     '-:-',
@@ -50,7 +50,9 @@ var metablank = {
     'album':        '-',
     'title':        '-',
     'track_num':    '-'
-    }                                   // a player's metadata blank dict
+    }
+var last_loudspeaker = ''               // Will detect if audio processes has beeen
+                                        // restarted with new loudspeaker configuration.
 
 // Returns the ecs file to be loaded with ecasound as per in 'config.yml' (if so)
 function get_ecasound_ecs() {
@@ -83,15 +85,18 @@ function control_cmd( cmd ) {
 }
 
 function page_initiate(){
-
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
+    // Schedules the page_update (only runtime variable items):
+    // Notice: the function call inside setInterval uses NO brackets)
+    setInterval( page_update, AUTO_UPDATE_INTERVAL );
+}
 
+function fill_in_page_header_and_selectors(){
     // Web header
     document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
                                 JSON.parse( control_cmd('aux get_loudspeaker') );
-
     // Filling in the selectors: inputs, target, XO, DRC and PEQ
     fill_in_inputs_selector();
     fill_in_target_selector();
@@ -106,15 +111,17 @@ function page_initiate(){
         document.getElementById("peq").style.color = "grey";
         document.getElementById("peq").innerHTML = "(no peq)";
     }
-
-    // Schedules the page_update (only runtime variable items):
-    // Notice: the function call inside setInterval uses NO brackets)
-    setInterval( page_update, AUTO_UPDATE_INTERVAL );
-
 }
 
 // Queries the system status and updates the page (only runtime variable items):
 function page_update() {
+
+    // Refresh some stuff if loudspeaker's audio processes has changed
+    const curr_loudspeaker = JSON.parse(control_cmd('aux get_loudspeaker'));
+    if ( last_loudspeaker != curr_loudspeaker ){
+        fill_in_page_header_and_selectors();
+        last_loudspeaker = curr_loudspeaker;
+    }
 
     // Amplifier switching
     update_ampli_switch();
@@ -215,7 +222,7 @@ function fill_in_inputs_selector() {
         x.add(option);
     }
 
-    // And adds the input 'none' as intended into server_process that will disconnet all inputs
+    // And adds the input 'none' as expected in server_process that will disconnet all inputs
     var option = document.createElement("option");
     option.text = 'none';
     x.add(option);
@@ -409,5 +416,3 @@ function TESTING1(){
 function TESTING2(){
     //do something
 }
-
-
