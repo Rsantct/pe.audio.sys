@@ -132,7 +132,7 @@ function onHttpReq( httpReq, httpRes ){
                 cli_port = ECAPRE_PORT;
             }
 
-            // A socket client to ECAPRE(9999) or AUX(9998) TCP servers
+            // Create a socket client to ECAPRE, AUX or PLAYERS TCP servers
             const client = net.createConnection( { port:cli_port,host:cli_addr },
                                                  () => {
             });
