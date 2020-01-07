@@ -60,7 +60,8 @@ def read_command_phrase(command_phrase):
     except:
         raise
     try:
-        arg = opcs[1]
+        # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
+        arg = ' '.join( opcs[1:] )
     except:
         pass
     return cmd, arg
@@ -77,6 +78,7 @@ def process( cmd, arg ):
     """ input:  a tuple (command, arg)
         output: a result string
     """
+
     result = ''
 
     # Loudspeaker name
@@ -108,7 +110,8 @@ def process( cmd, arg ):
     # Run a macro
     elif cmd == 'run_macro':
         print( f'(aux) running macro: {arg}' )
-        Popen( f'{MACROS_FOLDER}/{arg}', shell=True)
+        Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
+        result = 'tried'
 
     # Send reset to the loudness monitor daemon through by its control file
     elif cmd == 'loudness_monitor_reset':
@@ -136,7 +139,7 @@ def process( cmd, arg ):
     # Help
     elif '-h' in cmd:
         print(__doc__)
-
+        result =  'done'
 
     return result
 
