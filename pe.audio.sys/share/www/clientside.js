@@ -52,7 +52,7 @@ var metablank = {
     'track_num':    '-'
     }                                   // a player's metadata blank dict
 
-// Returns the ecs file to be loaded with ecasound as per in 'config.yml'
+// Returns the ecs file to be loaded with ecasound as per in 'config.yml' (if so)
 function get_ecasound_ecs() {
     return JSON.parse( control_cmd( 'aux get_ecasound_ecs' ) );
 }
