@@ -57,7 +57,7 @@ function get_ecasound_ecs() {
     return JSON.parse( control_cmd( 'aux get_ecasound_ecs' ) );
 }
 
-// Talks to the pe.audio.sys node.js HTTP SERVER
+// Talks to the pe.audio.sys HTTP SERVER
 function control_cmd( cmd ) {
 
     // avoids http socket lossing some symbols
