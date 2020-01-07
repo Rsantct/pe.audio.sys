@@ -2,12 +2,7 @@
 
 Not needed.
 
-Just be aware about if you decide to install the pe.audio.sys folder under an user home
-different than `/home/peaudiosys` you'll need to update the Apache's pe.audio.sys web site file accordingly:
-
-    /etc/apache2/sites-available/pe.audio.sys.conf
-
-This detail is advertised when you run the updating script.
+(this web site version is intended to be served from the provided `peasys_node.js` script instead of an Apache http server)
 
 ## Screenshots
 First screenshot shows advanced controls (hidden by default, toggled by the gear button)
