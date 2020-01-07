@@ -50,7 +50,7 @@ def analize_full_command(full_command):
     """
 
     command, arg, add = None, None, False
-    
+
     # The full_command sintax:  <command> [arg [add] ]
     # 'arg' is given only with some commands
     # 'add' is given as an option for relative values ordering
@@ -80,12 +80,12 @@ def process_commands( full_command ):
     """
 
     # Below we use *dummy to accommodate the pasysctrl.py parser mechanism wich
-    # will include  two arguments for any call here, even when not necessary. 
+    # will include  two arguments for any call here, even when not necessary.
 
     # 'mono' is a former command, here it is redirected to 'midside'
     def set_mono(x, *dummy):
         try:
-            x = {   'on':       'mid', 
+            x = {   'on':       'mid',
                     'off':      'off',
                     'toggle':   { 'off':'mid', 'side':'off', 'mid':'off'
                                 } [ preamp.state['midside'] ]
@@ -120,7 +120,7 @@ def process_commands( full_command ):
     if not command:
         # Do nothing
         return result
-    
+
     # Parsing the command to his related function
     try:
         result = {
@@ -154,16 +154,16 @@ def process_commands( full_command ):
             'drc':              set_drc,
             'xo':               set_xo,
             'set_xo':           set_xo,
-            
+
             'help':             print_help
 
             } [ command ] ( arg, add )
-    
+
     except KeyError:
         result = f'unknown command: {command}'
-    
+
     except:
         result = f'problems processing command: {command}'
-    
+
     return result
 

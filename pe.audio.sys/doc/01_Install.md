@@ -42,13 +42,28 @@ Say **'Y'** to keep your current config.
 
 ### The web page
 
-Last step in installing/updating script will update your Apache web server: you'll need sudo credentials.
-
-Once done you can check the control web from some LAN computer or smartphone.
+You can access to the control web from some LAN computer or smartphone.
 
     http://yourMachineHostname.local
 
-If the control web page seems not to work, please be sure you have:
+#### Node.js (user space service)
+
+You need to install the Node.js package, then login as your regular user and run:
+
+    node $HOME/pe.audio.sys/share/www/peasys_node.js &
+
+and configure properly the `URL_PREXIX` under `share/www/clientside.js`
+
+
+#### Apache + PHP (system wide service)
+
+Last step in installing/updating script will update your Apache web server (you'll need sudo credentials).
+
+Also please be sure you have the Apache's PHP module:
 
     sudo apt install apache2 libapache2-mod-php
+
+
+
+
 

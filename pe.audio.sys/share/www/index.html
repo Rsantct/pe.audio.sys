@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-    
+
     <!--
 
     Copyright (c) 2019 Rafael Sánchez
     This file is part of 'pe.audio.sys', a PC based personal audio system.
-    
+
     This is based on 'pre.di.c,' a preamp and digital crossover
     https://github.com/rripio/pre.di.c
     Copyright (C) 2018 Roberto Ripio
@@ -14,29 +14,29 @@
     Copyright (c) 2006-2011 Roberto Ripio
     Copyright (c) 2011-2016 Alberto Miguélez
     Copyright (c) 2016-2018 Rafael Sánchez
-    
+
     'pe.audio.sys' is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     'pe.audio.sys' is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
     -->
-    
+
 <head>
 
     <title>pe.audio.sys</title>
 
     <!-- responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- web-app behavoir (full screen when iconize at init screen on smartphones -->
     <!-- some Androids: -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -46,7 +46,7 @@
     <meta charset="utf-8">
 
     <!-- The javascript functions used when an event occurs on this page body's -->
-    <script src="js/functions.js"></script>
+    <script src="clientside.js"></script>
 
     <!-- CSS Styles
         (i) To comment out inside CSS style tag use /* xxx */
@@ -66,7 +66,7 @@
                     border-radius: 5px/5px;
                     border:2px solid rgb(120,120,120);
                     /* Text inside buttons: */
-                    color: white;                         
+                    color: white;
                     font-weight:bold;
                     font-size:0.95em;   /* smaller than usual */
                 }
@@ -74,7 +74,7 @@
         /* GLOBAL TABLES behavior */
         table   {   width: 100%;
                 }
-                  
+
         /* GLOBAL TABLES CELLS behavior */
         th, td  {   padding: 5px;
                     text-align: center;
@@ -102,19 +102,19 @@
         td#MonoInfo         { width: 7%; border: none; font-size:0.6em;}
 
         td#input            { width:  85%; text-align: right; border: none;}
-        
+
         /* 3th SECTION */
         td#treble           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
         td#bass             { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
         td#balance          { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
         td#target           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
-        
+
         /* 4th SECTION*/
         table#eq_table      { border: 1px solid grey; border-radius: 10px/10px; }
         td#xo               { border: none; width: 33%; }
         td#drc              { border: none; width: 33%; }
         td#peq              { border: none; width: 33%; color:grey; }
-        
+
         /* 5th SECTION */
         table#level_buttons_table  { table-layout: fixed; }
         td#level_buttons11   { border-style: none; width:15%; }
@@ -123,7 +123,7 @@
         td#level_buttons21   { border-style: none; width:15%; }
         td#level_buttons22   { border-style: none; width:70%; }
         td#level_buttons23   { border-style: none; width:15%; font-size:0.50em; }
-        
+
         /* 6th SECTION */
         table#player_info   { text-align: left; }
         td#bitrate          { border: 1px solid grey; border-radius: 10px/10px; width: 5%; font-size:0.6em;}
@@ -132,7 +132,7 @@
         td#time             { border: 1px solid grey; border-radius: 10px/10px; width: 7%; font-size:0.6em;}
         td#album            { border: 1px solid grey; border-radius: 10px/10px; }
         td#title            { border: 1px solid grey; border-radius: 10px/10px; }
-        
+
         /* 7th SECTION */
         td#playback_control_11  { border-style: none; width:10%; }
         td#playback_control_12  { border-style: none; width:75%; }
@@ -140,20 +140,20 @@
         td#playback_control_21  { border-style: none; width:10%; }
         td#playback_control_22  { border-style: none; width:75%; }
         td#playback_control_23  { border-style: none; width:15%; text-align:center;}
-        
-        
+
+
         /* 8th SECTION */
         .macro_buttons  {   width: 100%;
-                            min-height: 2.7em; 
+                            min-height: 2.7em;
                             box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
                             border:2px solid rgb(120,120,120);
                             border-radius: 10px/10px;
                             /* below is for text inside button: */
                             font-size:0.80em;
-                            display: inline; 
+                            display: inline;
                         }
         td#mCell        {   border-style: none; width:30%; }
-        
+
         /* LOUDNESS METER CONTAINER (type CELL) */
         .loud_meter_container {
             border-style: none;
@@ -162,7 +162,7 @@
             vertical-align: top;
         }
         /* The LOUDNESS METER itself (type METER) */
-        .loud_meter { 
+        .loud_meter {
                     width:      100%;
                     height:     0.8em;
                     border:     1px solid;
@@ -180,7 +180,7 @@
           -webkit-appearance:   none;
           width:                100%;
           height:               1.0em;
-          border-radius:        5px;   
+          border-radius:        5px;
           background:           rgb(120,120,120);
           outline:              none;
           opacity:              0.7;
@@ -193,7 +193,7 @@
           appearance:           none;
           width:                1.5em;
           height:               1.5em;
-          border-radius:        50%; 
+          border-radius:        50%;
           background:           rgb(240,240,240);
           cursor:               pointer;
         }
@@ -244,7 +244,7 @@
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud" onmousedown="control_cmd('loudness_track toggle')" >L</button>
             </td>
-        
+
             <!-- INPUTS selector, will be filled by javascript -->
             <td id="input"     rowspan="2">
                 <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901</button>
@@ -273,7 +273,7 @@
                 <button type="button" onmousedown="control_cmd('level -1 add')" >
                         &nbsp;-1&nbsp;</button>
                 <button type="button" onmousedown="control_cmd('mute toggle')" id="buttonMute" >
-                        &nbsp;&nbsp;0&nbsp;&nbsp;</button>            
+                        &nbsp;&nbsp;0&nbsp;&nbsp;</button>
                 <button type="button" onmousedown="control_cmd('level +1 add')" >
                         &nbsp;+1&nbsp;</button>
             </td>
@@ -313,7 +313,7 @@
     <table>
         <tr>
             <td class="loud_meter_container">
-                <button type="button" id="buttonLoudMonReset" onmousedown="loudness_monitor_reset()" >reset</button>
+                <button type="button" id="buttonLoudMonReset" onmousedown="control_cmd('aux loudness_monitor_reset')" >reset</button>
                 &nbsp;Loud. monitor:
             </td>
             <td class="loud_meter_container">
@@ -384,7 +384,7 @@
     <!-- PLAYING INFO -->
     <div>
     <table id="player_info" >
-        <tr> 
+        <tr>
             <td id="bitrate"></td>
             <td id="track"></td>
             <td id="artist"></td>
@@ -430,7 +430,7 @@
         </tr>
     </table>
     </div>
-    
+
     <!-- MACRO BUTTONS can be toggled -->
     <!-- 9 buttons keypad for customizable user macros (if any found) -->
     <div>
@@ -439,21 +439,21 @@
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_1" onmousedown="user_macro('1', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_2" onmousedown="user_macro('2', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_3" onmousedown="user_macro('3', this.innerText)" >-</button></td>
-    </tr>                                                                       
+    </tr>
     <tr>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_4" onmousedown="user_macro('4', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_5" onmousedown="user_macro('5', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_6" onmousedown="user_macro('6', this.innerText)" >-</button></td>
-    </tr>                                                                       
+    </tr>
     <tr>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_7" onmousedown="user_macro('7', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_8" onmousedown="user_macro('8', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_9" onmousedown="user_macro('9', this.innerText)" >-</button></td>
-    </tr>                                                                       
+    </tr>
     </table>
     </div>
 
-    <!-- UNCOMMENT TO TEST JAVASCRIPT FUNCTIONS WITH THIS BUTTON 
+    <!-- UNCOMMENT TO TEST JAVASCRIPT FUNCTIONS WITH THIS BUTTON
     <div>
         <button type="button"                 onclick="TESTING()" >TEST</button>
     </div>

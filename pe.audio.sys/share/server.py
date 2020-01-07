@@ -33,7 +33,7 @@
 
     e.g:     server.py  control localhost 9999
              server.py  aux     localhost 9998
-             
+
     (use -v for verbose debug info printout)
 """
 
@@ -98,7 +98,7 @@ def run_server(host, port, verbose=False):
             if not data:
                 # Nothing in buffer, then will close because the client has disconnected too soon.
                 if verbose:
-                    print (f'(server.py [{service}]) Client disconnected, ' 
+                    print (f'(server.py [{service}]) Client disconnected, '
                              'closing connection...' )
                 conn.close()
                 break
@@ -121,7 +121,7 @@ def run_server(host, port, verbose=False):
 
             # If not a reserved word, then process the received data as a command:
             else:
-                
+
                 #######################################################################
                 # PROCESSING by using the IMPORTED MODULE when starting up this server,
                 # always must use the the module do() function.
@@ -139,7 +139,7 @@ def run_server(host, port, verbose=False):
 
 
 if __name__ == "__main__":
-    
+
     # Mandatory: address and port from command line
     try:
         service, addr, port  = sys.argv[1:4]
@@ -154,7 +154,7 @@ if __name__ == "__main__":
             verbose = True
     except:
         pass
-    
+
     # Read the paths where to look for processing plugins
     UHOME = os.path.expanduser("~")
     THISPATH = os.path.dirname(os.path.abspath(__file__))

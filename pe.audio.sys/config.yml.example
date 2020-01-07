@@ -225,9 +225,8 @@ scripts:
 
 aux:
 
-    # Configure here your command line orders to SWITCH ON/OFF your AMPLIFIER.
-    # (i) It is expected that the scripts will store the amplifier state 'on' or 'off'
+    # Configure here your command line script to SWITCH ON/OFF your AMPLIFIER.
+    # (i) It is expected that the script will store the amplifier state 'on' or 'off'
     #     into the file '~/.amplifier' so that others processes could know about.
-    amp_on_cmdline:  /home/peaudiosys/bin/ampli.sh on
-    amp_off_cmdline: /home/peaudiosys/bin/ampli.sh off
+    amp_manager:  /home/predic/bin/ampli.sh
 
