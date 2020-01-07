@@ -26,10 +26,21 @@
     but this way we get the answer.
 s*/
 
-/////////////   GLOBALS //////////////
-const auto_update_interval = 1000;          // Auto-update interval millisec
-var advanced_controls = false;              // Default for displaying advanced controls
-var ecasound_ecs = get_ecasound_ecs();      // The .ecs filename if ecasound is used
+// -----------------------------------------------------------------------------
+// ------------------------------- CONFIG: -------------------------------------
+// -----------------------------------------------------------------------------
+//
+//  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
+//      or set it '/functions.php' if you use Apache+PHP at server side.
+//
+const URL_PREFIX = '/functions.php';
+const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
+// -----------------------------------------------------------------------------
+
+
+// Some globals
+var advanced_controls = false;          // Default for displaying advanced controls
+var ecasound_ecs = get_ecasound_ecs();  // The .ecs filename if ecasound is used
 var metablank = {
     'player':       '-',
     'time_pos':     '-:-',
@@ -39,7 +50,7 @@ var metablank = {
     'album':        '-',
     'title':        '-',
     'track_num':    '-'
-    }                                       // a player's metadata dictionary
+    }                                   // a player's metadata blank dict
 
 // Returns the ecs file to be loaded with ecasound as per in 'config.yml'
 function get_ecasound_ecs() {
@@ -52,7 +63,7 @@ function control_cmd( cmd ) {
     // avoids http socket lossing some symbols
     cmd = http_prepare(cmd);
 
-    var myREQ = new XMLHttpRequest();
+    const myREQ = new XMLHttpRequest();
 
     // a handler that waits for HttpRequest has completed.
     myREQ.onreadystatechange = function() {
@@ -61,7 +72,7 @@ function control_cmd( cmd ) {
         }
     };
 
-    myREQ.open(method="GET", url="/?command="+cmd, async=false);
+    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd, async=false);
     myREQ.send();
     //console.log('httpTX: ' + cmd);
 
@@ -98,7 +109,7 @@ function page_initiate(){
 
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
-    setInterval( page_update, auto_update_interval );
+    setInterval( page_update, AUTO_UPDATE_INTERVAL );
 
 }
 
@@ -336,7 +347,6 @@ function macros_toggle() {
         document.getElementById( "macro_buttons").style.display = 'none'
     }
 }
-
 // Executes user defined macros
 function user_macro(prefix, name) {
     control_cmd( 'aux run_macro ' + prefix + '_' + name );
@@ -373,22 +383,22 @@ function loudness_ref_change(slider_value) {
 
 // Auxiliary function to avoid http socket lossing some symbols
 function http_prepare(x) {
-    //x = x.replace(' ', '%20')  # leaving spaces as they are
-    x = x.replace('!', '%21')
-    x = x.replace('"', '%22')
-    x = x.replace('#', '%23')
-    x = x.replace('$', '%24')
-    x = x.replace('%', '%25')
-    x = x.replace('&', '%26')
-    x = x.replace("'", '%27')
-    x = x.replace('(', '%28')
-    x = x.replace(')', '%29')
-    x = x.replace('*', '%2A')
-    x = x.replace('+', '%2B')
-    x = x.replace(',', '%2C')
-    x = x.replace('-', '%2D')
-    x = x.replace('.', '%2E')
-    x = x.replace('/', '%2F')
+    //x = x.replace(' ', '%20');  // leaving spaces as they are
+    x = x.replace('!', '%21');
+    x = x.replace('"', '%22');
+    x = x.replace('#', '%23');
+    x = x.replace('$', '%24');
+    x = x.replace('%', '%25');
+    x = x.replace('&', '%26');
+    x = x.replace("'", '%27');
+    x = x.replace('(', '%28');
+    x = x.replace(')', '%29');
+    x = x.replace('*', '%2A');
+    x = x.replace('+', '%2B');
+    x = x.replace(',', '%2C');
+    x = x.replace('-', '%2D');
+    x = x.replace('.', '%2E');
+    x = x.replace('/', '%2F');
     return x;
 }
 
