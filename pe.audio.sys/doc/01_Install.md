@@ -48,7 +48,12 @@ You can access to the control web from some LAN computer or smartphone.
 
 #### Node.js (user space service)
 
-You need to install the Node.js package, then login as your regular user and run:
+You need to install the Node.js package, 
+
+    sudo apt install nodejs
+    sudo apt install node-js-yaml
+
+then login as your regular user and run:
 
     node $HOME/pe.audio.sys/share/www/peasys_node.js &
 
