@@ -63,10 +63,10 @@ function control_cmd( cmd ) {
 
     myREQ.open(method="GET", url="/?command="+cmd, async=false);
     myREQ.send();
-    //console.log('TX: ' + cmd);
+    //console.log('httpTX: ' + cmd);
 
     ans = myREQ.responseText;
-    //console.log('RX: ' + ans);
+    //console.log('httpRX: ' + ans);
 
     return ans;
 }
