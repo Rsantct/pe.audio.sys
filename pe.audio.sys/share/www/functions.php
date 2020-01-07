@@ -102,11 +102,12 @@
 
     /*  http://php.net/manual/en/reserved.variables.request.php
         PHP server side receives associative arrays, i.e. dictionaries, through by the
-        GET o PUT methods from the client side HTTPREQUEST (usually javascript).
-        The array is what appears after 'php/functions.php?.......', example:
-                "GET", "php/functions.php?command=level -15"
-        Here the key 'command' has the value 'level -15'
-        So, lets read the key 'command', then run corresponding actions:
+        GET o PUT methods from the client side XMLHttpRequest (usually javascript).
+        The array is what appears after 'functions.php?.......', examples:
+        
+            "GET", "functions.php?command=level -15"
+            "GET", "functions.php?command=aux amp_switch on"
+            "GET", "functions.php?command=players player_stop"
     */
 
     // echo system_socket('control', 'status'); // DEBUG
