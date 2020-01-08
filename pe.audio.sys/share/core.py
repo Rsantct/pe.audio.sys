@@ -62,6 +62,12 @@ def find_target_sets():
             result.append( x[:-8] )
     return result
 
+def get_peq_in_use():
+    for item in CONFIG['scripts']:
+        if type(item) == dict and 'ecasound_peq.py' in item.keys():
+            return item["ecasound_peq.py"].replace('.ecs','')
+    return 'none'
+
 def get_eq_curve(prop, value, sta=None):
     """ Retrieves the tone or loudness curve of the desired value
         'sta' -state- will be used only to retrieve the
@@ -593,7 +599,8 @@ class Preamp(object):
         self.inputs = CONFIG['sources']
         # The state dictionary
         self.state = read_yaml( STATE_PATH )
-        self.state['loudspeaker'] = CONFIG['loudspeaker']
+        self.state['loudspeaker'] = CONFIG['loudspeaker']   # informative value
+        self.state['peq_set'] = get_peq_in_use()            # informative value
         # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
         # The available span for tone curves
