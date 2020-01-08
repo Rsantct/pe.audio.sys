@@ -40,7 +40,6 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 
 // Some globals
 var advanced_controls = false;          // Default for displaying advanced controls
-var ecasound_ecs = get_ecasound_ecs();  // The .ecs filename if ecasound is used
 var metablank = {                       // A player's metadata blank dict
     'player':       '-',
     'time_pos':     '-:-',
@@ -99,10 +98,9 @@ function fill_in_page_header_and_selectors(status){
     fill_in_target_selector();
     fill_in_xo_selector();
     fill_in_drc_selector();
-    if ( ecasound_ecs != ''){
+    if ( status['peq_set'] != 'none'){
         document.getElementById("peq").style.color = "white";
-        document.getElementById("peq").innerHTML = "PEQ: " +
-                                                ecasound_ecs.replace('.ecs','');
+        document.getElementById("peq").innerHTML = "PEQ: " + status['peq_set'];
     }
     else {
         document.getElementById("peq").style.color = "grey";
@@ -380,10 +378,6 @@ function update_ampli_switch() {
     const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
                                   .replace('\n','') );
     document.getElementById("onoffSelector").value = amp_state;
-}
-// Returns the ecs file to be loaded with ecasound as per in 'config.yml' (if so)
-function get_ecasound_ecs() {
-    return JSON.parse( control_cmd( 'aux get_ecasound_ecs' ) );
 }
 // Filling in the user's macros buttons
 function fill_in_macro_buttons() {
