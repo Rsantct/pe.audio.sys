@@ -797,4 +797,4 @@ def do(task):
     # task: 'http://an/url/stream/to/play
     # A pseudo task, an url to be played back:
     elif task[:7] == 'http://':
-        sp.run( f'{MAINFOLDER}/share/scripts/istreams url {task}'.split() )
+        sp.run( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'.split() )
