@@ -88,10 +88,12 @@ function page_initiate(){
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
 }
 
-function fill_in_page_header_and_selectors(){
+function fill_in_page_header_and_selectors(status){
+
     // Web header
     document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
-                                JSON.parse( control_cmd('aux get_loudspeaker') );
+                                                       status['loudspeaker'];
+
     // Filling in the selectors: inputs, target, XO, DRC and PEQ
     fill_in_inputs_selector();
     fill_in_target_selector();
@@ -111,17 +113,16 @@ function fill_in_page_header_and_selectors(){
 // Queries the system status and updates the page (only runtime variable items):
 function page_update() {
 
+    const status = JSON.parse( control_cmd('get_state') );
+
     // Refresh some stuff if loudspeaker's audio processes has changed
-    const curr_loudspeaker = JSON.parse(control_cmd('aux get_loudspeaker'));
-    if ( last_loudspeaker != curr_loudspeaker ){
-        fill_in_page_header_and_selectors();
-        last_loudspeaker = curr_loudspeaker;
+    if ( last_loudspeaker != status['loudspeaker'] ){
+        fill_in_page_header_and_selectors(status);
+        last_loudspeaker = status['loudspeaker'];
     }
 
     // Amplifier switching
     update_ampli_switch();
-
-    const status = JSON.parse( control_cmd('get_state') );
 
     // The selected item on INPUTS
     document.getElementById("inputsSelector").value = status['input'];
