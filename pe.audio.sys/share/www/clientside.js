@@ -225,71 +225,64 @@ function fill_in_inputs_selector() {
     //console.log( typeof inputs, inputs );
 
     // Filling the options in the inputs selector
-    // https://www.w3schools.com/jsref/met_select_add.asp
-    var x = document.getElementById("inputsSelector");
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    select_clear_options(ElementId="inputsSelector");
+    const mySel = document.getElementById("inputsSelector");
     for ( i in inputs) {
         var option = document.createElement("option");
         option.text = inputs[i];
-        x.add(option);
+        mySel.add(option);
     }
 
     // And adds the input 'none' as expected in server_process that will disconnet all inputs
     var option = document.createElement("option");
     option.text = 'none';
-    x.add(option);
+    mySel.add(option);
 
 }
 
 // XO selector
 function fill_in_xo_selector() {
     const xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
-    var x = document.getElementById("xoSelector");
+    select_clear_options(ElementId="xoSelector");
+    const mySel = document.getElementById("xoSelector");
     for ( i in xo_sets ) {
         var option = document.createElement("option");
         option.text = xo_sets[i];
-        x.add(option);
+        mySel.add(option);
     }
 }
 
 // DRC selector
 function fill_in_drc_selector() {
     const drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
-    var x = document.getElementById("drcSelector");
+    select_clear_options(ElementId="drcSelector");
+    const mySel = document.getElementById("drcSelector");
     for ( i in drc_sets ) {
         var option = document.createElement("option");
         option.text = drc_sets[i];
-        x.add(option);
+        mySel.add(option);
     }
     // And adds 'none'
     var option = document.createElement("option");
     option.text = 'none';
-    x.add(option);
+    mySel.add(option);
 }
 
 // TARGETS selector
 function fill_in_target_selector() {
     const target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
-    var x = document.getElementById("targetSelector");
+    select_clear_options(ElementId="targetSelector");
+    const mySel = document.getElementById("targetSelector");
     for ( i in target_files ) {
         var option = document.createElement("option");
         option.text = target_files[i];
-        x.add(option);
+        mySel.add(option);
     }
 }
 // Changes a target
 function set_target(value) {
     control_cmd( 'set_target ' + value );
-}
-
-// Toggles advanced controls
-function advanced_toggle() {
-    if ( advanced_controls !== true ) {
-        advanced_controls = true;
-    }
-    else {
-        advanced_controls = false;
-    }
-    page_update(status);
 }
 
 // Processing the LOUDNESS_REF slider
@@ -409,6 +402,27 @@ function macros_toggle() {
 // Executes user defined macros
 function user_macro(prefix, name) {
     control_cmd( 'aux run_macro ' + prefix + '_' + name );
+}
+
+// Aux to clearing selector elements to avoid repeating
+// when audio processes have changed
+function select_clear_options(ElementId){
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    const mySel = document.getElementById(ElementId);
+    for (opt in mySel.options){
+        mySel.remove(opt);
+    }
+}
+
+// Aux to toggle advanced controls
+function advanced_toggle() {
+    if ( advanced_controls !== true ) {
+        advanced_controls = true;
+    }
+    else {
+        advanced_controls = false;
+    }
+    page_update(status);
 }
 
 // Auxiliary function to avoid http socket lossing some symbols
