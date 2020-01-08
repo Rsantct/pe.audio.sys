@@ -124,12 +124,6 @@ def process( cmd, arg ):
         except:
             result = ''
 
-    # Get the ecasound.peq file if used
-    elif cmd == 'get_ecasound_ecs':
-        for script in CFG["scripts"]:
-            if type(script) == dict and 'ecasound_peq.py' in script.keys():
-                result = script['ecasound_peq.py']
-
     # Help
     elif '-h' in cmd:
         print(__doc__)
