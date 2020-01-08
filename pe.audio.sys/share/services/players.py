@@ -266,7 +266,7 @@ def mplayer_cmd(cmd, service):
     # Aux function to check if Mplayer is playing the disk
     def a_file_is_loaded():
         # Querying Mplayer to get the FILENAME (if it results void it means no playing)
-        sp.Popen( f'echo "get_file_name" > {MAINFOLDER}/cdda_fifo', shell=True )
+        sp.Popen( f'echo "get_file_name" > {MAINFOLDER}/.cdda_fifo', shell=True )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         time.sleep(.5)
@@ -318,7 +318,7 @@ def mplayer_cmd(cmd, service):
                     sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
                     # Loading the disk but pausing
                     tmp = f'pausing loadfile \'cdda://1-100:1\''
-                    tmp = f'echo "{tmp}" > {MAINFOLDER}/{service}_fifo'
+                    tmp = f'echo "{tmp}" > {MAINFOLDER}/.{service}_fifo'
                     sp.Popen( tmp, shell=True)
                     # Waiting for the disk to be loaded:
                     n = 0
@@ -338,7 +338,7 @@ def mplayer_cmd(cmd, service):
         return
 
     # sending the command to the corresponding fifo
-    tmp = f'echo "{cmd}" > {MAINFOLDER}/{service}_fifo'
+    tmp = f'echo "{cmd}" > {MAINFOLDER}/.{service}_fifo'
     #print(tmp) # debug
     sp.Popen( tmp, shell=True)
 
@@ -428,9 +428,6 @@ def cdda_meta():
                 t = line[:2].strip()
         return t
 
-    # (i) When querying Mplayer, always must use the prefix 'pausing_keep',
-    #     otherwise pause will be released.
-
     # Aux to get the current track by querying Mplayer 'chapter'
     # NOT USED because it is observed that querying Mplayer with
     # 'get_property chapter' produces cd audio gaps :-/
@@ -438,7 +435,7 @@ def cdda_meta():
         t = 0
         # (!) Must use the prefix 'pausing_keep', otherwise pause will be released
         #     when querying 'get_property ...' or anything else.
-        sp.Popen( f'echo "pausing_keep get_property chapter" > {MAINFOLDER}/cdda_fifo', shell=True )
+        sp.Popen( f'echo "pausing_keep get_property chapter" > {MAINFOLDER}/.cdda_fifo', shell=True )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-10:]:
@@ -451,36 +448,40 @@ def cdda_meta():
     # USED: fortunately querying 'time_pos' does not produce any audio gap :-)
     def get_current_track_from_mplayer_time_pos():
 
+        # (i) When querying Mplayer, always must use the prefix 'pausing_keep',
+        #     otherwise pause will be released.
+
         # Aux to derive the track and the track time position from
         # the whole disk relative time position.
-        def get_track_and_pos(timePos):
-            n = 1
-            tracksLength = 0.0
+        def get_track_and_pos(globalPos):
+            trackNum = 1
+            cummTracksLength = 0.0
             trackPos = 0.0
-            # Iterate tracks until timePos is exceeded
-            while str(n) in cd_info:
-                trackLength = timestring2sec( cd_info[ str(n) ]['length'] )
-                tracksLength += trackLength
-                if tracksLength > timePos:
-                    trackPos = timePos - ( tracksLength - trackLength )
+            # Iterate tracks until globalPos is exceeded
+            while str(trackNum) in cd_info:
+                trackLength = timestring2sec( cd_info[ str(trackNum) ]['length'] )
+                cummTracksLength += trackLength
+                if cummTracksLength > globalPos:
+                    trackPos = globalPos - ( cummTracksLength - trackLength )
                     break
-                n += 1
-            return n, trackPos
+                trackNum += 1
+            return trackNum, trackPos
 
         track    = 1
         trackPos = 0
-        timePos  = 0
+        globalPos  = 0
 
-        # Querying Mplayer to get the timePos over the whole disk
-        sp.Popen( f'echo "pausing_keep get_time_pos" > {MAINFOLDER}/cdda_fifo', shell=True )
+        # Querying Mplayer to get the timePos, the answer in seconds will be
+        # a 'global position' refered to the global disk duration.
+        sp.Popen( f'echo "pausing_keep get_time_pos" > {MAINFOLDER}/.cdda_fifo', shell=True )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-10:]:
             if line.startswith('ANS_TIME_POSITION='):
-                timePos = float( line.replace('ANS_TIME_POSITION=', '').strip() )
+                globalPos = float( line.replace('ANS_TIME_POSITION=', '').strip() )
 
         # Find the track and track time position
-        track, trackPos = get_track_and_pos(timePos)
+        track, trackPos = get_track_and_pos(globalPos)
 
         # Ceiling track to the last available
         last_track = len( [ x for x in cd_info if x.isdigit() ] )
@@ -797,4 +798,4 @@ def do(task):
     # task: 'http://an/url/stream/to/play
     # A pseudo task, an url to be played back:
     elif task[:7] == 'http://':
-        sp.run( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'.split() )
+        sp.run( f'{MAINFOLDER}/share/scripts/istreams url {task}'.split() )
