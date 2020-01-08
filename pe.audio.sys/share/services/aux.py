@@ -39,6 +39,15 @@ MACROS_FOLDER = f'{MAIN_FOLDER}/macros'
 LOUD_MON_CTRL = f'{MAIN_FOLDER}/.loudness_control'
 LOUD_MON_VAL  = f'{MAIN_FOLDER}/.loudness_monitor'
 
+with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
+    CFG = yaml.load( f )
+try:
+    AMP_MANAGER =  CFG['aux']['amp_manager']
+except:
+    # This will be printed out to the terminal to advice the user:
+    AMP_MANAGER =  'echo For amp switching please configure config.yml'
+
+
 def read_command_phrase(command_phrase):
     cmd, arg = None, None
     # This is to avoid empty values when there are more
@@ -68,24 +77,10 @@ def process( cmd, arg ):
         output: a result string
     """
 
-    # Fresh reading some user configs (audio processes, i.e. loudspeaker,
-    # can be changed at runtime)
-    with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
-        CFG = yaml.load( f )
-    try:
-        AMP_MANAGER =  CFG['aux']['amp_manager']
-    except:
-        # This will be printed out to the terminal to advice the user:
-        AMP_MANAGER =  'echo For amp switching please configure config.yml'
-
     result = ''
 
-    # Loudspeaker name
-    if cmd == 'get_loudspeaker':
-        result = CFG["loudspeaker"]
-
     # Amplifier switching
-    elif cmd == 'amp_switch':
+    if cmd == 'amp_switch':
         if arg in ('on','off'):
             print( f'(aux) {AMP_MANAGER.split("/")[-1]} {arg}' )
             Popen( f'{AMP_MANAGER} {arg}'.split(), shell=False )
