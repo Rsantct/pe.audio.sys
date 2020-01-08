@@ -593,6 +593,7 @@ class Preamp(object):
         self.inputs = CONFIG['sources']
         # The state dictionary
         self.state = read_yaml( STATE_PATH )
+        self.state['loudspeaker'] = CONFIG['loudspeaker']
         # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
         # The available span for tone curves
