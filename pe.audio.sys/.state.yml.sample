@@ -5,8 +5,10 @@ input: none
 level: -20.0
 loudness_ref: 0.0
 loudness_track: true
+loudspeaker: JBL
 midside: 'off'
 muted: false
+peq_set: none
 solo: 'off'
 target: +3.0-1.5_target
 treble: 0.0
