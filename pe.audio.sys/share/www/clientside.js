@@ -54,11 +54,6 @@ var metablank = {                       // A player's metadata blank dict
 var last_loudspeaker = ''               // Will detect if audio processes has beeen
                                         // restarted with new loudspeaker configuration.
 
-// Returns the ecs file to be loaded with ecasound as per in 'config.yml' (if so)
-function get_ecasound_ecs() {
-    return JSON.parse( control_cmd( 'aux get_ecasound_ecs' ) );
-}
-
 // Talks to the pe.audio.sys HTTP SERVER
 function control_cmd( cmd ) {
 
@@ -204,6 +199,23 @@ function page_update() {
     // Highlights player controls when activated
     update_player_controls()
 
+    // Displays the track selector if input == 'cd'
+    if ( status['input'] == "cd") {
+        document.getElementById( "track_selector").style.display = "inline";
+    }
+    else {
+        document.getElementById( "track_selector").style.display = "none";
+    }
+
+    // Displays the [url] button if input == 'iradio' or 'istreams'
+    if (status['input'] == "iradio" ||
+        status['input'] == "istreams") {
+        document.getElementById( "url_button").style.display = "inline";
+    }
+    else {
+        document.getElementById( "url_button").style.display = "none";
+    }
+
 }
 
 // INPUTS selector
@@ -270,7 +282,24 @@ function set_target(value) {
     control_cmd( 'set_target ' + value );
 }
 
-//////// PLAYER CONTROL ////////
+// Toggles advanced controls
+function advanced_toggle() {
+    if ( advanced_controls !== true ) {
+        advanced_controls = true;
+    }
+    else {
+        advanced_controls = false;
+    }
+    page_update(status);
+}
+
+// Processing the LOUDNESS_REF slider
+function loudness_ref_change(slider_value) {
+    loudness_ref = parseInt(slider_value);
+    control_cmd('loudness_ref ' + loudness_ref, update=false);
+}
+
+//////// PLAYER SERVER FUNCTIONS ////////
 // Controls the player
 function playerCtrl(action) {
     control_cmd( 'players player_' + action );
@@ -325,9 +354,37 @@ function update_player_info() {
         document.getElementById("title").innerText      = d['title'];
     }
 }
+// Emerge a dialog to select a disk track to be played
+function select_track() {
+    var tracknum = prompt('Enter track number to play:');
+    if ( true ) {
+        control_cmd( 'players player_play_track_' + tracknum );
+    }
+}
+// Sends an url to the server, to be played back
+function play_url() {
+    var url = prompt('Enter url to play:');
+    if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
+        control_cmd( 'players ' + url );
+    }
+}
 
-//////// USER MACROS ////////
-// Filling the user's macros buttons
+//////// AUX SERVER FUNCTIONS ////////
+// Switch the amplifier
+function ampli(mode) {
+    control_cmd( 'aux amp_switch ' + mode );
+}
+// Queries the remote amplifier switch state
+function update_ampli_switch() {
+    const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
+                                  .replace('\n','') );
+    document.getElementById("onoffSelector").value = amp_state;
+}
+// Returns the ecs file to be loaded with ecasound as per in 'config.yml' (if so)
+function get_ecasound_ecs() {
+    return JSON.parse( control_cmd( 'aux get_ecasound_ecs' ) );
+}
+// Filling in the user's macros buttons
 function fill_in_macro_buttons() {
     const macros = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
     // If no macros on the list, do nothing, so leaving "display:none" on the buttons keypad div
@@ -359,35 +416,6 @@ function user_macro(prefix, name) {
     control_cmd( 'aux run_macro ' + prefix + '_' + name );
 }
 
-//////// AUX SERVER FUNCTIONS ////////
-// Switch the amplifier
-function ampli(mode) {
-    control_cmd( 'aux amp_switch ' + mode );
-}
-// Queries the remote amplifier switch state
-function update_ampli_switch() {
-    const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
-                                  .replace('\n','') );
-    document.getElementById("onoffSelector").value = amp_state;
-}
-
-//////// TOGGLES ADVANCED CONTROLS ////////
-function advanced_toggle() {
-    if ( advanced_controls !== true ) {
-        advanced_controls = true;
-    }
-    else {
-        advanced_controls = false;
-    }
-    page_update(status);
-}
-
-// Processing the LOUDNESS_REF slider
-function loudness_ref_change(slider_value) {
-    loudness_ref = parseInt(slider_value);
-    control_cmd('loudness_ref ' + loudness_ref, update=false);
-}
-
 // Auxiliary function to avoid http socket lossing some symbols
 function http_prepare(x) {
     //x = x.replace(' ', '%20');  // leaving spaces as they are
@@ -416,3 +444,5 @@ function TESTING1(){
 function TESTING2(){
     //do something
 }
+
+
