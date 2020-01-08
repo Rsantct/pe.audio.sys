@@ -111,18 +111,18 @@ def define_widgets():
     # 4     a_metadata_marquee_
 
     # The widget collection definition (as global variables)
-    # Values are defaults, later update_state() will add the current 
+    # Values are defaults, later update_state() will add the current
     # state info or supress the value in case of booleans.
-    
+
     # If position is set to '0 0' the widget will not be displayed
-    
+
     global widgets_state # defined text type when prepare_main_screen
     widgets_state = {
                 'input'             : { 'pos':'1  3',    'val':''         },
                 'level'             : { 'pos':'1  1',    'val':'v:'       },
                 'headroom'          : { 'pos':'0  0',    'val':'hrm:'     },
                 'balance'           : { 'pos':'10 1',    'val':'bl:'      },
-                # the former 'mono' key is now 'midside' 
+                # the former 'mono' key is now 'midside'
                 'midside'           : { 'pos':'17 1',    'val':''         },
                 'solo'              : { 'pos':'0  0',    'val':''         },
                 'muted'             : { 'pos':'1  1',    'val':'MUTED    '},
@@ -142,7 +142,7 @@ def define_widgets():
     widgets_aux = {
                 'loudness_monitor'  : { 'pos':'15 3',    'val':'mon'     }
                 }
-                
+
     global widgets_meta # defined scroller type when prepare_main_screen
     widgets_meta = {
                 'artist'            : { 'pos':'0  0',    'val':'' },
@@ -160,7 +160,7 @@ def prepare_main_screen():
     define_widgets()
 
     # Adding the previously defined widgets to the main screen:
-    
+
     # 1) pe.audio.sys state widgets
     for wName, wProps in widgets_state.items():
         cmd = f'widget_add scr_1 { wName } string'
@@ -181,8 +181,14 @@ def update_state():
     def show_state(data, priority="info"):
         global LEVEL_OLD
         global loudness_track
-        
+
         for key, value in data.items():
+
+            # some state dict keys cannot have its
+            # correspondence into the widgets_state dict
+            if not (key in widgets_state.keys()):
+                continue
+
             pos = widgets_state[key]['pos'] # pos ~> position
             lab = widgets_state[key]['val'] # lab ~> label
 
@@ -194,7 +200,7 @@ def update_state():
                 # Update global to be accesible outside from auxiliary
                 if key == 'loudness_track':
                     loudness_track = value
-                    
+
             # Special case: loudness_ref will be rounded to integer
             #               or void if no loudness_track
             elif key == 'loudness_ref':
@@ -213,44 +219,44 @@ def update_state():
                     lab = ''
                 else:
                     lab = data['midside'].upper()
-                    
+
             # Any else key:
             else:
                 lab += str(value)
 
-                
+
             # sintax for string widgets:
             #   widget_set screen widget coordinate "text"
             cmd = f'widget_set scr_1 { key } { pos } "{ lab }"'
             #print(cmd)
             LCD.send( cmd )
-            
+
         if LEVEL_OLD != data['level']:
             #lcdbig.show_level( str(data['level']) )
             LEVEL_OLD = data['level']
 
     with open(STATE_file, 'r') as f:
-        state = yaml.load(f) 
+        state = yaml.load(f)
         # avoid updating when some times can be read an empty file:
         if state:
             show_state( state )
-        
+
 def update_loudness_monitor():
     """ Reads the monitored value inside the file .loudness_monitor
         then updates the LCD display.
     """
-    
+
     def show_loudness_monitor(value):
         wdg = 'loudness_monitor'
         pos = widgets_aux[wdg]['pos']
         lab = widgets_aux[wdg]['val']
-        
+
         value = int( round(value,0) )
         if loudness_track:
             lab += str(value).rjust(3)
         else:
             lab = ''
-            
+
         cmd = f'widget_set scr_1 { wdg } { pos } "{ lab }"'
         #print(cmd)
         LCD.send( cmd )
@@ -273,15 +279,15 @@ def update_metadata(metadata, mode='composed_marquee', scr='scr_1'):
     def compose_marquee(md):
         """ compose a string to be displayed on a LCD bottom line marquee.
         """
-        
+
         tmp = '{ "bottom_marquee":"'
         for k,v in json.loads(md).items():
             if k in ('artist', 'album', 'title') and v != '-':
                 tmp += k[:2] + ':' + str(v) + ' '
         tmp += '" }'
-        
+
         return tmp
-    
+
     # This compose a unique marquee widget with all metadata fields:
     if mode == 'composed_marquee':
         metadata = json.loads( compose_marquee(metadata) )
@@ -292,11 +298,11 @@ def update_metadata(metadata, mode='composed_marquee', scr='scr_1'):
     for key, value in metadata.items():
 
         if key in widgets_meta.keys():
-        
+
             pos =       widgets_meta[key]['pos']
             label =     widgets_meta[key]['val']
             label +=    str(value)
-        
+
             left, top   = pos.split()
             right       = 20
             bottom      = top
@@ -305,7 +311,7 @@ def update_metadata(metadata, mode='composed_marquee', scr='scr_1'):
             # adding a space for marquee mode
             if direction == 'm':
                 label += ' '
-        
+
             # sintax for scroller widgets:
             #   widget_set screen widget left top right bottom direction speed "text"
             cmd = f'widget_set {scr} {key} {left} {top} {right} {bottom} {direction} {speed} "{label}"'
@@ -352,7 +358,7 @@ class changed_files_handler(FileSystemEventHandler):
         # loudness monitor changes counter
         if path in (LOUDNESSMON_file):
             update_loudness_monitor()
-            
+
 if __name__ == "__main__":
 
     # Registers a client under the LCDd server
@@ -372,7 +378,7 @@ if __name__ == "__main__":
     update_state()
     # Displays update_loudness_monitor
     update_loudness_monitor()
-    
+
     # Displays metadata
     #md =  '{"artist":"Some ARTIST",'
     #md += ' "album":"Some ALBUM",'
