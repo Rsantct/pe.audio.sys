@@ -797,7 +797,6 @@ class Preamp(object):
 
             if not xo:
                 return 'done'
-
             else:
                 c = Convolver()
                 if c.set_xo( xo ) == 'done':
@@ -818,7 +817,6 @@ class Preamp(object):
             return f'something was wrong selecting \'{value}\''
 
     def get_inputs(self, *dummy):
-        #return '\n'.join( self.inputs )
         return json.dumps( [ x for x in self.inputs.keys() ] )
 
 # THE CONVOLVER: DRC and XO Brutefir stages management =========================
