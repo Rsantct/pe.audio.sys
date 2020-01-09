@@ -111,12 +111,21 @@ function fill_in_page_header_and_selectors(status){
 // Queries the system status and updates the page (only runtime variable items):
 function page_update() {
 
-    const status = JSON.parse( control_cmd('get_state') );
+    try{
+        var status = JSON.parse( control_cmd('get_state') );
+    }catch{
+        var status = {'loudspeaker':'not connected', 'level':'-100'};
+    }
 
     // Refresh some stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != status['loudspeaker'] ){
         fill_in_page_header_and_selectors(status);
         last_loudspeaker = status['loudspeaker'];
+    }
+
+    if (status['loudspeaker'] == 'not connected'){
+        document.getElementById("levelInfo").innerHTML  = '--';
+        return;
     }
 
     // Amplifier switching
@@ -125,7 +134,7 @@ function page_update() {
     // The selected item on INPUTS
     document.getElementById("inputsSelector").value = status['input'];
 
-    // Level, balance, tone info
+    // Level balance, tone info
     document.getElementById("levelInfo").innerHTML  = status['level'].toFixed(1);
     document.getElementById("balInfo").innerHTML    = 'BAL: '  + status['balance'];
     document.getElementById("bassInfo").innerText   = 'BASS: ' + status['bass'];
@@ -220,9 +229,11 @@ function page_update() {
 // INPUTS selector
 function fill_in_inputs_selector() {
 
-    // getting the inputs list from running core
-    const inputs = JSON.parse( control_cmd( 'get_inputs' ) );
-    //console.log( typeof inputs, inputs );
+    try{
+        var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
+    }catch{
+        return;
+    }
 
     // Filling the options in the inputs selector
     // https://www.w3schools.com/jsref/dom_obj_select.asp
@@ -243,7 +254,11 @@ function fill_in_inputs_selector() {
 
 // XO selector
 function fill_in_xo_selector() {
-    const xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
+    try{
+        var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
+    }catch{
+        return;
+    }
     select_clear_options(ElementId="xoSelector");
     const mySel = document.getElementById("xoSelector");
     for ( i in xo_sets ) {
@@ -255,7 +270,11 @@ function fill_in_xo_selector() {
 
 // DRC selector
 function fill_in_drc_selector() {
-    const drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
+    try{
+        var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
+    }catch{
+        return;
+    }
     select_clear_options(ElementId="drcSelector");
     const mySel = document.getElementById("drcSelector");
     for ( i in drc_sets ) {
@@ -271,7 +290,11 @@ function fill_in_drc_selector() {
 
 // TARGETS selector
 function fill_in_target_selector() {
-    const target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
+    try{
+        var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
+    }catch{
+        return;
+    }
     select_clear_options(ElementId="targetSelector");
     const mySel = document.getElementById("targetSelector");
     for ( i in target_files ) {
@@ -332,7 +355,11 @@ function update_player_info() {
     if ( ! tmp.includes("failed")  &&
          ! tmp.includes("refused")    )  {
 
-        d = JSON.parse( tmp );
+        try{
+            var d = JSON.parse( tmp );
+        }catch{
+            var d = metablank;
+        }
 
         if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
             d = metablank;
@@ -372,7 +399,7 @@ function update_ampli_switch() {
                                   .replace('\n','') );
     document.getElementById("onoffSelector").value = amp_state;
 }
-// Filling in the user's macros buttons
+// Filling in the user's macro buttons
 function fill_in_macro_buttons() {
     const macros = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
     // If no macros on the list, do nothing, so leaving "display:none" on the buttons keypad div
@@ -422,7 +449,7 @@ function advanced_toggle() {
     else {
         advanced_controls = false;
     }
-    page_update(status);
+    page_update();
 }
 
 // Auxiliary function to avoid http socket lossing some symbols
