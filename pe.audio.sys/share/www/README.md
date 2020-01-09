@@ -14,7 +14,7 @@ the only needed configuration has to be done inside the `clientside.js` file:
      Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
      or set it '/functions.php' if you use Apache+PHP at server side.
 
-Last, the **HTTP port** needs to be configured under your Apache's `sites-available/` configuration, or inside the `peaudio_node.js` file, as appropriate:
+Last, the **HTTP port** needs to be configured under your Apache's `sites-available/` configuration, or inside the `peaudio_node.js` file, as appropriate, for instance:
 
      NODEJS_PORT = 8080; 
 
