@@ -21,10 +21,10 @@
    NOTICE: remember do not leaving any console.log actives
 */
 
-/* TO REVIEW:
-    We use http request GET with async=false, this is not recommended
-    but this way we get the answer.
-s*/
+/* PENDING:
+    We use http request GET with async=false, this is deprectaed and 
+    not recommended but this way we get the answer from the server side.
+*/
 
 // -----------------------------------------------------------------------------
 // ------------------------------- CONFIG: -------------------------------------
