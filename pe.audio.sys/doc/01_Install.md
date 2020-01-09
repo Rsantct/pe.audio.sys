@@ -55,7 +55,7 @@ You need to install the Node.js package,
 
 then login as your regular user and run:
 
-    node $HOME/pe.audio.sys/share/www/peasys_node.js &
+    node /home/YourUser/pe.audio.sys/share/www/peasys_node.js &
 
 and configure properly the `URL_PREXIX` under `share/www/clientside.js`
 
