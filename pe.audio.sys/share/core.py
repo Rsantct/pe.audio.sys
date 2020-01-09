@@ -63,14 +63,17 @@ def find_target_sets():
     return result
 
 def get_peq_in_use():
+    """ Finds out the PEQ (parametic eq) filename used by an inserted Ecasound
+        sound processor, if it is defined as an optional script inside config.yml
+    """
     for item in CONFIG['scripts']:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
             return item["ecasound_peq.py"].replace('.ecs','')
     return 'none'
 
-def get_eq_curve(prop, value, sta=None):
-    """ Retrieves the tone or loudness curve of the desired value
-        'sta' -state- will be used only to retrieve the
+def get_eq_curve(prop, value, state=None):
+    """ Retrieves the tone or loudness curve of the desired value.
+        'state'  will be used only to retrieve the
         suited loudness index curve, which depends on levels.
     """
     # Tone eq curves are provided in [-6...0...+6]
@@ -84,8 +87,8 @@ def get_eq_curve(prop, value, sta=None):
         index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
         index_flat  = LOUD_FLAT_CURVE_INDEX
 
-        if sta['loudness_track']:
-            index = index_flat - sta['level'] - sta['loudness_ref']
+        if state['loudness_track']:
+            index = index_flat - state['level'] - state['loudness_ref']
         else:
             index = index_flat
         index = int(round(index))
@@ -145,17 +148,17 @@ def find_loudness_flat_curve_index():
             break
     return index_flat
 
-def calc_eq( sta ):
+def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
-        as per the provided dictionary of state values 'sta'
+        as per the provided dictionary of state values.
     """
 
-    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = sta['loudness_ref'],
-                                       sta = sta )
-    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = sta['bass']         )
-    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = sta['treble']       )
+    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = state['loudness_ref'],
+                                       state = state )
+    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = state['bass']         )
+    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = state['treble']       )
 
-    target_name = sta['target']
+    target_name = state['target']
     if target_name == 'none':
         targ_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
         targ_pha = np.zeros( EQ_CURVES['freqs'].shape[0] )
@@ -163,17 +166,17 @@ def calc_eq( sta ):
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
-    eq_mag = targ_mag + loud_mag * sta['loudness_track'] + bass_mag + treb_mag
-    eq_pha = targ_pha + loud_pha * sta['loudness_track'] + bass_pha + treb_pha
+    eq_mag = targ_mag + loud_mag * state['loudness_track'] + bass_mag + treb_mag
+    eq_pha = targ_pha + loud_pha * state['loudness_track'] + bass_pha + treb_pha
 
     return eq_mag, eq_pha
 
-def calc_gain( sta ):
+def calc_gain( state ):
     """ Calculates the gain from: level, ref_level_gain and the source gain offset
     """
-    gain    = sta['level'] + float(CONFIG['ref_level_gain'])
-    if sta['input'] != 'none':
-        gain += float( CONFIG['sources'][sta['input']]['gain'] )
+    gain    = state['level'] + float(CONFIG['ref_level_gain'])
+    if state['input'] != 'none':
+        gain += float( CONFIG['sources'][state['input']]['gain'] )
     return gain
 
 # BRUTEFIR MANAGEMENT: =========================================================
@@ -208,16 +211,16 @@ def bf_set_midside( mode ):
     else:
         pass
 
-def bf_set_gains( sta ):
-    """ Adjust Brutefir gain at drc.X stages as per the provided 'sta'te values """
+def bf_set_gains( state ):
+    """ Adjust Brutefir gain at drc.X stages as per the provided state values """
 
-    gain    = calc_gain( sta )
+    gain    = calc_gain( state )
 
-    balance = float( sta['balance'] )
+    balance = float( state['balance'] )
 
     # Booleans:
-    solo    = sta['solo']
-    muted   = sta['muted']
+    solo    = state['solo']
+    muted   = state['muted']
 
     # (i) m_xxxx stands for an unity multiplier
     m_solo_L = {'off': 1, 'l': 1, 'r': 0} [ solo ]
