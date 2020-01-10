@@ -22,7 +22,7 @@
 */
 
 /* PENDING:
-    We use http request GET with async=false, this is deprectaed and 
+    We use http request GET with async=false, this is deprecated and
     not recommended but this way we get the answer from the server side.
 */
 
@@ -114,7 +114,7 @@ function page_update() {
     try{
         var status = JSON.parse( control_cmd('get_state') );
     }catch{
-        var status = {'loudspeaker':'not connected', 'level':'-100'};
+        var status = {'loudspeaker':'not connected'};
     }
 
     // Refresh some stuff if loudspeaker's audio processes has changed
