@@ -134,11 +134,14 @@ on_change_input:
 
 
 # ============================  SOURCES  =======================================
-# (i) - If capture_ports here are named 'xxxx_loop', then the preamp will
+# (i)
+#     - If capture_ports here are named 'xxxxloop', then the preamp will
 #       automagically spawn them for the sources can connect into. Obviously the
 #       sources must be configured accordingly.
-#     - xo field can be left blank, or you can force it if you need a
-#       low latency filters set, e.g when listen video.
+#
+#     - xo, drc fields are optional, you may want minimum phase FIRs for video.
+#
+#     - loudness_ref field is optional and overrides the on_change_input behavior.
 
 sources:
 
