@@ -780,13 +780,15 @@ class Preamp(object):
                                             monitor )
 
             # Trying to set the desired xo and drc for this source
+            tmp = ''
             c = Convolver()
             try:
                 xo = CONFIG["sources"][source]['xo']
                 if c.set_xo( xo ) == 'done':
                     self.state['xo_set'] = xo
                 else:
-                    print( f'(core) \'xo:{xo}\' in \'{source}\' is not valid')
+                    tmp = f'\'xo:{xo}\' in \'{source}\' is not valid'
+                    print('(core)', tmp)
             except:
                 pass
             try:
@@ -794,13 +796,17 @@ class Preamp(object):
                 if c.set_drc( drc ) == 'done':
                     self.state['drc_set'] = drc
                 else:
-                    print( f'(core) \'drc:{xo}\' in \'{source}\' is not valid')
+                    tmp += f'\'drc:{xo}\' in \'{source}\' is not valid'
+                    print('(core)', tmp)
             except:
                 pass
             del(c)
 
             # end of trying to select the source
-            return 'done'
+            if not tmp:
+                return 'done'
+            else:
+                return tmp
 
         def on_change_input_behavior(candidate):
             try:
