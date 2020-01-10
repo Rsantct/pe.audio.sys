@@ -756,16 +756,6 @@ class Preamp(object):
     def select_source(self, value, *dummy):
         """ this is the source selector """
 
-        def on_change_input_behavior():
-            candidate = self.state.copy()
-            try:
-                for option, value in CONFIG["on_change_input"].items():
-                    if value != None:
-                        candidate[option] = value
-            except:
-                print( '(config.yml) missing \'on_change_input\' options' )
-            return candidate
-
         def try_select(source):
 
             if source == 'none':
@@ -789,29 +779,50 @@ class Preamp(object):
                     jack_connect_bypattern( CONFIG['sources'][source]['capture_port'],
                                             monitor )
 
-            # last, trying to set the desired xo for this source
+            # Trying to set the desired xo and drc for this source
+            c = Convolver()
             try:
                 xo = CONFIG["sources"][source]['xo']
-            except:
-                return 'done'
-
-            if not xo:
-                return 'done'
-            else:
-                c = Convolver()
                 if c.set_xo( xo ) == 'done':
                     self.state['xo_set'] = xo
-                    del(c)
-                    return 'done'
                 else:
-                    del(c)
-                    return f'\'xo: {xo}\' in \'{source}\' is not valid'
+                    print( f'(core) \'xo:{xo}\' in \'{source}\' is not valid')
+            except:
+                pass
+            try:
+                drc = CONFIG["sources"][source]['drc']
+                if c.set_drc( drc ) == 'done':
+                    self.state['drc_set'] = drc
+                else:
+                    print( f'(core) \'drc:{xo}\' in \'{source}\' is not valid')
+            except:
+                pass
+            del(c)
 
+            # end of trying to select the source
+            return 'done'
+
+        def on_change_input_behavior(candidate):
+            try:
+                for option, value in CONFIG["on_change_input"].items():
+                    if value != None:
+                        candidate[option] = value
+            except:
+                print( '(config.yml) missing \'on_change_input\' options' )
+            return candidate
 
         result = try_select(value)
+
         if result:
             self.state['input'] = value
-            self._validate( on_change_input_behavior() )
+            candidate = self.state.copy()
+            candidate = on_change_input_behavior(candidate)
+            # Special source loudness_ref overrides the one in on_change_input_behavior
+            try:
+                candidate["loudness_ref"] = CONFIG["sources"][value]['loudness_ref']
+            except:
+                pass
+            self._validate( candidate )
             return result
         else:
             return f'something was wrong selecting \'{value}\''
