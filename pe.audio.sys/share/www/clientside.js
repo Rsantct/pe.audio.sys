@@ -416,7 +416,14 @@ function fill_in_macro_buttons() {
         document.getElementById( "macro_button_" + macro_pos ).innerText = macro_name;
     }
 }
-// Toggles displaying macro buttons
+// Executes user defined macros
+function user_macro(prefix, name) {
+    control_cmd( 'aux run_macro ' + prefix + '_' + name );
+}
+
+
+///////////////  MISCEL INTERNAL ////////////
+// Aux to toggle displaying macro buttons
 function macros_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
     if (curMode == 'none') {
@@ -426,11 +433,6 @@ function macros_toggle() {
         document.getElementById( "macro_buttons").style.display = 'none'
     }
 }
-// Executes user defined macros
-function user_macro(prefix, name) {
-    control_cmd( 'aux run_macro ' + prefix + '_' + name );
-}
-
 // Aux to clearing selector elements to avoid repeating
 // when audio processes have changed
 function select_clear_options(ElementId){
@@ -440,7 +442,6 @@ function select_clear_options(ElementId){
         mySel.remove(opt);
     }
 }
-
 // Aux to toggle advanced controls
 function advanced_toggle() {
     if ( advanced_controls !== true ) {
@@ -451,8 +452,7 @@ function advanced_toggle() {
     }
     page_update();
 }
-
-// Auxiliary function to avoid http socket lossing some symbols
+// Aux to avoid http socket lossing some symbols
 function http_prepare(x) {
     //x = x.replace(' ', '%20');  // leaving spaces as they are
     x = x.replace('!', '%21');
@@ -472,7 +472,6 @@ function http_prepare(x) {
     x = x.replace('/', '%2F');
     return x;
 }
-
 // Aux to test buttons
 function TESTING1(){
     //do something
