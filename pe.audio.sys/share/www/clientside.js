@@ -395,15 +395,22 @@ function ampli(mode) {
 }
 // Queries the remote amplifier switch state
 function update_ampli_switch() {
-    const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
-                                  .replace('\n','') );
-    document.getElementById("onoffSelector").value = amp_state;
+    try{
+        const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
+                                      .replace('\n','') );
+        document.getElementById("onoffSelector").value = amp_state;
+    }catch{
+    document.getElementById("onoffSelector").value = '--';
+    }
 }
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
-    const macros = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
-    // If no macros on the list, do nothing, so leaving "display:none" on the buttons keypad div
-    if ( macros.length < 1 ) { return; }
+    try{
+        var macros = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
+    }catch{
+    // If no macros list, do nothing, so leaving "display:none" on the buttons keypad div
+        return
+    }
     // If any macro found, lets show the macros toggle switch
     document.getElementById( "playback_control_23").style.display = 'block';
     document.getElementById( "playback_control_21").style.display = 'block'; // just for symmetry reasons
