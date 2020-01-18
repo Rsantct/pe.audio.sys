@@ -123,13 +123,13 @@ function page_update() {
         last_loudspeaker = status['loudspeaker'];
     }
 
+    // Amplifier switching
+    update_ampli_switch();
+
     if (status['loudspeaker'] == 'not connected'){
         document.getElementById("levelInfo").innerHTML  = '--';
         return;
     }
-
-    // Amplifier switching
-    update_ampli_switch();
 
     // The selected item on INPUTS
     document.getElementById("inputsSelector").value = status['input'];
