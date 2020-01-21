@@ -24,7 +24,7 @@ cd
 
 # Wait until Brutefir ports becomes active
 max=60
-echo "Waiting Brutefir ports to become active"
+echo "Waiting for Brutefir ports to become active"
 while true; do
     echo -n .
     sleep 1
