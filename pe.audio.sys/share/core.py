@@ -190,7 +190,7 @@ def bf_cli(command):
             command = command + '; quit\n'
             s.send(command.encode())
         except:
-            print (f'Brutefir socket error')
+            print (f'(core.py) Brutefir socket error')
 
 def bf_set_midside( mode ):
     """ midside (formerly mono) is implemented at the f.eq.X stages:
@@ -333,6 +333,12 @@ def get_brutefir_config(prop):
         return ways
     else:
         return []
+
+def brutefir_runs():
+    if JCLI.get_ports('brutefir'):
+        return True
+    else:
+        return False
 
 # JACK MANAGEMENT: =============================================================
 
@@ -640,6 +646,7 @@ class Preamp(object):
 
     def get_state(self, *dummy):
         #return yaml.dump( self.state, default_flow_style=False )
+        self.state['convolver_runs'] = brutefir_runs()      # informative value
         return json.dumps( self.state )
 
     def get_target_sets(self, *dummy):
