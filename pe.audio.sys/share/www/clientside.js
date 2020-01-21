@@ -111,6 +111,9 @@ function fill_in_page_header_and_selectors(status){
 // Queries the system status and updates the page (only runtime variable items):
 function page_update() {
 
+    // Amplifier switching (aux service always runs)
+    update_ampli_switch();
+
     try{
         var status = JSON.parse( control_cmd('get_state') );
     }catch{
@@ -123,12 +126,20 @@ function page_update() {
         last_loudspeaker = status['loudspeaker'];
     }
 
-    // Amplifier switching
-    update_ampli_switch();
-
     if (status['loudspeaker'] == 'not connected'){
         document.getElementById("levelInfo").innerHTML  = '--';
         return;
+    }
+
+    if (status['convolver_runs'] == false){
+        document.getElementById("levelInfo").innerHTML  = '--';
+        document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
+                                                          'convolver-OFF';
+        return;
+    }
+    else{
+        document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
+                                                       status['loudspeaker'];
     }
 
     // The selected item on INPUTS
