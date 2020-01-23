@@ -1,10 +1,13 @@
 #!/bin/sh -e
 
 # switch on your amplifier:
-su -l YourUser -c "/home/YourUser/bin/ampli.sh on"
+su -l YOURUSER -c "/home/YOURUSER/bin/ampli.sh on"
 
 # starts pe.audio.sys
-su -l YourUser -c "python3 /home/YourUser/pe.audio.sys/start.py all >/home/YourUser/pe.audio.sys/start.py.log 2>&1"
+su -l YOURUSER -c "python3 /home/YOURUSER/pe.audio.sys/start.py all >/home/YourUser/pe.audio.sys/start.py.log 2>&1"
+
+# Node.js http server
+su -l YOURUSER -c "/usr/bin/node /home/YOURUSER/pe.audio.sys/share/www/peasys_node.js $"
 
 
 exit 0
