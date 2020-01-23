@@ -58,7 +58,7 @@ Please refer to the doc files here
 
 ### Special permission for your user to reboot the machine
 
-If so, you can set it by running **`$ EDITOR=nano sudo visudo`**, then add the following:
+If so, you can set it by running **`EDITOR=nano sudo visudo`**, then add the following:
 
     # 'MyUSER' user can reboot the machine:
     MyUSER          ALL=NOPASSWD:/sbin/reboot
