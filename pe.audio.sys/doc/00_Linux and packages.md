@@ -54,3 +54,12 @@ Also install the following packages on your linux installation:
 ### Python3 packages
 
 Please refer to the doc files here
+
+
+### Special permission for your user to reboot the machine
+
+If so, you can set it by running **`EDITOR=nano sudo visudo`**
+
+    # 'MyUSER' user can reboot the machine:
+    MyUSER          ALL=NOPASSWD:/sbin/reboot
+
