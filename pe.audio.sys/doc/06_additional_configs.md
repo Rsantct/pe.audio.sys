@@ -1,4 +1,4 @@
-## ALSA backended players, i.e: librespot
+## ALSA backended players, i.e. librespot
 
 If you plan to use ALSA backended players, i.e: librespot, remember to configure properly your **`/.asondrc`** file.
 
