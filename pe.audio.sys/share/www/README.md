@@ -4,19 +4,22 @@ Please mind that an HTML5 capable browser is needed.
 
 ## HTTP Server configuration: Apache+PHP or Node.js
 
-As per it is possible to use two server side backend flavours:
+It is possible to use two server side backend flavours:
 
 - **Apache+PHP (system wide service)**
 - **Node.js (user space service)**
 
-the only needed configuration has to be done inside the `clientside.js` file:
+The only needed configuration has to be done inside the `clientside.js` file:
 
      Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
      or set it '/functions.php' if you use Apache+PHP at server side.
+     
+Above changes are automatically made when running the `tmp/uptade_peaudiosys.sh` intalling script.
 
-Last, the **HTTP port** needs to be configured under your Apache's `sites-available/` configuration, or inside the `peaudio_node.js` file, as appropriate, for instance:
+Last, the **HTTP port** needs to be configured under
 
-     NODEJS_PORT = 8080; 
+- your Apache's `sites-available/` configuration, 
+- or inside the `peaudio_node.js` file, as appropriate, for instance `NODEJS_PORT = 8080;` 
 
 
 ## HTTP server launcher
