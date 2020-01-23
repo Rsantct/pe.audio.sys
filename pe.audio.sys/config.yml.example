@@ -65,7 +65,7 @@ external_cards:
 
 # ACTUAL ALSA CARD:
 jack_options:           -R -d alsa
-jack_backend_options:   -d system_card -r 48000 -P -o 6
+jack_backend_options:   -d system_card -r 48000 -p 1024 -n2 
 
 
 # =========================  LIMITS  ===========================================
@@ -161,6 +161,10 @@ sources:
         capture_port:   zita-n2j
         gain:           0.0
         xo:             mp
+    analog:
+        capture_port:   system
+        gain:           0.0
+        xo:             mp
 
 # ========================== SOURCE MONITOR PORTS ==============================
 # The source selector will connect the source also here.
@@ -189,13 +193,13 @@ scripts:
     - sound_cards_prepare.py
     
     ## Runs MPD:
-    - mpd.py
+    #- mpd.py
     
     ## Internet url audio streams player based on Mplayer:
     - istreams.py
     
     ## Set Pulseaudio apps to sound through by JACK:
-    - pulseaudio-jack-sink.py
+    #- pulseaudio-jack-sink.py
     
     ## DVB-T player based on Mplayer, useful for DVB-T radio stations:
     #- DVB-T.py
@@ -223,7 +227,7 @@ scripts:
     
     ## A daemon that monitorizes the EBU R128 Loudness Integrated
     ## (please add 'PortAudio' to your source_monitors list above)
-    - loudness_monitor.py
+    #- loudness_monitor.py
     
 
 
