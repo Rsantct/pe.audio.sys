@@ -1,6 +1,6 @@
-## ALSA backended players, i.e. librespot
+## ALSA backended players, e.g. librespot
 
-If you plan to use ALSA backended players, i.e: librespot, remember to configure properly your **`/.asondrc`** file.
+If you plan to use ALSA backended players, e.g. librespot, remember to configure properly your **`/.asondrc`** file.
 
-You can simple copy the provided one `.asoundrc.sample`
+You can simply copy the provided one `.asoundrc.sample`
 
