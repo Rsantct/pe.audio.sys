@@ -7,7 +7,15 @@ Before turn on your amp, here we propose some check points to help you to prepar
 
 Take the given `config.yml.example` as a guide for your custom config.
 
-Use here the dummy sound backend, with the proper channels dimension, like your actual sound card.
+Main points to check for:
+
+    [ ] system_card: hw:ALSANAME
+    
+    [ ] jack_backend_options: -r SAMPLERATE -p PERIODSIZE -n PERIODS [--shorts] [--softmode]
+
+        You can select here the dummy sound backend, with a channels dimension like your actual sound card.
+
+    [ ] loudspeaker: YOUR_LOUDSPEAKER
 
 
 ## [  ] sound card's mixer setting
@@ -23,7 +31,15 @@ Review the README.md for **naming conventions and files under your loudspaker fo
 
 ### The `brutefir_config` file
 
-You can begin from one of the provided loudspeaker examples as a template for customizing your `brutefir_config` file.
+You can begin from one of the provided loudspeaker examples as a template for customizing your `brutefir_config` file, please check:
+
+    [  ] sampling_rate
+    
+    [  ] Tune properly the convolver's partition size, depending on your CPU available power, e.g.:
+    
+            filter_length:      16384 ;     # not partitioned
+                    
+            filter_length:      4096,4 ;    # 4 partitions, more CPU is needed.
 
     [  ] Sound card out channels map
     
