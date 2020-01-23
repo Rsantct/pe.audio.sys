@@ -13,7 +13,7 @@ Main points to check for:
     
     [ ] jack_backend_options: -r SAMPLERATE -p PERIODSIZE -n PERIODS [--shorts] [--softmode]
 
-        You can select here the dummy sound backend, with a channels dimension like your actual sound card.
+        To initial testing, you can select here the dummy sound backend, with a channels dimension like your actual sound card.
 
     [ ] loudspeaker: YOUR_LOUDSPEAKER
 
