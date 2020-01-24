@@ -90,7 +90,8 @@
                 }
 
         /* 1st SECTION: lside: shows the loudspeaker, rside: advanced toggler */
-        td#main_lside       { width:  95%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
+        td#main_lside       { width:   5%; text-align: center; border: none; }
+        td#main_cside       { width:  90%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
         td#main_rside       { width:   5%; text-align: center; border: none; }
 
         /* 2nd SECTION */
@@ -216,7 +217,10 @@
     <div>
     <table id="main_title" >
         <tr>
-            <td id="main_lside"></td>
+            <td id="main_lside" style="display:none">
+                <button id="reboot_switch" title="REBOOT" style="font-size:0.7em" onclick="control_cmd('aux restart')">&#9851;</button>
+            </td>
+            <td id="main_cside"></td>
             <td id="main_rside">
                 <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="advanced_toggle()">&#9881;</button>
             </td>
@@ -435,7 +439,7 @@
     <!-- MACRO BUTTONS can be toggled -->
     <!-- 9 buttons keypad for customizable user macros (if any found) -->
     <div>
-    <table id="macro_buttons" style="display:inline-table">
+    <table id="macro_buttons" style="display:none">
     <tr>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_1" onmousedown="user_macro('1', this.innerText)" >-</button></td>
     <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_2" onmousedown="user_macro('2', this.innerText)" >-</button></td>
