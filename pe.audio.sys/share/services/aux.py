@@ -48,7 +48,7 @@ except:
     AMP_MANAGER =  'echo For amp switching please configure config.yml'
 
 try:
-    with open( f'{MAIN_FOLDER}/web.config' , 'r' ) as f:
+    with open( f'{MAIN_FOLDER}/web.yml' , 'r' ) as f:
         WEBCONFIG = yaml.load( f )
 except:
         WEBCONFIG = {}
