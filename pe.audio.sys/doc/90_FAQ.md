@@ -18,3 +18,16 @@ Timidity is a sound synthesizer, we don't need it at all:
 
     $ sudo systemctl stop timidity.service 
     $ sudo systemctl disable timidity.service 
+
+## Web page does not works.
+
+### Apache http server:
+
+Be sure the Apache's PHP module is installed and enabled:
+
+    $ sudo apt install apache2 libapache2-mod-php
+    $ ls /etc/apache2/mods-available/php*
+    /etc/apache2/mods-available/php7.3.conf
+    /etc/apache2/mods-available/php7.3.load
+    $ sudo a2enmod php7.3
+
