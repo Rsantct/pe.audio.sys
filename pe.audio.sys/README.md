@@ -91,7 +91,7 @@ The provided web page will show the system status as well music player's informa
 
 An LCD service is provided to plug a LCD display to show the system status as well metadata from players.
 
-You can also use the above getting info commands, through by any TCP connection.
+You can also use the above getting info commands, through by a TCP connection.
 
 ## Tools
 
