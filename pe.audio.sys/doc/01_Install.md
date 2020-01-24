@@ -36,7 +36,7 @@ where `my_branch` can be 'master' or whatever branch name you want to test
 
     sh tmp/update_peaudiosys.sh <my_brach>
 
-Say **'Y'** to keep your current config.
+Say **'Y'** when asked *keep your current config?*.
 
 
 ### The web page
