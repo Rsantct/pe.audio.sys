@@ -1,6 +1,12 @@
 This folder hosts the web page that manages your pe.audio.sys, for instance from your smartphone, tablet or PC web browser. 
 
-Please mind that an HTML5 capable browser is needed. 
+**(i)** Please mind that an **HTML5** capable browser is needed.
+
+## Web page behavior
+
+Some configurations are available on the file **`~/pe.audio.sys/web.yml`**:
+- command to run when the reboot button is pressed
+- show or hide the macro buttons array at startup
 
 ## HTTP Server configuration: Apache+PHP or Node.js
 
@@ -9,17 +15,17 @@ It is possible to use two server side backend flavours:
 - **Apache+PHP (system wide service)**
 - **Node.js (user space service)**
 
-The only needed configuration has to be done inside the `clientside.js` file:
+The only needed configuration (1) has to be done inside the `clientside.js` file:
 
      Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
      or set it '/functions.php' if you use Apache+PHP at server side.
      
-Above changes are automatically made when running the `tmp/uptade_peaudiosys.sh` installing script.
+(1) Above changes are automatically made when running the `tmp/uptade_peaudiosys.sh` installing script.
 
-Last, the **HTTP port** needs to be configured under
+Last, the **HTTP port** needs to be configured, as appropriate:
 
-- your Apache's `sites-available/` configuration, 
-- or inside the `peaudio_node.js` file, as appropriate, for instance `NODEJS_PORT = 8080;` 
+- inside your Apache's `sites-available/` configuration, 
+- or inside the `share/www/peaudio_node.js` file, for instance `NODEJS_PORT = 8080;` 
 
 
 ## HTTP server launcher
