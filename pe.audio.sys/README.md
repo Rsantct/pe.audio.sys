@@ -270,8 +270,7 @@ Here you are an uncommented bare example of `config.yml`:
         - zita-n2j_mcast.py
 
     aux:
-        amp_on_cmdline:  /home/peaudiosys/bin/ampli.sh on
-        amp_off_cmdline: /home/peaudiosys/bin/ampli.sh off
+        amp_manager:  /home/predic/bin/ampli.sh
 
 
 # The share/eq folder
