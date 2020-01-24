@@ -51,7 +51,7 @@ try:
     with open( f'{MAIN_FOLDER}/web.yml' , 'r' ) as f:
         WEBCONFIG = yaml.load( f )
 except:
-        WEBCONFIG = {}
+        WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
 
 
 def read_command_phrase(command_phrase):
