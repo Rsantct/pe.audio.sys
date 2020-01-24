@@ -53,6 +53,24 @@ cmd_L='cffa "f.drc.L" "f.eq.L" m'"$m_gain_L"
 cmd_R='cffa "f.drc.R" "f.eq.R" m'"$m_gain_R"
 echo $cmd_L'; '$cmd_R'; quit' | nc -N localhost 3000
 
+# Restoring the 'eq' stage,
+echo "Trying to restore the last 'eq' curves on Brutefir"
+LEVEL=$( grep 'level:' "${HOME}"/pe.audio.sys/.state.yml \
+        | sed s/\ \ //g | cut -d':' -f 2 )
+tmp=$(pgrep -fla pasysctrl | head -n1)
+PORT=${tmp##*\ }
+echo 'level '"$LEVEL" | nc -N localhost $PORT
+echo
+
+# Restoring the DRC:
+echo "Trying to restore the last 'drc_set' on Brutefir"
+DRC=$( grep 'drc_set:' "${HOME}"/pe.audio.sys/.state.yml \
+        | sed s/\ \ //g | cut -d':' -f 2 )
+tmp=$(pgrep -fla pasysctrl | head -n1)
+PORT=${tmp##*\ }
+echo 'set_drc '"$DRC" | nc -N localhost $PORT
+echo
+
 # Wait until Brutefir ports becomes active
 max=60
 echo "Waiting for Brutefir ports to become active"
@@ -75,14 +93,4 @@ done
 echo "Connecting Brutefir to preamp"
 jack_connect   brutefir:in.L   pre_in_loop:output_1
 jack_connect   brutefir:in.R   pre_in_loop:output_2
-
-# It is still pending to restore que 'eq' stage
-echo "Trying to restore the last 'eq' curves on Brutefir"
-LEVEL=$( grep 'level:' "${HOME}"/pe.audio.sys/.state.yml \
-        | sed s/\ \ //g | cut -d':' -f 2 )
-tmp=$(pgrep -fla pasysctrl | head -n1)
-PORT=${tmp##*\ }
-echo 'level '"$LEVEL" | nc -N localhost $PORT
-echo
-
 
