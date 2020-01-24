@@ -14,16 +14,15 @@ For example
 $ ls -1 pe.audio.sys/macros/
 1_RNE
 2_R.Clasica
-6_flat sound
 README.md
 ```
 
 Will show the following key pad layout:
 
 ```
-    [     RNE     ]  [  R.Clasica  ]  [    --      ]
-    [     --      ]  [     --      ]  [ flat sound ]
-    [     --      ]  [     --      ]  [    --      ]
+    [     RNE     ]  [  R.Clasica  ]  [     --     ]
+    [     --      ]  [     --      ]  [     --     ]
+    [     --      ]  [     --      ]  [     --     ]
 ```
 
 **NOTICE:** if no macro files `N_xxxx` were defined under `~/pe.audio.sys/macros/`
