@@ -57,7 +57,9 @@ then login as your regular user and run:
 
     node /home/YourUser/pe.audio.sys/share/www/peasys_node.js &
 
-Configure the `URL_PREXIX` under `share/www/clientside.js`. When updating your `pe.audio.sys` system, the `peaudio_update.sh` will configure it properly.
+Configure the `URL_PREXIX` under `share/www/clientside.js` so that the web page. 
+
+When updating your system, the script `tmp/update_peaudiosy.sh` will auto configure it properly.
 
 
 #### Apache + PHP (system wide service)
