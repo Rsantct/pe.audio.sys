@@ -2,6 +2,12 @@
 
 # (i) keep this named "Brutefir_restart.sh" in order to avoid self killing
 
+# Check for jackd running
+if [[ ! "$(pgrep jackd)" ]]; then
+    echo "(!) jackd not running"
+    exit 0
+fi
+
 # FOA retrieving the needed Brutefir attenuation:
 ref_level=$( grep 'ref_level_gain:' "${HOME}"/pe.audio.sys/config.yml | sed s/\ \ //g | \
              cut -d':' -f 2)
@@ -33,9 +39,11 @@ if [[ $1 == 'stop' ]]; then
 fi
 
 # Restarting
+LSPK=$( grep 'loudspeaker:' "${HOME}"/pe.audio.sys/config.yml \
+        | sed s/\ \ //g | cut -d':' -f 2 | sed -e 's/^ *//g' | sed -e 's/ *$//g')
 sleep .5
 echo "Restarting"
-cd /home/predic/pe.audio.sys/loudspeakers/SeasFlat/
+cd "${HOME}"/pe.audio.sys/loudspeakers/"$LSPK"/
 brutefir brutefir_config 1>/dev/null 2>&1 &
 cd
 sleep 1
@@ -67,3 +75,14 @@ done
 echo "Connecting Brutefir to preamp"
 jack_connect   brutefir:in.L   pre_in_loop:output_1
 jack_connect   brutefir:in.R   pre_in_loop:output_2
+
+# It is still pending to restore que 'eq' stage
+echo "Trying to restore the last 'eq' curves on Brutefir"
+LEVEL=$( grep 'level:' "${HOME}"/pe.audio.sys/.state.yml \
+        | sed s/\ \ //g | cut -d':' -f 2 )
+tmp=$(pgrep -fla pasysctrl | head -n1)
+PORT=${tmp##*\ }
+echo 'level '"$LEVEL" | nc -N localhost $PORT
+echo
+
+
