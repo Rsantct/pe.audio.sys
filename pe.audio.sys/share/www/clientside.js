@@ -17,8 +17,10 @@
 */
 
 /*
-   debug trick: console.log(something);
-   NOTICE: remember do not leaving any console.log actives
+   (i) debug trick: console.log(something);
+       NOTICE: remember do not leaving any console.log active
+
+   (i) Cannot reference document.getElementbyxxxx until started page_initiate()
 */
 
 /* PENDING:
@@ -37,7 +39,6 @@ const URL_PREFIX = '/functions.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
-
 // Some globals
 var advanced_controls = false;          // Default for displaying advanced controls
 var metablank = {                       // A player's metadata blank dict
@@ -52,6 +53,13 @@ var metablank = {                       // A player's metadata blank dict
     }
 var last_loudspeaker = ''               // Will detect if audio processes has beeen
                                         // restarted with new loudspeaker configuration.
+
+try{
+    var web_config = JSON.parse( control_cmd('aux get_web_config') );
+}catch{
+    var web_config = { 'at_startup':{'hide_macro_buttons':false} };
+    web_config.reboot_button_action = 'peaudiosys_restart.sh';
+}
 
 // Talks to the pe.audio.sys HTTP SERVER
 function control_cmd( cmd ) {
@@ -82,6 +90,16 @@ function page_initiate(){
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
+    // Show or hide the macro buttons
+    const hide_mbuttons = web_config.at_startup.hide_macro_buttons;
+    if ( hide_mbuttons ){
+        document.getElementById("macro_buttons").style.display = 'none';
+    }else{
+        document.getElementById("macro_buttons").style.display = 'inline-table';
+    }
+    // Updates the title of the reboot button as per the web_config dict
+    document.getElementById("reboot_switch").title = 'RESTART: ' +
+                                                web_config.reboot_button_action;
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -90,7 +108,7 @@ function page_initiate(){
 function fill_in_page_header_and_selectors(status){
 
     // Web header
-    document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
+    document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        status['loudspeaker'];
 
     // Filling in the selectors: inputs, target, XO, DRC and PEQ
@@ -133,12 +151,12 @@ function page_update() {
 
     if (status['convolver_runs'] == false){
         document.getElementById("levelInfo").innerHTML  = '--';
-        document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
+        document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                           'convolver-OFF';
         return;
     }
     else{
-        document.getElementById("main_lside").innerText = ':: pe.audio.sys :: ' +
+        document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        status['loudspeaker'];
     }
 
@@ -156,8 +174,11 @@ function page_update() {
                     'Loud. Ref: ' + status['loudness_ref'];
     document.getElementById("loud_slider").value    =
                     parseInt(status['loudness_ref']);
-    const loud_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
-    document.getElementById("loud_meter").value    =  loud_measure;
+    try{
+        const loud_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
+        document.getElementById("loud_meter").value    =  loud_measure;
+    }catch{
+    }
 
     // The selected item on INPUTS, XO, DRC and PEQ
     document.getElementById("targetSelector").value = status['target'];
@@ -207,10 +228,12 @@ function page_update() {
     if ( advanced_controls == true ) {
         document.getElementById( "advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
+        document.getElementById( "main_lside").style.display = "table-cell";
     }
     else {
         document.getElementById( "advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
+        document.getElementById( "main_lside").style.display = "none";
     }
 
     // Updates metadata player info
@@ -332,7 +355,11 @@ function playerCtrl(action) {
 }
 // Updates the player control buttons, hightlights the corresponding button to the playback state
 function update_player_controls() {
-    const playerState = control_cmd( 'players player_state' );
+    try{
+        var playerState = control_cmd( 'players player_state' );
+    }catch{
+        return;
+    }
     if        ( playerState == 'stop' ) {
         document.getElementById("buttonStop").style.background  = "rgb(185, 185, 185)";
         document.getElementById("buttonStop").style.color       = "white";
@@ -358,9 +385,11 @@ function update_player_controls() {
 }
 // Shows the playing info metadata
 function update_player_info() {
-
-    const tmp = control_cmd( 'players player_get_meta' );
-
+    try{
+        var tmp = control_cmd( 'players player_get_meta' );
+    }catch{
+        return;
+    }
     // players.py will allways give a dictionary as response, but if
     // no metadata are available then most fields will be empty, except 'player'
     if ( ! tmp.includes("failed")  &&
@@ -438,7 +467,6 @@ function fill_in_macro_buttons() {
 function user_macro(prefix, name) {
     control_cmd( 'aux run_macro ' + prefix + '_' + name );
 }
-
 
 ///////////////  MISCEL INTERNAL ////////////
 // Aux to toggle displaying macro buttons
