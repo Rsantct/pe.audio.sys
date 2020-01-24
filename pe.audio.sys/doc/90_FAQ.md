@@ -1,6 +1,6 @@
 ## Jackd fails to start because the sound card is in use.
 
-### Check for any jackd session runing on your system:
+### Check for any jackd session running on your system:
 
     $ pgrep -fla jackd
 
