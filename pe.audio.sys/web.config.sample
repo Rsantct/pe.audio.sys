@@ -1,0 +1,14 @@
+
+#------------------------ REBOOT BUTTON BEHAVIOR -------------------------------
+# Put here some command from your PATH you want to run
+# when pressing the REBOOT button on the control web page
+# e.g.: 'sudo reboot', 'peaudiosys_restart.sh' or 'Brutefir_restart.sh'
+
+reboot_button_action: peaudiosys_restart.sh
+
+
+#-------------------------  STARTUP BEHAVIOR  ----------------------------------
+at_startup:
+
+    hide_macro_buttons: false
+
