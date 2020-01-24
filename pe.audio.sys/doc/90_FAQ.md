@@ -19,7 +19,7 @@ Timidity is a sound synthesizer, we don't need it at all:
     $ sudo systemctl stop timidity.service 
     $ sudo systemctl disable timidity.service 
 
-## Web page does not works.
+## Web page does not work.
 
 ### Apache http server:
 
