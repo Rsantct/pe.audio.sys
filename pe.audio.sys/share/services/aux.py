@@ -47,6 +47,12 @@ except:
     # This will be printed out to the terminal to advice the user:
     AMP_MANAGER =  'echo For amp switching please configure config.yml'
 
+try:
+    with open( f'{MAIN_FOLDER}/web.yml' , 'r' ) as f:
+        WEBCONFIG = yaml.load( f )
+except:
+        WEBCONFIG = {}
+
 
 def read_command_phrase(command_phrase):
     cmd, arg = None, None
@@ -124,12 +130,30 @@ def process( cmd, arg ):
         except:
             result = ''
 
+    # RESTART
+    elif cmd == 'restart':
+        try:
+            restart_action = WEBCONFIG["reboot_button_action"]
+        except:
+            restart_action = 'peaudiosys_restart.sh'
+
+        try:
+            print( f'(aux) Trying to run \'{restart_action}\'' )
+            Popen( f'{restart_action}', shell=True)
+        except:
+            print( f'(aux) Problems running \'{restart_action}\'' )
+
+    # Get the web.config dictionary
+    elif cmd == 'get_web_config':
+        result = WEBCONFIG
+
     # Help
     elif '-h' in cmd:
         print(__doc__)
         result =  'done'
 
     return result
+
 
 # command line use
 if __name__ == '__main__':
