@@ -138,6 +138,18 @@ function page_update() {
         var status = {'loudspeaker':'not connected'};
     }
 
+    // Displays or hides the advanced controls section
+    if ( advanced_controls == true ) {
+        document.getElementById( "advanced_controls").style.display = "block";
+        document.getElementById( "level_buttons13").style.display = "table-cell";
+        document.getElementById( "main_lside").style.display = "table-cell";
+    }
+    else {
+        document.getElementById( "advanced_controls").style.display = "none";
+        document.getElementById( "level_buttons13").style.display = "none";
+        document.getElementById( "main_lside").style.display = "none";
+    }
+
     // Refresh some stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != status['loudspeaker'] ){
         fill_in_page_header_and_selectors(status);
@@ -222,18 +234,6 @@ function page_update() {
         document.getElementById("buttonLoud").innerText = 'LD';
         // Hides loudness_metering_and_slider if loudness_track=False
         document.getElementById( "loudness_metering_and_slider").style.display = "none";
-    }
-
-    // Displays or hides the advanced controls section
-    if ( advanced_controls == true ) {
-        document.getElementById( "advanced_controls").style.display = "block";
-        document.getElementById( "level_buttons13").style.display = "table-cell";
-        document.getElementById( "main_lside").style.display = "table-cell";
-    }
-    else {
-        document.getElementById( "advanced_controls").style.display = "none";
-        document.getElementById( "level_buttons13").style.display = "none";
-        document.getElementById( "main_lside").style.display = "none";
     }
 
     // Updates metadata player info
