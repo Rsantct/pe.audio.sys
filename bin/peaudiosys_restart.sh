@@ -7,10 +7,6 @@
 #
 # Audio device hw:RPiCirrus,0 cannot be acquired...
 # Cannot initialize driver
-
 export JACK_NO_AUDIO_RESERVATION=1
 
-python3 "$HOME"/pe.audio.sys/start.py all  \
-1>"$HOME"/pe.audio.sys/start.py.log \
-2>&1 &
-
+$HOME/pe.audio.sys/start.py all &
