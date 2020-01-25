@@ -41,10 +41,12 @@ import yaml
 import threading
 
 UHOME = os.path.expanduser("~")
-with open( f'{UHOME}/pe.audio.sys/config.yml', 'r' ) as f:
+BDIR  = f'{UHOME}/pe.audio.sys'
+
+with open( f'{BDIR}/config.yml', 'r' ) as f:
     CONFIG = yaml.load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
-LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{LOUDSPEAKER}'
+LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
 
 def is_jack_running():
     try:
@@ -99,8 +101,11 @@ def get_services():
             services.append(service)
     return services
 
-def restart_service( service, onlystop=False ):
-    
+def restart_service( service, onlystop=False, todevnull=False ):
+    # (i)   devnull forces to use /dev/null in order to
+    #       release the service from a session stdot/stderr,
+    #       i.e. the service will keep alive even if this program dead.
+
     try:
         address = CONFIG["services_addressing"][f"{service}_address"]
         port =    CONFIG["services_addressing"][f"{service}_port"]
@@ -110,14 +115,16 @@ def restart_service( service, onlystop=False ):
                    >/dev/null 2>&1', shell=True )
         if onlystop:
             print( f'(start.py) stopping SERVICE: \'{service}\'' )
-            return 
+            return
         sleep(.25) # this is necessary because of asyncronous stopping
-        
+
         # Start
-        # use shell=True to release python process if you want to
-        # restart any service in runtime.
-        sp.Popen( f'python3 {UHOME}/pe.audio.sys/share/server.py {service}'
-                  f' {address} {port}', shell=True)
+        cmd = f'python3 {BDIR}/share/server.py {service} {address} {port}'
+        if todevnull:
+            with open('/dev/null', 'w') as fnull:
+                sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
+        else:
+            sp.Popen( cmd, shell=True)
         print( f'(start.py) starting SERVICE: \'{service}\'' )
 
     except:
@@ -174,7 +181,7 @@ def run_scripts(mode='start'):
         if type(script) == dict:
             script = list(script.keys())[0]
         print( f'(start.py) will {mode} the script \'{script}\' ...' )
-        sp.Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} {mode}', shell=True)
+        sp.Popen( f'{BDIR}/share/scripts/{script} {mode}', shell=True)
     if mode == 'stop':
         sleep(.5) # this is necessary because of asyncronous stopping
 
@@ -202,10 +209,10 @@ def kill_bill():
     for rawpid in rawpids:
         if rawpid.split()[1] == own_pid:
             rawpids.remove(rawpid)
-    
+
     # Just display the processes to be killed, if any.
     # Also write them to a file for debugging purposes.
-    with open(f'{UHOME}/pe.audio.sys/start.py.killbill','w') as f:
+    with open(f'{BDIR}/start.py.killbill','w') as f:
         f.write( '-'*21 + ' (start.py) killing running before me ' + '-'*21 + '\n')
         print( '-'*21 + ' (start.py) killing running before me ' + '-'*21 )
         for rawpid in rawpids:
@@ -228,7 +235,7 @@ def kill_bill():
 
 def check_state_file():
 
-    STATEFILE = f'{UHOME}/pe.audio.sys/.state.yml'
+    STATEFILE = f'{BDIR}/.state.yml'
     with open( STATEFILE, 'r') as f:
         state = f.read()
         # if th file is ok
@@ -335,4 +342,4 @@ if __name__ == "__main__":
 
     # We allways restart the 'aux' service, so that some functions
     # keeps availabe: amplifier switching and web macros.
-    restart_service( 'aux' )
+    restart_service( 'aux', todevnull=True )
