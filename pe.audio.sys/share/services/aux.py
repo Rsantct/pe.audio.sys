@@ -138,8 +138,7 @@ def process( cmd, arg ):
             restart_action = 'peaudiosys_restart.sh'
 
         try:
-            print( f'(aux) Trying to run \'{restart_action}\'' )
-            Popen( f'{restart_action}', shell=True)
+            Popen( f'{restart_action}'.split() )
         except:
             print( f'(aux) Problems running \'{restart_action}\'' )
 
