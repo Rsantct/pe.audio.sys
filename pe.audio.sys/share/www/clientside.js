@@ -109,6 +109,15 @@ function page_initiate(){
 
 // Page STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
+    // Aux to clearing selector elements to avoid repeating items
+    // when audio processes have changed
+    function select_clear_options(ElementId){
+        // https://www.w3schools.com/jsref/dom_obj_select.asp
+        const mySel = document.getElementById(ElementId);
+        for (opt in mySel.options){
+            mySel.remove(opt);
+        }
+    }
     // Fills in the INPUTS selector
     function fill_in_inputs_selector() {
         try{
@@ -515,14 +524,6 @@ function macros_toggle() {
     }
     else {
         document.getElementById( "macro_buttons").style.display = 'none'
-    }
-}
-// Clearing selector elements to avoid repeating when audio processes have changed
-function select_clear_options(ElementId){
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    const mySel = document.getElementById(ElementId);
-    for (opt in mySel.options){
-        mySel.remove(opt);
     }
 }
 // Toggle advanced controls
