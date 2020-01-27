@@ -247,7 +247,7 @@
 
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
-                <button type="button" id="buttonLoud" onmousedown="control_cmd('loudness_track toggle')" >L</button>
+                <button type="button" id="buttonLoud" onmousedown="loudness_toggle()" >L</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -260,7 +260,7 @@
         <tr>
             <!-- MONO / STEREO control -->
             <td id="MonoInfo">
-                <button type="button" id="buttonMono" onmousedown="control_cmd('mono toggle')"           >M</button>
+                <button type="button" id="buttonMono" onmousedown="mono_toggle()"           >M</button>
             </td>
         </tr>
     </table>
@@ -277,7 +277,7 @@
             <td id="level_buttons12">
                 <button type="button" onmousedown="audio_change('level', -1)" >
                         &nbsp;-1&nbsp;</button>
-                <button type="button" onmousedown="control_cmd('mute toggle')" id="buttonMute" >
+                <button type="button" onmousedown="mute_toggle()" id="buttonMute" >
                         &nbsp;&nbsp;0&nbsp;&nbsp;</button>
                 <button type="button" onmousedown="audio_change('level', +1)" >
                         &nbsp;+1&nbsp;</button>
