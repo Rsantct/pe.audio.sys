@@ -40,6 +40,7 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
 // Some globals
+var state = {loudspeaker:"not connected"};
 var advanced_controls = false;          // Default for displaying advanced controls
 var metablank = {                       // A player's metadata blank dict
     'player':       '-',
@@ -86,6 +87,7 @@ function control_cmd( cmd ) {
     return ans;
 }
 
+// Page INITIATE
 function page_initiate(){
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
@@ -105,40 +107,126 @@ function page_initiate(){
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
 }
 
-function fill_in_page_header_and_selectors(status){
+// Page STATIC ITEMS (HEADER and SELECTORS)
+function fill_in_page_statics(){
+    // Aux to clearing selector elements to avoid repeating items
+    // when audio processes have changed
+    function select_clear_options(ElementId){
+        // https://www.w3schools.com/jsref/dom_obj_select.asp
+        const mySel = document.getElementById(ElementId);
+        for (opt in mySel.options){
+            mySel.remove(opt);
+        }
+    }
+    // Fills in the INPUTS selector
+    function fill_in_inputs_selector() {
+        try{
+            var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
+        }catch{
+            return;
+        }
+        // Filling in options in a selector
+        // https://www.w3schools.com/jsref/dom_obj_select.asp
+        select_clear_options(ElementId="inputsSelector");
+        const mySel = document.getElementById("inputsSelector");
+        for ( i in inputs) {
+            var option = document.createElement("option");
+            option.text = inputs[i];
+            mySel.add(option);
+        }
+        // And adds the input 'none' as expected in core.Preamp
+        // so that all inputs will be disconnected.
+        var option = document.createElement("option");
+        option.text = 'none';
+        mySel.add(option);
+    }
+    // Fills in the XO selector
+    function fill_in_xo_selector() {
+        try{
+            var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="xoSelector");
+        const mySel = document.getElementById("xoSelector");
+        for ( i in xo_sets ) {
+            var option = document.createElement("option");
+            option.text = xo_sets[i];
+            mySel.add(option);
+        }
+    }
+    // Fills in the DRC selector
+    function fill_in_drc_selector() {
+        try{
+            var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="drcSelector");
+        const mySel = document.getElementById("drcSelector");
+        for ( i in drc_sets ) {
+            var option = document.createElement("option");
+            option.text = drc_sets[i];
+            mySel.add(option);
+        }
+        // And adds 'none'
+        var option = document.createElement("option");
+        option.text = 'none';
+        mySel.add(option);
+    }
+    // Fills in the TARGETS selector
+    function fill_in_target_selector() {
+        try{
+            var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="targetSelector");
+        const mySel = document.getElementById("targetSelector");
+        for ( i in target_files ) {
+            var option = document.createElement("option");
+            option.text = target_files[i];
+            mySel.add(option);
+        }
+    }
+    // Shows the PEQ info
+    function show_peq_info() {
+        if ( state.peq_set != 'none'){
+            document.getElementById("peq").style.color = "white";
+            document.getElementById("peq").innerHTML = "PEQ: " + state.peq_set;
+        }
+        else {
+            document.getElementById("peq").style.color = "grey";
+            document.getElementById("peq").innerHTML = "(no peq)";
+        }
+    }
 
-    // Web header
+    // Web header:
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                       status['loudspeaker'];
-
-    // Filling in the selectors: inputs, target, XO, DRC and PEQ
+                                                       state.loudspeaker;
+    // Selectors:
     fill_in_inputs_selector();
     fill_in_target_selector();
     fill_in_xo_selector();
     fill_in_drc_selector();
-    if ( status['peq_set'] != 'none'){
-        document.getElementById("peq").style.color = "white";
-        document.getElementById("peq").innerHTML = "PEQ: " + status['peq_set'];
-    }
-    else {
-        document.getElementById("peq").style.color = "grey";
-        document.getElementById("peq").innerHTML = "(no peq)";
-    }
+    show_peq_info();
 }
 
-// Queries the system status and updates the page (only runtime variable items):
+// Update page RUNTIME VARIABLE ITEMS:
 function page_update() {
 
     // Amplifier switching (aux service always runs)
     update_ampli_switch();
 
+    // Getting the current STATUS
     try{
-        var status = JSON.parse( control_cmd('get_state') );
+        state = JSON.parse( control_cmd('get_state') );
     }catch{
-        var status = {'loudspeaker':'not connected'};
+        state = {loudspeaker:'not connected'};
     }
 
     // Displays or hides the advanced controls section
+    // (i) This allows access to the RESTART button
     if ( advanced_controls == true ) {
         document.getElementById( "advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
@@ -150,18 +238,20 @@ function page_update() {
         document.getElementById( "main_lside").style.display = "none";
     }
 
-    // Refresh some stuff if loudspeaker's audio processes has changed
-    if ( last_loudspeaker != status['loudspeaker'] ){
-        fill_in_page_header_and_selectors(status);
-        last_loudspeaker = status['loudspeaker'];
+    // Refresh static stuff if loudspeaker's audio processes has changed
+    if ( last_loudspeaker != state.loudspeaker ){
+        fill_in_page_statics();
+        last_loudspeaker = state.loudspeaker;
     }
 
-    if (status['loudspeaker'] == 'not connected'){
+    // Cancel updating if not connected
+    if (state.loudspeaker == 'not connected'){
         document.getElementById("levelInfo").innerHTML  = '--';
         return;
     }
 
-    if (status['convolver_runs'] == false){
+    // Cancel updating if convolver off
+    if (state.convolver_runs == false){
         document.getElementById("levelInfo").innerHTML  = '--';
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                           'convolver-OFF';
@@ -169,80 +259,44 @@ function page_update() {
     }
     else{
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                       status['loudspeaker'];
+                                                       state.loudspeaker;
     }
 
-    // The selected item on INPUTS
-    document.getElementById("inputsSelector").value = status['input'];
+    // Updates level, balance, and tone info
+    document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
+    document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
+    document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
+    document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
-    // Level balance, tone info
-    document.getElementById("levelInfo").innerHTML  = status['level'].toFixed(1);
-    document.getElementById("balInfo").innerHTML    = 'BAL: '  + status['balance'];
-    document.getElementById("bassInfo").innerText   = 'BASS: ' + status['bass'];
-    document.getElementById("trebleInfo").innerText = 'TREB: ' + status['treble'];
-
-    // the loudness reference to the slider and the loudness monitor to the meter
+    // Updates loudness reference and loudness monitor
     document.getElementById("loud_slider_container").innerText =
-                    'Loud. Ref: ' + status['loudness_ref'];
-    document.getElementById("loud_slider").value    =
-                    parseInt(status['loudness_ref']);
+                    'Loud. Ref: ' + state.loudness_ref;
+    document.getElementById("loud_slider").value    = state.loudness_ref;
     try{
         const loud_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
         document.getElementById("loud_meter").value    =  loud_measure;
     }catch{
     }
 
-    // The selected item on INPUTS, XO, DRC and PEQ
-    document.getElementById("targetSelector").value = status['target'];
-    document.getElementById("inputsSelector").value = status['input'];
-    document.getElementById("xoSelector").value     = status['xo_set'];
-    document.getElementById("drcSelector").value    = status['drc_set'];
+    // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
+    document.getElementById("inputsSelector").value = state.input;
+    document.getElementById("xoSelector").value     = state.xo_set;
+    document.getElementById("drcSelector").value    = state.drc_set;
+    document.getElementById("targetSelector").value = state.target;
 
-    // Highlights activated buttons and related indicators
-    if ( status['muted'] == true ) {
-        document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
-        document.getElementById("buttonMute").style.color = "white";
-        document.getElementById("buttonMute").style.fontWeight = "bolder";
-        document.getElementById("levelInfo").style.color = "rgb(150, 90, 90)";
-    } else {
-        document.getElementById("buttonMute").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonMute").style.color = "lightgray";
-        document.getElementById("buttonMute").style.fontWeight = "normal";
-        document.getElementById("levelInfo").style.color = "white";
-    }
-    if ( status['midside'] == 'mid' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = 'MO';
-    } else if ( status['midside'] == 'side' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = 'L-R';
-    } else {
-        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonMono").style.color = "white";
-        document.getElementById("buttonMono").innerText = 'ST';
-    }
-    if ( status['loudness_track'] == true ) {
-        document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonLoud").style.color = "white";
-        document.getElementById("buttonLoud").innerText = 'LD';
-        document.getElementById( "loudness_metering_and_slider").style.display = "block";
-    } else {
-        document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
-        document.getElementById("buttonLoud").innerText = 'LD';
-        // Hides loudness_metering_and_slider if loudness_track=False
-        document.getElementById( "loudness_metering_and_slider").style.display = "none";
-    }
+    // Highlights activated buttons and related indicators accordingly
+    buttonMuteHighlight()
+    buttonMonoHighlight()
+    buttonLoudHighlight()
 
     // Updates metadata player info
     update_player_info()
+
     // Highlights player controls when activated
     update_player_controls()
 
     // Displays the track selector if input == 'cd'
-    if ( status['input'] == "cd") {
+    if ( state.input == "cd") {
         document.getElementById( "track_selector").style.display = "inline";
     }
     else {
@@ -250,102 +304,14 @@ function page_update() {
     }
 
     // Displays the [url] button if input == 'iradio' or 'istreams'
-    if (status['input'] == "iradio" ||
-        status['input'] == "istreams") {
+    if (state.input == "iradio" ||
+        state.input == "istreams") {
         document.getElementById( "url_button").style.display = "inline";
     }
     else {
         document.getElementById( "url_button").style.display = "none";
     }
 
-}
-
-// INPUTS selector
-function fill_in_inputs_selector() {
-
-    try{
-        var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
-    }catch{
-        return;
-    }
-
-    // Filling the options in the inputs selector
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    select_clear_options(ElementId="inputsSelector");
-    const mySel = document.getElementById("inputsSelector");
-    for ( i in inputs) {
-        var option = document.createElement("option");
-        option.text = inputs[i];
-        mySel.add(option);
-    }
-
-    // And adds the input 'none' as expected in server_process that will disconnet all inputs
-    var option = document.createElement("option");
-    option.text = 'none';
-    mySel.add(option);
-
-}
-
-// XO selector
-function fill_in_xo_selector() {
-    try{
-        var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
-    }catch{
-        return;
-    }
-    select_clear_options(ElementId="xoSelector");
-    const mySel = document.getElementById("xoSelector");
-    for ( i in xo_sets ) {
-        var option = document.createElement("option");
-        option.text = xo_sets[i];
-        mySel.add(option);
-    }
-}
-
-// DRC selector
-function fill_in_drc_selector() {
-    try{
-        var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
-    }catch{
-        return;
-    }
-    select_clear_options(ElementId="drcSelector");
-    const mySel = document.getElementById("drcSelector");
-    for ( i in drc_sets ) {
-        var option = document.createElement("option");
-        option.text = drc_sets[i];
-        mySel.add(option);
-    }
-    // And adds 'none'
-    var option = document.createElement("option");
-    option.text = 'none';
-    mySel.add(option);
-}
-
-// TARGETS selector
-function fill_in_target_selector() {
-    try{
-        var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
-    }catch{
-        return;
-    }
-    select_clear_options(ElementId="targetSelector");
-    const mySel = document.getElementById("targetSelector");
-    for ( i in target_files ) {
-        var option = document.createElement("option");
-        option.text = target_files[i];
-        mySel.add(option);
-    }
-}
-// Changes a target
-function set_target(value) {
-    control_cmd( 'set_target ' + value );
-}
-
-// Processing the LOUDNESS_REF slider
-function loudness_ref_change(slider_value) {
-    loudness_ref = parseInt(slider_value);
-    control_cmd('loudness_ref ' + loudness_ref, update=false);
 }
 
 //////// PLAYER SERVER FUNCTIONS ////////
@@ -469,7 +435,88 @@ function user_macro(prefix, name) {
 }
 
 ///////////////  MISCEL INTERNAL ////////////
-// Aux to toggle displaying macro buttons
+// Hightlight the MUTE, MONO and LOUDNESS BUTTONS:
+function buttonMuteHighlight(){
+    if ( state.muted == true ) {
+        document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
+        document.getElementById("buttonMute").style.color = "white";
+        document.getElementById("buttonMute").style.fontWeight = "bolder";
+        document.getElementById("levelInfo").style.color = "rgb(150, 90, 90)";
+    } else {
+        document.getElementById("buttonMute").style.background = "rgb(100, 100, 100)";
+        document.getElementById("buttonMute").style.color = "lightgray";
+        document.getElementById("buttonMute").style.fontWeight = "normal";
+        document.getElementById("levelInfo").style.color = "white";
+    }
+}
+function buttonMonoHighlight(){
+    if ( state.midside == 'mid' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = 'MO';
+    } else if ( state.midside == 'side' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = 'L-R';
+    } else {
+        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
+        document.getElementById("buttonMono").style.color = "white";
+        document.getElementById("buttonMono").innerText = 'ST';
+    }
+}
+function buttonLoudHighlight(){
+    if ( state.loudness_track == true ) {
+        document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
+        document.getElementById("buttonLoud").style.color = "white";
+        document.getElementById("buttonLoud").innerText = 'LD';
+        document.getElementById( "loudness_metering_and_slider").style.display = "block";
+    } else {
+        document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
+        document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
+        document.getElementById("buttonLoud").innerText = 'LD';
+        // Hides loudness_metering_and_slider if loudness_track=False
+        document.getElementById( "loudness_metering_and_slider").style.display = "none";
+    }
+}
+// Send preamp changes and display new values w/o waiting for the autoupdate
+function audio_change(param, value) {
+    if ( param == 'level') {
+        document.getElementById('levelInfo').innerHTML =
+                                    (state[param] + value).toFixed(1);
+    }else if( param == 'bass'){
+        document.getElementById('bassInfo').innerHTML =
+                         'BASS: ' + (state[param] + value).toFixed(0);
+    }else if( param == 'treble'){
+        document.getElementById('trebleInfo').innerHTML =
+                         'TREB: ' + (state[param] + value).toFixed(0);
+    }else if( param == 'balance'){
+        document.getElementById('balInfo').innerHTML =
+                         'BAL: ' + (state[param] + value).toFixed(0);
+    }else{
+        return;
+    }
+    control_cmd( param + ' ' + value + ' add' );
+}
+function mute_toggle() {
+    state.muted = ! state.muted;
+    buttonMuteHighlight();
+    control_cmd( 'mute toggle' );
+}
+function loudness_toggle() {
+    state.loudness_track = ! state.loudness_track;
+    buttonLoudHighlight();
+    control_cmd( 'loudness_track toggle' );
+}
+function mono_toggle() {
+    if (state.midside == "mid" || state.midside == "side"){
+        state.midside = "off";
+    }else{
+        state.midside = "mid";
+    }
+    buttonMonoHighlight();
+    control_cmd( 'mono toggle' );
+}
+// Toggle displaying macro buttons
 function macros_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
     if (curMode == 'none') {
@@ -479,16 +526,7 @@ function macros_toggle() {
         document.getElementById( "macro_buttons").style.display = 'none'
     }
 }
-// Aux to clearing selector elements to avoid repeating
-// when audio processes have changed
-function select_clear_options(ElementId){
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    const mySel = document.getElementById(ElementId);
-    for (opt in mySel.options){
-        mySel.remove(opt);
-    }
-}
-// Aux to toggle advanced controls
+// Toggle advanced controls
 function advanced_toggle() {
     if ( advanced_controls !== true ) {
         advanced_controls = true;
@@ -498,7 +536,7 @@ function advanced_toggle() {
     }
     page_update();
 }
-// Aux to avoid http socket lossing some symbols
+// Avoid http socket lossing some symbols
 function http_prepare(x) {
     //x = x.replace(' ', '%20');  // leaving spaces as they are
     x = x.replace('!', '%21');
@@ -518,7 +556,7 @@ function http_prepare(x) {
     x = x.replace('/', '%2F');
     return x;
 }
-// Aux to test buttons
+// Test buttons
 function TESTING1(){
     //do something
 }
