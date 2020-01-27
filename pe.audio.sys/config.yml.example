@@ -236,7 +236,8 @@ scripts:
 aux:
 
     # Configure here your command line script to SWITCH ON/OFF your AMPLIFIER.
-    # (i) It is expected that the script will store the amplifier state 'on' or 'off'
+    # (i) It is expected that the script will store the amplifier state
+    #         'on'|'1'    or    'off'|'0'
     #     into the file '~/.amplifier' so that others processes could know about.
     amp_manager:  /home/predic/bin/ampli.sh
 
