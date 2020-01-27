@@ -35,7 +35,7 @@
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/functions.php' if you use Apache+PHP at server side.
 //
-const URL_PREFIX = '/functions.php';
+const URL_PREFIX = '/';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
@@ -87,6 +87,7 @@ function control_cmd( cmd ) {
     return ans;
 }
 
+// Page INITIATE
 function page_initiate(){
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
@@ -106,28 +107,101 @@ function page_initiate(){
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
 }
 
-function fill_in_page_header_and_selectors(){
-
+// Page STATIC ITEMS (HEADER and SELECTORS)
+function fill_in_page_statics(){
+    // Fills in the INPUTS selector
+    function fill_in_inputs_selector() {
+        try{
+            var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
+        }catch{
+            return;
+        }
+        // Filling the options in the inputs selector
+        // https://www.w3schools.com/jsref/dom_obj_select.asp
+        select_clear_options(ElementId="inputsSelector");
+        const mySel = document.getElementById("inputsSelector");
+        for ( i in inputs) {
+            var option = document.createElement("option");
+            option.text = inputs[i];
+            mySel.add(option);
+        }
+        // And adds the input 'none' as expected in server_process that will disconnet all inputs
+        var option = document.createElement("option");
+        option.text = 'none';
+        mySel.add(option);
+    }
+    // Fills in the XO selector
+    function fill_in_xo_selector() {
+        try{
+            var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="xoSelector");
+        const mySel = document.getElementById("xoSelector");
+        for ( i in xo_sets ) {
+            var option = document.createElement("option");
+            option.text = xo_sets[i];
+            mySel.add(option);
+        }
+    }
+    // Fills in the DRC selector
+    function fill_in_drc_selector() {
+        try{
+            var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="drcSelector");
+        const mySel = document.getElementById("drcSelector");
+        for ( i in drc_sets ) {
+            var option = document.createElement("option");
+            option.text = drc_sets[i];
+            mySel.add(option);
+        }
+        // And adds 'none'
+        var option = document.createElement("option");
+        option.text = 'none';
+        mySel.add(option);
+    }
+    // Fills in the TARGETS selector
+    function fill_in_target_selector() {
+        try{
+            var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="targetSelector");
+        const mySel = document.getElementById("targetSelector");
+        for ( i in target_files ) {
+            var option = document.createElement("option");
+            option.text = target_files[i];
+            mySel.add(option);
+        }
+    }
+    // Shows the PEQ info
+    function show_peq_info() {
+        if ( state.peq_set != 'none'){
+            document.getElementById("peq").style.color = "white";
+            document.getElementById("peq").innerHTML = "PEQ: " + state.peq_set;
+        }
+        else {
+            document.getElementById("peq").style.color = "grey";
+            document.getElementById("peq").innerHTML = "(no peq)";
+        }
+    }
     // Web header
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        state.loudspeaker;
-
-    // Filling in the selectors: inputs, target, XO, DRC and PEQ
+    // Filling in the selectors (inputs, target, XO, and DRC), and PEQ info
     fill_in_inputs_selector();
     fill_in_target_selector();
     fill_in_xo_selector();
     fill_in_drc_selector();
-    if ( state.peq_set != 'none'){
-        document.getElementById("peq").style.color = "white";
-        document.getElementById("peq").innerHTML = "PEQ: " + state.peq_set;
-    }
-    else {
-        document.getElementById("peq").style.color = "grey";
-        document.getElementById("peq").innerHTML = "(no peq)";
-    }
+    show_peq_info();
 }
 
-// Queries the system state and updates the page (only runtime variable items):
+// Update page RUNTIME VARIABLE ITEMS:
 function page_update() {
 
     // Amplifier switching (aux service always runs)
@@ -153,7 +227,7 @@ function page_update() {
 
     // Refresh some stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
-        fill_in_page_header_and_selectors();
+        fill_in_page_statics();
         last_loudspeaker = state.loudspeaker;
     }
 
@@ -173,16 +247,13 @@ function page_update() {
                                                        state.loudspeaker;
     }
 
-    // The selected item on INPUTS
-    document.getElementById("inputsSelector").value = state.input;
-
     // Level balance, tone info
     document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
     document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
-    // the loudness reference to the slider and the loudness monitor to the meter
+    // The loudness reference to the slider and the loudness monitor to the meter
     document.getElementById("loud_slider_container").innerText =
                     'Loud. Ref: ' + state.loudness_ref;
     document.getElementById("loud_slider").value    = state.loudness_ref;
@@ -192,13 +263,13 @@ function page_update() {
     }catch{
     }
 
-    // The selected item on INPUTS, XO, DRC and PEQ
-    document.getElementById("targetSelector").value = state.target;
+    // The current item on INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
     document.getElementById("inputsSelector").value = state.input;
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
+    document.getElementById("targetSelector").value = state.target;
 
-    // Highlights activated buttons and related indicators
+    // Highlights activated buttons and related indicators accordingly
     buttonMuteHighlight()
     buttonMonoHighlight()
     buttonLoudHighlight()
@@ -225,94 +296,6 @@ function page_update() {
         document.getElementById( "url_button").style.display = "none";
     }
 
-}
-
-// INPUTS selector
-function fill_in_inputs_selector() {
-
-    try{
-        var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
-    }catch{
-        return;
-    }
-
-    // Filling the options in the inputs selector
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    select_clear_options(ElementId="inputsSelector");
-    const mySel = document.getElementById("inputsSelector");
-    for ( i in inputs) {
-        var option = document.createElement("option");
-        option.text = inputs[i];
-        mySel.add(option);
-    }
-
-    // And adds the input 'none' as expected in server_process that will disconnet all inputs
-    var option = document.createElement("option");
-    option.text = 'none';
-    mySel.add(option);
-
-}
-
-// XO selector
-function fill_in_xo_selector() {
-    try{
-        var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
-    }catch{
-        return;
-    }
-    select_clear_options(ElementId="xoSelector");
-    const mySel = document.getElementById("xoSelector");
-    for ( i in xo_sets ) {
-        var option = document.createElement("option");
-        option.text = xo_sets[i];
-        mySel.add(option);
-    }
-}
-
-// DRC selector
-function fill_in_drc_selector() {
-    try{
-        var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
-    }catch{
-        return;
-    }
-    select_clear_options(ElementId="drcSelector");
-    const mySel = document.getElementById("drcSelector");
-    for ( i in drc_sets ) {
-        var option = document.createElement("option");
-        option.text = drc_sets[i];
-        mySel.add(option);
-    }
-    // And adds 'none'
-    var option = document.createElement("option");
-    option.text = 'none';
-    mySel.add(option);
-}
-
-// TARGETS selector
-function fill_in_target_selector() {
-    try{
-        var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
-    }catch{
-        return;
-    }
-    select_clear_options(ElementId="targetSelector");
-    const mySel = document.getElementById("targetSelector");
-    for ( i in target_files ) {
-        var option = document.createElement("option");
-        option.text = target_files[i];
-        mySel.add(option);
-    }
-}
-// Changes a target
-function set_target(value) {
-    control_cmd( 'set_target ' + value );
-}
-
-// Processing the LOUDNESS_REF slider
-function loudness_ref_change(slider_value) {
-    loudness_ref = parseInt(slider_value);
-    control_cmd('loudness_ref ' + loudness_ref, update=false);
 }
 
 //////// PLAYER SERVER FUNCTIONS ////////
@@ -436,7 +419,7 @@ function user_macro(prefix, name) {
 }
 
 ///////////////  MISCEL INTERNAL ////////////
-// Auxs to hightlight the MUTE, MONO and LOUDNESS BUTTONS:
+// Hightlight the MUTE, MONO and LOUDNESS BUTTONS:
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
@@ -479,7 +462,7 @@ function buttonLoudHighlight(){
         document.getElementById( "loudness_metering_and_slider").style.display = "none";
     }
 }
-// Auxs to send preamp changes and display new values w/o waiting for the autoupdate
+// Send preamp changes and display new values w/o waiting for the autoupdate
 function audio_change(param, value) {
     if ( param == 'level') {
         document.getElementById('levelInfo').innerHTML =
@@ -517,7 +500,7 @@ function mono_toggle() {
     buttonMonoHighlight();
     control_cmd( 'mono toggle' );
 }
-// Aux to toggle displaying macro buttons
+// Toggle displaying macro buttons
 function macros_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
     if (curMode == 'none') {
@@ -527,8 +510,7 @@ function macros_toggle() {
         document.getElementById( "macro_buttons").style.display = 'none'
     }
 }
-// Aux to clearing selector elements to avoid repeating
-// when audio processes have changed
+// Clearing selector elements to avoid repeating when audio processes have changed
 function select_clear_options(ElementId){
     // https://www.w3schools.com/jsref/dom_obj_select.asp
     const mySel = document.getElementById(ElementId);
@@ -536,7 +518,7 @@ function select_clear_options(ElementId){
         mySel.remove(opt);
     }
 }
-// Aux to toggle advanced controls
+// Toggle advanced controls
 function advanced_toggle() {
     if ( advanced_controls !== true ) {
         advanced_controls = true;
@@ -546,7 +528,7 @@ function advanced_toggle() {
     }
     page_update();
 }
-// Aux to avoid http socket lossing some symbols
+// Avoid http socket lossing some symbols
 function http_prepare(x) {
     //x = x.replace(' ', '%20');  // leaving spaces as they are
     x = x.replace('!', '%21');
@@ -566,7 +548,7 @@ function http_prepare(x) {
     x = x.replace('/', '%2F');
     return x;
 }
-// Aux to test buttons
+// Test buttons
 function TESTING1(){
     //do something
 }
