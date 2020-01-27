@@ -35,7 +35,7 @@
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/functions.php' if you use Apache+PHP at server side.
 //
-const URL_PREFIX = '/';
+const URL_PREFIX = '/functions.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
