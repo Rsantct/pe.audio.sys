@@ -35,7 +35,7 @@
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/functions.php' if you use Apache+PHP at server side.
 //
-const URL_PREFIX = '/functions.php';
+const URL_PREFIX = '/';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
@@ -185,8 +185,7 @@ function page_update() {
     // the loudness reference to the slider and the loudness monitor to the meter
     document.getElementById("loud_slider_container").innerText =
                     'Loud. Ref: ' + state.loudness_ref;
-    document.getElementById("loud_slider").value    =
-                    parseInt(state.loudness_ref);
+    document.getElementById("loud_slider").value    = state.loudness_ref;
     try{
         const loud_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
         document.getElementById("loud_meter").value    =  loud_measure;
@@ -200,42 +199,9 @@ function page_update() {
     document.getElementById("drcSelector").value    = state.drc_set;
 
     // Highlights activated buttons and related indicators
-    if ( state.muted == true ) {
-        document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
-        document.getElementById("buttonMute").style.color = "white";
-        document.getElementById("buttonMute").style.fontWeight = "bolder";
-        document.getElementById("levelInfo").style.color = "rgb(150, 90, 90)";
-    } else {
-        document.getElementById("buttonMute").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonMute").style.color = "lightgray";
-        document.getElementById("buttonMute").style.fontWeight = "normal";
-        document.getElementById("levelInfo").style.color = "white";
-    }
-    if ( state.midside == 'mid' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = 'MO';
-    } else if ( state.midside == 'side' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = 'L-R';
-    } else {
-        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonMono").style.color = "white";
-        document.getElementById("buttonMono").innerText = 'ST';
-    }
-    if ( state.loudness_track == true ) {
-        document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonLoud").style.color = "white";
-        document.getElementById("buttonLoud").innerText = 'LD';
-        document.getElementById( "loudness_metering_and_slider").style.display = "block";
-    } else {
-        document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
-        document.getElementById("buttonLoud").innerText = 'LD';
-        // Hides loudness_metering_and_slider if loudness_track=False
-        document.getElementById( "loudness_metering_and_slider").style.display = "none";
-    }
+    buttonMuteHighlight()
+    buttonMonoHighlight()
+    buttonLoudHighlight()
 
     // Updates metadata player info
     update_player_info()
@@ -470,7 +436,50 @@ function user_macro(prefix, name) {
 }
 
 ///////////////  MISCEL INTERNAL ////////////
-// Aux to send preamp changes and display new values w/o waiting for the autoupdate
+// Auxs to hightlight the MUTE, MONO and LOUDNESS BUTTONS:
+function buttonMuteHighlight(){
+    if ( state.muted == true ) {
+        document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
+        document.getElementById("buttonMute").style.color = "white";
+        document.getElementById("buttonMute").style.fontWeight = "bolder";
+        document.getElementById("levelInfo").style.color = "rgb(150, 90, 90)";
+    } else {
+        document.getElementById("buttonMute").style.background = "rgb(100, 100, 100)";
+        document.getElementById("buttonMute").style.color = "lightgray";
+        document.getElementById("buttonMute").style.fontWeight = "normal";
+        document.getElementById("levelInfo").style.color = "white";
+    }
+}
+function buttonMonoHighlight(){
+    if ( state.midside == 'mid' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = 'MO';
+    } else if ( state.midside == 'side' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = 'L-R';
+    } else {
+        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
+        document.getElementById("buttonMono").style.color = "white";
+        document.getElementById("buttonMono").innerText = 'ST';
+    }
+}
+function buttonLoudHighlight(){
+    if ( state.loudness_track == true ) {
+        document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
+        document.getElementById("buttonLoud").style.color = "white";
+        document.getElementById("buttonLoud").innerText = 'LD';
+        document.getElementById( "loudness_metering_and_slider").style.display = "block";
+    } else {
+        document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
+        document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
+        document.getElementById("buttonLoud").innerText = 'LD';
+        // Hides loudness_metering_and_slider if loudness_track=False
+        document.getElementById( "loudness_metering_and_slider").style.display = "none";
+    }
+}
+// Auxs to send preamp changes and display new values w/o waiting for the autoupdate
 function audio_change(param, value) {
     if ( param == 'level') {
         document.getElementById('levelInfo').innerHTML =
@@ -488,6 +497,25 @@ function audio_change(param, value) {
         return;
     }
     control_cmd( param + ' ' + value + ' add' );
+}
+function mute_toggle() {
+    state.muted = ! state.muted;
+    buttonMuteHighlight();
+    control_cmd( 'mute toggle' );
+}
+function loudness_toggle() {
+    state.loudness_track = ! state.loudness_track;
+    buttonLoudHighlight();
+    control_cmd( 'loudness_track toggle' );
+}
+function mono_toggle() {
+    if (state.midside == "mid" || state.midside == "side"){
+        state.midside = "off";
+    }else{
+        state.midside = "mid";
+    }
+    buttonMonoHighlight();
+    control_cmd( 'mono toggle' );
 }
 // Aux to toggle displaying macro buttons
 function macros_toggle() {
