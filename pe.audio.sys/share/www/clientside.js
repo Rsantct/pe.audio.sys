@@ -35,11 +35,12 @@
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/functions.php' if you use Apache+PHP at server side.
 //
-const URL_PREFIX = '/functions.php';
+const URL_PREFIX = '/';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
 // Some globals
+var state = {loudspeaker:"not connected"};
 var advanced_controls = false;          // Default for displaying advanced controls
 var metablank = {                       // A player's metadata blank dict
     'player':       '-',
@@ -105,20 +106,20 @@ function page_initiate(){
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
 }
 
-function fill_in_page_header_and_selectors(status){
+function fill_in_page_header_and_selectors(){
 
     // Web header
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                       status['loudspeaker'];
+                                                       state.loudspeaker;
 
     // Filling in the selectors: inputs, target, XO, DRC and PEQ
     fill_in_inputs_selector();
     fill_in_target_selector();
     fill_in_xo_selector();
     fill_in_drc_selector();
-    if ( status['peq_set'] != 'none'){
+    if ( state.peq_set != 'none'){
         document.getElementById("peq").style.color = "white";
-        document.getElementById("peq").innerHTML = "PEQ: " + status['peq_set'];
+        document.getElementById("peq").innerHTML = "PEQ: " + state.peq_set;
     }
     else {
         document.getElementById("peq").style.color = "grey";
@@ -126,16 +127,16 @@ function fill_in_page_header_and_selectors(status){
     }
 }
 
-// Queries the system status and updates the page (only runtime variable items):
+// Queries the system state and updates the page (only runtime variable items):
 function page_update() {
 
     // Amplifier switching (aux service always runs)
     update_ampli_switch();
 
     try{
-        var status = JSON.parse( control_cmd('get_state') );
+        state = JSON.parse( control_cmd('get_state') );
     }catch{
-        var status = {'loudspeaker':'not connected'};
+        state = {loudspeaker:'not connected'};
     }
 
     // Displays or hides the advanced controls section
@@ -151,17 +152,17 @@ function page_update() {
     }
 
     // Refresh some stuff if loudspeaker's audio processes has changed
-    if ( last_loudspeaker != status['loudspeaker'] ){
-        fill_in_page_header_and_selectors(status);
-        last_loudspeaker = status['loudspeaker'];
+    if ( last_loudspeaker != state.loudspeaker ){
+        fill_in_page_header_and_selectors();
+        last_loudspeaker = state.loudspeaker;
     }
 
-    if (status['loudspeaker'] == 'not connected'){
+    if (state.loudspeaker == 'not connected'){
         document.getElementById("levelInfo").innerHTML  = '--';
         return;
     }
 
-    if (status['convolver_runs'] == false){
+    if (state.convolver_runs == false){
         document.getElementById("levelInfo").innerHTML  = '--';
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                           'convolver-OFF';
@@ -169,23 +170,23 @@ function page_update() {
     }
     else{
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                       status['loudspeaker'];
+                                                       state.loudspeaker;
     }
 
     // The selected item on INPUTS
-    document.getElementById("inputsSelector").value = status['input'];
+    document.getElementById("inputsSelector").value = state.input;
 
     // Level balance, tone info
-    document.getElementById("levelInfo").innerHTML  = status['level'].toFixed(1);
-    document.getElementById("balInfo").innerHTML    = 'BAL: '  + status['balance'];
-    document.getElementById("bassInfo").innerText   = 'BASS: ' + status['bass'];
-    document.getElementById("trebleInfo").innerText = 'TREB: ' + status['treble'];
+    document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
+    document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
+    document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
+    document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
     // the loudness reference to the slider and the loudness monitor to the meter
     document.getElementById("loud_slider_container").innerText =
-                    'Loud. Ref: ' + status['loudness_ref'];
+                    'Loud. Ref: ' + state.loudness_ref;
     document.getElementById("loud_slider").value    =
-                    parseInt(status['loudness_ref']);
+                    parseInt(state.loudness_ref);
     try{
         const loud_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
         document.getElementById("loud_meter").value    =  loud_measure;
@@ -193,13 +194,13 @@ function page_update() {
     }
 
     // The selected item on INPUTS, XO, DRC and PEQ
-    document.getElementById("targetSelector").value = status['target'];
-    document.getElementById("inputsSelector").value = status['input'];
-    document.getElementById("xoSelector").value     = status['xo_set'];
-    document.getElementById("drcSelector").value    = status['drc_set'];
+    document.getElementById("targetSelector").value = state.target;
+    document.getElementById("inputsSelector").value = state.input;
+    document.getElementById("xoSelector").value     = state.xo_set;
+    document.getElementById("drcSelector").value    = state.drc_set;
 
     // Highlights activated buttons and related indicators
-    if ( status['muted'] == true ) {
+    if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
         document.getElementById("buttonMute").style.color = "white";
         document.getElementById("buttonMute").style.fontWeight = "bolder";
@@ -210,11 +211,11 @@ function page_update() {
         document.getElementById("buttonMute").style.fontWeight = "normal";
         document.getElementById("levelInfo").style.color = "white";
     }
-    if ( status['midside'] == 'mid' ) {
+    if ( state.midside == 'mid' ) {
         document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
         document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttonMono").innerText = 'MO';
-    } else if ( status['midside'] == 'side' ) {
+    } else if ( state.midside == 'side' ) {
         document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
         document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttonMono").innerText = 'L-R';
@@ -223,7 +224,7 @@ function page_update() {
         document.getElementById("buttonMono").style.color = "white";
         document.getElementById("buttonMono").innerText = 'ST';
     }
-    if ( status['loudness_track'] == true ) {
+    if ( state.loudness_track == true ) {
         document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
         document.getElementById("buttonLoud").style.color = "white";
         document.getElementById("buttonLoud").innerText = 'LD';
@@ -242,7 +243,7 @@ function page_update() {
     update_player_controls()
 
     // Displays the track selector if input == 'cd'
-    if ( status['input'] == "cd") {
+    if ( state.input == "cd") {
         document.getElementById( "track_selector").style.display = "inline";
     }
     else {
@@ -250,8 +251,8 @@ function page_update() {
     }
 
     // Displays the [url] button if input == 'iradio' or 'istreams'
-    if (status['input'] == "iradio" ||
-        status['input'] == "istreams") {
+    if (state.input == "iradio" ||
+        state.input == "istreams") {
         document.getElementById( "url_button").style.display = "inline";
     }
     else {
@@ -469,6 +470,25 @@ function user_macro(prefix, name) {
 }
 
 ///////////////  MISCEL INTERNAL ////////////
+// Aux to send preamp changes and display new values w/o waiting for the autoupdate
+function audio_change(param, value) {
+    if ( param == 'level') {
+        document.getElementById('levelInfo').innerHTML =
+                                    (state[param] + value).toFixed(1);
+    }else if( param == 'bass'){
+        document.getElementById('bassInfo').innerHTML =
+                         'BASS: ' + (state[param] + value).toFixed(0);
+    }else if( param == 'treble'){
+        document.getElementById('trebleInfo').innerHTML =
+                         'TREB: ' + (state[param] + value).toFixed(0);
+    }else if( param == 'balance'){
+        document.getElementById('balInfo').innerHTML =
+                         'BAL: ' + (state[param] + value).toFixed(0);
+    }else{
+        return;
+    }
+    control_cmd( param + ' ' + value + ' add' );
+}
 // Aux to toggle displaying macro buttons
 function macros_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
