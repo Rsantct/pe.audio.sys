@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# (i)   This amplifier switch is based on the 'usbrelay' binary,
+#       which manages a simple HID usb relay unit.
+#       Recently Debian offers the packet 'usbrelay'.
+#       If not available, you can compile it by using the 'hidraw' library:
+#           https://github.com/darrylb123/usbrelay
+#       (It is needed to reboot the machine to usbrelay to work)
+#
+#       The 'usbrelay' executable:
+#       - w/o args will show the status of the relays
+#       - passing arg 'BITFT_x=y' will switch a relay (x:1|2, y:0|1)
+#       (!) - the relay status is writen to stderr,
+#           - additional info is written to stdout
+
+# CONFIGURE YOUR RELAY HERE:
+myRelay="BITFT_1"
+
+# Switching:
+if [[ $1 ]]; then
+    tmp="$myRelay""=0"
+    if [[ $1 == "on" || $1 == "1" ]]; then
+        tmp="$myRelay""=1"
+    fi
+    usbrelay "$tmp"
+fi
+
+# Querying and saving the current status to ~/.amplifier
+BITFT_1=$(usbrelay 2>&1 | grep BITFT_1)
+BITFT_2=$(usbrelay 2>&1 | grep BITFT_2)
+echo ${!myRelay} | cut -d"=" -f2 > "$HOME"/.amplifier
+cat "$HOME"/.amplifier
