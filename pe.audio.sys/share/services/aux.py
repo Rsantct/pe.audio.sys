@@ -93,9 +93,13 @@ def process( cmd, arg ):
         elif arg == 'state':
             try:
                 with open( f'{UHOME}/.amplifier', 'r') as f:
-                    result =  f.read().strip()
+                    tmp =  f.read().strip()
+                if tmp.lower() in ('0','off'):
+                    result = 'off'
+                elif tmp.lower() in ('1','on'):
+                    result = 'on'
             except:
-                result = 'off'
+                pass
 
     # List of macros under macros/ folder
     elif cmd == 'get_macros':
