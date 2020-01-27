@@ -341,7 +341,7 @@ XO pcm files must be named:
     xo.XX[.C].XOSETNAME.pcm   where XX must be:  fr | lo | mi | hi | sw
                               and channel C is OPTIONAL, can be: L | R
 
-    Using C allows to have DEDICATED FIR PER CHANNEL if desired.  
+    Using C allows to have DEDICATED DRIVER FIR FILTERING if desired.  
 
     (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
