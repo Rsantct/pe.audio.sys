@@ -333,7 +333,7 @@
             <td class="loud_slider_container">
             <input  id="loud_slider" class="loud_slider" type="range"
                     min="-15.0" step="1" max="15.0"
-                    oninput="loudness_ref_change(this.value)">
+                    oninput="control_cmd('loudness_ref ' + this.value)">
             </td>
         </tr>
     </table>
@@ -360,7 +360,7 @@
             </td>
             <td id="target">
                 <span>
-                <select id="targetSelector"  onchange="set_target(this.value)" ></select>
+                <select id="targetSelector"  onchange="control_cmd('set_target ' + this.value)" ></select>
                 </span>
             </td>
         </tr>
