@@ -209,6 +209,7 @@ function page_update() {
     // Amplifier switching (aux service always runs)
     update_ampli_switch();
 
+    // Getting the current STATUS
     try{
         state = JSON.parse( control_cmd('get_state') );
     }catch{
@@ -216,6 +217,7 @@ function page_update() {
     }
 
     // Displays or hides the advanced controls section
+    // (i) This allows access to the RESTART button
     if ( advanced_controls == true ) {
         document.getElementById( "advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
@@ -227,17 +229,19 @@ function page_update() {
         document.getElementById( "main_lside").style.display = "none";
     }
 
-    // Refresh some stuff if loudspeaker's audio processes has changed
+    // Refresh static stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
         fill_in_page_statics();
         last_loudspeaker = state.loudspeaker;
     }
 
+    // Cancel updating if not connected
     if (state.loudspeaker == 'not connected'){
         document.getElementById("levelInfo").innerHTML  = '--';
         return;
     }
 
+    // Cancel updating if convolver off
     if (state.convolver_runs == false){
         document.getElementById("levelInfo").innerHTML  = '--';
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
@@ -249,13 +253,13 @@ function page_update() {
                                                        state.loudspeaker;
     }
 
-    // Level balance, tone info
+    // Updates level, balance, and tone info
     document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
     document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
-    // The loudness reference to the slider and the loudness monitor to the meter
+    // Updates loudness reference and loudness monitor
     document.getElementById("loud_slider_container").innerText =
                     'Loud. Ref: ' + state.loudness_ref;
     document.getElementById("loud_slider").value    = state.loudness_ref;
@@ -265,7 +269,7 @@ function page_update() {
     }catch{
     }
 
-    // The current item on INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
+    // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
     document.getElementById("inputsSelector").value = state.input;
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
@@ -278,6 +282,7 @@ function page_update() {
 
     // Updates metadata player info
     update_player_info()
+
     // Highlights player controls when activated
     update_player_controls()
 
