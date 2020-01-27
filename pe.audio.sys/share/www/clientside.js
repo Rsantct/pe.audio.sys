@@ -116,7 +116,7 @@ function fill_in_page_statics(){
         }catch{
             return;
         }
-        // Filling the options in the inputs selector
+        // Filling in options in a selector
         // https://www.w3schools.com/jsref/dom_obj_select.asp
         select_clear_options(ElementId="inputsSelector");
         const mySel = document.getElementById("inputsSelector");
@@ -125,7 +125,8 @@ function fill_in_page_statics(){
             option.text = inputs[i];
             mySel.add(option);
         }
-        // And adds the input 'none' as expected in server_process that will disconnet all inputs
+        // And adds the input 'none' as expected in core.Preamp
+        // so that all inputs will be disconnected.
         var option = document.createElement("option");
         option.text = 'none';
         mySel.add(option);
@@ -190,10 +191,11 @@ function fill_in_page_statics(){
             document.getElementById("peq").innerHTML = "(no peq)";
         }
     }
-    // Web header
+
+    // Web header:
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        state.loudspeaker;
-    // Filling in the selectors (inputs, target, XO, and DRC), and PEQ info
+    // Selectors:
     fill_in_inputs_selector();
     fill_in_target_selector();
     fill_in_xo_selector();
