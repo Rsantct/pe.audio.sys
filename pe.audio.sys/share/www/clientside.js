@@ -404,9 +404,9 @@ function update_ampli_switch() {
     try{
         const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
                                       .replace('\n','') );
-        document.getElementById("onoffSelector").value = amp_state;
+        document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
     }catch{
-    document.getElementById("onoffSelector").value = '--';
+    document.getElementById("OnOffButton").innerText = '-';
     }
 }
 // Filling in the user's macro buttons
