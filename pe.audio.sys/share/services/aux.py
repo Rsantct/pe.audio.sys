@@ -32,6 +32,7 @@ import yaml
 import json
 from subprocess import Popen, check_output
 import os
+import sys
 
 UHOME = os.path.expanduser("~")
 MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
@@ -90,6 +91,14 @@ def process( cmd, arg ):
         if arg in ('on','off'):
             print( f'(aux) {AMP_MANAGER.split("/")[-1]} {arg}' )
             Popen( f'{AMP_MANAGER} {arg}'.split(), shell=False )
+        elif arg == 'toggle':
+            currSt = check_output(AMP_MANAGER).decode().strip()
+            if currSt.lower() in ('0','off','no'):
+                newSt = 'on'
+            else:
+                newSt = 'off'
+            print( f'(aux) {AMP_MANAGER.split("/")[-1]} {arg}' )
+            Popen( f'{AMP_MANAGER} {newSt}'.split(), shell=False )
         elif arg == 'state':
             try:
                 with open( f'{UHOME}/.amplifier', 'r') as f:
@@ -99,7 +108,7 @@ def process( cmd, arg ):
                 elif tmp.lower() in ('1','on'):
                     result = 'on'
             except:
-                pass
+                return '-'
 
     # List of macros under macros/ folder
     elif cmd == 'get_macros':
