@@ -185,6 +185,9 @@ source_monitors:
 
 scripts:
 
+    ## IR remote receiver
+    #- ir.py
+    
     ## Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
     ## This option needs the share/eq/xxxxx.ecs file to be indicated.
     #- ecasound_peq.py: dj_estant.ecs
