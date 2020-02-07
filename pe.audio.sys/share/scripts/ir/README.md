@@ -20,3 +20,5 @@ The graph will help you to decide about detecting packets by constant lenght or 
 
 Repeat the process for each remote key you want to use, then configure accordingly the **`keymap:`** section inside the **`ir.config`** file.
 
+
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/master/pe.audio.sys/share/scripts/ir/ir_analyze.png" align="center" width="640" ></a>
