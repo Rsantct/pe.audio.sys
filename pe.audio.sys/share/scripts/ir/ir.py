@@ -24,8 +24,8 @@
 
         ir.py  [-t logfilename]
 
-        -t  Learning mode. Prints out the received bytes so you can
-            map "key_bytes: actions" inside the file 'ir.config'
+        -t  Learning mode. Prints out and save to file the received bytes
+            so you can map "key_bytes: actions" inside the file 'ir.config'
 """
 
 import serial
