@@ -13,6 +13,9 @@ ao=jack:name=mplayer_dvb:port=dvb_loop
 
 [cdda]
 ao=jack:name=mplayer_cdda:port=cdda_loop
+speed=1
+# Try cache=1024 to avoid playback breakdowns
+cache=1024
 
 [istreams]
 ao=jack:name=mplayer_istreams:port=istreams_loop
