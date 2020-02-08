@@ -24,8 +24,8 @@
 
         ir.py  [-t logfilename]
 
-        -t  Learning mode. Prints out and save to file the received bytes
-            so you can map "key_bytes: actions" inside the file 'ir.config'
+        -t  Learning mode. Prints out the received bytes so you can
+            map "keyBytes: actions" inside the file 'ir.config'
 """
 
 import serial
@@ -57,11 +57,20 @@ def send_cmd(cmd):
             print (f'(ir.py) service \'{svcName}\' socket error on port {port}')
     return
 
-def irpacket2cmd(packetOfBytes, keymap):
+def irpacket2cmd(packetOfBytes):
+    #print(  ' '.join( b2hex(packetOfBytes) ) )
     try:
-        return keymap[ str(packetOfBytes) ]
+        return keymap[ ' '.join( b2hex(packetOfBytes) ) ]
     except:
         return ''
+
+def b2hex(b):
+    """ converts a bytes stream into a easy readable raw hex list, e.g:
+        in:     b'\x00-m-i)m\xbb\xff'
+        out:    ['00', '2d', '6d', '2d', '69', '29', '6d', 'bb', 'ff']
+    """
+    bh = b.hex()
+    return [ bh[i*2:i*2+2] for i in range(int(len(bh)/2)) ]
 
 def serial_params(d):
     """ read a remote dict config then returns serial params """
@@ -86,17 +95,21 @@ def main_EOP():
     irpacket = b''
     while True:
         rx  = s.read( 1 )
-        # Detecting EndOfPacket byte with some tolerance,
-        # or fixed length packets depending on remote:
+
+        # Detecting the endOfPacket byte with some tolerance
         if  abs( int.from_bytes(rx, "big") -
-                 int.from_bytes(endOfPacket, "big") ) <= 5:
-            #print(irpacket)
-            cmd = irpacket2cmd(irpacket, keymap)
+                 int(endOfPacket, 16) ) <= 5:
+            # (i) Here wo force the last byte as defined in endOfPacket,
+            #     although the real one can differ in the above tolerance.
+            irpacket += bytes.fromhex(endOfPacket)
+            # try to translate it to a command according to the keymap table
+            cmd = irpacket2cmd(irpacket)
             if cmd:
                 if time() - lastTimeStamp >= antibound:
                     send_cmd(cmd)
                     lastTimeStamp = time()
             irpacket = b''
+
         else:
             irpacket += rx
 
@@ -116,7 +129,7 @@ def main_TM():
     irpacket = b''
     while True:
         rx  = s.read( 1 )
-        print(rx)
+        print( rx.hex() )
         flog.write(rx)
 
 if __name__ == "__main__":
@@ -149,7 +162,7 @@ if __name__ == "__main__":
             baudrate, bytesize, parity, stopbits = serial_params(REMCFG)
             packetLength = REMCFG['packetLength']
             try:
-                endOfPacket = bytes.fromhex(REMCFG['endOfPacket'])
+                endOfPacket = REMCFG['endOfPacket']
             except:
                 endOfPacket = None
     except:
