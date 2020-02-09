@@ -130,10 +130,14 @@ def main_PL():
 def main_TM():
     # Test mode will save the received bytes to a file so you can analyze them.
     irpacket = b''
+    lastTimeStamp = time() # helper to group key pressings
     while True:
         rx  = s.read( 1 )
-        print( rx.hex() )
         flog.write(rx)
+        print( rx.hex().rjust(2,'0')+' ', end='' )
+        if time() - lastTimeStamp >= .1:
+            print()
+            lastTimeStamp = time()
 
 if __name__ == "__main__":
 
