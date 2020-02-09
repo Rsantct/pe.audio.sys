@@ -57,10 +57,12 @@ def send_cmd(cmd):
             print (f'(ir.py) service \'{svcName}\' socket error on port {port}')
     return
 
-def irpacket2cmd(packetOfBytes):
-    #print(  ' '.join( b2hex(packetOfBytes) ) )
+def irpacket2cmd(p):
+    """ try to translate to a command according to the keymap table
+    """
+    #print(  ' '.join( b2hex(p) ) ) # debug
     try:
-        return keymap[ ' '.join( b2hex(packetOfBytes) ) ]
+        return keymap[ ' '.join( b2hex(p) ) ]
     except:
         return ''
 
@@ -98,7 +100,7 @@ def main_EOP():
 
         # Detecting the endOfPacket byte with some tolerance
         if  abs( int.from_bytes(rx, "big") -
-                 int(endOfPacket, 16) ) <= 5:
+                 int(endOfPacket, 16) ) <= 3:
             # (i) Here wo force the last byte as defined in endOfPacket,
             #     although the real one can differ in the above tolerance.
             irpacket += bytes.fromhex(endOfPacket)
@@ -116,9 +118,10 @@ def main_EOP():
 def main_PL():
     # LOOPING: reading packetLength bytes
     lastTimeStamp = time() # helper to avoid bouncing
+    irpacket = b''
     while True:
         irpacket  = s.read( packetLength )
-        cmd = irpacket2cmd(irpacket, keymap)
+        cmd = irpacket2cmd(irpacket)
         if cmd:
             if time() - lastTimeStamp >= antibound:
                 send_cmd(cmd)
@@ -161,10 +164,8 @@ if __name__ == "__main__":
             keymap      = REMCFG['keymap']
             baudrate, bytesize, parity, stopbits = serial_params(REMCFG)
             packetLength = REMCFG['packetLength']
-            try:
-                endOfPacket = REMCFG['endOfPacket']
-            except:
-                endOfPacket = None
+            endOfPacket = str(REMCFG['endOfPacket']) if REMCFG['endOfPacket'] \
+                                                     else None # force to str
     except:
         print(f'ERROR with \'{THISPATH}/ir.config\'')
         exit()
