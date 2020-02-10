@@ -10,12 +10,10 @@
 #     and the raw plotting below
 DIVIDER = b'\x00'
 
-
-from matplotlib import pyplot as plt
 import sys
 
 def b2hex(b):
-    """ converts a bytes stream into a easy readable raw hex list, e.g:
+    """ converts a bytes stream into an easy readable raw hex list, e.g:
         in:     b'\x00-m-i)m\xbb\xff'
         out:    ['00', '2d', '6d', '2d', '69', '29', '6d', 'bb', 'ff']
     """
@@ -26,15 +24,17 @@ def b2hex(b):
 if not sys.argv[1:]:
     print(__doc__)
     exit()
+else:
+    flogname = sys.argv[1]
 
 # read the rawBytesLogFname
-log = open( sys.argv[1], 'rb').read()
+log = open( flogname, 'rb').read()
 # split into chunks by the divider
 chunks = log.split(DIVIDER)
 # restore the divider
 chunks = [DIVIDER + x for x in chunks]
 
-# search for uniques and counting their occurrences
+# search for uniques and counting occurrences
 uniques={}
 for chunk in chunks:
     if not chunk:
@@ -46,6 +46,7 @@ for chunk in chunks:
 
 # print results
 print()
+print(f'---- {flogname} ----')
 print('times:  sequence:')
 for unique in sorted(uniques):
     # times
@@ -53,12 +54,12 @@ for unique in sorted(uniques):
     #            sequence
     print( ' '.join( b2hex(unique) ) )
 
-
 if "-np" in sys.argv[1:]:
     exit()
 
 # raw plotting
+from matplotlib import pyplot as plt
 bytes2ints = [x for x in log]
 plt.plot(bytes2ints)
-plt.title(sys.argv[1])
+plt.title(flogname)
 plt.show()
