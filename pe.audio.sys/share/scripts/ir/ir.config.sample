@@ -12,7 +12,7 @@ antibound:  .5
 
 #-------------------------- Remote to be used from dictionary below
 
-remote:     AppleTV
+remote:     AppleRemote
 
 #-------------------------- Remotes dictionary table
 
@@ -25,6 +25,8 @@ remotes:
         stopbits:                           1
         packetLength:                               # choose one
         endOfPacket:                        ff      # of these
+        EOPtolerance:
+        maxVariance:                        5
         keymap:
             00 2d 6d 2d b9 29 b9 bb ff:        level -3 add    # ol-
             00 2d 6d 2d 69 29 6d bb ff:        level +3 add    # ol+
@@ -41,8 +43,27 @@ remotes:
             00 2d 6d 2d 29 6b bb 39 ff:        loudness_ref 6  # 19
             00 2d 6d 2d 39 3b b9 39 ff:        loudness_ref 9  # 20
 
+    # This is a difficult remote :-/
+    AppleRemote:
+        baudrate:                           1210
+        bytesize:                           8
+        parity:                             N
+        stopbits:                           1
+        packetLength:                              # choose one
+        endOfPacket:                        ff     # of these
+        EOPtolerance:                       3
+        maxVariance:                        2
+        keymap:
+            00 b6 b6 7b b2 36 bb ba 00 ff:                          # prev_v1
+            00 b6 b6 7b b2 b6 bb ba 00 ff:                          # prev_v2
+            00 b6 b6 7b b2 3b 7a 73 ff:                             # next
+            00 b6 b6 7b b2 33 7a 73 ff:     level +3 add            # vol+
+            00 b6 b6 7b b2 36 7a 73 ff:     level -3 add            # vol-
+            00 b6 b6 7b b2 b3 bb ba 00 ff:  mute toggle             # play_pause
+            00 b6 b6 7b b2 b2 33 f3 00 ff:  aux amp_switch toggle   # menu
 
-    #(i) This sends kind of variable lenght.
+
+    # This sends kind of variable lenght.
     #    Always starts with 0x00 and finish with 0xff
     #    ok==play_pause has 9+10 bytes but 1st 9 bytes behaves as said above.
     AppleTV:
@@ -52,6 +73,8 @@ remotes:
         stopbits:                           1
         packetLength:                              # choose one
         endOfPacket:                        ff     # of these
+        EOPtolerance:
+        maxVariance:
         keymap:
             00 6d 6d bb a9 69 29 3b ff:                         # left
             00 6d 6d bb a9 bb 29 6d ad 00 ff:                   # right
@@ -61,7 +84,7 @@ remotes:
             00 6d 6d bb a9 2d 29 3b ff:                         # menu
 
 
-    #(i) This is the only one that sends always a fixed packetLength.
+    # This is the only one that sends always a fixed packetLength.
     Panasonic_TV:
         baudrate:                           1200
         bytesize:                           8
@@ -69,6 +92,8 @@ remotes:
         stopbits:                           1
         packetLength:                       7       # choose one
         endOfPacket:                                # of these
+        EOPtolerance:
+        maxVariance:
         keymap:
             98 00 01 02 40 20 ff:           level +3 add            # volUp
             98 00 01 02 82 82 fd:           level -3 add            # volDown
