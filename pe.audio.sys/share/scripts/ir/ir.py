@@ -35,6 +35,18 @@ import socket
 from time import time
 import os
 
+class Color:
+   PURPLE = '\033[95m'
+   CYAN = '\033[96m'
+   DARKCYAN = '\033[36m'
+   BLUE = '\033[94m'
+   GREEN = '\033[92m'
+   YELLOW = '\033[93m'
+   RED = '\033[91m'
+   BOLD = '\033[1m'
+   UNDERLINE = '\033[4m'
+   END = '\033[0m'
+
 def send_cmd(cmd):
     if cmd[:4] == 'aux ':
         host, port = AUX_HOST, AUX_PORT
@@ -47,7 +59,7 @@ def send_cmd(cmd):
     else:
         host, port = CTL_HOST, CTL_PORT
         svcName = 'control'
-    print('sending:', cmd, f'to {host}:{port}')
+    print(Color.RED+'sending:', cmd, f'to {host}:{port}\n'+Color.END)
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
@@ -58,13 +70,39 @@ def send_cmd(cmd):
     return
 
 def irpacket2cmd(p):
-    """ try to translate to a command according to the keymap table
+    """ Try to translate to a command according to the keymap table.
+        The irpacket comes as bytes, e.g. b'\x00\xfa\xb0...'
     """
-    #print(  ' '.join( b2hex(p) ) ) # debug
-    try:
-        return keymap[ ' '.join( b2hex(p) ) ]
-    except:
+    # discard '\x00\xff' and similar queues
+    if len(p) <= 3:
         return ''
+    # converting to a list of octets, e.g. ['00', 'fa', 'b0', ...]
+    plist = b2hex(p)
+    if debugMode: print('packet  ',  ' '.join(plist) )
+    # Iterating over the keymap dictionary keys
+    for k in keymap:
+        if debugMode:
+            print( 'key     ', k , end='')
+        klist = k.split()
+        if len(klist) == len(plist):
+            # compute variance
+            vari = 0
+            for i in range( len(klist) ):
+                vari += abs( int(plist[i],16) - int(klist[i],16) )
+            if vari <= maxVariance:
+                # found :-)
+                if debugMode:
+                    print( f'{Color.BOLD}   variance: {vari} found "{keymap[k]}"\
+                             {Color.END}' )
+                return keymap[k]
+            else:
+                if debugMode:
+                    print( f'{Color.CYAN}   variance: {vari}\
+                             {Color.END}' )
+        else:
+            if debugMode:
+                print()
+    return ''
 
 def b2hex(b):
     """ converts a bytes stream into a easy readable raw hex list, e.g:
@@ -77,7 +115,7 @@ def b2hex(b):
 def serial_params(d):
     """ read a remote dict config then returns serial params """
     # defaults
-    baudrate    = 9600
+    baudrate    = 1200
     bytesize    = 8
     parity      = 'N'
     stopbits    = 1
@@ -100,16 +138,16 @@ def main_EOP():
 
         # Detecting the endOfPacket byte with some tolerance
         if  abs( int.from_bytes(rx, "big") -
-                 int(endOfPacket, 16) ) <= 3:
-            # (i) Here wo force the last byte as defined in endOfPacket,
-            #     although the real one can differ in the above tolerance.
-            irpacket += bytes.fromhex(endOfPacket)
+                 int(endOfPacket, 16) ) <= EOPtolerance:
+            irpacket += rx
             # try to translate it to a command according to the keymap table
             cmd = irpacket2cmd(irpacket)
             if cmd:
                 if time() - lastTimeStamp >= antibound:
                     send_cmd(cmd)
                     lastTimeStamp = time()
+                else:
+                    print( Color.CYAN + 'too fast' + Color.END )
             irpacket = b''
 
         else:
@@ -135,7 +173,7 @@ def main_TM():
         rx  = s.read( 1 )
         flog.write(rx)
         print( rx.hex().rjust(2,'0')+' ', end='' )
-        if time() - lastTimeStamp >= .1:
+        if time() - lastTimeStamp >= .2:
             print()
             lastTimeStamp = time()
 
@@ -147,6 +185,8 @@ if __name__ == "__main__":
     if '-h' in sys.argv:
         print(__doc__)
         exit()
+
+    debugMode = True if '-d' in sys.argv else False
 
     # pe.audio.sys services addressing
     try:
@@ -170,6 +210,8 @@ if __name__ == "__main__":
             packetLength = REMCFG['packetLength']
             endOfPacket = str(REMCFG['endOfPacket']) if REMCFG['endOfPacket'] \
                                                      else None # force to str
+            EOPtolerance = REMCFG['EOPtolerance'] if REMCFG['EOPtolerance'] else 5
+            maxVariance  = REMCFG['maxVariance']  if REMCFG['maxVariance']  else 5
     except:
         print(f'ERROR with \'{THISPATH}/ir.config\'')
         exit()
