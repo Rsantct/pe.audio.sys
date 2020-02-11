@@ -18,6 +18,10 @@ Usually it is enough:
 - then integrate the user which will run pe.audio.sys into convenient groups:
 
     `sudo usermod -a -G cdrom,audio,video,plugdev YourUserHere`
+    
+- also for serial access stuff (usbrelay, IR, etc):
+
+    `sudo usermod -a -G dialout YourUserHere`
 
 Unlike `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories.
 
