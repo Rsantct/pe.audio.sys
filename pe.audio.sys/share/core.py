@@ -622,7 +622,7 @@ class Preamp(object):
 
     def _validate( self, candidate ):
         """ Validates that the given 'candidate' (new state dictionary)
-            does not exceeds gain limits
+            does not exceed gain limits
         """
 
         g               = calc_gain( candidate )
