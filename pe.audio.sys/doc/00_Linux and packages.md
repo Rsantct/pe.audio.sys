@@ -60,7 +60,7 @@ Please refer to the doc files here
 
 If so, you can set it by running **`EDITOR=nano sudo visudo`**, then add the following:
 
-    # 'MyUSER' user can reboot the machine:
-    MyUSER          ALL=NOPASSWD:/sbin/reboot
+    # 'myUSER' user can reboot the machine:
+    myUSER          ALL=NOPASSWD:/sbin/reboot
 
 
