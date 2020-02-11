@@ -21,6 +21,9 @@ Usually it is enough:
 
 Unlike `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories.
 
+
+## Headless machine:
+
 Update your `~/.profile`:
 
     export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
@@ -44,6 +47,8 @@ Enable your user to access the sound card under the dbus system enviroment:
     sudo service dbus restart
 
 
+## Main packages
+
 Also install the following packages on your linux installation:
 
     sudo apt install alsa-utils libjack-jackd2-dev libasound2-dev libasound2-plugins
@@ -51,12 +56,12 @@ Also install the following packages on your linux installation:
     sudo apt install ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
 
-### Python3 packages
+## Python3 packages
 
 Please refer to the doc files here
 
 
-### Special permission for your user to reboot the machine
+## Special permission for your user to reboot the machine
 
 If so, you can set it by running **`EDITOR=nano sudo visudo`**, then add the following:
 
