@@ -174,7 +174,7 @@ def calc_eq( state ):
 def calc_gain( state ):
     """ Calculates the gain from: level, ref_level_gain and the source gain offset
     """
-    gain    = state['level'] + float(CONFIG['ref_level_gain'])
+    gain    = state['level'] + float(CONFIG['ref_level_gain']) - state['loudness_ref']
     if state['input'] != 'none':
         gain += float( CONFIG['sources'][state['input']]['gain'] )
     return gain
