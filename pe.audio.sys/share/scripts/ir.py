@@ -33,7 +33,7 @@ if __name__ == '__main__':
         if sys.argv[1] in ['stop', 'off']:
             sp.Popen( 'pkill -f "ir.py"', shell=True )
         elif sys.argv[1] in ['start', 'on']:
-            sp.Popen( f'python3 {THISPATH}/ir/ir.py'split() )
+            sp.Popen( f'python3 {THISPATH}/ir/ir.py'.split() )
         else:
             print(__doc__)
     else:
