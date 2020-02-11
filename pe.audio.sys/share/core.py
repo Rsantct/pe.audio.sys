@@ -414,9 +414,9 @@ def jack_connect(p1, p2, mode='connect', wait=1):
                     print ( f'(core) {p1.name} already connected to {p2.name}' )
             return True
         except:
-            c -= 1
+            c -= 0.5
             print ( f'(core) waiting {str(c)}s for \'{p1.name}\' \'{p2.name}\' to be active' )
-            sleep(1)
+            sleep(0.5)
     return False
 
 def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
