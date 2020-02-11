@@ -320,7 +320,7 @@
             <td class="loud_meter_container">
             <!-- JS will set this stuff: -->
             <meter  id="loud_meter"  class="loud_meter" value="0"
-                    min="-15" optimum="0" low="9" high="12" max="15" ></meter>
+                    min="0" optimum="0" low="6" high="9" max="12" ></meter>
             </td>
         </tr>
         <tr>
@@ -328,7 +328,7 @@
             <td id="loud_slider_container" class="loud_slider_container">Loud. Ref: ??</td>
             <td class="loud_slider_container">
             <input  id="loud_slider" class="loud_slider" type="range"
-                    min="-15.0" step="1" max="15.0"
+                    min="0" step="3" max="12.0"
                     oninput="control_cmd('loudness_ref ' + this.value)">
             </td>
         </tr>
