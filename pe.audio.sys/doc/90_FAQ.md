@@ -41,12 +41,12 @@ If you run a desktop system with enough CPU, your friend is the official Spotify
 
 If you want a headless system, your friend is **`librespot`** https://github.com/librespot-org/librespot
 
-`librespot` is provides as a package from the Rust ecosystem, so syou need simply to install `cargo`, the Rust packager manager, then install `librespot`:
+`librespot` is provided as a package from the [Rust ecosystem](https://crates.io/crates/librespot), so you'll need simply to install `cargo`, the Rust package manager, then install `librespot`:
 
     sudo apt install cargo
     cargo install librespot  # This will take a long while to compile
     
-Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA, Pulseaudio, Coreaudio, as needed.  
+Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA, Pulseaudio, Coreaudio, as needed.
     
  #### Raspberry Pi
  
