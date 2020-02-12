@@ -31,3 +31,23 @@ Be sure the Apache's PHP module is installed and enabled:
     /etc/apache2/mods-available/php7.3.load
     $ sudo a2enmod php7.3
 
+## Which Spotify client to use?
+
+### Desktop
+
+If you run a desktop system with enough CPU, your friend is the official Spotify package for Linux https://www.spotify.com/en/download/linux/
+
+### Headless
+
+If you want a headless system, your friend is **`librespot`** https://github.com/librespot-org/librespot
+
+`librespot` is provides as a package from the Rust ecosystem, so syou need simply to install `cargo`, the Rust packager manager, then install `librespot`:
+
+    sudo apt install cargo
+    cargo install librespot  # This will take a long while to compile
+    
+Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA, Pulseaudio, Coreaudio, as needed.  
+    
+ #### Raspberry Pi
+ 
+ There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
