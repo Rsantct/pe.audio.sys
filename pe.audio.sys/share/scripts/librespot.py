@@ -21,6 +21,10 @@
 
     use:    librespot.py   start | stop
 """
+########### BACKEND OPTIONS ######################
+backend_opts = '--backend rodio'
+#backend_opts = '--backend alsa --device aloop'
+##################################################
 
 import sys, os
 from subprocess import Popen
@@ -33,8 +37,8 @@ def start():
     # We redirect the print outs to a temporary file that will be periodically
     # read from a player control daemon.
 
-    cmd =  f'/usr/bin/librespot --name {gethostname()} --bitrate 320 --backend alsa' + \
-           ' --device aloop --disable-audio-cache --initial-volume=99'
+    cmd =  f'/usr/bin/librespot --name {gethostname()} --bitrate 320 {backend_opts}' + \
+           ' --disable-audio-cache --initial-volume=99'
 
     logFileName = f'{UHOME}/pe.audio.sys/.librespot_events'
 
