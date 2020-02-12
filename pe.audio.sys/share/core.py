@@ -71,32 +71,36 @@ def get_peq_in_use():
             return item["ecasound_peq.py"].replace('.ecs','')
     return 'none'
 
-def get_eq_curve(prop, value, state=None):
-    """ Retrieves the tone or loudness curve of the desired value.
-        'state'  will be used only to retrieve the
-        suited loudness index curve, which depends on levels.
+def get_eq_curve(curv, state):
+    """ Retrieves the tone or loudness curve.
+        Tone curves depens on state bass & treble.
+        Loudness compensation curve depens on the target level dBrefSPL.
     """
     # Tone eq curves are provided in [-6...0...+6]
-    if prop in ('bass', 'treb'):
-        index = 6 - int(round(value))
+    if curv == 'bass':
+        index = 6 - int(round(state['bass']))
 
-    # For loudness eq curves we have a flat curve index inside config.yml
-    elif prop == 'loud':
+    elif curv == 'treb':
+        index = 6 - int(round(state['treble']))
+
+    # For loudness eq curves there is a flat curve index previously detected,
+    # also there is a limiting ceiling value inside config.yml
+    elif curv == 'loud':
 
         index_min   = 0
         index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
         index_flat  = LOUD_FLAT_CURVE_INDEX
 
-        if state['loudness_track'] and (state['level'] <= CONFIG['loud_ceil']):
-            index = index_flat - state['level'] - state['loudness_ref']
+        if state['loudness_track'] and ( state['level'] <= CONFIG['loud_ceil'] ):
+            index = index_flat - state['level']
         else:
             index = index_flat
         index = int(round(index))
 
-        # Clamp index to available "loudness deepness" curves
+        # Clamp index to the available "loudness deepness" curves set
         index = max( min(index, index_max), index_min )
 
-    return EQ_CURVES[f'{prop}_mag'][:,index], EQ_CURVES[f'{prop}_pha'][:,index]
+    return EQ_CURVES[f'{curv}_mag'][:,index], EQ_CURVES[f'{curv}_pha'][:,index]
 
 def find_eq_curves():
     """ Scans share/eq/ and try to collect the whole set of EQ curves
@@ -152,11 +156,9 @@ def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
         as per the provided dictionary of state values.
     """
-
-    loud_mag, loud_pha = get_eq_curve( prop = 'loud', value = state['loudness_ref'],
-                                       state = state )
-    bass_mag, bass_pha = get_eq_curve( prop = 'bass', value = state['bass']         )
-    treb_mag, treb_pha = get_eq_curve( prop = 'treb', value = state['treble']       )
+    loud_mag, loud_pha = get_eq_curve( 'loud', state )
+    bass_mag, bass_pha = get_eq_curve( 'bass', state )
+    treb_mag, treb_pha = get_eq_curve( 'treb', state )
 
     target_name = state['target']
     if target_name == 'none':
