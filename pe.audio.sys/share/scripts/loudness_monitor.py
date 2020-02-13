@@ -37,21 +37,9 @@ def start():
     with open(CTRLFNAME, 'w') as f:
         f.write('')
         
-    # This is to avoid an error when getting portnames if 'none' is the
-    # current input, anyway it depens on 'system' to exist on jack inputs
-    # so it still can occur a runtime error under loudness_monitor.py :-/
-    try:
-        with open(STATEFNAME, 'r') as f:
-            input_name = yaml.load( f )['input']
-        with open(CONFIGFNAME, 'r') as f:
-            ports = yaml.load( f )['sources'][input_name]['capture_port']
-        sounddevice = ports
-    except:
-        sounddevice = 'system'
-
     cmd = f'{MAINFOLDER}/share/scripts/loudness_monitor/' \
             'loudness_monitor_daemon.py' \
-           f' --input_device {sounddevice}' \
+           f' --input_device pre_in_loop' \
            f' --control_file  {CTRLFNAME} ' \
            f' --output_file {MAINFOLDER}/.loudness_monitor'
 
