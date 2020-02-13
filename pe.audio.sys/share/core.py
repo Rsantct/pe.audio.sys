@@ -425,17 +425,19 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
     """ High level tool to connect/disconnect a given port name patterns """
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input= True )
+    #print('CAPTURE  ====> ', cap_ports) # debug
+    #print('PLAYBACK ====> ', pbk_ports) # debug
     if not cap_ports or not pbk_ports:
         return
-    #print('CAP', cap_ports) # debug
-    #print('PBK', pbk_ports) # debug
+    mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     i=0
     for cap_port in cap_ports:
         pbk_port = pbk_ports[i]
-        if 'dis' in mode or 'off' in mode:
-            jack_connect( cap_port, pbk_port, mode='disconnect', wait=wait )
-        else:
-            jack_connect( cap_port, pbk_port, mode='connect',    wait=wait )
+        job_jc = threading.Thread( target=jack_connect,
+                                   args=(cap_port,
+                                         pbk_port,
+                                         mode, wait) )
+        job_jc.start()
         i += 1
 
 def jack_clear_preamp():
