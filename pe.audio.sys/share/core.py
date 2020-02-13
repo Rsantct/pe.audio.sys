@@ -441,20 +441,10 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
 def jack_clear_preamp():
     """ Force clearing ANY clients, no matter what input was selected """
 
-    # Clients wired to preamp_in:
     preamp_ports = JCLI.get_ports('pre_in_loop', is_input=True)
     for preamp_port in preamp_ports:
         for client in JCLI.get_all_connections(preamp_port):
             jack_connect( client, preamp_port, mode='off' )
-
-    # And clients wired to the monitors:
-    if CONFIG["source_monitors"]:
-        for mon in CONFIG["source_monitors"]:
-            # Clearing ANY client into monitor, no matter what input was selected:
-            mon_ports = JCLI.get_ports(mon, is_input=True)
-            for mon_port in mon_ports:
-                for client in JCLI.get_all_connections(mon_port):
-                    jack_connect( client, mon_port, mode='off' )
 
 def jack_loops_prepare():
     """ The preamp will have the courtesy to prepare the loops
@@ -781,12 +771,6 @@ class Preamp(object):
             # connecting the new SOURCE to PREAMP input
             jack_connect_bypattern( CONFIG['sources'][source]['capture_port'],
                                     'pre_in' )
-
-            # connecting also to the MONITORS:
-            if CONFIG["source_monitors"]:
-                for monitor in CONFIG["source_monitors"]:
-                    jack_connect_bypattern( CONFIG['sources'][source]['capture_port'],
-                                            monitor )
 
             # Trying to set the desired xo and drc for this source
             tmp = ''
