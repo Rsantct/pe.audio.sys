@@ -124,6 +124,8 @@
         td#level_buttons21   { border-style: none; width:15%; }
         td#level_buttons22   { border-style: none; width:70%; }
         td#level_buttons23   { border-style: none; width:15%; font-size:0.50em; }
+        td#LU_slider_label   { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: mid;}
+        td#LU_meter_label    { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: mid;}
 
         /* 6th SECTION */
         table#player_info   { text-align: left; }
@@ -155,29 +157,29 @@
                         }
         td#mCell        {   border-style: none; width:30%; }
 
-        /* LOUDNESS METER CONTAINER (type CELL) */
-        .loud_meter_container {
+        /* LU LOUDNESS UNITS METER CONTAINER (type CELL) */
+        .LU_meter_container {
             border-style: none;
             width: 50%;
             text-align: right;
             vertical-align: top;
         }
-        /* The LOUDNESS METER itself (type METER) */
-        .loud_meter {
+        /* The LU METER itself (type METER) */
+        .LU_meter {
                     width:      100%;
                     height:     0.8em;
                     border:     1px solid;
                     }
 
-        /* LOUDNESS SLIDER CONTAINER (type CELL) */
-        .loud_slider_container {
+        /* LU REFERENCE SLIDER CONTAINER (type CELL) */
+        .LU_slider_container {
             border-style: none;
             width: 50%;
             text-align: right;
         }
 
         /* The SLIDER itself (type INPUT RANGE) */
-        .loud_slider {
+        .LU_slider {
           -webkit-appearance:   none;
           width:                100%;
           height:               1.0em;
@@ -189,7 +191,7 @@
           transition:           opacity .2s;
         }
         /* The SLIDER HANDLER */
-        .loud_slider::-webkit-slider-thumb {
+        .LU_slider::-webkit-slider-thumb {
           -webkit-appearance:   none;
           appearance:           none;
           width:                1.5em;
@@ -198,7 +200,7 @@
           background:           rgb(240,240,240);
           cursor:               pointer;
         }
-        .loud_slider::-moz-range-thumb {
+        .LU_slider::-moz-range-thumb {
           width:                25px;
           height:               25px;
           border-radius:        50%;
@@ -234,7 +236,8 @@
         <tr>
             <!-- AMPLI switch -->
             <td id="OnOff"     rowspan="2">
-                <button type="button" id="OnOffButton" onmousedown="ampli('toggle')">-</button>
+                <button type="button" id="OnOffButton"
+                        title="Amplifier ON/OFF" onmousedown="ampli('toggle')">-</button>
             </td>
 
             <!-- LEVEL display -->
@@ -243,20 +246,23 @@
 
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
-                <button type="button" id="buttonLoud" onmousedown="loudness_toggle()" >L</button>
+                <button type="button" id="buttonLoud" 
+                        title="Loudness Contour" onmousedown="loudness_toggle()">LC</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
             <td id="input"     rowspan="2">
                 <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901</button>
                 <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
-                <select id="inputsSelector" onchange="control_cmd('input ' + this.value, update=false)" ></select>
+                <select id="inputsSelector" 
+                        title="Source Selector" onchange="control_cmd('input ' + this.value, update=false)" ></select>
             </td>
         </tr>
         <tr>
             <!-- MONO / STEREO control -->
             <td id="MonoInfo">
-                <button type="button" id="buttonMono" onmousedown="mono_toggle()"           >M</button>
+                <button type="button" id="buttonMono" 
+                        title="Mono/Stereo" onmousedown="mono_toggle()">M</button>
             </td>
         </tr>
     </table>
@@ -269,8 +275,8 @@
         <tr>
             <td id="level_buttons11">
             </td>
-            <!-- 1 dB MAIN VOLUME and MUTE buttons -->
             <td id="level_buttons12">
+                <!-- 1 dB MAIN VOLUME and MUTE buttons -->
                 <button type="button" onmousedown="audio_change('level', -1)" >
                         &nbsp;-1&nbsp;</button>
                 <button type="button" onmousedown="mute_toggle()" id="buttonMute" >
@@ -279,57 +285,62 @@
                         &nbsp;+1&nbsp;</button>
             </td>
             <td id="level_buttons13">
-                &nbsp;&nbsp;mon:&nbsp;&nbsp;
+                <!-- 2 dB MONITOR VOLUME buttons header -->
+                <!--&nbsp;&nbsp;mon:&nbsp;&nbsp;-->
             </td>
         <tr>
         </tr>
             <td id="level_buttons21">
             </td>
-            <!-- 3 dB MAIN VOLUME buttons -->
             <td id="level_buttons22">
+                <!-- 3 dB MAIN VOLUME buttons -->
                 <button type="button" onmousedown="audio_change('level', -3)" >
                         &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
                 <button type="button" onmousedown="audio_change('level', +3)" >
                         &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
             </td>
-            <!-- 2 dB MONITOR VOLUME buttons -->
             <td id="level_buttons23">
+                <!-- 2 dB MONITOR VOLUME buttons -->
+                <!--
                 <button type="button" id="MON_vol_down"  onmousedown="MON_vol('-2dB')">-</button>
                 <button type="button" id="MON_vol_up"    onmousedown="MON_vol('+2dB')">+</button>
+                -->
             </td>
         </tr>
         </table>
     </div>
-
-    <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button)
-            loudness adjusting
-            treble        balance
-            bass          target
-            XO      DRC     PEQ
-    -->
-    <div id="advanced_controls" align="center" style="display:none; font-size:0.75em;">
-
-    <!-- A LOUDNESS METER AND REFERENCE ADJUST (will be hidden if loudness_track=False) -->
-    <div id="loudness_metering_and_slider" style="display:block" >
+    <div style="display:block" >
     <table>
-        <tr>
-            <td class="loud_meter_container">
-                <button type="button" id="buttonLoudMonReset" onmousedown="control_cmd('aux loudness_monitor_reset')" >reset</button>
-                &nbsp;Loud. monitor:
-            </td>
-            <td class="loud_meter_container">
-            <!-- JS will set this stuff: -->
-            <meter  id="loud_meter"  class="loud_meter" value="0"
-                    min="0" optimum="0" low="6" high="9" max="12" ></meter>
-            </td>
-        </tr>
+        <!-- LU REFERENCE OFFSET ADJUST -->
         <tr>
             <!-- JS will update the Loud. Ref-->
-            <td id="loud_slider_container" class="loud_slider_container">Loud. Ref: ??</td>
-            <td class="loud_slider_container">
-            <input  id="loud_slider" class="loud_slider" type="range"
+            <td id="LU_slider_label">LU offset: --</td>
+            <td class="LU_slider_container">
+            <input  id="LU_slider" class="LU_slider" type="range"
                     min="0" step="3" max="12.0"
+                    title="Adjust as estimated 'loudness war' music program"
                     oninput="control_cmd('loudness_ref ' + this.value)">
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button) -->
+    <div id="advanced_controls" align="center" style="display:none; font-size:0.75em;">
+
+    <!-- LU MONITOR -->
+    <div style="display:block" >
+    <table>
+        <tr>
+            <td id="LU_meter_label">
+                <button type="button" id="buttonLoudMonReset" 
+                        onmousedown="control_cmd('aux loudness_monitor_reset')" >reset</button>
+                &nbsp;LU monitor:
+            </td>
+            <td class="LU_meter_container">
+            <!-- JS will set this value: -->
+            <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
+                    min="0" optimum="0" low="5" high="8" max="12" ></meter>
             </td>
         </tr>
     </table>
