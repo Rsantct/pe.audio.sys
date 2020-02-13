@@ -371,12 +371,36 @@ function update_player_info() {
             d = metablank;
         }
 
-        document.getElementById("bitrate").innerText    = d['bitrate'] + "\nkbps";
-        document.getElementById("artist").innerText     = d['artist'];
-        document.getElementById("track").innerText      = d['track_num'];
-        document.getElementById("time").innerText       = d['time_pos'] + "\n" + d['time_tot'];
-        document.getElementById("album").innerText      = d['album'];
-        document.getElementById("title").innerText      = d['title'];
+        if (d['bitrate']) { 
+            document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
+        } else {
+            document.getElementById("bitrate").innerText = "-\nkbps"
+        }
+        if (d['artist']) {                               
+            document.getElementById("artist").innerText  = d['artist'];
+        } else {
+            document.getElementById("artist").innerText = "-"
+        }
+        if (d['track_num']) {                               
+            document.getElementById("track").innerText   = d['track_num'];
+        } else {
+            document.getElementById("track").innerText = "-"
+        }
+        if (d['time_pos']) {                               
+            document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
+        } else {
+            document.getElementById("time").innerText = "-"
+        }
+        if (d['album']) {                               
+            document.getElementById("album").innerText   = d['album'];
+        } else {
+            document.getElementById("album").innerText = "-"
+        }
+        if (d['title']) {                               
+            document.getElementById("title").innerText   = d['title'];
+        } else {
+            document.getElementById("title").innerText = "-"
+        }
     }
 }
 // Emerge a dialog to select a disk track to be played
