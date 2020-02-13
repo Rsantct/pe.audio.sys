@@ -22,8 +22,8 @@
     use:    librespot.py   start | stop
 """
 ########### BACKEND OPTIONS ######################
-backend_opts = '--backend rodio'
-#backend_opts = '--backend alsa --device aloop'
+#backend_opts = '--backend rodio'
+backend_opts = '--backend alsa --device aloop'
 ##################################################
 
 import sys, os
