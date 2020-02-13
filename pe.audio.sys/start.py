@@ -311,6 +311,11 @@ if __name__ == "__main__":
                                                'connect',60))
         job_pre2bfir.start()
 
+        # PREAMP    --> MONITORS
+        if CONFIG["source_monitors"]:
+            for monitor in CONFIG["source_monitors"]:
+                jack_connect_bypattern( 'pre_in_loop', monitor )
+
         # RESTORE: audio settings
         state = init_audio_settings()
         save_yaml(state, STATE_PATH)
