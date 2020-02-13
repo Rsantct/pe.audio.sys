@@ -268,13 +268,13 @@ function page_update() {
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
-    // Updates loudness reference and loudness monitor
-    document.getElementById("loud_slider_container").innerText =
-                    'Loud. Ref: ' + state.loudness_ref;
-    document.getElementById("loud_slider").value    = state.loudness_ref;
+    // Updates the Integrated LU monitor and the LU offset slider
+    document.getElementById("LU_slider_label").innerText =
+                    'LU offset: ' + -1 * state.loudness_ref;
+    document.getElementById("LU_slider").value    = state.loudness_ref;
     try{
-        const loud_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
-        document.getElementById("loud_meter").value    =  loud_measure;
+        const LU_measure = JSON.parse( control_cmd('aux get_loudness_monitor') );
+        document.getElementById("LU_meter").value    =  LU_measure;
     }catch{
     }
 
@@ -468,14 +468,11 @@ function buttonLoudHighlight(){
     if ( state.loudness_track == true ) {
         document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
         document.getElementById("buttonLoud").style.color = "white";
-        document.getElementById("buttonLoud").innerText = 'LD';
-        document.getElementById( "loudness_metering_and_slider").style.display = "block";
+        document.getElementById("buttonLoud").innerText = 'LC';
     } else {
         document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
         document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
-        document.getElementById("buttonLoud").innerText = 'LD';
-        // Hides loudness_metering_and_slider if loudness_track=False
-        document.getElementById( "loudness_metering_and_slider").style.display = "none";
+        document.getElementById("buttonLoud").innerText = 'LC';
     }
 }
 // Send preamp changes and display new values w/o waiting for the autoupdate
