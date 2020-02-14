@@ -42,16 +42,25 @@ import json
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
+## CDDA settings
+# cdrom device to use from .mplayer/config
+try:
+    with open(f'{UHOME}/.mplayer/config', 'r') as f:
+        tmp = f.readlines()
+        tmp = [x for x in tmp if 'cdrom-device' in x  and not '#' in x][0] \
+                .strip().split('=')[-1].strip()
+        cdrom_device = tmp
+except:
+    cdrom_device = '/dev/cdrom'
 # A global variable to store the CD Audio info
 cd_info = {}
 
-
-# MPD settings:
+## MPD settings:
 MPD_HOST    = 'localhost'
 MPD_PORT    = 6600
 MPD_PASSWD  = None
 
-# The METADATA GENERIC TEMPLATE for pre.di.c clients, for example the web control page:
+## The METADATA GENERIC TEMPLATE for pre.di.c clients, for example the web control page:
 # (!) Remember to use copies of this ;-)
 METATEMPLATE = {
     'player':       '',
@@ -64,7 +73,8 @@ METATEMPLATE = {
     'track_num':    ''
     }
 
-# Check for the SPOTIFY Client in use:
+## SPOTIFY settings
+# Check for the Spotify Client in use:
 SPOTIFY_CLIENT = None
 librespot_bitrate = '-'
 spotify_bitrate   = '-'
@@ -234,13 +244,14 @@ def mplayer_cmd(cmd, service):
         tmp = ''
         cd_info = {}
         try:
-            tmp = sp.check_output('/usr/bin/cdcd tracks', shell=True).decode('utf-8').split('\n')
+            tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('utf-8').split('\n')
         except:
             try:
-                tmp = sp.check_output('/usr/bin/cdcd tracks', shell=True).decode('iso-8859-1').split('\n')
+                tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
-                print( '(players.py) Problem running the program \'cdcd\' for CDDA metadata reading' )
-
+                print( '(players.py) Problem running the program \'cdcd\' for CDDA metadata reading.' )
+                print( '             Check also your cdrom-device setting under .mplayer/config' )
+                
 
         for line in tmp:
 
@@ -417,12 +428,13 @@ def cdda_meta():
     def get_current_track_from_cdcd():
         t = "1"
         try:
-            tmp = sp.check_output('/usr/bin/cdcd tracks', shell=True).decode('utf-8').split('\n')
+            tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('utf-8').split('\n')
         except:
             try:
-                tmp = sp.check_output('/usr/bin/cdcd tracks', shell=True).decode('iso-8859-1').split('\n')
+                tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
                 print( 'players.py: problem running the program \'cdcd\' for CDDA metadata reading' )
+                print( '             Check also your cdrom-device setting under .mplayer/config' )
         for line in tmp:
             if line and line[6] == '>':
                 t = line[:2].strip()
