@@ -449,20 +449,20 @@ def jack_clear_preamp():
             jack_connect( client, preamp_port, mode='off' )
 
 def jack_loops_prepare():
-    """ The preamp will have the courtesy to prepare the loops
+    """ The preamp will have the courtesy of preparing the loops
         as per indicated under the config sources section.
         Also a preamp_loop will be spawned.
     """
+    # 1st loop to prepare: auto spawn the preamp ports
+    jloop = threading.Thread(   target = jack_loop,
+                                args=['pre_in_loop', 2]   )
+    jloop.start()
+    # 2nd: the source's connection loops:
     for source in CONFIG['sources']:
         pname = CONFIG['sources'][source]['capture_port']
         if 'loop' in pname:
             jloop = threading.Thread( target = jack_loop, args=(pname,) )
             jloop.start()
-
-    # Auto spawn the preamp ports
-    jloop = threading.Thread(   target = jack_loop,
-                                args=['pre_in_loop', 2]   )
-    jloop.start()
 
 
 # THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER ===============
