@@ -73,6 +73,16 @@ del(f)
 # so it can be read what it is been playing:
 redirection_path = f'{MAINFOLDER}/.cdda_events'
 
+# cdrom device to use from .mplayer/config
+try:
+    with open(f'{UHOME}/.mplayer/config', 'r') as f:
+        tmp = f.readlines()
+        tmp = [x for x in tmp if 'cdrom-device' in x  and not '#' in x][0] \
+                .strip().split('=')[-1].strip()
+        cdrom_device = tmp
+except:
+    cdrom_device = '/dev/cdrom'
+
 def control_play(track_num=1):
 
     try:
@@ -125,7 +135,7 @@ def control_stop():
 
 def control_eject():
     control_stop()
-    os.system( 'eject' )
+    sp.Popen( f'eject {cdrom_device}'.split() )
 
 def start():
     cmd = f'mplayer {options} -profile cdda -input file={input_fifo}'
