@@ -303,7 +303,7 @@ if __name__ == "__main__":
             jack_loops_prepare()
             sleep(1) # this is necessary, or checking for ports to be activated
 
-        # PREAMP    -->   BRUTEFIR
+        # PREAMP    -->   BRUTEFIR  (be careful that both pre_in_loops are alive)
         # (i) Threading this: it depends on Brutefir ports to become active
         job_pre2bfir = threading.Thread( target=jack_connect_bypattern,
                                          args=('pre_in_loop',
