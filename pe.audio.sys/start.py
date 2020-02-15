@@ -58,7 +58,7 @@ def is_jack_running():
 def start_jackd():
 
     jack_backend_options = CONFIG["jack_backend_options"].replace(
-                            'system_card', CONFIG["system_card"] )
+                            '$system_card', CONFIG["system_card"] )
 
     tmplist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
               f'{jack_backend_options}'.split() + \
