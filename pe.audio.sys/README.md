@@ -208,7 +208,7 @@ Here you are an uncommented bare example of `config.yml`:
     external_cards:
 
     jack_options:           -R -d alsa
-    jack_backend_options:   -d system_card -r 48000 -P -o 6
+    jack_backend_options:   -d $system_card -r 48000 -P -o 6
 
 
     balance_max:    6.0
