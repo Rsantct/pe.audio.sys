@@ -361,7 +361,7 @@ def mplayer_cmd(cmd, service):
             pass
 
     if eject_disk:
-        sp.Popen( 'eject' )
+        sp.Popen( f'eject {cdrom_device}'.split() )
 
 # Mplayer metadata (DVB or iSTREAMS, but not usable for CDDA)
 def mplayer_meta(service, readonly=False):
