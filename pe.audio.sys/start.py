@@ -286,11 +286,14 @@ if __name__ == "__main__":
     if is_jack_running():
 
         # (i) Importing core.py needs JACK to be running
-        from share.core import  jack_loops_prepare,     \
-                                init_audio_settings,    \
-                                init_source,            \
-                                jack_connect_bypattern, \
-                                save_yaml, STATE_PATH
+        import share.core as core
+
+        # JACK LOOPS
+        sp.Popen( f'{BDIR}/share/jloops_daemon.py' )
+        sleep(1) # this is necessary, or checking for ports to be activated
+
+        # Running USER SCRIPTS
+        run_scripts()
 
         # BRUTEFIR
         start_brutefir()
@@ -298,26 +301,17 @@ if __name__ == "__main__":
         # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK
         prepare_extra_cards()
 
-        # PREAMP INPUTS (JACK LOOPS)
-        if run_level == 'all':
-            jack_loops_prepare()
-            sleep(1) # this is necessary, or checking for ports to be activated
-
-        # PREAMP    -->   BRUTEFIR  (be careful that both pre_in_loops are alive)
-        # (i) Threading this: it depends on Brutefir ports to become active
-        job_pre2bfir = threading.Thread( target=jack_connect_bypattern,
-                                         args=('pre_in_loop',
-                                               'brutefir',
-                                               'connect',60))
-        job_pre2bfir.start()
+        # PREAMP  -->   BRUTEFIR  (be careful that both pre_in_loops are alive)
+        # Wait 60 sec because Brutefir ports can take some time to be activated.
+        core.jack_connect_bypattern('pre_in_loop', 'brutefir', wait=60)
 
         # RESTORE: audio settings
-        state = init_audio_settings()
-        save_yaml(state, STATE_PATH)
+        state = core.init_audio_settings()
+        core.save_yaml(state, core.STATE_PATH)
 
         # RESTORE source as set under config.yml
-        state = init_source()
-        save_yaml(state, STATE_PATH)
+        state = core.init_source()
+        core.save_yaml(state, core.STATE_PATH)
 
         # SERVICES (TCP SERVERS):
         # (i) - The system control service 'pasysctl.py' needs jack to be running.
@@ -328,19 +322,11 @@ if __name__ == "__main__":
         for svc in svcs:
             restart_service( svc )
 
-        # Running USER SCRIPTS
-        run_scripts()
-
-        # Some sources depends on scripts to launch ports in Jack, so we need
-        # to sleep a bit then retry to connect its ports to the preamp
-        sleep(3)
-        sp.Popen( f'{UHOME}/bin/peaudiosys_control input {state["input"]}'.split() )
-
-        # PREAMP    --> MONITORS
-        sleep(3.0) # Needs to check if monitors ports are created, or simply wait a bit.
+        # PREAMP  --> MONITORS
+        # Needs to check if monitors ports are created, or simply wait a bit.
         if CONFIG["source_monitors"]:
             for monitor in CONFIG["source_monitors"]:
-                jack_connect_bypattern( 'pre_in_loop', monitor, wait=10 )
+                core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=10 )
 
     else:
         print( '(start.py) JACK not detected')
