@@ -54,7 +54,7 @@ audio_output {
     type        "jack"
     name        "jack"
     client_name "mpd"
-    destination_ports "mpd_loop:input_1,mpd_loop:input_2"
+    destination_ports "pre_in_loop:input_1,pre_in_loop:input_2"
 #    format          "*:*:6"
 #    Control de volumen:
 #    mixer_type "software"
