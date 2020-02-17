@@ -70,7 +70,6 @@ del(f)
 # Mplayer output is redirected to a file, so it can be read what is been playing:
 redirection_path = f'{UHOME}/pe.audio.sys/.istreams_events'
 
-
 def load_url(url):
     try:
         command = ('loadfile ' + url + '\n' )
@@ -139,8 +138,6 @@ if __name__ == '__main__':
                     select_by_preset(opc2)
                 elif opc2.isalpha():
                     select_by_name(opc2)
-            else:
-                select_by_preset( presets['default'] )
 
         # ON THE FLY changing a preset number
         elif opc == 'preset':
