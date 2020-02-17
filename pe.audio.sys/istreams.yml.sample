@@ -1,5 +1,4 @@
 # An url presets file used from scripts/istreams.py
-default: 4
 
 1:
     name:   RNE
