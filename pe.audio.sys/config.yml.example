@@ -151,11 +151,11 @@ sources:
         gain:           0.0
         xo:             mp
     mpd:
-        capture_port:   mpd_loop
+        capture_port:   mpd
         gain:           0.0
         xo:             mp
     istreams:
-        capture_port:   istreams_loop
+        capture_port:   mplayer_istreams
         gain:           0.0
         xo:             mp
     salon:
