@@ -25,12 +25,11 @@
     DVB-T tuned channels are ussually stored at
         ~/.mplayer/channels.conf
 
-    User settings (presets, default) can be configured at
+    User settings (presets) can be configured at
         pe.audio.sys/DVB-T.yml
 
     Usage:      DVB   start   [ <preset_num> | <channel_name> ]
                       stop
-                      prev    (load previous from recent presets)
                       preset  <preset_num>
                       name    <channel_name>
 """
@@ -39,9 +38,7 @@ import sys,os
 from pathlib import Path
 from time import sleep
 import subprocess as sp
-# ruamel.yaml preserves comments and items order when dumping to a file.
-# https://yaml.readthedocs.io/en/latest/basicuse.html
-from ruamel.yaml import YAML
+import yaml
 
 UHOME = os.path.expanduser("~")
 
@@ -90,14 +87,7 @@ def select_by_preset(preset_num):
     try:
         channel_name = DVB_config['presets'][ preset_num ]
         select_by_name(channel_name)
-        # Rotating and saving recent preset:
-        last = DVB_config['recent_presets']['last']
-        if preset_num != last:
-            DVB_config['recent_presets']['prev'] = last
-            DVB_config['recent_presets']['last'] = preset_num
-            dump_yaml( DVB_config, DVB_config_fpath )
         return True
-
     except:
         print( f'(init/DVB) error in preset # {preset_num}' )
         return False
@@ -112,35 +102,15 @@ def stop():
     sp.Popen( ['pkill', '-KILL', '-f', 'profile dvb'] )
     sleep(.5)
 
-def load_yaml(fpath):
-    try:
-        yaml = YAML() # default round-trip mode preserve comments and items order
-        doc = open(fpath, 'r')
-        d = yaml.load( doc.read() )
-        doc.close()
-        return d
-    except:
-        print ( '(init/DVB) YAML error loading ' + fpath )
-
-def dump_yaml(d, fpath):
-    try:
-        yaml = YAML() # default round-trip mode preserve comments and items order
-        doc = open(fpath, 'w')
-        yaml.dump( d, doc )
-        doc.close()
-    except:
-        print ( '(init/DVB) YAML error dumping ' + fpath )
-
 if __name__ == '__main__':
 
     ### Reading the DVB-T config file
-    fpath = f'{UHOME}/pe.audio.sys/DVB-T.yml'
     try:
-        DVB_config = load_yaml(fpath)
+        with open(f'{UHOME}/pe.audio.sys/DVB-T.yml', 'r') as f:
+            DVB_config = yaml.load(f)
     except:
         print ( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
         sys.exit()
-
     
     ### Reading the command line
     if sys.argv[1:]:
@@ -156,11 +126,6 @@ if __name__ == '__main__':
                     select_by_preset( int(opc2) )
                 elif opc2.isalpha():
                     select_by_name(opc2)
-            else:
-                if DVB_config['default_preset'] != 0:
-                    select_by_preset( DVB_config['default_preset'] )
-                else:
-                    select_by_preset( DVB_config['recent_presets']['last'] )
 
         # STOPS all this stuff
         elif opc == 'stop':
@@ -169,8 +134,6 @@ if __name__ == '__main__':
         # ON THE FLY changing to a preset number or rotates recent
         elif opc == 'preset':
             select_by_preset( int(sys.argv[2]) )
-        elif opc == 'prev':
-            select_by_preset( DVB_config['recent_presets']['prev'] )
 
         # ON THE FLY changing to a preset name
         elif opc == 'name':
