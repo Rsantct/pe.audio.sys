@@ -337,7 +337,7 @@ if __name__ == "__main__":
         sp.Popen( f'{UHOME}/bin/peaudiosys_control input {state["input"]}'.split() )
 
         # PREAMP    --> MONITORS
-        sleep(3) # Needs to check if monitors ports are created, or simply wait a bit.
+        sleep(3.0) # Needs to check if monitors ports are created, or simply wait a bit.
         if CONFIG["source_monitors"]:
             for monitor in CONFIG["source_monitors"]:
                 jack_connect_bypattern( 'pre_in_loop', monitor, wait=10 )
