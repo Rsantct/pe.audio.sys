@@ -14,10 +14,3 @@ presets:
   12: Radio Clasica HQ MPA
   22: Radio Clasica HQ A52
 
-# If 0 here, then DVB.py will start loading last item from recent_presets
-default_preset: 0
-
-recent_presets:
-  last: 2
-  prev: 1
-
