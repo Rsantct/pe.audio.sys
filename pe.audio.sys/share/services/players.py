@@ -657,9 +657,17 @@ def librespot_meta():
         # playback info messages, so we will search for the latest 'Track ... loaded' message,
         # backwards from the end of the events file:
         for line in tmp[::-1]:
-            if "Track" in line and "loaded" in line:
-                md['title'] = line.split('"')[1]
-                break
+            if line.strip()[-6:] == "loaded":
+                # raspotify flawors of librespot
+                if not 'player] <' in line:
+                    md['title'] = line.split('player: Track "')[-1] \
+                                      .split('" loaded')[0]
+                    break
+                # Rust cargo librespot package
+                else:
+                    md['title'] = line.split('player] <')[-1] \
+                                      .split('> loaded')[0]
+                    break
     except:
         pass
 
@@ -757,7 +765,7 @@ def get_source():
 def get_state():
     """ returns the YAML state info """
     with open( MAINFOLDER + '/.state.yml', 'r') as f:
-        return yaml.load( f.read() )
+        return yaml.load(f)
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
