@@ -36,7 +36,7 @@ def try_backends():
             tmp = Popen( f'/usr/bin/librespot --name tmp --backend {be} &',
                                 shell=True, stdout=f, stderr=f)
         sleep(1)
-        Popen( 'pkill -f "name tmp"', shell=True )
+        Popen( 'pkill -KILL -f "name tmp"', shell=True )
         with open(ftmp, 'r') as f:
             tmp = f.read()
             if not 'backend' in tmp:
