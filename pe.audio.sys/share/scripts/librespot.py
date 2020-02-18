@@ -21,21 +21,42 @@
 
     use:    librespot.py   start | stop
 """
-########### BACKEND OPTIONS ######################
-#backend_opts = '--backend rodio'
-backend_opts = '--backend alsa --device aloop'
-##################################################
-
 import sys, os
 from subprocess import Popen
 from socket import gethostname
+from time import sleep
 
 UHOME = os.path.expanduser("~")
+
+def try_backends():
+    result = None
+    ftmp = '/tmp/librespot.test'
+    for be in ('rodio', 'pulseaudio', 'alsa'):
+        with open(ftmp, 'w') as f:
+            tmp = Popen( f'/usr/bin/librespot --name tmp --backend {be} &',
+                                shell=True, stdout=f, stderr=f)
+        sleep(1)
+        Popen( 'pkill -f "name tmp"', shell=True )
+        with open(ftmp, 'r') as f:
+            tmp = f.read()
+            if not 'backend' in tmp:
+                result = be
+        Popen( f'rm {ftmp}'.split() )
+        sleep(.25) # lets wait for rm to delete the tmpfile
+        if result:
+            return result
+    print( tmp )
+    exit()
 
 def start():
     # 'librespot' binary prints out the playing track and some info to stdout/stderr.
     # We redirect the print outs to a temporary file that will be periodically
     # read from a player control daemon.
+
+    backend = try_backends()
+    backend_opts = f'--backend {backend}'
+    if backend == 'alsa':
+        backend_opts += ' --device aloop'
 
     cmd =  f'/usr/bin/librespot --name {gethostname()} --bitrate 320 {backend_opts}' + \
            ' --disable-audio-cache --initial-volume=99'
