@@ -251,7 +251,7 @@ def mplayer_cmd(cmd, service):
             except:
                 print( '(players.py) Problem running the program \'cdcd\' for CDDA metadata reading.' )
                 print( '             Check also your cdrom-device setting under .mplayer/config' )
-                
+
 
         for line in tmp:
 
@@ -717,7 +717,9 @@ def player_get_meta(readonly=False):
 
 # Generic function to control any player
 def player_control(action):
-    """ controls the playback """
+    """ controls the playback
+        returns: 'stop' | 'play' | 'pause'
+    """
 
     source = get_source()
     result = ''
