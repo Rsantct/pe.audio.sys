@@ -36,7 +36,7 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install JACK-Client
     ```
 
-Optionaly recommended if you wan to launch scripts/loudness_monitor.py:
+Optionaly recommended if you wan to launch `scripts/loudness_monitor.py`:
 
     sudo pip3 install sounddevice watchdog
     sudo apt install libportaudio2
