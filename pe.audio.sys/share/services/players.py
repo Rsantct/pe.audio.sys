@@ -49,18 +49,20 @@ try:
         tmp = f.readlines()
         tmp = [x for x in tmp if 'cdrom-device' in x  and not '#' in x][0] \
                 .strip().split('=')[-1].strip()
-        cdrom_device = tmp
+        CDROM_DEVICE = tmp
 except:
-    cdrom_device = '/dev/cdrom'
-# A global variable to store the CD Audio info
+    CDROM_DEVICE = '/dev/cdrom'
+# Global variables to store the CDDA Audio info and CDDA playing status
+# (see mplayer_cmd() below)
 cd_info = {}
+cdda_playing_status = 'stop'
 
 ## MPD settings:
 MPD_HOST    = 'localhost'
 MPD_PORT    = 6600
 MPD_PASSWD  = None
 
-## The METADATA GENERIC TEMPLATE for pre.di.c clients, for example the web control page:
+## METADATA GENERIC TEMPLATE for pe.audio.sys clients, e.g. the control web page:
 # (!) Remember to use copies of this ;-)
 METATEMPLATE = {
     'player':       '',
@@ -201,15 +203,22 @@ def mpd_client(query):
 
 # Mplayer control (used for DVB, iSTREAMS and CD)
 def mplayer_cmd(cmd, service):
-    """ Sends a command to Mplayer trough by its input fifo """
+    """ Sends a command to Mplayer trough by its input fifo
+    """
     # Notice: Mplayer sends its responses to the terminal where Mplayer was launched,
     #         or to a redirected file.
 
     # See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
-    # Avoiding to process 'state' because Mplayer has not a such function.
+    global cdda_playing_status
+
+    # "keep_pausing get_property pause" doesn't works well with CDDA
+    # so will keep a variable to selfcontrol the CDDA plating status.
     if cmd == 'state':
-        return
+        if service == 'cdda':
+            return cdda_playing_status
+        else:
+            return 'play'
 
     eject_disk = False
 
@@ -244,10 +253,10 @@ def mplayer_cmd(cmd, service):
         tmp = ''
         cd_info = {}
         try:
-            tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('utf-8').split('\n')
+            tmp = sp.check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('utf-8').split('\n')
         except:
             try:
-                tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('iso-8859-1').split('\n')
+                tmp = sp.check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
                 print( '(players.py) Problem running the program \'cdcd\' for CDDA metadata reading.' )
                 print( '             Check also your cdrom-device setting under .mplayer/config' )
@@ -308,10 +317,15 @@ def mplayer_cmd(cmd, service):
         elif cmd == 'rew':        cmd = 'seek -30 0'
         elif cmd == 'ff':         cmd = 'seek +30 0'
         elif cmd == 'next':       cmd = 'seek_chapter +1 0'
-        elif cmd == 'pause':      cmd = 'pause'
         elif cmd == 'stop':       cmd = 'stop'
 
+        elif cmd == 'pause':
+            cmd = 'pause'
+            cdda_playing_status =   {'play':'pause', 'pause':'play'
+                                    }[cdda_playing_status]
+
         elif cmd == 'play':
+            cdda_playing_status = 'play'
             # save disk info into a json file
             save_cd_info()
             # flushing the mplayer events file
@@ -361,7 +375,7 @@ def mplayer_cmd(cmd, service):
             pass
 
     if eject_disk:
-        sp.Popen( f'eject {cdrom_device}'.split() )
+        sp.Popen( f'eject {CDROM_DEVICE}'.split() )
 
 # Mplayer metadata (DVB or iSTREAMS, but not usable for CDDA)
 def mplayer_meta(service, readonly=False):
@@ -428,10 +442,10 @@ def cdda_meta():
     def get_current_track_from_cdcd():
         t = "1"
         try:
-            tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('utf-8').split('\n')
+            tmp = sp.check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('utf-8').split('\n')
         except:
             try:
-                tmp = sp.check_output(f'/usr/bin/cdcd -d {cdrom_device} tracks', shell=True).decode('iso-8859-1').split('\n')
+                tmp = sp.check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
                 print( 'players.py: problem running the program \'cdcd\' for CDDA metadata reading' )
                 print( '             Check also your cdrom-device setting under .mplayer/config' )
@@ -741,7 +755,7 @@ def player_control(action):
         result = mplayer_cmd(cmd=action, service='cdda')
 
     # Currently only MPD and Spotify Desktop provide 'state' info.
-    # 'result' can be 'play', 'pause', stop' or ''.
+    # 'result' can be 'play', 'pause', 'stop' or ''.
     if not result:
         result = '' # to avoid None.encode() error
 
