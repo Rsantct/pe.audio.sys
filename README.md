@@ -36,6 +36,8 @@ Some *end user* and *user friendly* features has been added here.
 
 - A LCD (usb4all) shows current settings and metadata
 
+- IR daemon to use a remote
+
 
 ## room correction EQ
 
