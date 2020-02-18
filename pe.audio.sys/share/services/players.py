@@ -289,7 +289,6 @@ def mplayer_cmd(cmd, service):
         sp.Popen( f'echo "get_file_name" > {MAINFOLDER}/.cdda_fifo', shell=True )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
-        time.sleep(.5)
         for line in tmp[-2::-1]:
             if line.startswith('ANS_FILENAME='):
                 return True
@@ -317,12 +316,15 @@ def mplayer_cmd(cmd, service):
         elif cmd == 'rew':        cmd = 'seek -30 0'
         elif cmd == 'ff':         cmd = 'seek +30 0'
         elif cmd == 'next':       cmd = 'seek_chapter +1 0'
-        elif cmd == 'stop':       cmd = 'stop'
+        elif cmd == 'stop':
+            cmd = 'stop'
+            cdda_playing_status = 'stop'
 
         elif cmd == 'pause':
             cmd = 'pause'
-            cdda_playing_status =   {'play':'pause', 'pause':'play'
-                                    }[cdda_playing_status]
+            if cdda_playing_status in ('play', 'pause'):
+                cdda_playing_status =   {'play':'pause', 'pause':'play'
+                                        }[cdda_playing_status]
 
         elif cmd == 'play':
             cdda_playing_status = 'play'
@@ -333,6 +335,7 @@ def mplayer_cmd(cmd, service):
             cmd = f'loadfile \'cdda://1-100:1\''
 
         elif cmd.startswith('play_track_'):
+            cdda_playing_status = 'play'
             trackNum = cmd[11:]
             if trackNum.isdigit():
                 # Checks if a filename is loaded (i.e. if a disk is loaded to be played)
@@ -346,11 +349,11 @@ def mplayer_cmd(cmd, service):
                     tmp = f'echo "{tmp}" > {MAINFOLDER}/.{service}_fifo'
                     sp.Popen( tmp, shell=True)
                     # Waiting for the disk to be loaded:
-                    n = 0
-                    while n < 10:
+                    n = 10
+                    while n:
                         if a_file_is_loaded(): break
                         time.sleep(1)
-                        n += 1
+                        n -= 1
                 chapter = int(trackNum) -1
                 cmd = f'seek_chapter {str(chapter)} 1'
 
