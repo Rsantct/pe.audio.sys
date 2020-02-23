@@ -210,6 +210,9 @@ scripts:
     
     ## A Mplayer based CDDA player:
     #- CDDA.py
+ 
+    ## A daemon to autoplay a CD-Audio when inserted
+    #- autoplay_cdda.py
     
     ## librespot (a headless Spotify Connect player daemon)
     #- librespot.py
