@@ -55,7 +55,7 @@ def send_cmd(cmd):
     else:
         host, port = CTL_HOST, CTL_PORT
         svcName = 'pasysctrl'
-    print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
+    #print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
@@ -79,8 +79,8 @@ def check_for_CDDA(d):
         # $ cdinfo -a # will output: no_disc | data_disc | xx:xx.xx
         tmp = check_output( f'cdinfo -a -d {CDROM}'.split() ).decode().strip()
         if ':' in tmp:
-            autoplay_CDDA()
             print( f'({ME}) trying to play the CD Audio disk' )
+            autoplay_CDDA()
         elif 'no_disc' in tmp:
             print( f'({ME}) no disc' )
         elif 'data_disc' in tmp:
