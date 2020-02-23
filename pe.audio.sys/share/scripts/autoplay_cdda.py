@@ -54,7 +54,7 @@ def send_cmd(cmd):
         svcName = 'players'
     else:
         host, port = CTL_HOST, CTL_PORT
-        svcName = 'control'
+        svcName = 'pasysctrl'
     print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
     with socket.socket() as s:
         try:
@@ -71,7 +71,6 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        print( f'({ME}) trying to play the CD Audio' )
         send_cmd( 'input cd' )
         sleep(.5)
         send_cmd( 'players player_play' )
@@ -81,8 +80,11 @@ def check_for_CDDA(d):
         tmp = check_output( f'cdinfo -a -d {CDROM}'.split() ).decode().strip()
         if ':' in tmp:
             autoplay_CDDA()
+            print( f'({ME}) trying to play the CD Audio disk' )
         elif 'no_disc' in tmp:
             print( f'({ME}) no disc' )
+        elif 'data_disc' in tmp:
+            print( f'({ME}) data disc' )
     except:
         print( f'({ME}) This script needs \'cdtool\' (command line CDROM tool)' )
 
@@ -92,7 +94,7 @@ def main():
     umonitor = pyudev.Monitor.from_netlink(context)
     umonitor.filter_by(subsystem='block', device_type='disk')
     uobserver = pyudev.MonitorObserver( umonitor, callback=check_for_CDDA )
-    uobserver.daemon = False # if set False will lock the process when started.
+    uobserver.daemon = False # if set False will block the process when started.
     uobserver.start()
 
 if __name__ == '__main__':
@@ -124,3 +126,4 @@ if __name__ == '__main__':
             print(__doc__)
     else:
         print(__doc__)
+
