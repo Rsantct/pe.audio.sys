@@ -826,8 +826,12 @@ def do(task):
     # task: 'player_xxxxxxx'
     # Playback control. (i) Some commands need to be adequated later, depending on the player,
     # e.g. Mplayer does not understand 'previous', 'next' ...
-    elif task[7:] in ('eject', 'state', 'stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff'):
+    elif task[7:] in ('state', 'stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff'):
         return player_control( task[7:] )
+
+    # task: 'player_eject' unconditionally ejects the CD tray
+    elif task[7:] == 'eject':
+        return mplayer_cmd('eject', 'cdda')
 
     # task: 'player_play_track_NN'
     # Special command for disk playback control
