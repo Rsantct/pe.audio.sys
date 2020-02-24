@@ -12,7 +12,7 @@ antibound:  .5
 
 #-------------------------- Remote to be used from dictionary below
 
-remote:     AppleRemote
+remote:     Onkyo_RC-113T
 
 #-------------------------- Remotes dictionary table
 
@@ -40,25 +40,25 @@ remotes:
             00 2d 6d 2d 69 2d 6b 6d ff: loudness_ref 6                  #  3
             00 2d 6d 2d b9 39 69 6d ff: loudness_ref 9                  #  4
 
-            00 2d 6d 2d 29 2b 3b bb ff: aux run_macro 1_RNE             #  5
-            00 2d 6d 2d 39 3b b9 b9 fb: aux run_macro 2_R.Clasica       #  6
-            00 2d 6d 2d 69 3b ad b9 fb: aux run_macro 3_Radio_3         #  7
-            00 2d 6d 2d 39 2b 2d bb ff: players player_eject            #  8
+            00 2d 6d 2d 29 2b 3b bb ff: loudness_track on               #  5
+            00 2d 6d 2d 39 3b b9 b9 fb: loudness_track off              #  6
+            00 2d 6d 2d 69 3b ad b9 fb:                                 #  7
+            00 2d 6d 2d 39 2b 2d bb ff:                                 #  8
 
-            00 2d 6d 2d 69 2b 2b bb ff:                                 #  9
-            00 2d 6d 2d b9 3b 29 bb fb:                                 # 10
-            00 2d 6d 2d 29 6b bb 6b fb:                                 # 11
+            00 2d 6d 2d 69 2b 2b bb ff: aux run_macro 1_RNE             #  9
+            00 2d 6d 2d b9 3b 29 bb fb: aux run_macro 2_R.Clasica       # 10
+            00 2d 6d 2d 29 6b bb 6b fb: aux run_macro 3_Radio_3         # 11
             00 2d 6d 2d 39 ad b9 6b fb:                                 # 12
 
             00 2d 6d 2d 69 ad ad 6b fb:                                 # 13
-            00 2d 6d 2d b9 39 69 ad ff:                                 # 14
-            00 2d 6d 2d a9 ad 6d 6b fb:                                 # 15
+            00 2d 6d 2d b9 39 69 ad ff: aux run_macro 7_Dyns-dipojorns  # 14
+            00 2d 6d 2d a9 ad 6d 6b fb: aux run_macro 8_Trigon-On-Off   # 15
             00 2d 6d 2d 39 ad 39 ad ff: aux run_macro 9_Power-OFF       # 16
             00 2d 6d 2d 69 ad 2d ad ff: players player_pause            # 17
 
             00 2d 6d 2d b9 6b 2b 6b ff:                                 # 18
             00 2d 6d 2d 29 6b bb 39 ff:                                 # 19
-            00 2d 6d 2d 39 3b b9 39 ff:                                 # 20
+            00 2d 6d 2d 39 3b b9 39 ff: players player_eject            # 20
 
             00 2d 6d 2d 29 2b bb 6d ff: players player_play             # ps
             00 2d 6d 2d 39 29 bb bb ff: players player_previous         # <p
