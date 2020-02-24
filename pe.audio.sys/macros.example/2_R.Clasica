@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# DVB-T
+#$HOME/pe.audio.sys/share/scripts/DVB-T.py preset 2
+#sleep .5 # because retuning takes a bit
+#echo "input tdt" | nc -N localhost 9989
+
+# Internet
+$HOME/pe.audio.sys/share/scripts/istreams.py preset 2
+sleep .5 # because retuning takes a bite
+echo "input istreams" | nc -N localhost 9989
+
+# Radio Clasica uses to have a standard loudness
+# config.yml.on_change_input or source settings will restore if desired
+echo "loudness_ref 0" | nc -N localhost 9989
