@@ -71,6 +71,8 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
+        send_cmd( 'players player_pause' )
+        sleep(.5)
         send_cmd( 'input cd' )
         sleep(.5)
         send_cmd( 'players player_play' )
