@@ -44,7 +44,7 @@ UHOME = os.path.expanduser("~")
 BDIR  = f'{UHOME}/pe.audio.sys'
 
 with open( f'{BDIR}/config.yml', 'r' ) as f:
-    CONFIG = yaml.load(f)
+    CONFIG = yaml.safe_load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
 LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
 
