@@ -27,7 +27,6 @@
 
 
 from core import Preamp, Convolver, save_yaml, STATE_PATH
-import yaml
 from os.path import expanduser
 UHOME = expanduser("~")
 
