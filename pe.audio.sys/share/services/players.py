@@ -784,7 +784,7 @@ def get_source():
 def get_state():
     """ returns the YAML state info """
     with open( MAINFOLDER + '/.state.yml', 'r') as f:
-        return yaml.load(f)
+        return yaml.safe_load(f)
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
