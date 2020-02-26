@@ -44,7 +44,7 @@ from pythonosc.udp_client import SimpleUDPClient
 
 def start_brutefir():
     with open( f'{UHOME}/pe.audio.sys/config.yml', 'r' ) as f:
-        CONFIG = yaml.load(f)
+        CONFIG = yaml.safe_load(f)
     LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
     chdir( LSPK_FOLDER )
     Popen( 'brutefir brutefir_config'.split() )
