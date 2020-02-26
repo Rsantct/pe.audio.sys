@@ -170,7 +170,7 @@ def beeps():
 def get_control_port():
     
     with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        config = yaml.load(f)
+        config = yaml.safe_load(f)
     return str( config['services_addressing']['pasysctrl_port'] )
 
 def main_loop(alertdB=alertdB, beep=beep):
