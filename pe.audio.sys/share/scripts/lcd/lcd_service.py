@@ -63,7 +63,7 @@ f = open( f'{UHOME}/pe.audio.sys/share/scripts/lcd/lcd.yml', 'r' )
 tmp = f.read()
 f.close()
 try:
-    LCD_CONFIG = yaml.load(tmp)
+    LCD_CONFIG = yaml.safe_load(tmp)
 except:
     print ( 'YAML error reading lcd.yml' )
 
@@ -236,7 +236,7 @@ def update_state():
             LEVEL_OLD = data['level']
 
     with open(STATE_file, 'r') as f:
-        state = yaml.load(f)
+        state = yaml.safe_load(f)
         # avoid updating when some times can be read an empty file:
         if state:
             show_state( state )

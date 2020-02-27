@@ -26,6 +26,11 @@ SRV_ADDR=$( grep "$svc"_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
 SRV_PORT=$( grep "$svc"_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
 
+if [[ ! $SRV_ADDR ]]; then
+    echo unknown \'$svc\'
+    exit -1
+fi
+
 # Launching again the service.
 # (i) It is IMPORTANT to redirect stdout & stderr to keep it 
 # alive even if the launcher session has been closed (e.g. a crontab job)

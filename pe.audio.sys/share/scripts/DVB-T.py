@@ -107,7 +107,7 @@ if __name__ == '__main__':
     ### Reading the DVB-T config file
     try:
         with open(f'{UHOME}/pe.audio.sys/DVB-T.yml', 'r') as f:
-            DVB_config = yaml.load(f)
+            DVB_config = yaml.safe_load(f)
     except:
         print ( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
         sys.exit()

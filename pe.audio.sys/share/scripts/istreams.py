@@ -114,7 +114,7 @@ if __name__ == '__main__':
     ### Reading the stations presets file
     try:
         with open(f'{UHOME}/pe.audio.sys/istreams.yml', 'r') as f:
-            presets = yaml.load(f)
+            presets = yaml.safe_load(f)
     except:
         print ( '(istreams.py) ERROR reading \'pe.audio.sys/istream.yml\'' )
         sys.exit()

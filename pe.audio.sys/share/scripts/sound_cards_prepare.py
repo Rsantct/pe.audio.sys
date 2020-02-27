@@ -77,7 +77,7 @@ def get_pulse_cards():
 def get_config_yml_cards():
     cards = []
     with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        CONFIG = yaml.load( f )
+        CONFIG = yaml.safe_load( f )
 
     cards.append( CONFIG["system_card"] )
 

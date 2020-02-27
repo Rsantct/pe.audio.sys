@@ -37,7 +37,7 @@ def set_flat_EQ():
 
 def restore_EQ():
     with open(f'{UHOME}/pe.audio.sys/.state.yml.lineOut','r') as f:
-        st = yaml.load(f)
+        st = yaml.safe_load(f)
     ctrl = 'peaudiosys_control'
     with open('/dev/null','w') as fnull:
         Popen( f'{ctrl} bass           {str(st["bass"])}     '.split(),

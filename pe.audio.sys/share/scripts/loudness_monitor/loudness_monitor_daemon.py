@@ -123,7 +123,7 @@ class Changed_files_handler(FileSystemEventHandler):
         # If the pre.di.c STATE file has changed
         if STATEPATH in path:
             with open( STATEPATH, 'r' ) as status_file:
-                state = yaml.load(status_file)
+                state = yaml.safe_load(status_file)
                 current_input = state['input']
                 if last_input != current_input:
                     last_input = current_input
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     # - or if pre.di.c input changes.
     reset = False
     with open( STATEPATH, 'r' ) as state_file:
-        last_input = yaml.load(state_file)['input']
+        last_input = yaml.safe_load(state_file)['input']
 
     # Starts a WATCHDOG to see if pre.di.c/* files changes
     # in order to reset (I) if <input> has changed.

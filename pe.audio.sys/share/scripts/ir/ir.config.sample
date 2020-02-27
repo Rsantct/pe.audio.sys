@@ -79,12 +79,12 @@ remotes:
         EOPtolerance:                       3
         maxVariance:                        2
         keymap:
-            00 b6 b7 db b3 97 9b 9b 00 ff:                          # prev
-            00 b6 b7 db b3 9b da d3 ff:                             # next
+            00 b6 b7 db b3 97 9b 9b 00 ff:  players player_previous # prev
+            00 b6 b7 db b3 9b da d3 ff:     players player_next     # next
             00 b7 b6 db b3 b3 db d3 ff:     level +3 add            # vol+
             00 b7 b7 db b2 b7 db d3 ff:     level -3 add            # vol-
-            00 b6 b7 db b3 93 9b 9b 00 ff:  mute toggle             # play_pause
-            00 b7 b7 db b3 93 b3 f3 00 ff:  aux amp_switch toggle   # menu
+            00 b6 b7 db b3 93 9b 9b 00 ff:  players player_pause    # play_pause
+            00 b7 b7 db b3 93 b3 f3 00 ff:  mute toggle             # menu
 
 
     # This sends kind of variable lenght.

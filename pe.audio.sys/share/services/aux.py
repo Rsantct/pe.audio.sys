@@ -41,7 +41,7 @@ LOUD_MON_CTRL = f'{MAIN_FOLDER}/.loudness_control'
 LOUD_MON_VAL  = f'{MAIN_FOLDER}/.loudness_monitor'
 
 with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
-    CFG = yaml.load( f )
+    CFG = yaml.safe_load( f )
 try:
     AMP_MANAGER =  CFG['aux']['amp_manager']
 except:
@@ -50,7 +50,7 @@ except:
 
 try:
     with open( f'{MAIN_FOLDER}/web.yml' , 'r' ) as f:
-        WEBCONFIG = yaml.load( f )
+        WEBCONFIG = yaml.safe_load( f )
 except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
 

@@ -191,7 +191,7 @@ if __name__ == "__main__":
     # pe.audio.sys services addressing
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            A = yaml.load(f)['services_addressing']
+            A = yaml.safe_load(f)['services_addressing']
             CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
             AUX_HOST, AUX_PORT = A['aux_address'], A['aux_port']
             PLY_HOST, PLY_PORT = A['players_address'], A['players_port']
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     # IR config file
     try:
         with open(f'{THISPATH}/ir.config', 'r') as f:
-            IRCFG = yaml.load(f)
+            IRCFG = yaml.safe_load(f)
             antibound   = IRCFG['antibound']
             REMCFG      = IRCFG['remotes'][ IRCFG['remote'] ]
             keymap      = REMCFG['keymap']

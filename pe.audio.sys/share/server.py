@@ -159,7 +159,7 @@ if __name__ == "__main__":
     UHOME = os.path.expanduser("~")
     THISPATH = os.path.dirname(os.path.abspath(__file__))
     with open(f'{THISPATH}/server.yml', 'r') as f:
-        config = yaml.load(f)
+        config = yaml.safe_load(f)
     for path in config['paths']:
         sys.path.append( f'{UHOME}/{path}' )
 

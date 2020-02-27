@@ -42,13 +42,13 @@ from time import sleep
 def read_yaml(filepath):
     """ Returns a dictionary from an YAML file """
     with open(filepath) as f:
-        d = yaml.load(f)
+        d = yaml.safe_load(f)
     return d
 
 def save_yaml(dic, filepath):
     """ Save a dict to disk """
     with open( filepath, 'w' ) as f:
-        yaml.dump( dic, f, default_flow_style=False )
+        yaml.safe_dump( dic, f, default_flow_style=False )
 
 def find_target_sets():
     """ Returns the uniques target filenames w/o the suffix _mag.dat or _pha.dat,
@@ -588,7 +588,7 @@ class Preamp(object):
     # will include two arguments for any function call, even when not necessary.
 
     def get_state(self, *dummy):
-        #return yaml.dump( self.state, default_flow_style=False )
+        #return yaml.safe_dump( self.state, default_flow_style=False )
         self.state['convolver_runs'] = brutefir_runs()      # informative value
         return json.dumps( self.state )
 
@@ -701,7 +701,7 @@ class Preamp(object):
         return 'done'
 
     def get_eq(self, *dummy):
-        return yaml.dump( bf_read_eq(), default_flow_style=False )
+        return yaml.safe_dump( bf_read_eq(), default_flow_style=False )
 
     def select_source(self, value, *dummy):
         """ this is the source selector """
