@@ -365,6 +365,7 @@ def mplayer_cmd(cmd, service):
 
         elif cmd.startswith('play_track_'):
             cdda_playing_status = 'play'
+            control_cmd('mute off')
             trackNum = cmd[11:]
             if trackNum.isdigit():
                 # Checks if a filename is loaded (i.e. if a disk is loaded to be played)
