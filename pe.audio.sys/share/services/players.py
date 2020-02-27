@@ -38,9 +38,19 @@ import yaml
 import mpd
 import time
 import json
+from socket import socket
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+
+## pe.audio.sys services addressing
+try:
+    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+        A = yaml.safe_load(f)['services_addressing']
+        CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
+except:
+    print('ERROR with \'pe.audio.sys/config.yml\'')
+    exit()
 
 ## CDDA settings
 # cdrom device to use from .mplayer/config
@@ -100,6 +110,18 @@ try:
     SPOTIFY_CLIENT = 'librespot'
 except:
     pass
+
+# Auxiliary to talk to the main pe.audio.sys control service
+def control_cmd(cmd):
+    host, port = CTL_HOST, CTL_PORT
+    with socket() as s:
+        try:
+            s.connect( (host, port) )
+            s.send( cmd.encode() )
+            s.close()
+        except:
+            print (f'(players.py) service \'pasysctrl\' socket error on port {port}')
+    return
 
 # MPD control, status and metadata
 def mpd_client(query):
@@ -320,14 +342,21 @@ def mplayer_cmd(cmd, service):
             cmd = 'stop'
             cdda_playing_status = 'stop'
 
+        # (i) Because of mplayer cdda pausing becomes on strange behavior,
+        #     there is a kind of sttuter brief audio, we will MUTE the preamp.
         elif cmd == 'pause':
             cmd = 'pause'
             if cdda_playing_status in ('play', 'pause'):
                 cdda_playing_status =   {'play':'pause', 'pause':'play'
                                         }[cdda_playing_status]
-
+                if cdda_playing_status == 'pause':
+                    control_cmd('mute on')
+                elif cdda_playing_status == 'play':
+                    control_cmd('mute off')
+                    
         elif cmd == 'play':
             cdda_playing_status = 'play'
+            control_cmd('mute off')
             # save disk info into a json file
             save_cd_info()
             # flushing the mplayer events file
@@ -817,7 +846,7 @@ def do(task):
 
     # First clearing the taksk phrase
     task = task.strip()
-
+    
     # task: 'player_get_meta'
     # Tasks querying the current music player.
     if   task == 'player_get_meta':
