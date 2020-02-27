@@ -202,7 +202,7 @@ if __name__ == "__main__":
     # IR config file
     try:
         with open(f'{THISPATH}/ir.config', 'r') as f:
-            IRCFG = yaml.load(f)
+            IRCFG = yaml.safe_load(f)
             antibound   = IRCFG['antibound']
             REMCFG      = IRCFG['remotes'][ IRCFG['remote'] ]
             keymap      = REMCFG['keymap']
