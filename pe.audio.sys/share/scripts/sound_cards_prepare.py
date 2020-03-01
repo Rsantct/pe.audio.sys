@@ -44,7 +44,7 @@
     Prepare your alsamixer settings for MYCARD, then execute the following:
 
         alsactl -f ~/pe.audio.sys/.asound.MYCARD store MYCARD
-    
+
 """
 import os, sys
 import subprocess as sp
@@ -53,7 +53,9 @@ import yaml
 def get_pulse_cards():
     pa_cards = {}
     try:
-        tmp = sp.check_output( 'pactl list cards'.split() ).decode().split('\n')
+        tmp = sp.check_output( 'export LANG=en_US.UTF-8 && pactl list cards',
+                                shell=True ).decode().split('\n')
+        print (tmp)
         new_card = False
         for line in tmp:
 
@@ -107,7 +109,7 @@ if __name__ == "__main__":
 
     pa_cards        = get_pulse_cards()
     config_cards    = get_config_yml_cards()
-    
+
     # Release cards from pulseaudio
     if pa_cards:
         for pa_card in pa_cards:
@@ -131,4 +133,4 @@ if __name__ == "__main__":
         except:
             print(  f'(sound_cards_prepare) PROBLEMS restoring alsa: '
                     f'\'{bareCardName}\'' )
-    
+
