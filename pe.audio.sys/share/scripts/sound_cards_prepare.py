@@ -55,7 +55,6 @@ def get_pulse_cards():
     try:
         tmp = sp.check_output( 'export LANG=en_US.UTF-8 && pactl list cards',
                                 shell=True ).decode().split('\n')
-        print (tmp)
         new_card = False
         for line in tmp:
 
