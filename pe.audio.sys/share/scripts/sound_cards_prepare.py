@@ -107,14 +107,13 @@ if __name__ == "__main__":
 
     pa_cards        = get_pulse_cards()
     config_cards    = get_config_yml_cards()
-
+    
     # Release cards from pulseaudio
     if pa_cards:
         for pa_card in pa_cards:
             for config_card in config_cards:
-                #print (config_card, pa_cards[pa_card]["alsa_name"],
-                #       pa_cards[pa_card]["pa_name"])
-                if pa_cards[pa_card]["alsa_name"] in config_card:
+                if config_card.replace('hw:','').split(',')[0] in \
+                   pa_cards[pa_card]["alsa_name"]:
                         PA_release_card( pa_cards[pa_card]["pa_name"] )
 
 
