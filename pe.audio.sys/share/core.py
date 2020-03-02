@@ -90,8 +90,13 @@ def get_eq_curve(curv, state):
         index_min   = 0
         index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
         index_flat  = LOUD_FLAT_CURVE_INDEX
+        
+        try:
+            loud_ceil = CONFIG['loud_ceil']
+        except:
+            loud_ceil = 0.0
 
-        if state['loudness_track'] and ( state['level'] <= CONFIG['loud_ceil'] ):
+        if state['loudness_track'] and ( state['level'] <= loud_ceil ):
             index = index_flat - state['level']
         else:
             index = index_flat
