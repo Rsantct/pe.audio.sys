@@ -52,7 +52,7 @@ Don't worry about the --backend option because by default will use Rodio that wo
  
  There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
 
-## CDDA fails to display metadata info under the control web page
+## The control web page fails to display metadata info for CDs 
 
 You need to install the **`cdcd`** tool, then run once from command line to configure it:
 
