@@ -46,7 +46,7 @@ If you want a headless system, your friend is **`librespot`** https://github.com
     sudo apt install cargo
     cargo install librespot  # This will take a long while to compile
     
-Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA, Pulseaudio, Coreaudio, as needed.
+Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA or Coreaudio, as needed.
     
  #### Raspberry Pi
  
