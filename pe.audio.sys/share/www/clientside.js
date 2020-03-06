@@ -92,12 +92,21 @@ function page_initiate(){
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
-    // Show or hide the macro buttons
-    const hide_mbuttons = web_config.at_startup.hide_macro_buttons;
-    if ( hide_mbuttons ){
+    // Shows or hides the macro buttons
+    const hide_mbuttons = web_config.hide_macro_buttons;
+    if ( hide_mbuttons == true ){
         document.getElementById("macro_buttons").style.display = 'none';
     }else{
         document.getElementById("macro_buttons").style.display = 'inline-table';
+    }
+    // Shows or hides the LU offset slider and the LU monitor bar
+    const hide_LU= web_config.hide_LU;
+    if ( hide_LU == true ){
+        document.getElementById("LU_offset").style.display = 'none';
+        document.getElementById("LU_monitor").style.display = 'none';
+    }else{
+        document.getElementById("LU_offset").style.display = 'block';
+        document.getElementById("LU_monitor").style.display = 'block';
     }
     // Updates the title of the reboot button as per the web_config dict
     document.getElementById("reboot_switch").title = 'RESTART: ' +
@@ -371,32 +380,32 @@ function update_player_info() {
             d = metablank;
         }
 
-        if (d['bitrate']) { 
+        if (d['bitrate']) {
             document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
         } else {
             document.getElementById("bitrate").innerText = "-\nkbps"
         }
-        if (d['artist']) {                               
+        if (d['artist']) {
             document.getElementById("artist").innerText  = d['artist'];
         } else {
             document.getElementById("artist").innerText = "-"
         }
-        if (d['track_num']) {                               
+        if (d['track_num']) {
             document.getElementById("track").innerText   = d['track_num'];
         } else {
             document.getElementById("track").innerText = "-"
         }
-        if (d['time_pos']) {                               
+        if (d['time_pos']) {
             document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
         } else {
             document.getElementById("time").innerText = "-"
         }
-        if (d['album']) {                               
+        if (d['album']) {
             document.getElementById("album").innerText   = d['album'];
         } else {
             document.getElementById("album").innerText = "-"
         }
-        if (d['title']) {                               
+        if (d['title']) {
             document.getElementById("title").innerText   = d['title'];
         } else {
             document.getElementById("title").innerText = "-"
