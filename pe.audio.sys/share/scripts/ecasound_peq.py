@@ -21,9 +21,9 @@
     'fil' plugin is an excellent 4-band parametric eq from Fons Adriaensen,
     for more info see:
         http://kokkinizita.linuxaudio.org/
-    
+
     Options:  start | stop
-        
+
     Notes:  You need to define the xxxxxx.ecs to load at the belonging
             script line under config.yml, e.g:
 
@@ -31,7 +31,7 @@
                 - ecasound_peq.py: xxxxxx.ecs
                 ...
                 ...
-                
+
             The xxxxxx.ecs file must be available under the 'share/eq' folder.
 """
 import subprocess as sp
@@ -46,13 +46,13 @@ def init_ecasound():
 
     # Info
     print( f'(ecasound_peq_dipojorns) Loading: \'{ECSFILE}\'' )
-    
+
     # Launching ecasound
     ecsCmd = f'-q --server -s:{EQFOLDER}/{ECSFILE}'
     sp.Popen( f'ecasound {ecsCmd}'.split() )
     sleep(3)
-    
-    # Inserting:
+
+    # Inserting (quietly):
     with open('/dev/null', 'w') as fnull:
         sp.Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split(),
                     stdout=fnull, stderr=fnull )
@@ -71,7 +71,7 @@ def init_ecasound():
 def stop():
     sp.Popen( f'pkill -f {ECSFILE}'.split() )
     sleep(1)
-    # Restoring:
+    # Restoring preamp and Brutefir connections:
     with open('/dev/null', 'w') as fnull:
         sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split(),
                     stdout=fnull, stderr=fnull )
@@ -79,7 +79,7 @@ def stop():
                     stdout=fnull, stderr=fnull )
 
 if __name__ == '__main__':
-    
+
     try:
         with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
             config = yaml.safe_load(f)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     except:
         print(  f'(ecasound_peq) unable to read your .ecs file from config.yml' )
         sys.exit()
-    
+
     if sys.argv[1:]:
         option = sys.argv[1]
         if option == 'start':
