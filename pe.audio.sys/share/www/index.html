@@ -246,7 +246,7 @@
 
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
-                <button type="button" id="buttonLoud" 
+                <button type="button" id="buttonLoud"
                         title="Loudness Contour" onmousedown="loudness_toggle()">LC</button>
             </td>
 
@@ -254,14 +254,14 @@
             <td id="input"     rowspan="2">
                 <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901</button>
                 <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
-                <select id="inputsSelector" 
+                <select id="inputsSelector"
                         title="Source Selector" onchange="control_cmd('input ' + this.value, update=false)" ></select>
             </td>
         </tr>
         <tr>
             <!-- MONO / STEREO control -->
             <td id="MonoInfo">
-                <button type="button" id="buttonMono" 
+                <button type="button" id="buttonMono"
                         title="Mono/Stereo" onmousedown="mono_toggle()">M</button>
             </td>
         </tr>
@@ -309,7 +309,7 @@
         </tr>
         </table>
     </div>
-    <div style="display:block" >
+    <div id="LU_offset" style="display:block" >
     <table>
         <!-- LU REFERENCE OFFSET ADJUST -->
         <tr>
@@ -329,11 +329,11 @@
     <div id="advanced_controls" align="center" style="display:none; font-size:0.75em;">
 
     <!-- LU MONITOR -->
-    <div style="display:block" >
+    <div id="LU_monitor" style="display:block" >
     <table>
         <tr>
             <td id="LU_meter_label">
-                <button type="button" id="buttonLoudMonReset" 
+                <button type="button" id="buttonLoudMonReset"
                         onmousedown="control_cmd('aux loudness_monitor_reset')" >reset</button>
                 &nbsp;LU monitor:
             </td>
