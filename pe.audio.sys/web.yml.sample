@@ -7,8 +7,11 @@
 reboot_button_action: peaudiosys_restart.sh
 
 
-#-------------------------  STARTUP BEHAVIOR  ----------------------------------
-at_startup:
+#--------------------------  PAGE APPEARANCE  ----------------------------------
 
-    hide_macro_buttons: false
+# Hides user's macro buttons at startup
+hide_macro_buttons: false
+
+# Hides the LU offset slider and the LU monitor bar
+hide_LU: false
 
