@@ -428,6 +428,12 @@ function play_url() {
 }
 
 //////// AUX SERVER FUNCTIONS ////////
+// Restart procedure
+function audio_restart() {
+    control_cmd('aux restart');
+    advanced_controls = false;
+    page_update();
+}    
 // Switch the amplifier
 function ampli(mode) {
     control_cmd( 'aux amp_switch ' + mode );
