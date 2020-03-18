@@ -88,27 +88,35 @@ def process( cmd, arg ):
 
     # Amplifier switching
     if cmd == 'amp_switch':
-        if arg in ('on','off'):
-            print( f'(aux) {AMP_MANAGER.split("/")[-1]} {arg}' )
-            Popen( f'{AMP_MANAGER} {arg}'.split(), shell=False )
-        elif arg == 'toggle':
-            currSt = check_output(AMP_MANAGER).decode().strip()
-            if currSt.lower() in ('0','off','no'):
-                newSt = 'on'
+
+        # current switch state
+        try:
+            with open( f'{UHOME}/.amplifier', 'r') as f:
+                tmp =  f.read().strip()
+            if tmp.lower() in ('0','off'):
+                curr_sta = 'off'
+            elif tmp.lower() in ('1','on'):
+                curr_sta = 'on'
             else:
-                newSt = 'off'
-            print( f'(aux) {AMP_MANAGER.split("/")[-1]} {arg}' )
-            Popen( f'{AMP_MANAGER} {newSt}'.split(), shell=False )
-        elif arg == 'state':
-            try:
-                with open( f'{UHOME}/.amplifier', 'r') as f:
-                    tmp =  f.read().strip()
-                if tmp.lower() in ('0','off'):
-                    result = 'off'
-                elif tmp.lower() in ('1','on'):
-                    result = 'on'
-            except:
-                return '-'
+                curr_sta = '-'
+                raise
+        except:
+            print( f'(aux) UNKNOWN status at \'~/.amplifier\'' )
+
+        if arg == 'state':
+            return curr_sta
+
+        if arg == 'toggle':
+            # if unknown state, this switch defaults to 'on'
+            new_sta = {'on':'off', 'off':'on'}.get(curr_sta, 'on')
+
+        if arg in ('on','off'):
+            new_sta = arg
+
+        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
+        Popen( f'{AMP_MANAGER} {new_sta}'.split(), shell=False )
+        return new_sta
+
 
     # List of macros under macros/ folder
     elif cmd == 'get_macros':
