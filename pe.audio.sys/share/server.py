@@ -89,9 +89,14 @@ def run_server(host, port, verbose=False):
 
         # A buffer loop to proccess received data
         while True:
-            # Reception of 1024
-            data = conn.recv(1024).decode()
-
+            try:
+                # Reception of 1024
+                data = conn.recv(1024).decode()
+                if verbose:
+                    print (f'(server.py [{service}]) ERROR receiving from client' )
+            except:
+                continue
+                
             if verbose:
                 print  ('>>> ' + data )
 
