@@ -72,8 +72,8 @@ MPD_HOST    = 'localhost'
 MPD_PORT    = 6600
 MPD_PASSWD  = None
 
-## METADATA GENERIC TEMPLATE for pe.audio.sys clients, e.g. the control web page:
-# (!) Remember to use copies of this ;-)
+## METADATA GENERIC TEMPLATE to serve to clients as the control web page.
+#  (!) remember to use copies of this ;-)
 METATEMPLATE = {
     'player':       '',
     'time_pos':     '',
@@ -119,6 +119,7 @@ def control_cmd(cmd):
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
+            print (f'(players.py) sending \'{cmd }\' to \'pasysctrl\'')
         except:
             print (f'(players.py) service \'pasysctrl\' socket error on port {port}')
     return
@@ -342,50 +343,54 @@ def mplayer_cmd(cmd, service):
             cmd = 'stop'
             cdda_playing_status = 'stop'
 
-        # (i) Because of mplayer cdda pausing becomes on strange behavior,
-        #     there is a kind of sttuter brief audio, we will MUTE the preamp.
-        elif cmd == 'pause':
+        elif cmd == 'pause' or (cmd == 'play' and
+                                cdda_playing_status == 'pause'):
             cmd = 'pause'
             if cdda_playing_status in ('play', 'pause'):
                 cdda_playing_status =   {'play':'pause', 'pause':'play'
                                         }[cdda_playing_status]
+                # (i) Because of mplayer cdda pausing becomes on
+                #     strange behavior (there is a kind of brief sttuter 
+                #     with audio), then we will MUTE the preamp.
                 if cdda_playing_status == 'pause':
                     control_cmd('mute on')
                 elif cdda_playing_status == 'play':
                     control_cmd('mute off')
-                    
-        elif cmd == 'play':
-            cdda_playing_status = 'play'
-            control_cmd('mute off')
-            # save disk info into a json file
-            save_cd_info()
-            # flushing the mplayer events file
-            sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
-            cmd = f'loadfile \'cdda://1-100:1\''
 
-        elif cmd.startswith('play_track_'):
+        elif cmd.startswith('play'):
+
+            # Prepare to play if a disk is not loaded into Mplayer
+            if not a_file_is_loaded():
+                control_cmd('mute on')
+                print( f'(players.py) loading disk ...' )
+                # Save disk info into a json file
+                save_cd_info()
+                # Flushing the mplayer events file
+                sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
+                # Loading the disk but pausing
+                tmp = f'pausing loadfile \'cdda://1-100:1\''
+                tmp = f'echo "{tmp}" > {MAINFOLDER}/.{service}_fifo'
+                sp.Popen( tmp, shell=True)
+                # Waiting for the disk to be loaded:
+                n = 10
+                while n:
+                    if a_file_is_loaded(): break
+                    time.sleep(1)
+                    n -= 1
+
+            # Retrieving the current track 
+            curr_track = 1
+            if cdda_playing_status in ('play', 'pause'):
+                curr_track = json.loads( cdda_meta() )['track_num'].split()[0]
+
+            if cmd.startswith('play_track_'):
+                curr_track = cmd[11:]
+                if not curr_track.isdigit():
+                    return
+
+            chapter = int(curr_track) -1
+            cmd = f'seek_chapter {str(chapter)} 1'
             cdda_playing_status = 'play'
-            control_cmd('mute off')
-            trackNum = cmd[11:]
-            if trackNum.isdigit():
-                # Checks if a filename is loaded (i.e. if a disk is loaded to be played)
-                if not a_file_is_loaded():
-                    # save disk info into a json file
-                    save_cd_info()
-                    # flushing the mplayer events file
-                    sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
-                    # Loading the disk but pausing
-                    tmp = f'pausing loadfile \'cdda://1-100:1\''
-                    tmp = f'echo "{tmp}" > {MAINFOLDER}/.{service}_fifo'
-                    sp.Popen( tmp, shell=True)
-                    # Waiting for the disk to be loaded:
-                    n = 10
-                    while n:
-                        if a_file_is_loaded(): break
-                        time.sleep(1)
-                        n -= 1
-                chapter = int(trackNum) -1
-                cmd = f'seek_chapter {str(chapter)} 1'
 
         elif cmd == 'eject':
             cmd = 'stop'
@@ -395,17 +400,22 @@ def mplayer_cmd(cmd, service):
         print( f'(players.py) unknown Mplayer service \'{service}\'' )
         return
 
-    # sending the command to the corresponding fifo
+    # Sending the command to the corresponding fifo
     tmp = f'echo "{cmd}" > {MAINFOLDER}/.{service}_fifo'
-    #print(tmp) # debug
     sp.Popen( tmp, shell=True)
 
-    if cmd == 'stop' and service == 'cdda':
-        # clearing cdda_events in order to forget last track
-        try:
-            sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
-        except:
-            pass
+    if service == 'cdda':
+        if cmd == 'stop':
+            # clearing cdda_events in order to forget last track
+            try:
+                sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
+            except:
+                pass
+        elif 'seek_chapter' in cmd:
+            # This delay avoids audio stutter because of above pausing,
+            # done when preparing (loading) traks into Mplayer
+            time.sleep(.5)
+            control_cmd('mute off')
 
     if eject_disk:
         sp.Popen( f'eject {CDROM_DEVICE}'.split() )
@@ -847,7 +857,7 @@ def do(task):
 
     # First clearing the taksk phrase
     task = task.strip()
-    
+
     # task: 'player_get_meta'
     # Tasks querying the current music player.
     if   task == 'player_get_meta':
