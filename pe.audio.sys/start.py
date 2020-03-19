@@ -61,8 +61,7 @@ def start_jackd():
                             '$system_card', CONFIG["system_card"] )
 
     tmplist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
-              f'{jack_backend_options}'.split() + \
-              '>/dev/null 2>&1'.split()
+              f'{jack_backend_options}'.split()
     #print( ' '.join(tmplist) ) ; sys.exit() # DEBUG
 
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
@@ -102,10 +101,6 @@ def get_services():
     return services
 
 def restart_service( service, onlystop=False, todevnull=False ):
-    # (i)   devnull forces to use /dev/null in order to
-    #       release the service from a session stdot/stderr,
-    #       i.e. the service will keep alive even if this program dead.
-
     try:
         address = CONFIG["services_addressing"][f"{service}_address"]
         port =    CONFIG["services_addressing"][f"{service}_port"]
