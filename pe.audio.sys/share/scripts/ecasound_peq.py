@@ -21,9 +21,9 @@
     'fil' plugin is an excellent 4-band parametric eq from Fons Adriaensen,
     for more info see:
         http://kokkinizita.linuxaudio.org/
-
+    
     Options:  start | stop
-
+        
     Notes:  You need to define the xxxxxx.ecs to load at the belonging
             script line under config.yml, e.g:
 
@@ -31,7 +31,7 @@
                 - ecasound_peq.py: xxxxxx.ecs
                 ...
                 ...
-
+                
             The xxxxxx.ecs file must be available under the 'share/eq' folder.
 """
 import subprocess as sp
@@ -45,41 +45,33 @@ EQFOLDER    = f'{UHOME}/pe.audio.sys/share/eq'
 def init_ecasound():
 
     # Info
-    print( f'(ecasound_peq_dipojorns) Loading: \'{ECSFILE}\'' )
-
+    print( f'(ecasound_peq) Loading: \'{ECSFILE}\'' )
+    
     # Launching ecasound
     ecsCmd = f'-q --server -s:{EQFOLDER}/{ECSFILE}'
     sp.Popen( f'ecasound {ecsCmd}'.split() )
     sleep(3)
-
-    # Inserting (quietly):
-    with open('/dev/null', 'w') as fnull:
-        sp.Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split(),
-                    stdout=fnull, stderr=fnull )
-        sp.Popen( 'jack_disconnect pre_in_loop:output_2 brutefir:in.R'.split(),
-                    stdout=fnull, stderr=fnull )
-        sp.Popen( 'jack_connect    pre_in_loop:output_1 ecasound:in_1'.split(),
-                    stdout=fnull, stderr=fnull )
-        sp.Popen( 'jack_connect    pre_in_loop:output_2 ecasound:in_2'.split(),
-                    stdout=fnull, stderr=fnull )
-        sp.Popen( 'jack_connect    ecasound:out_1       brutefir:in.L'.split(),
-                    stdout=fnull, stderr=fnull )
-        sp.Popen( 'jack_connect    ecasound:out_2       brutefir:in.R'.split(),
-                    stdout=fnull, stderr=fnull )
+    
+    # Inserting:
+    print( f'(ecasound_peq) inserting pre_in --> ecasound --> brutefir' )
+    sp.Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split() )
+    sp.Popen( 'jack_disconnect pre_in_loop:output_2 brutefir:in.R'.split() )
+    sp.Popen( 'jack_connect    pre_in_loop:output_1 ecasound:in_1'.split() )
+    sp.Popen( 'jack_connect    pre_in_loop:output_2 ecasound:in_2'.split() )
+    sp.Popen( 'jack_connect    ecasound:out_1       brutefir:in.L'.split() )
+    sp.Popen( 'jack_connect    ecasound:out_2       brutefir:in.R'.split() )
 
 
 def stop():
     sp.Popen( f'pkill -f {ECSFILE}'.split() )
     sleep(1)
-    # Restoring preamp and Brutefir connections:
-    with open('/dev/null', 'w') as fnull:
-        sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split(),
-                    stdout=fnull, stderr=fnull )
-        sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split(),
-                    stdout=fnull, stderr=fnull )
+    # Restoring:
+    print( f'(ecasound_peq) removing pre_in -x-> ecasound -x-> brutefir' )
+    sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split() )
+    sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split() )
 
 if __name__ == '__main__':
-
+    
     try:
         with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
             config = yaml.safe_load(f)
@@ -92,7 +84,7 @@ if __name__ == '__main__':
     except:
         print(  f'(ecasound_peq) unable to read your .ecs file from config.yml' )
         sys.exit()
-
+    
     if sys.argv[1:]:
         option = sys.argv[1]
         if option == 'start':
