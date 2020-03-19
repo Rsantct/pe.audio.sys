@@ -418,7 +418,11 @@ def mplayer_cmd(cmd, service):
             control_cmd('mute off')
 
     if eject_disk:
+        # Eject
         sp.Popen( f'eject {CDROM_DEVICE}'.split() )
+        # Flush .cdda_info (blank the metadata file)
+        with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
+            f.write( "{}" ) 
 
 # Mplayer metadata (DVB or iSTREAMS, but not usable for CDDA)
 def mplayer_meta(service, readonly=False):
