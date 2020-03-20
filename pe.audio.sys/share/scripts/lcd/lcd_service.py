@@ -38,7 +38,7 @@ import os
 UHOME = os.path.expanduser("~")
 
 sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
-import players
+from players import player_get_meta
 
 LEVEL_OLD = None
 
@@ -46,7 +46,7 @@ LEVEL_OLD = None
 # belong to the state dict and the updater needs to kwow about it.
 loudness_track = False
 
-
+# FILE CHANGES OBSERVER:
 # Will watch for files changed on this folder and subfolders:
 WATCHED_DIR      = f'{UHOME}/pe.audio.sys'
 # The files we are going to pay attention to:
@@ -57,6 +57,8 @@ ISTREAMS_file    = f'{WATCHED_DIR}/.istreams_events'
 DVB_file         = f'{WATCHED_DIR}/.dvb_events'
 MPD_file         = f'{WATCHED_DIR}/.mpd_events'
 LOUDNESSMON_file = f'{WATCHED_DIR}/.loudness_monitor'
+# Aux because the Observer detects .state.yml changes w/o its contents having changed.
+LAST_STATE = {}
 
 # Reading the LCD SETTINGS:
 f = open( f'{UHOME}/pe.audio.sys/share/scripts/lcd/lcd.yml', 'r' )
@@ -65,7 +67,7 @@ f.close()
 try:
     LCD_CONFIG = yaml.safe_load(tmp)
 except:
-    print ( 'YAML error reading lcd.yml' )
+    print ( '(lcd_service) YAML error reading lcd.yml' )
 
 def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
     """An additional screen to display temporary information"""
@@ -111,7 +113,7 @@ def define_widgets():
     # 4     a_metadata_marquee_
 
     # The widget collection definition (as global variables)
-    # Values are defaults, later update_state() will add the current
+    # Values are defaults, later update_lcd_state() will add the current
     # state info or supress the value in case of booleans.
 
     # If position is set to '0 0' the widget will not be displayed
@@ -174,7 +176,7 @@ def prepare_main_screen():
         cmd = f'widget_add scr_1 { wName } scroller'
         LCD.send( cmd )
 
-def update_state():
+def update_lcd_state():
     """ Reads system .state.yml then updates the LCD """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
@@ -235,13 +237,16 @@ def update_state():
             #lcdbig.show_level( str(data['level']) )
             LEVEL_OLD = data['level']
 
+    global LAST_STATE
+
     with open(STATE_file, 'r') as f:
         state = yaml.safe_load(f)
-        # avoid updating when some times can be read an empty file:
-        if state:
+        # avoid if reading an empty file:
+        if state and state != LAST_STATE:
+            LAST_STATE = state
             show_state( state )
 
-def update_loudness_monitor():
+def update_lcd_loudness_monitor():
     """ Reads the monitored value inside the file .loudness_monitor
         then updates the LCD display.
     """
@@ -272,30 +277,32 @@ def update_loudness_monitor():
 
     show_loudness_monitor( loudmon )
 
-def update_metadata(metadata, mode='composed_marquee', scr='scr_1'):
+def update_lcd_metadata(md, mode='composed_marquee', scr='scr_1'):
     """ Reads the metadata dict then updates the LCD display """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
     def compose_marquee(md):
-        """ compose a string to be displayed on a LCD bottom line marquee.
+        """ Modify the metadata dict by composing a joined string with
+            selected fields to be displayed on the LCD bottom line marquee.
         """
-
         tmp = '{ "bottom_marquee":"'
-        for k,v in json.loads(md).items():
+        for k,v in md.items():
             if k in ('artist', 'album', 'title') and v != '-':
                 tmp += k[:2] + ':' + str(v) + ' '
         tmp += '" }'
+        mdNew = json.loads(tmp)
+        return mdNew
 
-        return tmp
-
-    # This compose a unique marquee widget with all metadata fields:
+    # Will compose a unique marquee widget with all metadata fields,
+    # else will keep the standard separate widgets dictionary format.
     if mode == 'composed_marquee':
-        metadata = json.loads( compose_marquee(metadata) )
-    # This is if you want to use separate widgets kind of:
-    else:
-        metadata = json.loads(metadata)
+        md = compose_marquee(md)
 
-    for key, value in metadata.items():
+    # Info
+    print( f'(lcd_service) uptating LCD: {md}' )
+
+    # Updating:
+    for key, value in md.items():
 
         if key in widgets_meta.keys():
 
@@ -315,7 +322,7 @@ def update_metadata(metadata, mode='composed_marquee', scr='scr_1'):
             # sintax for scroller widgets:
             #   widget_set screen widget left top right bottom direction speed "text"
             cmd = f'widget_set {scr} {key} {left} {top} {right} {bottom} {direction} {speed} "{label}"'
-            #print(cmd)
+            #print(cmd) # DEBUG
             LCD.send( cmd )
 
 class changed_files_handler(FileSystemEventHandler):
@@ -327,9 +334,13 @@ class changed_files_handler(FileSystemEventHandler):
 
         path = event.src_path
 
+        # Info on file changes
+        tmp = path.split( f'{WATCHED_DIR}/' )[-1]
+        #print( f'(lcd_service) DETECTED change on \'{tmp}\'' ) # DEBUG
+
         # The pe.audio.sys STATE has changed
         if STATE_file in path:
-            update_state()
+            update_lcd_state()
 
         # A MPLAYER event file has changed
         # (i) The MPLAYER metadata file will be alive only for a 1/4 sec
@@ -341,23 +352,24 @@ class changed_files_handler(FileSystemEventHandler):
                     ISTREAMS_file):
             sleep(1) # avoids bouncing
             # needs decode() because players gives bytes-like
-            meta = players.player_get_meta(readonly=True).decode()
-            if json.loads(meta)['title'] != '-':
-                update_metadata( meta , mode='composed_marquee')
+            mdStr = player_get_meta(readonly=True).decode()
+            md = json.loads(mdStr)
+            if md['title'] != '-':
+                update_lcd_metadata( md , mode='composed_marquee')
 
         # ANOTHER PLAYER event file has changed
         if path in (MPD_file,
                     SPOTIFY_file,
                     LIBRESPOT_file):
-            sleep(1) # avoids bouncing
-            # needs decode() because players gives bytes-like
-            meta = players.player_get_meta(readonly=False).decode()
-            update_metadata( meta, mode='composed_marquee')
+            sleep(1)
+            mdStr = player_get_meta(readonly=False).decode()
+            md = json.loads(mdStr)
+            update_lcd_metadata( md, mode='composed_marquee')
 
         # The LOUDNESS MONITOR file has changed
         # loudness monitor changes counter
         if path in (LOUDNESSMON_file):
-            update_loudness_monitor()
+            update_lcd_loudness_monitor()
 
 if __name__ == "__main__":
 
@@ -365,9 +377,9 @@ if __name__ == "__main__":
     LCD = lcd_client.Client('pe.audio.sys', host='localhost', port=13666)
     if LCD.connect():
         LCD.register()
-        print( '(lcd_service )', f'hello: { LCD.query("hello") }' )
+        print( f'(lcd_service) hello: { LCD.query("hello") }' )
     else:
-        print( 'Error registering pe.audio.sys on LCDd' )
+        print( f'(lcd_service) Error registering pe.audio.sys on LCDd' )
         sys.exit()
 
     # Prepare the main screen
@@ -375,16 +387,18 @@ if __name__ == "__main__":
     show_temporary_screen('    Hello :-)')
 
     # Displays the state of pe.audio.sys
-    update_state()
-    # Displays update_loudness_monitor
-    update_loudness_monitor()
+    update_lcd_state()
+    # Displays update_lcd_loudness_monitor
+    update_lcd_loudness_monitor()
 
     # Displays metadata
     #md =  '{"artist":"Some ARTIST",'
     #md += ' "album":"Some ALBUM",'
     #md += ' "title":"ファイヴ・スポット・アフター・ダーク"}'
     # needs to decode because players gives bytes-like
-    update_metadata( players.player_get_meta().decode() , mode='composed_marquee')
+    mdStr = player_get_meta(readonly=False).decode()
+    md = json.loads(mdStr)
+    update_lcd_metadata(md , mode='composed_marquee')
 
     # Starts a WATCHDOG to see pe.audio.sys files changes,
     # and handle these changes to update the LCD display
