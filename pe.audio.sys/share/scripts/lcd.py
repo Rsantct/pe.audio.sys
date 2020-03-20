@@ -40,9 +40,9 @@ def start():
     Popen( f'python3 {LCDFOLDER}/lcd_service.py'.split() )
 
 def stop():
-
     Popen( ['pkill', '-f',  'lcd/LCDd.conf'] )
     Popen( ['pkill', '-f',  'lcd_service.py'] )
+    sleep(1)
 
 if sys.argv[1:]:
     try:
