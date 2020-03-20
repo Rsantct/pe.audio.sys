@@ -26,25 +26,15 @@ import sys
 from time import sleep
 import yaml
 import json
-
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
 import lcd_client
-#import lcdbig
-
+#import lcdbig # NOT USED, displays the level value in full size
 import os
 UHOME = os.path.expanduser("~")
-
 sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
 from players import player_get_meta
-
-LEVEL_OLD = None
-
-# 'loudness_track' as global because loudness_monitor value does not
-# belong to the state dict and the updater needs to kwow about it.
-loudness_track = False
 
 # FILE CHANGES OBSERVER:
 # Will watch for files changed on this folder and subfolders:
@@ -57,8 +47,14 @@ ISTREAMS_file    = f'{WATCHED_DIR}/.istreams_events'
 DVB_file         = f'{WATCHED_DIR}/.dvb_events'
 MPD_file         = f'{WATCHED_DIR}/.mpd_events'
 LOUDNESSMON_file = f'{WATCHED_DIR}/.loudness_monitor'
-# Aux because the Observer detects .state.yml changes w/o its contents having changed.
+
+# Aux global because the Observer detects .state.yml changes
+# w/o its contents having changed.
 LAST_STATE = {}
+
+# 'loudness_track' as global because loudness_monitor value does not
+# belong to the state dict and the updater needs to kwow about it.
+loudness_track = False
 
 # Reading the LCD SETTINGS:
 f = open( f'{UHOME}/pe.audio.sys/share/scripts/lcd/lcd.yml', 'r' )
@@ -180,8 +176,9 @@ def update_lcd_state():
     """ Reads system .state.yml then updates the LCD """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
+    global LAST_STATE
+
     def show_state(data, priority="info"):
-        global LEVEL_OLD
         global loudness_track
 
         for key, value in data.items():
@@ -233,11 +230,9 @@ def update_lcd_state():
             #print(cmd)
             LCD.send( cmd )
 
-        if LEVEL_OLD != data['level']:
-            #lcdbig.show_level( str(data['level']) )
-            LEVEL_OLD = data['level']
-
-    global LAST_STATE
+        # The big screen to display the level value
+        #lcdbig.show_level( str(data['level']) )
+        pass
 
     with open(STATE_file, 'r') as f:
         state = yaml.safe_load(f)
