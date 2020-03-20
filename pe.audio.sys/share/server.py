@@ -96,9 +96,9 @@ def run_server(host, port, verbose=False):
                     print (f'(server.py [{service}]) ERROR receiving from client' )
             except:
                 continue
-                
+
             if verbose:
-                print  ('>>> ' + data )
+                print  (f'(server.py [{service}]) Rx: {data}' )
 
             if not data:
                 # Nothing in buffer, then will close because the client has disconnected too soon.
@@ -133,7 +133,7 @@ def run_server(host, port, verbose=False):
                 result = MODULE.do(data)
                 #######################################################################
                 if verbose:
-                    print( 'RESULT:', result )
+                    print( f'(server.py [{service}]) Tx: ', result )
                 # And sending back the result
                 # NOTICE: it is expected to receive a result as a bytes-like object
                 if result:
