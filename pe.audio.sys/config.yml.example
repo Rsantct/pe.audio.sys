@@ -9,7 +9,7 @@ services_addressing:
     # <service>_port:       N
 
     # the MAIN service to control the audio and preamp (MANDATORY)
-    pasysctrl_address:      0.0.0.0
+    pasysctrl_address:      localhost
     pasysctrl_port:         9989
 
     # Auxiliary functions service (optional)
@@ -17,7 +17,7 @@ services_addressing:
     aux_port:               9988
 
     # Players management service (optional)
-    players_address:        0.0.0.0
+    players_address:        localhost
     players_port:           9987
 
 
