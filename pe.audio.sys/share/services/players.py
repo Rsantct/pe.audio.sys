@@ -30,13 +30,28 @@
     This module is ussually called from a listening server.
 """
 
-# TODO: a command line interface could be useful
+# (i) I/O FILES MANAGED HERE:
+#
+# .mpd_events       'w'     MPD metadata in json format
+#
+# .cdda_info        'w'     CDDA album and tracks info in json format
+#
+# .{service}_fifo   'w'     Generic Mplayer command input fifo,
+#                           (remember to end commands with \n)
+# .{service}_events 'r'     generic Mplayer info output is redirected here
+# 
+# .spotify_events   'r'     MPRIS desktop metadata from spotify_monitor.py
+#
+# .librespot_events 'r'     librespot redirected printouts 
+#
+# .state.yml        'r'     pe.audio.sys state file
+#
 
 import os
 import subprocess as sp
 import yaml
 import mpd
-import time
+from time import sleep
 import json
 from socket import socket
 
@@ -126,7 +141,11 @@ def control_cmd(cmd):
 
 # MPD control, status and metadata
 def mpd_client(query):
-    """ comuticates to MPD music player daemon """
+    """ Comuticates to MPD music player daemon
+        Input: a command to query to the MPD daemon
+        Returns: the MPD response.
+        I/O: .mpd_events, MPDClient
+    """
 
     def get_meta():
         """ gets info from mpd """
@@ -224,7 +243,7 @@ def mpd_client(query):
 
     return result
 
-# Mplayer control (used for DVB, iSTREAMS and CD)
+# Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_cmd(cmd, service):
     """ Sends a command to Mplayer trough by its input fifo
     """
@@ -305,11 +324,14 @@ def mplayer_cmd(cmd, service):
 
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cd_info ) )
+        print( f'(players.py) CD info saved to {MAINFOLDER}/.cdda_info' )
 
-    # Aux function to check if Mplayer is playing the disk
-    def a_file_is_loaded():
+    # Aux function to check if Mplayer has loaded a disk
+    def cdda_in_mplayer():
         # Querying Mplayer to get the FILENAME (if it results void it means no playing)
-        sp.Popen( f'echo "get_file_name" > {MAINFOLDER}/.cdda_fifo', shell=True )
+        with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
+            f.write('get_file_name\n')
+        sleep(.1)
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-2::-1]:
@@ -360,23 +382,29 @@ def mplayer_cmd(cmd, service):
         elif cmd.startswith('play'):
 
             # Prepare to play if a disk is not loaded into Mplayer
-            if not a_file_is_loaded():
+            if not cdda_in_mplayer():
                 control_cmd('mute on')
                 print( f'(players.py) loading disk ...' )
                 # Save disk info into a json file
                 save_cd_info()
                 # Flushing the mplayer events file
-                sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
+                with open(f'{MAINFOLDER}/.cdda_events', 'w') as f:
+                    pass
                 # Loading the disk but pausing
-                tmp = f'pausing loadfile \'cdda://1-100:1\''
-                tmp = f'echo "{tmp}" > {MAINFOLDER}/.{service}_fifo'
-                sp.Popen( tmp, shell=True)
-                # Waiting for the disk to be loaded:
-                n = 10
+                with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
+                    f.write( 'pausing loadfile \'cdda://1-100:1\'\n' )
+                # Waiting for the disk to be loaded (usually about 8 sec)
+                n = 15
                 while n:
-                    if a_file_is_loaded(): break
-                    time.sleep(1)
+                    if cdda_in_mplayer(): break
+                    print( f'(players.py) waiting for Mplayer to load disk' ) 
+                    sleep(1)
                     n -= 1
+                if n:
+                    print( '(players.py) Mplayer disk loaded' )
+                else:
+                    print( '(players.py) TIMED OUT detecting '
+                            'Mplayer disk loaded' )
 
             # Retrieving the current track 
             curr_track = 1
@@ -401,20 +429,19 @@ def mplayer_cmd(cmd, service):
         return
 
     # Sending the command to the corresponding fifo
-    tmp = f'echo "{cmd}" > {MAINFOLDER}/.{service}_fifo'
-    sp.Popen( tmp, shell=True)
+    print( f'(players.py) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
+    with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
+        f.write( f'{cmd}\n' )
 
     if service == 'cdda':
         if cmd == 'stop':
             # clearing cdda_events in order to forget last track
-            try:
-                sp.Popen( f'echo "" > {MAINFOLDER}/.cdda_events', shell=True)
-            except:
+            with open(f'{MAINFOLDER}/.cdda_events', 'w') as f:
                 pass
         elif 'seek_chapter' in cmd:
             # This delay avoids audio stutter because of above pausing,
             # done when preparing (loading) traks into Mplayer
-            time.sleep(.5)
+            sleep(.5)
             control_cmd('mute off')
 
     if eject_disk:
@@ -424,7 +451,7 @@ def mplayer_cmd(cmd, service):
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( "{}" ) 
 
-# Mplayer metadata (DVB or iSTREAMS, but not usable for CDDA)
+# Mplayer metadata (only for DVB or iSTREAMS, but not usable for CDDA)
 def mplayer_meta(service, readonly=False):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt """
@@ -443,7 +470,7 @@ def mplayer_meta(service, readonly=False):
         mplayer_cmd(cmd='get_time_pos',      service=service)
         mplayer_cmd(cmd='get_time_length',   service=service)
         # Waiting Mplayer ANS_xxxx to be writen to output file
-        time.sleep(.25)
+        sleep(.25)
 
     # Trying to read the ANS_xxxx from the Mplayer output file
     with open(mplayer_redirection_path, 'r') as file:
@@ -482,6 +509,7 @@ def mplayer_meta(service, readonly=False):
 
     return json.dumps( md )
 
+# Mplayer metadata only for the CDDA service
 def cdda_meta():
 
     # Aux to get the current track by using the external program 'cdcd tracks'
@@ -508,7 +536,8 @@ def cdda_meta():
         t = 0
         # (!) Must use the prefix 'pausing_keep', otherwise pause will be released
         #     when querying 'get_property ...' or anything else.
-        sp.Popen( f'echo "pausing_keep get_property chapter" > {MAINFOLDER}/.cdda_fifo', shell=True )
+        with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
+            f.write( 'pausing_keep get_property chapter\n' )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-10:]:
@@ -546,7 +575,8 @@ def cdda_meta():
 
         # Querying Mplayer to get the timePos, the answer in seconds will be
         # a 'global position' refered to the global disk duration.
-        sp.Popen( f'echo "pausing_keep get_time_pos" > {MAINFOLDER}/.cdda_fifo', shell=True )
+        with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
+            f.write( 'pausing_keep get_time_pos\n' )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
         for line in tmp[-10:]:
@@ -619,10 +649,8 @@ def spotify_meta():
     md['bitrate'] = spotify_bitrate
 
     try:
-        events_file = f'{MAINFOLDER}/.spotify_events'
-        f = open( events_file, 'r' )
-        tmp = f.read()
-        f.close()
+        with open(f'{MAINFOLDER}/.spotify_events', 'r') as f:
+            tmp = f.read()
 
         tmp = json.loads( tmp )
         # Example:
@@ -712,12 +740,12 @@ def librespot_meta():
         # example:
         # INFO:librespot_playback::player: Track "Better Days" loaded
         #
-        tmp = sp.check_output( f'tail -n20 {MAINFOLDER}/.librespot_events'.split() ).decode()
-        tmp = tmp.split('\n')
+        with open(f'{MAINFOLDER}/.librespot_events', 'r') as f:
+            lines = f.readlines()[-20:]
         # Recently librespot uses to print out some 'AddrNotAvailable, message' mixed with
         # playback info messages, so we will search for the latest 'Track ... loaded' message,
         # backwards from the end of the events file:
-        for line in tmp[::-1]:
+        for line in lines[::-1]:
             if line.strip()[-6:] == "loaded":
                 # raspotify flawors of librespot
                 if not 'player] <' in line:
@@ -821,7 +849,7 @@ def get_source():
             break
         except:
             times -= 1
-        time.sleep(.25)
+        sleep(.25)
     return source
 
 # Gets the dictionary of pre.di.c status
@@ -885,4 +913,5 @@ def do(task):
     # task: 'http://an/url/stream/to/play
     # A pseudo task, an url to be played back:
     elif task[:7] == 'http://':
-        sp.run( f'{MAINFOLDER}/share/scripts/istreams url {task}'.split() )
+        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'.split() )
+    
