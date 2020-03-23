@@ -29,7 +29,7 @@ const http  = require('http');
 const url   = require('url');
 const fs    = require('fs');
 const net   = require('net');
-const yaml = require('js-yaml')
+const yaml  = require('js-yaml')
 
 // Command line '-v' verbose option
 var verbose = false;        // Defaults to disable to printing out some details
