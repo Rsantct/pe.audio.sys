@@ -45,7 +45,7 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## pe.audio.sys services addressing
 try:
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
         A = yaml.safe_load(f)['services_addressing']
         CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
 except:
