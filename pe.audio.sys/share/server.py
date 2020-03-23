@@ -89,30 +89,30 @@ def run_server(host, port, verbose=False):
 
         # A buffer loop to proccess received data
         while True:
+
             try:
                 # Reception of 1024
                 data = conn.recv(1024).decode()
+            except:
                 if verbose:
                     print (f'(server.py [{service}]) ERROR receiving from client' )
-            except:
-                continue
-
-            if verbose:
-                print  (f'(server.py [{service}]) Rx: {data}' )
 
             if not data:
-                # Nothing in buffer, then will close because the client has disconnected too soon.
+                # Nothing in buffer, then will close
                 if verbose:
-                    print (f'(server.py [{service}]) Client disconnected, '
+                    print (f'(server.py [{service}]) Rx empty, '
                              'closing connection...' )
                 conn.close()
                 break
 
+            if verbose:
+                print  (f'(server.py [{service}]) Rx: {data.strip()}' )
+
             # Reserved words for controling the communication ('quit' or 'shutdown')
-            elif data.rstrip('\r\n') == 'quit':
+            if data.rstrip('\r\n') == 'quit':
                 #conn.send(b'OK\n')
                 if verbose:
-                    print( f'(server.py [{service}]) closing connection...' )
+                    print( f'(server.py [{service}]) \'quit\', closing connection...' )
                 conn.close()
                 break
 
