@@ -26,9 +26,9 @@
 #
 # .cdda_info        'w'     CDDA album and tracks info in json format
 #
-# .{service}_fifo   'w'     Generic Mplayer command input fifo,
+# .{service}_fifo   'w'     Mplayer command input fifo,
 #                           (remember to end commands with \n)
-# .{service}_events 'r'     generic Mplayer info output is redirected here
+# .{service}_events 'r'     Mplayer info output is redirected here
 # 
 
 import os
