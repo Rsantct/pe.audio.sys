@@ -173,6 +173,12 @@ if __name__ == "__main__":
         # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
         MODULE = __import__(service)
         print( f'(server.py) will run \'{service}\' module at {addr}:{port} ...' )
+        # Optional MODULE.init function:
+        try:
+            MODULE.init()
+        except:
+            pass
+        # Runing the server with the MODULE.do() interface
         run_server( host=addr, port=int(port), verbose=verbose )
 
     except:
