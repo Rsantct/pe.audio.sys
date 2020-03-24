@@ -17,16 +17,18 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """ A module that controls and retrieve metadata info from the current player.
-    This module is called from the listening script 'server.py'.
+    This module is called from the TCP listening script 'server.py'.
 """
 
 # (i) I/O FILES MANAGED HERE:
 #
 # .state.yml        'r'     pe.audio.sys state file
 #
+# .players.md       'w'     player metadata and state
 
 import os
 import subprocess as sp
+import threading
 import yaml
 from time import sleep
 import json
@@ -45,8 +47,7 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 ## Spotify client detection
 spotify_client = detect_spotify_client()
 
-## METADATA GENERIC TEMPLATE to serve to clients as the control web page.
-#  (!) remember to use copies of this ;-)
+## generic metadata template (!) remember to use copies of this ;-)
 METATEMPLATE = {
     'player':       '',
     'time_pos':     '',
@@ -58,7 +59,7 @@ METATEMPLATE = {
     'track_num':    ''
     }
 
-# Gets the current input source on pre.di.c
+# Aux to get the current preamp input source
 def get_source():
     """ retrieves the current input source """
     source = None
@@ -87,6 +88,7 @@ def player_get_meta(readonly=False):
 
     source = get_source()
 
+    # Getting metadata from a Spotify client:
     if   'librespot' in source or 'spotify' in source.lower():
         if spotify_client == 'desktop':
             metadata = spotify_meta()
@@ -96,18 +98,21 @@ def player_get_meta(readonly=False):
         else:
             metadata = json.dumps( metadata )
 
+    # Getting metadata from MPD:
     elif source == 'mpd':
         metadata = mpd_client('get_meta')
 
+    # Getting metadata from Mplayer based sources:
     elif source == 'istreams':
-        metadata = mplayer_meta(service=source, readonly=readonly)
+        metadata = mplayer_meta(service='istreams', readonly=readonly)
 
     elif source == 'tdt' or 'dvb' in source:
         metadata = mplayer_meta(service='dvb', readonly=readonly)
 
-    elif source == 'cd':
-        metadata = cdda_meta()
+    elif 'cd'in source:
+        metadata = mplayer_meta(service='cdda', readonly=readonly)
 
+    # Unknown source, blank metadata:
     else:
         metadata = json.dumps( METATEMPLATE.copy() )
 
@@ -126,9 +131,12 @@ def player_control(action):
     if   source == 'mpd':
         result = mpd_client(action)
 
-    elif source.lower() == 'spotify' and spotify_client == 'desktop':
+    elif source.lower() == 'spotify':
         # We can control only Spotify Desktop (not librespot)
-        result = spotify_control(action)
+        if   spotify_client == 'desktop':
+            result = spotify_control(action)
+        elif spotify_client == 'librespot':
+            result = 'play'
 
     elif 'tdt' in source or 'dvb' in source:
         result = mplayer_cmd(cmd=action, service='dvb')
@@ -144,41 +152,66 @@ def player_control(action):
     if not result:
         result = '' # to avoid None.encode() error
 
+    # Store the player state
+    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
+        f.write(result)
+
     # As this is used by a server, we will return a bytes-like object:
     return result.encode()
 
-# Interface entry function to this module
+# Interface entry function for this module from 'server.py'
 def do(task):
-    """
-        This do() is the entry interface function from a listening server.
+    """ This do() is the entry interface function from a listening server.
         Only certain received 'tasks' will be validated and processed,
         then returns back some useful info to the asking client.
     """
 
-    # First clearing the taksk phrase
+    # First clearing the task phrase
     task = task.strip()
 
-    # task: 'player_get_meta'
-    # Tasks querying the current music player.
-    if   task == 'player_get_meta':
-        return player_get_meta()
+    # Getting METADATA
+    if task == 'player_get_meta':
+        with open( f'{MAINFOLDER}/.player_metadata', 'r') as f:
+            return f.read().encode()
 
-    # task: 'player_xxxxxxx'
-    # Playback control. (i) Some commands need to be adequated later, depending on the player,
-    # e.g. Mplayer does not understand 'previous', 'next' ...
-    elif task[7:] in ('state', 'stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff'):
+    # PLAYBACK CONTROL. (i) Some commands need to be adequated later,
+    # e.g. Mplayer does not understand 'previous', 'next'
+    elif task[7:] in ('state', 'stop', 'pause', 'play', 
+                       'next', 'previous', 'rew', 'ff'):
         return player_control( task[7:] )
 
-    # task: 'player_eject' unconditionally ejects the CD tray
-    elif task[7:] == 'eject':
-        return mplayer_cmd('eject', 'cdda')
-
-    # task: 'player_play_track_NN'
-    # Special command for disk playback control
+    # Special command for DISK TRACK playback
     elif task[7:18] == 'play_track_':
         return player_control( task[7:] )
 
-    # task: 'http://an/url/stream/to/play
-    # A pseudo task, an url to be played back:
+    # EJECTS unconditionally the CD tray
+    elif task[7:] == 'eject':
+        return mplayer_cmd('eject', 'cdda')
+
+    # An URL to be played back by the istreams Mplayer service:
     elif task[:7] == 'http://':
-        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'.split() )
+        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'
+                  .split() )
+
+# Optional init function
+def init():
+    """ This init function will:
+        - Periodically store the metadata info to
+            MAINFOLDER/.player_metadata
+          so that can be read from any process interested in it.
+        - Also will initiate MAINFOLDER/.player_state
+    """
+    def store_meta(timer=2):
+        while True:
+            md = player_get_meta().decode()
+            with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
+                f.write( md )
+            sleep(timer)
+    # Loop storing metadata
+    meta_timer = 2
+    meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
+    meta_loop.start()
+    # Initiate the player state
+    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
+        f.write('stop')
+
