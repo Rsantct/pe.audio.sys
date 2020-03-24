@@ -79,7 +79,7 @@ except:
 
 # Auxiliary to talk to the main pe.audio.sys control service.
 # (i) Because we need to MUTE the preamp when CDDA is paused.
-def control_cmd(cmd):
+def pre_control_cmd(cmd):
     host, port = CTL_HOST, CTL_PORT
     with socket() as s:
         try:
@@ -244,15 +244,15 @@ def mplayer_cmd(cmd, service):
                 #     strange behavior (there is a kind of brief sttuter 
                 #     with audio), then we will MUTE the preamp.
                 if cdda_playing_status == 'pause':
-                    control_cmd('mute on')
+                    pre_control_cmd('mute on')
                 elif cdda_playing_status == 'play':
-                    control_cmd('mute off')
+                    pre_control_cmd('mute off')
 
         elif cmd.startswith('play'):
 
             # Prepare to play if a disk is not loaded into Mplayer
             if not cdda_in_mplayer():
-                control_cmd('mute on')
+                pre_control_cmd('mute on')
                 print( f'(players.py) loading disk ...' )
                 # Save disk info into a json file
                 save_cd_info()
@@ -311,7 +311,7 @@ def mplayer_cmd(cmd, service):
             # This delay avoids audio stutter because of above pausing,
             # done when preparing (loading) traks into Mplayer
             sleep(.5)
-            control_cmd('mute off')
+            pre_control_cmd('mute off')
 
     if eject_disk:
         # Eject
