@@ -17,7 +17,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-from subprocess import check_output
+from subprocess import Popen, check_output
 import json
 
 UHOME = os.path.expanduser("~")
@@ -126,13 +126,13 @@ def spotify_control(cmd):
 
     # (!) Unfortunately, 'position' does not work, so we cannot rewind neither fast forward
     if cmd in ('play', 'pause', 'next', 'previous' ):
-        sp.Popen( f'playerctl --player=spotify {cmd}'.split() )
+        Popen( f'playerctl --player=spotify {cmd}'.split() )
 
     # Retrieving the playback state
     result = ''
     if cmd == 'state':
         try:
-            result = sp.check_output( f'playerctl --player=spotify status'.split() ).decode()
+            result = scheck_output( f'playerctl --player=spotify status'.split() ).decode()
         except:
             pass
     # playerctl just returns 'Playing' or 'Paused'
