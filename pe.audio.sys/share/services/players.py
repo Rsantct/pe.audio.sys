@@ -29,8 +29,6 @@
 #                           (remember to end commands with \n)
 # .{service}_events 'r'     generic Mplayer info output is redirected here
 # 
-# .spotify_events   'r'     MPRIS desktop metadata from spotify_monitor.py
-#
 # .state.yml        'r'     pe.audio.sys state file
 #
 
@@ -43,9 +41,14 @@ import json
 from socket import socket
 from  players_mod.mpd import mpd_client
 from  players_mod.librespot import librespot_meta
-
+from  players_mod.spotify_desktop import spotify_control, \
+                                         spotify_meta, \
+                                         detect_spotify_client
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+
+## Spotify client detection
+spotify_client = detect_spotify_client()
 
 ## pe.audio.sys services addressing
 try:
@@ -83,24 +86,6 @@ METATEMPLATE = {
     'title':        '',
     'track_num':    ''
     }
-
-## SPOTIFY settings
-# Check for the Spotify Client in use:
-SPOTIFY_CLIENT = None
-spotify_bitrate   = '-'
-# Check if a desktop client is running:
-try:
-    sp.check_output( 'pgrep -f Spotify'.split() )
-    # still pending how to retrieve the Desktop client bitrate
-    SPOTIFY_CLIENT = 'desktop'
-except:
-    pass
-# Check if 'librespot' (a Spotify Connect daemon) is running:
-try:
-    sp.check_output( 'pgrep -f librespot'.split() )
-    SPOTIFY_CLIENT = 'librespot'
-except:
-    pass
 
 # Auxiliary to talk to the main pe.audio.sys control service
 def control_cmd(cmd):
@@ -511,89 +496,6 @@ def cdda_meta():
 
     return json.dumps( md )
 
-# Spotify Desktop metadata
-def spotify_meta():
-    """ Gets the metadata info retrieved by the daemon scripts/spotify_monitor
-        which monitorizes a Spotify Desktop Client
-    """
-    md = METATEMPLATE.copy()
-    md['player'] = 'Spotify'
-    md['bitrate'] = spotify_bitrate
-
-    try:
-        with open(f'{MAINFOLDER}/.spotify_events', 'r') as f:
-            tmp = f.read()
-
-        tmp = json.loads( tmp )
-        # Example:
-        # {
-        # "mpris:trackid": "spotify:track:5UmNPIwZitB26cYXQiEzdP",
-        # "mpris:length": 376386000,
-        # "mpris:artUrl": "https://open.spotify.com/image/798d9b9cf2b63624c8c6cc191a3db75dd82dbcb9",
-        # "xesam:album": "Doble Vivo (+ Solo Que la Una/Con Cordes del Mon)",
-        # "xesam:albumArtist": ["Kiko Veneno"],
-        # "xesam:artist": ["Kiko Veneno"],
-        # "xesam:autoRating": 0.1,
-        # "xesam:discNumber": 1,
-        # "xesam:title": "Ser\u00e9 Mec\u00e1nico por Ti - En Directo",
-        # "xesam:trackNumber": 3,
-        # "xesam:url": "https://open.spotify.com/track/5UmNPIwZitB26cYXQiEzdP"
-        # }
-
-        # regular fields:
-        for k in ('artist', 'album', 'title'):
-            value = tmp[ f'xesam:{k}']
-            if type(value) == list:
-                md[k] = ' '.join(value)
-            elif type(value) == str:
-                md[k] = value
-        # track_num:
-        md['track_num'] = tmp["xesam:trackNumber"]
-        # and time lenght:
-        md['time_tot'] = timeFmt( tmp["mpris:length"]/1e6 )
-
-    except:
-        pass
-
-    return json.dumps( md )
-
-# Spotify Desktop control
-def spotify_control(cmd):
-    """ Controls the Spotify Desktop player
-        It is assumed that you have the mpris2-dbus utility 'playerctl' installed.
-            https://wiki.archlinux.org/index.php/spotify#MPRIS
-        dbus-send command can also work
-            http://www.skybert.net/linux/spotify-on-the-linux-command-line/
-    """
-    # playerctl - Available Commands:
-    #   play                    Command the player to play
-    #   pause                   Command the player to pause
-    #   play-pause              Command the player to toggle between play/pause
-    #   stop                    Command the player to stop
-    #   next                    Command the player to skip to the next track
-    #   previous                Command the player to skip to the previous track
-    #   position [OFFSET][+/-]  Command the player to go to the position or seek forward/backward OFFSET in seconds
-    #   volume [LEVEL][+/-]     Print or set the volume to LEVEL from 0.0 to 1.0
-    #   status                  Get the play status of the player
-    #   metadata [KEY]          Print metadata information for the current track. Print only value of KEY if passed
-
-    # (!) Unfortunately, 'position' does not work, so we cannot rewind neither fast forward
-    if cmd in ('play', 'pause', 'next', 'previous' ):
-        sp.Popen( f'playerctl --player=spotify {cmd}'.split() )
-
-    # Retrieving the playback state
-    result = ''
-    if cmd == 'state':
-        try:
-            result = sp.check_output( f'playerctl --player=spotify status'.split() ).decode()
-        except:
-            pass
-    # playerctl just returns 'Playing' or 'Paused'
-    if 'play' in result.lower():
-        return 'play'
-    else:
-        return 'pause'
-
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
 def player_get_meta(readonly=False):
     """ Makes a dictionary-like string with the current track metadata
@@ -609,9 +511,9 @@ def player_get_meta(readonly=False):
     source = get_source()
 
     if   'librespot' in source or 'spotify' in source.lower():
-        if SPOTIFY_CLIENT == 'desktop':
+        if spotify_client == 'desktop':
             metadata = spotify_meta()
-        elif SPOTIFY_CLIENT == 'librespot':
+        elif spotify_client == 'librespot':
             metadata = librespot_meta()
         # source is spotify like but no client running has been detected:
         else:
@@ -647,7 +549,7 @@ def player_control(action):
     if   source == 'mpd':
         result = mpd_client(action)
 
-    elif source.lower() == 'spotify' and SPOTIFY_CLIENT == 'desktop':
+    elif source.lower() == 'spotify' and spotify_client == 'desktop':
         # We can control only Spotify Desktop (not librespot)
         result = spotify_control(action)
 
