@@ -32,8 +32,6 @@
 
 # (i) I/O FILES MANAGED HERE:
 #
-# .mpd_events       'w'     MPD metadata in json format
-#
 # .cdda_info        'w'     CDDA album and tracks info in json format
 #
 # .{service}_fifo   'w'     Generic Mplayer command input fifo,
@@ -54,6 +52,7 @@ import mpd
 from time import sleep
 import json
 from socket import socket
+from  players_mod.mpd import mpd_client
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
@@ -81,11 +80,6 @@ except:
 # (see mplayer_cmd() below)
 cd_info = {}
 cdda_playing_status = 'stop'
-
-## MPD settings:
-MPD_HOST    = 'localhost'
-MPD_PORT    = 6600
-MPD_PASSWD  = None
 
 ## METADATA GENERIC TEMPLATE to serve to clients as the control web page.
 #  (!) remember to use copies of this ;-)
@@ -138,110 +132,6 @@ def control_cmd(cmd):
         except:
             print (f'(players.py) service \'pasysctrl\' socket error on port {port}')
     return
-
-# MPD control, status and metadata
-def mpd_client(query):
-    """ Comuticates to MPD music player daemon
-        Input: a command to query to the MPD daemon
-        Returns: the MPD response.
-        I/O: .mpd_events, MPDClient
-    """
-
-    def get_meta():
-        """ gets info from mpd """
-
-        md = METATEMPLATE.copy()
-        md['player'] = 'MPD'
-
-        if mpd_online:
-
-            # We try because not all tracks have complete metadata fields:
-            try:    md['artist']    = client.currentsong()['artist']
-            except: pass
-            try:    md['album']     = client.currentsong()['album']
-            except: pass
-            try:    md['title']     = client.currentsong()['title']
-            except: pass
-            try:    md['track_num'] = client.currentsong()['track']
-            except: pass
-            try:    md['bitrate']   = client.status()['bitrate']   # given in kbps
-            except: pass
-            try:    md['time_pos']  = timeFmt( float( client.status()['elapsed'] ) )
-            except: pass
-            try:    md['time_tot']  = timeFmt( float( client.currentsong()['time'] ) )
-            except: pass
-
-            client.close()
-
-        # As an add-on, we will update an event file on the flavour of mplayer or librespot,
-        # to be monitored by any event changes service as for example lcd_service.py
-        with open( f'{MAINFOLDER}/.mpd_events', 'w' ) as file:
-            file.write( json.dumps( md ) )
-
-        return json.dumps( md )
-
-    def state():
-        if mpd_online:
-            return client.status()['state']
-
-    def stop():
-        if mpd_online:
-            client.stop()
-            return client.status()['state']
-
-    def pause():
-        if mpd_online:
-            client.pause()
-            return client.status()['state']
-
-    def play():
-        if mpd_online:
-            client.play()
-            return client.status()['state']
-
-    def next():
-        if mpd_online:
-            try:    client.next() # avoids error if some playlist has wrong items
-            except: pass
-            return client.status()['state']
-
-    def previous():
-        if mpd_online:
-            try:    client.previous()
-            except: pass
-            return client.status()['state']
-
-    def rew():                    # for REW and FF will move 30 seconds
-        if mpd_online:
-            client.seekcur('-30')
-            return client.status()['state']
-
-    def ff():
-        if mpd_online:
-            client.seekcur('+30')
-            return client.status()['state']
-
-    client = mpd.MPDClient()
-    try:
-        client.connect(MPD_HOST, MPD_PORT)
-        if MPD_PASSWD:
-            client.password(MPD_PASSWD)
-        mpd_online = True
-    except:
-        mpd_online = False
-
-    result = {  'get_meta':   get_meta,
-                'state':      state,
-                'stop':       stop,
-                'pause':      pause,
-                'play':       play,
-                'next':       next,
-                'previous':   previous,
-                'rew':        rew,
-                'ff':         ff
-             }[query]()
-
-    return result
 
 # Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_cmd(cmd, service):
