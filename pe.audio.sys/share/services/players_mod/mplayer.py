@@ -77,7 +77,8 @@ except:
     print('(players.py) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 
-# Auxiliary to talk to the main pe.audio.sys control service
+# Auxiliary to talk to the main pe.audio.sys control service.
+# (i) Because we need to MUTE the preamp when CDDA is paused.
 def control_cmd(cmd):
     host, port = CTL_HOST, CTL_PORT
     with socket() as s:
