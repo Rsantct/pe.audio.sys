@@ -17,6 +17,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+from subprocess import check_output
 import json
 
 UHOME = os.path.expanduser("~")
@@ -36,6 +37,23 @@ METATEMPLATE = {
     'title':        '',
     'track_num':    ''
     }
+
+# Auxiliary to detect the Spotify Client in use: desktop or librespot
+def detect_spotify_client():
+    cname = None
+    # Check if a desktop client is running:
+    try:
+        check_output( 'pgrep -f Spotify'.split() )
+        cname = 'desktop'
+    except:
+        pass
+    # Check if 'librespot' (a Spotify Connect daemon) is running:
+    try:
+        check_output( 'pgrep -f librespot'.split() )
+        cname = 'librespot'
+    except:
+        pass
+    return cname
 
 # Spotify Desktop metadata
 def spotify_meta():
@@ -122,4 +140,3 @@ def spotify_control(cmd):
         return 'play'
     else:
         return 'pause'
-
