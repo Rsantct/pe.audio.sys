@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-
 """ A module that controls and retrieve metadata info from the current player.
     This module is called from the listening script 'server.py'.
 """
@@ -59,6 +58,22 @@ METATEMPLATE = {
     'track_num':    ''
     }
 
+# Gets the current input source on pre.di.c
+def get_source():
+    """ retrieves the current input source """
+    source = None
+    # It is possible to fail while state file is updating :-/
+    times = 4
+    while times:
+        try:
+            with open( MAINFOLDER + '/.state.yml', 'r') as f:
+                source = yaml.safe_load(f)['input']
+            break
+        except:
+            times -= 1
+        sleep(.25)
+    return source
+
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
 def player_get_meta(readonly=False):
     """ Makes a dictionary-like string with the current track metadata
@@ -70,7 +85,6 @@ def player_get_meta(readonly=False):
     #   and flushing its metadata file.
     #   It is used from the 'change files handler' on lcd_service.py.
 
-    metadata = METATEMPLATE.copy()
     source = get_source()
 
     if   'librespot' in source or 'spotify' in source.lower():
@@ -95,7 +109,7 @@ def player_get_meta(readonly=False):
         metadata = cdda_meta()
 
     else:
-        metadata = json.dumps( metadata )
+        metadata = json.dumps( METATEMPLATE.copy() )
 
     # As this is used by a server, we will return a bytes-like object:
     return metadata.encode()
@@ -132,27 +146,6 @@ def player_control(action):
 
     # As this is used by a server, we will return a bytes-like object:
     return result.encode()
-
-# Gets the current input source on pre.di.c
-def get_source():
-    """ retrieves the current input source """
-    source = None
-    # It is possible to fail while state file is updating :-/
-    times = 4
-    while times:
-        try:
-            source = get_state()['input']
-            break
-        except:
-            times -= 1
-        sleep(.25)
-    return source
-
-# Gets the dictionary of pre.di.c status
-def get_state():
-    """ returns the YAML state info """
-    with open( MAINFOLDER + '/.state.yml', 'r') as f:
-        return yaml.safe_load(f)
 
 # Interface entry function to this module
 def do(task):
