@@ -39,7 +39,7 @@ fi
 #     if the launcher session has been closed (e.g. a crontab job),
 #     except if -v --verbose is indicated
 if [[ $opc == *"-v"* ]]; then
-    python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" "$2" &
+    python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" -v &
 else
-    python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" "$2" 1>/dev/null 2>&1 &
+    python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" >/dev/null 2>&1 &
 fi
