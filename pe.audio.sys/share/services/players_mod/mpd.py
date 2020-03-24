@@ -28,7 +28,7 @@ MPD_HOST    = 'localhost'
 MPD_PORT    = 6600
 MPD_PASSWD  = None
 
-## metadata generic template
+## generic metadata template
 METATEMPLATE = {
     'player':       '',
     'time_pos':     '',
