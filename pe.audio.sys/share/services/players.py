@@ -18,7 +18,7 @@
 
 
 """ A module that controls and retrieve metadata info from the current player.
-    This module is ussually called from a listening server.
+    This module is called from the listening script 'server.py'.
 """
 
 # (i) I/O FILES MANAGED HERE:
