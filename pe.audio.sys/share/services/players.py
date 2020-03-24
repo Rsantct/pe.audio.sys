@@ -24,7 +24,10 @@
 #
 # .state.yml        'r'     pe.audio.sys state file
 #
-# .players.md       'w'     player metadata and state
+# .player_metadata  'w'     Stores the current player metadata
+#
+# .player_state     'w'     Stores the current playback state
+#
 
 import os
 import subprocess as sp
@@ -109,7 +112,7 @@ def player_get_meta(readonly=False):
     elif source == 'tdt' or 'dvb' in source:
         metadata = mplayer_meta(service='dvb', readonly=readonly)
 
-    elif 'cd'in source:
+    elif 'cd' in source:
         metadata = mplayer_meta(service='cdda', readonly=readonly)
 
     # Unknown source, blank metadata:
