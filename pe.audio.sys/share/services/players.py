@@ -59,7 +59,8 @@ METATEMPLATE = {
     'artist':       '',
     'album':        '',
     'title':        '',
-    'track_num':    ''
+    'track_num':    '',
+    'state':        'stop'
     }
 
 # Aux to get the current preamp input source
@@ -91,36 +92,39 @@ def player_get_meta(readonly=False):
 
     source = get_source()
 
+    md = METATEMPLATE.copy()
+
     # Getting metadata from a Spotify client:
     if   'librespot' in source or 'spotify' in source.lower():
         if spotify_client == 'desktop':
-            metadata = spotify_meta()
+            md = spotify_meta()
         elif spotify_client == 'librespot':
-            metadata = librespot_meta()
+            md = librespot_meta()
         # source is spotify like but no client running has been detected:
         else:
-            metadata = json.dumps( metadata )
+            md['player'] = 'Spotify'
+            md = json.dumps( md )
 
     # Getting metadata from MPD:
     elif source == 'mpd':
-        metadata = mpd_client('get_meta')
+        md = mpd_client('get_meta')
 
     # Getting metadata from Mplayer based sources:
     elif source == 'istreams':
-        metadata = mplayer_meta(service='istreams', readonly=readonly)
+        md = mplayer_meta(service='istreams', readonly=readonly)
 
     elif source == 'tdt' or 'dvb' in source:
-        metadata = mplayer_meta(service='dvb', readonly=readonly)
+        md = mplayer_meta(service='dvb', readonly=readonly)
 
     elif 'cd' in source:
-        metadata = mplayer_meta(service='cdda', readonly=readonly)
+        md = mplayer_meta(service='cdda', readonly=readonly)
 
     # Unknown source, blank metadata:
     else:
-        metadata = json.dumps( METATEMPLATE.copy() )
+        md = json.dumps( METATEMPLATE.copy() )
 
     # As this is used by a server, we will return a bytes-like object:
-    return metadata.encode()
+    return md.encode()
 
 # Generic function to control any player
 def player_control(action):
