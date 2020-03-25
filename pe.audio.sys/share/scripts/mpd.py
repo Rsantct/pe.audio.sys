@@ -25,29 +25,35 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 """
-    start or stop MPD
+    usage:  mpd.py  start|stop
     
     (i) will run by loading the standard user configuration file ~/.mpdconf
         edit this script if you need to load any else.
     
 """
 import sys, os
-import subprocess as sp
+from subprocess import Popen
+from time import sleep
 
 UHOME = os.path.expanduser("~")
-
 MPDCONF = f'{UHOME}/.mpdconf'
+
+def stop():
+    Popen( 'mpd --kill', shell=True )
+    sleep(1)
+
+def start():
+    stop()
+    Popen( f'mpd {MPDCONF}', shell=True )
 
 if __name__ == '__main__':
 
     if sys.argv[1:]:
-        if sys.argv[1] in ['stop', 'off']:
-            sp.Popen( 'mpd --kill'.split() )
-            sys.exit()
 
-        elif sys.argv[1] in ['start', 'on']:
-            sp.Popen( f'mpd {MPDCONF}'.split() )
-
+        if sys.argv[1] == 'stop':
+            stop()
+        elif sys.argv[1] == 'start':
+            start()
         else:
             print(__doc__)
 
