@@ -43,14 +43,15 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## generic metadata template
 METATEMPLATE = {
-    'player':       '',
+    'player':       'Mplayer',
     'time_pos':     '',
     'time_tot':     '',
     'bitrate':      '',
     'artist':       '',
     'album':        '',
     'title':        '',
-    'track_num':    ''
+    'track_num':    '',
+    'state':        'stop'
     }
 
 ## CDDA settings
@@ -200,7 +201,6 @@ def cdda_meta():
     md = METATEMPLATE.copy()
     md['track_num'] = '1'
     md['bitrate'] = '1411'
-    md['player']  = 'Mplayer'
 
     # Reading the CD info from a json file previously dumped when playing started.
     try:
@@ -239,6 +239,67 @@ def cdda_meta():
         # adding last track to track_num metadata
         last_track = len( [ x for x in cd_info if x.isdigit() ] )
         md['track_num'] += f'\n{last_track}'
+
+    return json.dumps( md )
+
+# MAIN Mplayer metadata
+def mplayer_meta(service, readonly=False):
+    """ gets metadata from Mplayer as per
+        http://www.mplayerhq.hu/DOCS/tech/slave.txt
+    """
+    # This works only for DVB or iSTREAMS, but not for CDDA
+    if service == 'cdda':
+        return cdda_meta()
+
+    md = METATEMPLATE.copy()
+
+    # This is the file were Mplayer standard output has been redirected to,
+    # so we can read there any answer when required to Mplayer slave daemon:
+    mplayer_redirection_path = f'{MAINFOLDER}/.{service}_events'
+
+    # Communicates to Mplayer trough by its input fifo to get the current media filename and bitrate:
+    if not readonly:
+        mplayer_cmd(cmd='get_audio_bitrate', service=service)
+        mplayer_cmd(cmd='get_file_name',     service=service)
+        mplayer_cmd(cmd='get_time_pos',      service=service)
+        mplayer_cmd(cmd='get_time_length',   service=service)
+        # Waiting Mplayer ANS_xxxx to be writen to output file
+        sleep(.25)
+
+    # Trying to read the ANS_xxxx from the Mplayer output file
+    with open(mplayer_redirection_path, 'r') as file:
+        try:
+            tmp = file.read().split('\n')[-5:] # get last 4 lines plus the empty one when splitting
+        except:
+            tmp = []
+
+    #print('DEBUG\n', tmp)
+
+    # Flushing the Mplayer output file to avoid continue growing:
+    if not readonly:
+        with open(mplayer_redirection_path, 'w') as file:
+            file.write('')
+
+    # Reading the intended metadata chunks
+    if len(tmp) >= 4: # to avoid indexes issues while no relevant metadata are available
+
+        if 'ANS_AUDIO_BITRATE=' in tmp[0]:
+            bitrate = tmp[0].split('ANS_AUDIO_BITRATE=')[1].split('\n')[0].replace("'","")
+            md['bitrate'] = bitrate.split()[0]
+
+        if 'ANS_FILENAME=' in tmp[1]:
+            # this way will return the whole url:
+            #md['title'] = tmp[1].split('ANS_FILENAME=')[1]
+            # this way will return just the filename:
+            md['title'] = tmp[1].split('ANS_FILENAME=')[1].split('?')[0].replace("'","")
+
+        if 'ANS_TIME_POSITION=' in tmp[2]:
+            time_pos = tmp[2].split('ANS_TIME_POSITION=')[1].split('\n')[0]
+            md['time_pos'] = timeFmt( float( time_pos ) )
+
+        if 'ANS_LENGTH=' in tmp[3]:
+            time_tot = tmp[3].split('ANS_LENGTH=')[1].split('\n')[0]
+            md['time_tot'] = timeFmt( float( time_tot ) )
 
     return json.dumps( md )
 
@@ -450,64 +511,3 @@ def mplayer_cmd(cmd, service):
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( "{}" ) 
 
-# MAIN Mplayer metadata
-def mplayer_meta(service, readonly=False):
-    """ gets metadata from Mplayer as per
-        http://www.mplayerhq.hu/DOCS/tech/slave.txt
-    """
-    # This works only for DVB or iSTREAMS, but not for CDDA
-    if service == 'cdda':
-        return cdda_meta()
-
-    md = METATEMPLATE.copy()
-    md['player'] = 'Mplayer'
-
-    # This is the file were Mplayer standard output has been redirected to,
-    # so we can read there any answer when required to Mplayer slave daemon:
-    mplayer_redirection_path = f'{MAINFOLDER}/.{service}_events'
-
-    # Communicates to Mplayer trough by its input fifo to get the current media filename and bitrate:
-    if not readonly:
-        mplayer_cmd(cmd='get_audio_bitrate', service=service)
-        mplayer_cmd(cmd='get_file_name',     service=service)
-        mplayer_cmd(cmd='get_time_pos',      service=service)
-        mplayer_cmd(cmd='get_time_length',   service=service)
-        # Waiting Mplayer ANS_xxxx to be writen to output file
-        sleep(.25)
-
-    # Trying to read the ANS_xxxx from the Mplayer output file
-    with open(mplayer_redirection_path, 'r') as file:
-        try:
-            tmp = file.read().split('\n')[-5:] # get last 4 lines plus the empty one when splitting
-        except:
-            tmp = []
-
-    #print('DEBUG\n', tmp)
-
-    # Flushing the Mplayer output file to avoid continue growing:
-    if not readonly:
-        with open(mplayer_redirection_path, 'w') as file:
-            file.write('')
-
-    # Reading the intended metadata chunks
-    if len(tmp) >= 4: # to avoid indexes issues while no relevant metadata are available
-
-        if 'ANS_AUDIO_BITRATE=' in tmp[0]:
-            bitrate = tmp[0].split('ANS_AUDIO_BITRATE=')[1].split('\n')[0].replace("'","")
-            md['bitrate'] = bitrate.split()[0]
-
-        if 'ANS_FILENAME=' in tmp[1]:
-            # this way will return the whole url:
-            #md['title'] = tmp[1].split('ANS_FILENAME=')[1]
-            # this way will return just the filename:
-            md['title'] = tmp[1].split('ANS_FILENAME=')[1].split('?')[0].replace("'","")
-
-        if 'ANS_TIME_POSITION=' in tmp[2]:
-            time_pos = tmp[2].split('ANS_TIME_POSITION=')[1].split('\n')[0]
-            md['time_pos'] = timeFmt( float( time_pos ) )
-
-        if 'ANS_LENGTH=' in tmp[3]:
-            time_tot = tmp[3].split('ANS_LENGTH=')[1].split('\n')[0]
-            md['time_tot'] = timeFmt( float( time_tot ) )
-
-    return json.dumps( md )
