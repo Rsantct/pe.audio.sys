@@ -233,7 +233,6 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     """ Reads the monitored value from the file .loudness_monitor
         then updates the LCD display.
     """
-    global _state
     wdg = 'loudness_monitor'
     pos = widgets_aux[wdg]['pos']
     lbl = widgets_aux[wdg]['val']
