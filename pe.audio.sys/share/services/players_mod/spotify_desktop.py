@@ -28,14 +28,15 @@ spotify_bitrate   = '320'
 
 ## generic metadata template
 METATEMPLATE = {
-    'player':       '',
+    'player':       'Spotify Desktop Client',
     'time_pos':     '',
     'time_tot':     '',
     'bitrate':      '',
     'artist':       '',
     'album':        '',
     'title':        '',
-    'track_num':    ''
+    'track_num':    '',
+    'state':        'play'
     }
 
 # Auxiliary to detect the Spotify Client in use: desktop or librespot
@@ -64,7 +65,6 @@ def spotify_meta():
         I/O:        .spotify_events (r) MPRIS desktop metadata from spotify_monitor.py
     """
     md = METATEMPLATE.copy()
-    md['player'] = 'Spotify'
     md['bitrate'] = spotify_bitrate
 
     try:
