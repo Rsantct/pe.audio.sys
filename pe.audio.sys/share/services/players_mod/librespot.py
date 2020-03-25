@@ -24,14 +24,15 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## generic metadata template
 METATEMPLATE = {
-    'player':       '',
+    'player':       'librespot',
     'time_pos':     '',
     'time_tot':     '',
     'bitrate':      '',
     'artist':       '',
     'album':        '',
     'title':        '',
-    'track_num':    ''
+    'track_num':    '',
+    'state':        'play'
     }
 
 # librespot (Spotify Connect client) metatata
@@ -54,7 +55,6 @@ def librespot_meta():
         librespot_bitrate = '-'
 
     md = METATEMPLATE.copy()
-    md['player'] = 'Spotify'
     md['bitrate'] = librespot_bitrate
 
     try:
