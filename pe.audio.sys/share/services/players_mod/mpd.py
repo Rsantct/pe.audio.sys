@@ -30,7 +30,7 @@ MPD_PASSWD  = None
 
 ## generic metadata template
 METATEMPLATE = {
-    'player':       '',
+    'player':       'mpd',
     'time_pos':     '',
     'time_tot':     '',
     'bitrate':      '',
@@ -40,6 +40,10 @@ METATEMPLATE = {
     'track_num':    '',
     'state':        'stop'
     }
+
+# Flush .mpd_metadata
+with open( f'{MAINFOLDER}/.mpd_metadata', 'w' ) as file:
+    file.write( json.dumps( METATEMPLATE ) )
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
