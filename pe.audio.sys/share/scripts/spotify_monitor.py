@@ -30,9 +30,10 @@
 
 import sys, os
 from subprocess import Popen, check_output
+from time import sleep
 
 UHOME = os.path.expanduser("~")
-SCRIPTSFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/spotify_monitor'
+SCRIPTSFOLDER = f'{UHOME}/pe.audio.sys/share/scripts'
 
 def get_playerctl_version():
     try:
@@ -43,24 +44,26 @@ def get_playerctl_version():
         return -1
 
 def start():
+    stop()
     v = get_playerctl_version()
     if v != '-1':
         if v in ('0','1'):
             v = 1
-        Popen( f'{SCRIPTSFOLDER}/spotify_monitor_daemon_v{v}.py' )
+        Popen( f'{SCRIPTSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
+        print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
     else:
         print( '(spotify_monitor) Unable to find playerctl --version)' )
 
 def stop():
-    Popen( ['pkill', '-f',  'spotify_monitor'] )
+    Popen( 'pkill -f spotify_monitor_daemon'.split() )
+    sleep(.5)
 
 if sys.argv[1:]:
-    if True:
-        option = {
-            'start' : start,
-            'stop'  : stop
-            }[ sys.argv[1] ]()
-    #except:
-    #    print( '(spotify_monitor) bad option' )
+    if sys.argv[1] == 'stop':
+        stop()
+    elif sys.argv[1] == 'start':
+        start()
+    else:
+        print(__doc__)
 else:
     print(__doc__)
