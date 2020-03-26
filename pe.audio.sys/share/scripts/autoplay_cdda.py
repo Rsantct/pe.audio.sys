@@ -41,21 +41,19 @@ from subprocess import check_output, Popen
 #import cdio, pycdio
 # (i) pycdio dependencies:
 #       python-dev libcdio-dev libiso9660-dev swig pkg-config
-# Workaround: lets use cdinfo from cdtool (cdrom command line tools)
+# Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
-def send_cmd(cmd):
-    if cmd[:4] == 'aux ':
+def send_cmd(svcName, cmd):
+    if   svcName == 'aux':
         host, port = AUX_HOST, AUX_PORT
-        cmd = cmd[4:]
-        svcName = 'aux'
-    elif cmd[:8] == 'players ':
+    elif svcName == 'players':
         host, port = PLY_HOST, PLY_PORT
-        cmd = cmd[8:]
-        svcName = 'players'
-    else:
+    elif svcName == 'pasysctrl':
         host, port = CTL_HOST, CTL_PORT
-        svcName = 'pasysctrl'
-    #print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
+    else:
+        print( f'({ME}) unknown {svcName}' )
+        return
+    print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
@@ -71,12 +69,13 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'players player_pause' )
+        send_cmd( 'players', 'player_pause' )
         sleep(.5)
-        send_cmd( 'input cd' )
+        send_cmd( 'pasysctrl', 'input cd' )
         sleep(.5)
-        send_cmd( 'players player_play' )
+        send_cmd( 'players', 'player_play' )
 
+    # Verbose if not CDDA
     try:
         # $ cdinfo -a # will output: no_disc | data_disc | xx:xx.xx
         tmp = check_output( f'cdinfo -a -d {CDROM}'.split() ).decode().strip()
@@ -88,7 +87,7 @@ def check_for_CDDA(d):
         elif 'data_disc' in tmp:
             print( f'({ME}) data disc' )
     except:
-        print( f'({ME}) This script needs \'cdtool\' (command line CDROM tool)' )
+        print( f'({ME}) This script needs \'cdtool\' (command line cdrom tool)' )
 
 def main():
     # Main observer daemon
@@ -103,7 +102,6 @@ if __name__ == '__main__':
 
     UHOME = os.path.expanduser("~")
     ME = __file__.split('/')[-1]
-    CDROM = '/dev/cdrom'
 
     # pe.audio.sys services addressing
     try:
