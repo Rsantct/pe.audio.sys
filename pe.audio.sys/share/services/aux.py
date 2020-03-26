@@ -2,15 +2,6 @@
 
 # Copyright (c) 2019 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
-
-# This is based on 'pre.di.c,' a preamp and digital crossover
-# https://github.com/rripio/pre.di.c
-# Copyright (C) 2018 Roberto Ripio
-# 'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
-# https://github.com/AudioHumLab/FIRtro
-# Copyright (c) 2006-2011 Roberto Ripio
-# Copyright (c) 2011-2016 Alberto Miguélez
-# Copyright (c) 2016-2018 Rafael Sánchez
 #
 # 'pe.audio.sys' is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" A module interface that runs miscellaneous local tasks.
+""" A module plugin that runs miscellaneous local tasks for server.py
 """
 
 import yaml
@@ -33,17 +24,28 @@ import json
 from subprocess import Popen, check_output
 import os
 import sys
+#   https://watchdog.readthedocs.io/en/latest/
+from watchdog.observers import Observer
+from watchdog.events    import FileSystemEventHandler
+
 
 UHOME = os.path.expanduser("~")
-MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
-MACROS_FOLDER = f'{MAIN_FOLDER}/macros'
-LOUD_MON_CTRL = f'{MAIN_FOLDER}/.loudness_control'
-LOUD_MON_VAL  = f'{MAIN_FOLDER}/.loudness_monitor'
+MAIN_FOLDER         = f'{UHOME}/pe.audio.sys'
+MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
+LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
+LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
+AMP_STATE_FILE      = f'{UHOME}/.amplifier'
 
-with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
-    CFG = yaml.safe_load( f )
+aux_info = {    'amp':'off', 
+                'loudness_monitor': 0.0,
+                'user_macros': [],
+                'web_config': {}
+            }
+
 try:
-    AMP_MANAGER =  CFG['aux']['amp_manager']
+    with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
+        tmp = yaml.safe_load( f )
+    AMP_MANAGER =  tmp['aux']['amp_manager']
 except:
     # This will be printed out to the terminal to advice the user:
     AMP_MANAGER =  'echo For amp switching please configure config.yml'
@@ -53,7 +55,6 @@ try:
         WEBCONFIG = yaml.safe_load( f )
 except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
-
 
 def read_command_phrase(command_phrase):
     cmd, arg = None, None
@@ -79,11 +80,10 @@ def do( command_phrase ):
     return json.dumps(result).encode()
 
 # Main function for command processing
-def process( cmd, arg ):
+def process( cmd, arg=None ):
     """ input:  a tuple (command, arg)
         output: a result string
     """
-
     result = ''
 
     # Amplifier switching
@@ -91,7 +91,7 @@ def process( cmd, arg ):
 
         # current switch state
         try:
-            with open( f'{UHOME}/.amplifier', 'r') as f:
+            with open( f'{AMP_STATE_FILE}', 'r') as f:
                 tmp =  f.read().strip()
             if tmp.lower() in ('0','off'):
                 curr_sta = 'off'
@@ -101,7 +101,7 @@ def process( cmd, arg ):
                 curr_sta = '-'
                 raise
         except:
-            print( f'(aux) UNKNOWN status at \'~/.amplifier\'' )
+            print( f'(aux) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
 
         if arg == 'state':
             return curr_sta
@@ -137,7 +137,7 @@ def process( cmd, arg ):
     # Send reset to the loudness monitor daemon through by its control file
     elif cmd == 'loudness_monitor_reset':
         try:
-            with open(LOUD_MON_CTRL, 'w') as f:
+            with open(LOUD_MON_CTRL_FILE, 'w') as f:
                 f.write('reset')
             result = 'done'
         except:
@@ -146,7 +146,7 @@ def process( cmd, arg ):
     # Get the loudness monitor value from the loudness monitor daemon's output file
     elif cmd == 'get_loudness_monitor':
         try:
-            with open(LOUD_MON_VAL, 'r') as f:
+            with open(LOUD_MON_VAL_FILE, 'r') as f:
                 result = round( float(f.read().strip()), 1)
         except:
             result = ''
@@ -174,8 +174,43 @@ def process( cmd, arg ):
 
     return result
 
+def update_aux_info():
+    aux_info['amp'] =               process('amp_switch', 'state')
+    aux_info['loudness_monitor'] =  process('get_loudness_monitor')
+    aux_info['user_macros'] =       process('get_macros')
+    aux_info['web_config'] =        process('get_web_config')
+    with open(f'{MAIN_FOLDER}/.aux_info', 'w') as f:
+        f.write( json.dumps(aux_info) )
 
-# command line use
+class My_files_event_handler(FileSystemEventHandler):
+    """ will do something when some file changes
+    """
+    def on_modified(self, event):
+        path = event.src_path
+        print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
+        if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
+            update_aux_info()
+
+def init():
+
+    # First update
+    update_aux_info()
+
+    # Starts a WATCHDOG to observe file changes
+    #   https://watchdog.readthedocs.io/en/latest/
+    #   https://stackoverflow.com/questions/18599339/
+    #   python-watchdog-monitoring-file-for-changes
+    #   Use recursive=True to observe also subfolders
+    #  (i) Even observing recursively the CPU load is negligible
+
+    # Will observe for changes in files under $HOME.
+    observer = Observer()
+    observer.schedule(event_handler=My_files_event_handler(),
+                      path=UHOME,
+                      recursive=True)
+    observer.start()
+
+# command line use (DEPRECATED)
 if __name__ == '__main__':
 
     if sys.argv[1:]:
