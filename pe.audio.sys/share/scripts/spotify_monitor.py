@@ -49,8 +49,8 @@ def start():
     if v != '-1':
         if v in ('0','1'):
             v = 1
-        Popen( f'{SCRIPTSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
         print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
+        Popen( f'{SCRIPTSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
     else:
         print( '(spotify_monitor) Unable to find playerctl --version)' )
 
