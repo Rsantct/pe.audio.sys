@@ -33,10 +33,12 @@ CTRLFNAME   = f'{MAINFOLDER}/.loudness_control'
 
 def start():
 
-    # do create the auxiliary loudness monitor control file
+    stop()
+
+    # Create the auxiliary loudness monitor control file
     with open(CTRLFNAME, 'w') as f:
         f.write('')
-        
+
     cmd = f'{MAINFOLDER}/share/scripts/loudness_monitor/' \
             'loudness_monitor_daemon.py' \
            f' --input_device pre_in_loop' \
@@ -47,9 +49,10 @@ def start():
     print(f'(loudness_monitor) spawned PortAudio ports in JACK')
 
 def stop():
-    Popen( 'pkill -f loudness_monitor_daemon.py'.split() )
 
-    
+    Popen( 'pkill -f loudness_monitor_daemon.py'.split() )
+    sleep(.5)
+
 if sys.argv[1:]:
     try:
         option = {
