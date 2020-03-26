@@ -28,7 +28,6 @@ import sys
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
 
-
 UHOME = os.path.expanduser("~")
 MAIN_FOLDER         = f'{UHOME}/pe.audio.sys'
 MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
