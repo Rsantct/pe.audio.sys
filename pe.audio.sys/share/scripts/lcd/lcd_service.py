@@ -350,6 +350,7 @@ if __name__ == "__main__":
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     #   Use recursive=True to observe also subfolders
+    #  (i) Even observing recursively the CPU load is negligible
     observer = Observer()
     observer.schedule(event_handler=changed_files_handler(),
                       path=WATCHED_DIR,
