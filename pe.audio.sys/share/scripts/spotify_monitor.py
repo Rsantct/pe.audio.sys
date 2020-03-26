@@ -44,14 +44,14 @@ def get_playerctl_version():
         return -1
 
 def check_Spotify_Desktop_process():
-    times = 5
-    while times:
+    wait_sec = 15
+    while wait_sec:
         tmp = check_output( 'pgrep -fli spotify | cut -d" " -f2', shell=True) \
                 .decode().split()
         if 'spotify' in tmp:
             print('(spotify_monitor) found Spotify Desktop running')
             return True
-        times -= 1
+        wait_sec -= 1
         sleep(1)
     print('(spotify_monitor) Unable to detect Spotify Desktop running')
     return False
