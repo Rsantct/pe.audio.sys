@@ -43,14 +43,29 @@ def get_playerctl_version():
     except:
         return -1
 
+def check_Spotify_Desktop_process():
+    times = 5
+    while times:
+        tmp = check_output( 'pgrep -fli spotify | cut -d" " -f2', shell=True) \
+                .decode().split()
+        if 'spotify' in tmp:
+            print('(spotify_monitor) found Spotify Desktop running')
+            return True
+        times -= 1
+        sleep(1)
+    print('(spotify_monitor) Unable to detect Spotify Desktop running')
+    return False
+
 def start():
     stop()
+    if not check_Spotify_Desktop_process():
+        exit()
     v = get_playerctl_version()
     if v != '-1':
         if v in ('0','1'):
             v = 1
-        print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
         Popen( f'{SCRIPTSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
+        print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
     else:
         print( '(spotify_monitor) Unable to find playerctl --version)' )
 
