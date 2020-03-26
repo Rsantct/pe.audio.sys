@@ -313,7 +313,7 @@ class changed_files_handler(FileSystemEventHandler):
     def on_modified(self, event):
 
         path = event.src_path
-        #print( f'(lcd_service) change: \'{path}\'' ) # DEBUG
+        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
 
         # pe.audio.sys STATE changes
         if STATE_file in path:
