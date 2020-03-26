@@ -35,13 +35,13 @@ import threading
 import yaml
 from time import sleep
 import json
-from  players_mod.mpd import                mpd_client
-from  players_mod.librespot import          librespot_meta
-from  players_mod.mplayer import            mplayer_cmd, \
-                                            mplayer_meta, \
+from  players_mod.mpd               import  mpd_client
+from  players_mod.mplayer           import  mplayer_cmd,            \
+                                            mplayer_meta,           \
                                             cdda_meta
-from  players_mod.spotify_desktop import    spotify_control, \
-                                            spotify_meta, \
+from  players_mod.librespot         import  librespot_meta
+from  players_mod.spotify_desktop   import  spotify_control,        \
+                                            spotify_meta,           \
                                             detect_spotify_client
 
 UHOME = os.path.expanduser("~")
