@@ -510,4 +510,6 @@ def mplayer_cmd(cmd, service):
         # Flush .cdda_info (blank the metadata file)
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( "{}" ) 
+        # Unmute preamp
+        pre_control_cmd('mute off')
 
