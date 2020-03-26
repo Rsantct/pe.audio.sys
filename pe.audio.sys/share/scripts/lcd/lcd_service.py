@@ -21,13 +21,13 @@
 """
 # This module is based on monitoring file changes under the pe.audio.sys folder
 
+import lcd_client
+#import lcdbig # NOT USED, displays the level value in full size
 import os
 from time import sleep
 import yaml
 import json
 import threading
-import lcd_client
-#import lcdbig # NOT USED, displays the level value in full size
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
