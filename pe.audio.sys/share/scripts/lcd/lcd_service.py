@@ -349,7 +349,7 @@ if __name__ == "__main__":
     #   https://watchdog.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
-    #   Use recursive=True will observe changes under path
+    #   Use recursive=True to observe also subfolders
     observer = Observer()
     observer.schedule(event_handler=changed_files_handler(),
                       path=WATCHED_DIR,
