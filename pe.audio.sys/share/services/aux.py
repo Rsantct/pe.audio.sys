@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" A module plugin that runs miscellaneous local tasks for server.py
+""" Runs miscellaneous local tasks.
+    This module is loaded by 'server.py'
 """
 
 import yaml
