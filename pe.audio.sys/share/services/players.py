@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" A module that controls and retrieve metadata info from the current player.
-    This module is called from the TCP listening script 'server.py'.
+""" Controls and retrieve metadata info from the current player.
+    This module is loaded by 'server.py'
 """
 
 # (i) I/O FILES MANAGED HERE:
@@ -166,7 +166,7 @@ def player_control(action):
     # As this is used by a server, we will return a bytes-like object:
     return result.encode()
 
-# Optional init function
+# init() will be autostarted from server.py when loading this module
 def init():
     """ This init function will:
         - Periodically store the metadata info to
@@ -184,7 +184,7 @@ def init():
     meta_timer = 2
     meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
-    # Initiate the player state
+    # Initiate the player state file
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
         f.write('stop')
 
