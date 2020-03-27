@@ -24,6 +24,7 @@
 import sys, os
 from subprocess import Popen
 import yaml
+from time import sleep
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
@@ -31,10 +32,12 @@ CONFIGFNAME = f'{MAINFOLDER}/config.yml'
 STATEFNAME  = f'{MAINFOLDER}/.state.yml'
 CTRLFNAME   = f'{MAINFOLDER}/.loudness_control'
 
+def stop():
+    Popen( 'pkill -f loudness_monitor_daemon.py'.split() )
+    sleep(.5)
+
 def start():
-
     stop()
-
     # Create the auxiliary loudness monitor control file
     with open(CTRLFNAME, 'w') as f:
         f.write('')
@@ -48,18 +51,12 @@ def start():
     Popen( cmd.split() )
     print(f'(loudness_monitor) spawned PortAudio ports in JACK')
 
-def stop():
-
-    Popen( 'pkill -f loudness_monitor_daemon.py'.split() )
-    sleep(.5)
-
 if sys.argv[1:]:
-    try:
-        option = {
-            'start' : start,
-            'stop'  : stop
-            }[ sys.argv[1] ]()
-    except:
-        print( '(loudness_monitor) ERROR cannot start' )
+    if sys.argv[1] == 'start':
+        start()
+    elif sys.argv[1] == 'stop':
+        stop()
+    else:
+        print(__doc__)
 else:
     print(__doc__)
