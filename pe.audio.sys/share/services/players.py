@@ -166,6 +166,28 @@ def player_control(action):
     # As this is used by a server, we will return a bytes-like object:
     return result.encode()
 
+# Optional init function
+def init():
+    """ This init function will:
+        - Periodically store the metadata info to
+            MAINFOLDER/.player_metadata
+          so that can be read from any process interested in it.
+        - Also will initiate MAINFOLDER/.player_state
+    """
+    def store_meta(timer=2):
+        while True:
+            md = player_get_meta().decode()
+            with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
+                f.write( md )
+            sleep(timer)
+    # Loop storing metadata
+    meta_timer = 2
+    meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
+    meta_loop.start()
+    # Initiate the player state
+    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
+        f.write('stop')
+
 # Interface entry function for this module from 'server.py'
 def do(task):
     """ This do() is the entry interface function from a listening server.
@@ -199,26 +221,4 @@ def do(task):
     elif task[:7] == 'http://':
         sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'
                   .split() )
-
-# Optional init function
-def init():
-    """ This init function will:
-        - Periodically store the metadata info to
-            MAINFOLDER/.player_metadata
-          so that can be read from any process interested in it.
-        - Also will initiate MAINFOLDER/.player_state
-    """
-    def store_meta(timer=2):
-        while True:
-            md = player_get_meta().decode()
-            with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
-                f.write( md )
-            sleep(timer)
-    # Loop storing metadata
-    meta_timer = 2
-    meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
-    meta_loop.start()
-    # Initiate the player state
-    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write('stop')
 
