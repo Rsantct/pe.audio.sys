@@ -202,9 +202,13 @@ def update_lcd_state(scr='scr_1'):
             # Special case: midside (formerly 'mono')
             elif key == 'midside':
                 if data['midside'] == 'off':
-                    lbl = ''
+                    lbl = '>ST<'
+                elif data['midside'] == 'mid':
+                    lbl = 'MONO'
+                elif data['midside'] == 'side':
+                    lbl = 'SIDE'
                 else:
-                    lbl = data['midside'].upper()
+                    lbl = ''
 
             # Any else key:
             else:
