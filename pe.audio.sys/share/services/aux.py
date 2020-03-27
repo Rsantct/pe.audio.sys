@@ -41,6 +41,7 @@ aux_info = {    'amp':'off',
                 'web_config': {}
             }
 
+# Gets the amp manager script as defined inside config.yml
 try:
     with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
         tmp = yaml.safe_load( f )
@@ -49,12 +50,14 @@ except:
     # This will be printed out to the terminal to advice the user:
     AMP_MANAGER =  'echo For amp switching please configure config.yml'
 
+# Gets the web page config as defined in web.yml
 try:
     with open( f'{MAIN_FOLDER}/web.yml' , 'r' ) as f:
         WEBCONFIG = yaml.safe_load( f )
 except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
 
+# Auxiliary to parse a command phrase string into a tuple (cmd,arg) 
 def read_command_phrase(command_phrase):
     cmd, arg = None, None
     # This is to avoid empty values when there are more
@@ -70,13 +73,6 @@ def read_command_phrase(command_phrase):
     except:
         pass
     return cmd, arg
-
-# Interface function to plug this on server.py
-def do( command_phrase ):
-    cmd, arg = read_command_phrase( command_phrase
-                                              .replace('\n','').replace('\r','') )
-    result = process( cmd, arg )
-    return json.dumps(result).encode()
 
 # Main function for command processing
 def process( cmd, arg=None ):
@@ -173,6 +169,7 @@ def process( cmd, arg=None ):
 
     return result
 
+# Dumps pe.audio.sys/.aux_info
 def update_aux_info():
     aux_info['amp'] =               process('amp_switch', 'state')
     aux_info['loudness_monitor'] =  process('get_loudness_monitor')
@@ -181,6 +178,7 @@ def update_aux_info():
     with open(f'{MAIN_FOLDER}/.aux_info', 'w') as f:
         f.write( json.dumps(aux_info) )
 
+# Handler class to do actions when a file change occurs
 class My_files_event_handler(FileSystemEventHandler):
     """ will do something when some file changes
     """
@@ -190,6 +188,7 @@ class My_files_event_handler(FileSystemEventHandler):
         if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
             update_aux_info()
 
+# init() will be autostarted from server.py when loading this module
 def init():
 
     # First update
@@ -209,6 +208,13 @@ def init():
                       recursive=True)
     observer.start()
 
+# Interface function to plug this on server.py
+def do( command_phrase ):
+    cmd, arg = read_command_phrase( command_phrase
+                                              .replace('\n','').replace('\r','') )
+    result = process( cmd, arg )
+    return json.dumps(result).encode()
+
 # command line use (DEPRECATED)
 if __name__ == '__main__':
 
@@ -218,5 +224,3 @@ if __name__ == '__main__':
         cmd, arg = read_command_phrase( command_phrase )
         result = process( cmd, arg )
         print( result )
-
-
