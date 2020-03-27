@@ -111,24 +111,26 @@ def lfilter( x, coeffs):
     y[:,1], _ = signal.lfilter( b, a, x[:,1], zi=zi*x[:,1][0] )
     return y
 
-class Changed_files_handler(FileSystemEventHandler):
-    """
-        This is a handler when files have changed will analize them
-        to restart (I) measuring if necessary.
+# Handler class to do actions when a file change occurs
+class My_files_event_handler(FileSystemEventHandler):
+    """ Triggers reset=True to restart (I) measuring when:
+        - input preamp changes
+        - .loudness_control contains the 'reset' command.
     """
     def on_modified(self, event):
         global reset, last_input
-        path = event.src_path
 
+        path = event.src_path
         # If the pre.di.c STATE file has changed
         if STATEPATH in path:
             with open( STATEPATH, 'r' ) as status_file:
                 state = yaml.safe_load(status_file)
+                if not state:
+                    return
                 current_input = state['input']
                 if last_input != current_input:
                     last_input = current_input
                     reset = True
-
         # If control file has changed
         if '.loudness_control' in path:
             with open( args.control_file, 'r') as fin:
@@ -150,13 +152,17 @@ if __name__ == '__main__':
     with open( STATEPATH, 'r' ) as state_file:
         last_input = yaml.safe_load(state_file)['input']
 
-    # Starts a WATCHDOG to see if pre.di.c/* files changes
-    # in order to reset (I) if <input> has changed.
+    # Starts a WATCHDOG to observe file changes
+    #   https://watchdog.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
+    #   Use recursive=True to observe also subfolders
+    #  (i) Even observing recursively the CPU load is negligible
+
+    # Will observe for changes in files under ~/pe.audio.sys/
     observer = Observer()
-    observer.schedule( event_handler=Changed_files_handler(),
-                       path=MAINFOLDER, recursive=True )
+    observer.schedule( event_handler=My_files_event_handler(),
+                       path=MAINFOLDER, recursive=False )
     obsthread = threading.Thread( target = observer.start() )
     obsthread.start()
 
