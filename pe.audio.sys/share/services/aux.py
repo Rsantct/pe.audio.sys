@@ -186,7 +186,7 @@ class My_files_event_handler(FileSystemEventHandler):
     """
     def on_modified(self, event):
         path = event.src_path
-        print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
+        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
         if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
             update_aux_info()
 
