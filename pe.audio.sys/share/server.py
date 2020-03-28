@@ -153,33 +153,24 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # Optional -v for verbose printing out (debug)
-    verbose = False
+    if '-v' in sys.argv[4]:
+        verbose = True
+    else:
+        verbose = False
+
+    # Adding the path where to look for importing service modules
+    UHOME = os.path.expanduser("~")
+    sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
+
+    # Importing the service module
+    # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
+    MODULE = __import__(service)
+    print( f'(server.py) will run \'{service}\' module at {addr}:{port} ...' )
+    # Optional MODULE.init (autostart) function:
     try:
-        if '-v' in sys.argv[4]:
-            verbose = True
+        MODULE.init()
     except:
         pass
 
-    # Read the paths where to look for processing plugins
-    UHOME = os.path.expanduser("~")
-    THISPATH = os.path.dirname(os.path.abspath(__file__))
-    with open(f'{THISPATH}/server.yml', 'r') as f:
-        config = yaml.safe_load(f)
-    for path in config['paths']:
-        sys.path.append( f'{UHOME}/{path}' )
-
-    # MAIN
-    try:
-        # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
-        MODULE = __import__(service)
-        print( f'(server.py) will run \'{service}\' module at {addr}:{port} ...' )
-        # Optional MODULE.init function:
-        try:
-            MODULE.init()
-        except:
-            pass
-        # Runing the server with the MODULE.do() interface
-        run_server( host=addr, port=int(port), verbose=verbose )
-
-    except:
-        print( f'(server.py) STOPPED after \'{service}\' module has broken. BYE :-/' )
+    # Runing the server with the MODULE.do() interface
+    run_server( host=addr, port=int(port), verbose=verbose )
