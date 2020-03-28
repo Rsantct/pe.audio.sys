@@ -116,7 +116,7 @@ def process_aux( cmd, arg=None ):
     result = ''
 
     # AMPLIFIER SWITCHING
-    elif cmd == 'amp_switch':
+    if cmd == 'amp_switch':
 
         # current switch state
         try:
