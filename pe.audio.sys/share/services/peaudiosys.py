@@ -50,8 +50,7 @@ aux_info = {    'amp':'off',
 try:
     with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
         cfg = yaml.safe_load(f)
-        # (i) start.py will assign 'predic' port number this way:
-        PRE_PORT = cfg['peaudiosys_port'] + 1
+        BASE_PORT = cfg['peaudiosys_port']
 except:
     print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
@@ -72,53 +71,49 @@ try:
 except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
 
-# Auxiliary to talk to the preamp control service.
-def pre_control_cmd(cmd, host='localhost', port=PRE_PORT):
+# Auxiliary to talk to othes server.py instances (preamp and players)
+def send_cmd(service, cmd):
+
+    host = 'localhost'
+    # (i) start.py will assign 'predic' port number this way:
+    if service == 'predic':
+        port = BASE_PORT + 1
+    elif service == 'players':
+        port = BASE_PORT + 2
+    else:
+        raise Exception(f'({ME}) wrong service \'{service}\'')
+
     ans = ''
     with socket() as s:
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
-            print (f'({ME}) Tx to preamp:   \'{cmd }\'')
+            print (f'({ME}) Tx to {service}:   \'{cmd }\'')
             ans = s.recv(1024).decode()
-            print (f'({ME}) Rx from preamp: \'{ans }\' ')
+            print (f'({ME}) Rx from {service}: \'{ans }\' ')
             s.close()
         except:
             print (f'({ME}) service \'peaudiosys\' socket error on port {port}')
     return ans
 
-# Auxiliary to parse a command phrase string into a tuple (cmd,arg) 
-def read_command_phrase(command_phrase):
-    cmd, arg = None, None
-    # This is to avoid empty values when there are more
-    # than on space as delimiter inside the command_phrase:
-    opcs = [x for x in command_phrase.split(' ') if x]
-    try:
-        cmd = opcs[0]
-    except:
-        raise
-    try:
-        # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
-        arg = ' '.join( opcs[1:] )
-    except:
-        pass
-    return cmd, arg
+# Main function for PREDIC commands processing
+def process_predic( cmd, arg=None ):
+    if arg:
+        cmd  = ' '.join( (cmd, arg) )
+    return send_cmd( service='predic', cmd=cmd )
 
-# Main function for command processing
-def process( cmd, arg=None ):
-    """ input:  a tuple (command, arg)
+# Main function for PLAYERS commands processing
+def process_players( cmd, arg=None ):
+    if arg:
+        cmd  = ' '.join( (cmd, arg) )
+    return send_cmd( service='players', cmd=cmd )
+    
+# Main function for AUX commands processing
+def process_aux( cmd, arg=None ):
+    """ input:  a tuple (prefix, command, arg)
         output: a result string
     """
     result = ''
-        
-    # Get PLAYER METADATA
-    if cmd == 'player_get_meta':
-        try:
-            with open(PLAYER_META_FILE, 'r') as f:
-                result = json.loads(f.read())
-        except:
-            result = {}
-        
 
     # AMPLIFIER SWITCHING
     elif cmd == 'amp_switch':
@@ -207,10 +202,6 @@ def process( cmd, arg=None ):
         print(__doc__)
         result =  'done'
 
-    # ANY ELSE WILL BE SENT TO THE PREAMP SERVER:
-    else:
-        result = pre_control_cmd( ' '.join( (cmd, arg) ) )
-
     return result
 
 # Dumps pe.audio.sys/.aux_info
@@ -254,17 +245,41 @@ def init():
 
 # Interface function to plug this on server.py
 def do( command_phrase ):
-    cmd, arg = read_command_phrase( command_phrase
-                                              .replace('\n','').replace('\r','') )
-    result = process( cmd, arg )
+
+    def read_command_phrase(command_phrase):
+
+        # (i) command phrase SYNTAX must start with an appropriate prefix:
+        #           predic  command  arg1 ...
+        #           players command  arg1 ...
+        #           aux     command  arg1 ...
+        #     The 'predic' prefix can be omited
+
+        pfx, cmd, arg = None, None, None
+
+        # This is to avoid empty values when there are more
+        # than on space as delimiter inside the command_phrase:
+        chunks = [x for x in command_phrase.split(' ') if x]
+
+        if not chunks[0] in ('predic', 'players', 'aux'):
+            chunks.insert(0, 'predic')
+        pfx = chunks[0]
+
+        if chunks[1:]:
+            cmd = chunks[1]
+        else:
+            raise Exception(f'({ME}) BAD command: {command_phrase}')
+        if chunks[2:]:
+            # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
+            arg = ' '.join( chunks[2:] )
+
+        return pfx, cmd, arg
+
+    pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
+    #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
+
+    result = {  'predic':   process_predic,
+                'players':  process_players,
+                'aux':      process_aux } [pfx](cmd, arg)
+
     return json.dumps(result).encode()
 
-# command line use (DEPRECATED)
-if __name__ == '__main__':
-
-    if sys.argv[1:]:
-
-        command_phrase = ' '.join (sys.argv[1:] )
-        cmd, arg = read_command_phrase( command_phrase )
-        result = process( cmd, arg )
-        print( result )
