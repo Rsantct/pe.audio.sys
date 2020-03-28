@@ -13,7 +13,6 @@ services_addressing:
     predic_address:         localhost
     predic_port:            9991
 
-
     # Players management service
     players_address:        localhost
     players_port:           9992
