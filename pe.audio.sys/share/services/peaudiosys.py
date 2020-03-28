@@ -30,7 +30,8 @@ import sys
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
 
-UHOME = os.path.expanduser("~")
+ME                  = __file__.split('/')[-1]
+UHOME               = os.path.expanduser("~")
 MAIN_FOLDER         = f'{UHOME}/pe.audio.sys'
 MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
 LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
@@ -45,13 +46,13 @@ aux_info = {    'amp':'off',
                 'web_config': {}
             }
 
-## pe.audio.sys services addressing
+## predic service addressing
 try:
     with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
         A = yaml.safe_load(f)['services_addressing']
-        CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
+        CTL_HOST, CTL_PORT = A['predic_address'], A['predic_port']
 except:
-    print('(players.py) ERROR with \'pe.audio.sys/config.yml\'')
+    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 
 # Gets the amp manager script as defined inside config.yml
@@ -78,12 +79,12 @@ def pre_control_cmd(cmd):
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
-            print (f'(aux.py) Tx to preamp:   \'{cmd }\'')
+            print (f'({ME}) Tx to preamp:   \'{cmd }\'')
             ans = s.recv(1024).decode()
-            print (f'(aux.py) Rx from preamp: \'{ans }\' ')
+            print (f'({ME}) Rx from preamp: \'{ans }\' ')
             s.close()
         except:
-            print (f'(aux.py) service \'pasysctrl\' socket error on port {port}')
+            print (f'({ME}) service \'peaudiosys\' socket error on port {port}')
     return ans
 
 # Auxiliary to parse a command phrase string into a tuple (cmd,arg) 
@@ -134,7 +135,7 @@ def process( cmd, arg=None ):
                 curr_sta = '-'
                 raise
         except:
-            print( f'(aux) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
+            print( f'({ME}) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
 
         if arg == 'state':
             return curr_sta
@@ -146,7 +147,7 @@ def process( cmd, arg=None ):
         if arg in ('on','off'):
             new_sta = arg
 
-        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
+        print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
         Popen( f'{AMP_MANAGER} {new_sta}'.split(), shell=False )
         return new_sta
 
@@ -163,7 +164,7 @@ def process( cmd, arg=None ):
 
     # RUN MACRO
     elif cmd == 'run_macro':
-        print( f'(aux) running macro: {arg}' )
+        print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
         result = 'tried'
 
@@ -195,7 +196,7 @@ def process( cmd, arg=None ):
         try:
             Popen( f'{restart_action}'.split() )
         except:
-            print( f'(aux) Problems running \'{restart_action}\'' )
+            print( f'({ME}) Problems running \'{restart_action}\'' )
 
     # Get the WEB.CONFIG dictionary
     elif cmd == 'get_web_config':
@@ -227,7 +228,7 @@ class My_files_event_handler(FileSystemEventHandler):
     """
     def on_modified(self, event):
         path = event.src_path
-        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
+        #print( f'({ME}) file {event.event_type}: \'{path}\'' ) # DEBUG
         if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
             dump_aux_info()
 
