@@ -43,37 +43,29 @@ from subprocess import check_output, Popen
 #       python-dev libcdio-dev libiso9660-dev swig pkg-config
 # Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
-def send_cmd(svcName, cmd):
-    if   svcName == 'aux':
-        host, port = AUX_HOST, AUX_PORT
-    elif svcName == 'players':
-        host, port = PLY_HOST, PLY_PORT
-    elif svcName == 'pasysctrl':
-        host, port = CTL_HOST, CTL_PORT
-    else:
-        print( f'({ME}) unknown {svcName}' )
-        return
-    print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
+def send_cmd(cmd):
+    host, port = CTL_HOST, CTL_PORT
+    print( f'({ME}) sending: {cmd} to {host}:{port}')
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
         except:
-            print (f'({ME}) service \'{svcName}\' socket error on port {port}')
+            print (f'({ME}) socket error on {host}:{port}')
     return
-
+    
 def check_for_CDDA(d):
 
     srDevice = d.device_path.split('/')[-1]
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'players', 'player_pause' )
+        send_cmd( 'player_pause' )
         sleep(.5)
-        send_cmd( 'pasysctrl', 'input cd' )
+        send_cmd( 'input cd' )
         sleep(.5)
-        send_cmd( 'players', 'player_play' )
+        send_cmd( 'player_play' )
 
     # Verbose if not CDDA
     try:
@@ -103,13 +95,11 @@ if __name__ == '__main__':
     UHOME = os.path.expanduser("~")
     ME = __file__.split('/')[-1]
 
-    # pe.audio.sys services addressing
+    # pe.audio.sys service addressing
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
             A = yaml.safe_load(f)['services_addressing']
-            CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
-            AUX_HOST, AUX_PORT = A['aux_address'],       A['aux_port']
-            PLY_HOST, PLY_PORT = A['players_address'],   A['players_port']
+            CTL_HOST, CTL_PORT = A['peaudiosys_address'], A['peaudiosys_port']
     except:
         print('ERROR with \'pe.audio.sys/config.yml\'')
         exit()
@@ -126,4 +116,3 @@ if __name__ == '__main__':
             print(__doc__)
     else:
         print(__doc__)
-
