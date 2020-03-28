@@ -49,8 +49,9 @@ aux_info = {    'amp':'off',
 ## predic service addressing
 try:
     with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
-        A = yaml.safe_load(f)['services_addressing']
-        CTL_HOST, CTL_PORT = A['predic_address'], A['predic_port']
+        cfg = yaml.safe_load(f)
+        # (i) start.py will assign 'predic' port number this way:
+        PRE_PORT = cfg['peaudiosys_port'] + 1
 except:
     print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
@@ -72,8 +73,7 @@ except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
 
 # Auxiliary to talk to the preamp control service.
-def pre_control_cmd(cmd):
-    host, port = CTL_HOST, CTL_PORT
+def pre_control_cmd(cmd, host='localhost', port=PRE_PORT):
     ans = ''
     with socket() as s:
         try:
