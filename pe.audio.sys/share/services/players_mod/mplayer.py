@@ -38,8 +38,9 @@ import yaml
 from time import sleep
 from socket import socket
 
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
+ME          = __file__.split('/')[-1]
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 ## generic metadata template
 METATEMPLATE = {
@@ -73,9 +74,9 @@ cdda_playing_status = 'stop'
 try:
     with open(f'{MAINFOLDER}/config.yml', 'r') as f:
         A = yaml.safe_load(f)['services_addressing']
-        CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
+        CTL_HOST, CTL_PORT = A['peaudiosys_address'], A['peaudiosys_port']
 except:
-    print('(players.py) ERROR with \'pe.audio.sys/config.yml\'')
+    print('({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 
 # Auxiliary to talk to the main pe.audio.sys control service.
@@ -87,9 +88,9 @@ def pre_control_cmd(cmd):
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
-            print (f'(players.py) sending \'{cmd }\' to \'pasysctrl\'')
+            print (f'({ME}) sending \'{cmd }\' to \'peaudiosys\'')
         except:
-            print (f'(players.py) service \'pasysctrl\' socket error on port {port}')
+            print (f'({ME}) socket error on {host}:{port}')
     return
 
 # Auxiliary function to format hh:mm:ss
@@ -360,7 +361,7 @@ def mplayer_cmd(cmd, service):
             try:
                 tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
-                print( '(players.py) Problem running the program \'cdcd\' for CDDA metadata reading.' )
+                print( '({ME}) Problem running the program \'cdcd\' for CDDA metadata reading.' )
                 print( '             Check also your cdrom-device setting under .mplayer/config' )
 
 
@@ -384,7 +385,7 @@ def mplayer_cmd(cmd, service):
 
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cd_info ) )
-        print( f'(players.py) CD info saved to {MAINFOLDER}/.cdda_info' )
+        print( f'({ME}) CD info saved to {MAINFOLDER}/.cdda_info' )
 
     # Aux function to check if Mplayer has loaded a disk
     def cdda_in_mplayer():
@@ -444,7 +445,7 @@ def mplayer_cmd(cmd, service):
             # Prepare to play if a disk is not loaded into Mplayer
             if not cdda_in_mplayer():
                 pre_control_cmd('mute on')
-                print( f'(players.py) loading disk ...' )
+                print( f'({ME}) loading disk ...' )
                 # Save disk info into a json file
                 save_cd_info()
                 # Flushing the mplayer events file
@@ -457,13 +458,13 @@ def mplayer_cmd(cmd, service):
                 n = 15
                 while n:
                     if cdda_in_mplayer(): break
-                    print( f'(players.py) waiting for Mplayer to load disk' ) 
+                    print( f'({ME}) waiting for Mplayer to load disk' ) 
                     sleep(1)
                     n -= 1
                 if n:
-                    print( '(players.py) Mplayer disk loaded' )
+                    print( '({ME}) Mplayer disk loaded' )
                 else:
-                    print( '(players.py) TIMED OUT detecting '
+                    print( '({ME}) TIMED OUT detecting '
                             'Mplayer disk loaded' )
 
             # Retrieving the current track 
@@ -485,11 +486,11 @@ def mplayer_cmd(cmd, service):
             eject_disk = True
 
     else:
-        print( f'(players.py) unknown Mplayer service \'{service}\'' )
+        print( f'({ME}) unknown Mplayer service \'{service}\'' )
         return
 
     # Sending the command to the corresponding fifo
-    print( f'(players.py) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
+    print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
 
