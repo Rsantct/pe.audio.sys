@@ -1,21 +1,7 @@
-# ============ pe.audio.sys SERVICES LAUNCHER and tcp addressing  ==============
-# Adressing pairs listed here will trigger the tcp server
-# to run the underlying service
-
-services_addressing:
-
-    # Main pe.audio.sys control service
-    # set _address to 'localhost' or yourIP if you want to listen to others
-    peaudiosys_address:     localhost
-    peaudiosys_port:        9900
-
-    # Preamp and digital convolver control service
-    predic_address:         localhost
-    predic_port:            9991
-
-    # Players management service
-    players_address:        localhost
-    players_port:           9992
+# ================= pe.audio.sys TCP SERVER address  ===========================
+# set _address to 'localhost' or yourIP if you want to listen to others
+peaudiosys_address:     localhost
+peaudiosys_port:        9900
 
 # ===========================  SOUND CARDS =====================================
 
