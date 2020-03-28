@@ -4,22 +4,19 @@
 
 services_addressing:
 
-    # syntax:
-    # <service>_address:    x.x.x.x | localhost
-    # <service>_port:       N
+    # Main pe.audio.sys control service
+    # set 'localhost' or 'hostname' if you want to listen to others
+    peaudiosys_address:     localhost
+    peaudiosys_port:        9900
 
-    # the MAIN service to control the audio and preamp (MANDATORY)
-    pasysctrl_address:      localhost
-    pasysctrl_port:         9989
+    # Preamp and digital convolver control service
+    predic_address:         localhost
+    predic_port:            9991
 
-    # Auxiliary functions service (optional)
-    aux_address:            localhost
-    aux_port:               9988
 
-    # Players management service (optional)
+    # Players management service
     players_address:        localhost
-    players_port:           9987
-
+    players_port:           9992
 
 # ===========================  SOUND CARDS =====================================
 
