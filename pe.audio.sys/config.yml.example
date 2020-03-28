@@ -5,7 +5,7 @@
 services_addressing:
 
     # Main pe.audio.sys control service
-    # set 'localhost' or 'hostname' if you want to listen to others
+    # set _address to 'localhost' or yourIP if you want to listen to others
     peaudiosys_address:     localhost
     peaudiosys_port:        9900
 
