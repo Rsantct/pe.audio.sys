@@ -20,6 +20,7 @@
     This module is loaded by 'server.py'
 """
 
+from socket import socket
 import yaml
 import json
 from subprocess import Popen, check_output
@@ -35,12 +36,23 @@ MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
 LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
 LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
+PLAYER_META_FILE    = f'{MAIN_FOLDER}/.player_metadata'
+STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 
 aux_info = {    'amp':'off', 
                 'loudness_monitor': 0.0,
                 'user_macros': [],
                 'web_config': {}
             }
+
+## pe.audio.sys services addressing
+try:
+    with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
+        A = yaml.safe_load(f)['services_addressing']
+        CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
+except:
+    print('(players.py) ERROR with \'pe.audio.sys/config.yml\'')
+    exit()
 
 # Gets the amp manager script as defined inside config.yml
 try:
@@ -57,6 +69,22 @@ try:
         WEBCONFIG = yaml.safe_load( f )
 except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
+
+# Auxiliary to talk to the preamp control service.
+def pre_control_cmd(cmd):
+    host, port = CTL_HOST, CTL_PORT
+    ans = ''
+    with socket() as s:
+        try:
+            s.connect( (host, port) )
+            s.send( cmd.encode() )
+            print (f'(aux.py) Tx to preamp:   \'{cmd }\'')
+            ans = s.recv(1024).decode()
+            print (f'(aux.py) Rx from preamp: \'{ans }\' ')
+            s.close()
+        except:
+            print (f'(aux.py) service \'pasysctrl\' socket error on port {port}')
+    return ans
 
 # Auxiliary to parse a command phrase string into a tuple (cmd,arg) 
 def read_command_phrase(command_phrase):
@@ -81,9 +109,18 @@ def process( cmd, arg=None ):
         output: a result string
     """
     result = ''
+        
+    # Get PLAYER METADATA
+    if cmd == 'player_get_meta':
+        try:
+            with open(PLAYER_META_FILE, 'r') as f:
+                result = json.loads(f.read())
+        except:
+            result = {}
+        
 
-    # Amplifier switching
-    if cmd == 'amp_switch':
+    # AMPLIFIER SWITCHING
+    elif cmd == 'amp_switch':
 
         # current switch state
         try:
@@ -114,7 +151,7 @@ def process( cmd, arg=None ):
         return new_sta
 
 
-    # List of macros under macros/ folder
+    # LIST OF MACROS under macros/ folder
     elif cmd == 'get_macros':
         macro_files = []
         with os.scandir( f'{MACROS_FOLDER}' ) as entries:
@@ -124,13 +161,13 @@ def process( cmd, arg=None ):
                     macro_files.append(fname)
         result = macro_files
 
-    # Run a macro
+    # RUN MACRO
     elif cmd == 'run_macro':
         print( f'(aux) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
         result = 'tried'
 
-    # Send reset to the loudness monitor daemon through by its control file
+    # RESET the LOUDNESS MONITOR DAEMON:
     elif cmd == 'loudness_monitor_reset':
         try:
             with open(LOUD_MON_CTRL_FILE, 'w') as f:
@@ -139,7 +176,8 @@ def process( cmd, arg=None ):
         except:
             result = 'error'
 
-    # Get the loudness monitor value from the loudness monitor daemon's output file
+    # Get the LOUDNESS MONITOR VALUE from the 
+    # loudness monitor daemon's output file:
     elif cmd == 'get_loudness_monitor':
         try:
             with open(LOUD_MON_VAL_FILE, 'r') as f:
@@ -159,19 +197,23 @@ def process( cmd, arg=None ):
         except:
             print( f'(aux) Problems running \'{restart_action}\'' )
 
-    # Get the web.config dictionary
+    # Get the WEB.CONFIG dictionary
     elif cmd == 'get_web_config':
         result = WEBCONFIG
 
-    # Help
+    # HELP
     elif '-h' in cmd:
         print(__doc__)
         result =  'done'
 
+    # ANY ELSE WILL BE SENT TO THE PREAMP SERVER:
+    else:
+        result = pre_control_cmd( ' '.join( (cmd, arg) ) )
+
     return result
 
 # Dumps pe.audio.sys/.aux_info
-def update_aux_info():
+def dump_aux_info():
     aux_info['amp'] =               process('amp_switch', 'state')
     aux_info['loudness_monitor'] =  process('get_loudness_monitor')
     aux_info['user_macros'] =       process('get_macros')
@@ -187,13 +229,13 @@ class My_files_event_handler(FileSystemEventHandler):
         path = event.src_path
         #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
         if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
-            update_aux_info()
+            dump_aux_info()
 
 # init() will be autostarted from server.py when loading this module
 def init():
 
     # First update
-    update_aux_info()
+    dump_aux_info()
 
     # Starts a WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
