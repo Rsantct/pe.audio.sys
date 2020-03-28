@@ -36,40 +36,6 @@ preamp = Preamp()
 # INITIATE A CONVOLVER INSTANCE (XO and DRC management)
 convolver = Convolver()
 
-# INTERFACE FUNCTION TO PLUG THIS ON SERVER.PY
-def do( cmdline ):
-    result = process_commands( cmdline )
-    save_yaml( preamp.state, STATE_PATH )
-    # The server needs bytes-like (encoded) things
-    return result.encode()
-
-# Auxiliary function
-def analize_full_command(full_command):
-    """ returns a tuple ( <command>, <arg>, <add:True|False> )
-    """
-
-    command, arg, add = None, None, False
-
-    # The full_command sintax:  <command> [arg [add] ]
-    # 'arg' is given only with some commands
-    # 'add' is given as an option for relative values ordering
-    add = False
-    cmd_list = full_command.replace('\r','').replace('\n','').split()
-
-    if not cmd_list[0:]:
-        return (None, None, False)
-
-    command = cmd_list[0]
-    if cmd_list[1:]:
-        arg = cmd_list[1]
-        if cmd_list[2:]:
-            if cmd_list[2] == 'add':
-                add = True
-            else:
-                return (None, None, False)
-
-    return (command, arg, add)
-
 # MAIN FUNCTION FOR COMMAND PROCESSING
 def process_commands( full_command ):
     """ Processes commands for audio control
@@ -78,8 +44,33 @@ def process_commands( full_command ):
                   'a warning phrase' for NOK command execution
     """
 
-    # Below we use *dummy to accommodate the pasysctrl.py parser mechanism wich
-    # will include  two arguments for any call here, even when not necessary.
+    def analize_full_command(full_cmd):
+        """ returns a tuple ( <command>, <arg>, <add:True|False> )
+        """
+        # The full_command sintax:  <command> [arg [add] ]
+        # 'arg' is given only with some commands
+        # 'add' is given as an option for relative values ordering
+
+        command, arg, add = None, None, False
+
+        cmd_list = full_cmd.replace('\r','').replace('\n','').split()
+
+        if not cmd_list[0:]:
+            return (None, None, False)
+
+        command = cmd_list[0]
+        if cmd_list[1:]:
+            arg = cmd_list[1]
+            if cmd_list[2:]:
+                if cmd_list[2] == 'add':
+                    add = True
+                else:
+                    return (None, None, False)
+
+        return (command, arg, add)
+
+    # (i) Below we use *dummy to accommodate the parser mechanism wich
+    # will include two arguments for any call here, even when not necessary.
 
     # 'mono' is a former command, here it is redirected to 'midside'
     def set_mono(x, *dummy):
@@ -108,7 +99,7 @@ def process_commands( full_command ):
         return result
 
     def print_help(*dummy):
-        with open( f'{UHOME}/pe.audio.sys/pasysctrl.hlp', 'r') as f:
+        with open( f'{UHOME}/pe.audio.sys/peaudiosys.hlp', 'r') as f:
             return f.read()
 
     # HERE BEGINS THE COMMAND PROCESSING:
@@ -166,3 +157,9 @@ def process_commands( full_command ):
 
     return result
 
+# INTERFACE FUNCTION TO PLUG THIS ON SERVER.PY
+def do( cmdline ):
+    result = process_commands( cmdline )
+    save_yaml( preamp.state, STATE_PATH )
+    # The server needs bytes-like (encoded) things
+    return result.encode()
