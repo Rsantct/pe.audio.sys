@@ -40,6 +40,7 @@ from time import sleep
 import yaml
 import threading
 
+ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 BDIR  = f'{UHOME}/pe.audio.sys'
 
@@ -47,6 +48,7 @@ with open( f'{BDIR}/config.yml', 'r' ) as f:
     CONFIG = yaml.safe_load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
 LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
+TCP_BASE_PORT   = CONFIG['peaudiosys_port']
 
 def is_jack_running():
     try:
@@ -73,11 +75,11 @@ def start_jackd():
     # will check if JACK ports are available
     c = 6
     while c:
-        print( '(start.py) waiting for jackd ' + '.'*c )
+        print( f'({ME}) waiting for jackd ' + '.'*c )
         try:
             sp.check_output( 'jack_lsp >/dev/null 2>&1'.split() )
             sleep(1)
-            print( '(start.py) JACKD STARTED' )
+            print( f'({ME}) JACKD STARTED' )
             return True
         except:
             c -= 1
@@ -89,41 +91,28 @@ def start_brutefir():
     #os.system('pwd') # debug
     sp.Popen( 'brutefir brutefir_config'.split() )
     os.chdir ( UHOME )
-    print( '(start.py) STARTING BRUTEFIR' )
+    print( f'({ME}) STARTING BRUTEFIR' )
     sleep(1) # wait a while for Brutefir to start ...
 
-def get_services():
-    services = []
-    for item in CONFIG["services_addressing"]:
-        service = item.split('_')[0]
-        if not service in services:
-            services.append(service)
-    return services
+def restart_service( service, address='localhost', port=TCP_BASE_PORT,
+                     onlystop=False, todevnull=False ):
+    # Stop
+    print( f'({ME}) stopping SERVICE: \'{service}\'' )
+    sp.Popen( f'pkill -KILL -f "server.py {service}" \
+               >/dev/null 2>&1', shell=True )
+    if onlystop:
+        return
+    sleep(.25) # this is necessary because of asyncronous stopping
 
-def restart_service( service, onlystop=False, todevnull=False ):
-    try:
-        address = CONFIG["services_addressing"][f"{service}_address"]
-        port =    CONFIG["services_addressing"][f"{service}_port"]
+    # Start
+    print( f'({ME}) starting SERVICE: \'{service}\'' )
+    cmd = f'python3 {BDIR}/share/server.py {service} {address} {port}'
+    if todevnull:
+        with open('/dev/null', 'w') as fnull:
+            sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
+    else:
+        sp.Popen( cmd, shell=True)
 
-        # Stop
-        sp.Popen( f'pkill -KILL -f "pe.audio.sys/share/server.py {service}" \
-                   >/dev/null 2>&1', shell=True )
-        if onlystop:
-            print( f'(start.py) stopping SERVICE: \'{service}\'' )
-            return
-        sleep(.25) # this is necessary because of asyncronous stopping
-
-        # Start
-        cmd = f'python3 {BDIR}/share/server.py {service} {address} {port}'
-        if todevnull:
-            with open('/dev/null', 'w') as fnull:
-                sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
-        else:
-            sp.Popen( cmd, shell=True)
-        print( f'(start.py) starting SERVICE: \'{service}\'' )
-
-    except:
-        print( f'(start.py) ERROR starting service: \'{service}\'' )
 
 def stop_processes(jackd=False):
 
@@ -132,16 +121,16 @@ def stop_processes(jackd=False):
         run_scripts( mode = 'stop' )
 
     # Stop services:
-    svcs = get_services()
-    for svc in svcs:
-        restart_service(svc, onlystop=True)
+    for idx, svc in enumerate( ('predic', 'players') ):
+        port = TCP_BASE_PORT + idx + 1
+        restart_service( svc, port=port, onlystop=True )
 
     # Stop Brutefir
     sp.Popen( 'pkill -KILL -f brutefir >/dev/null 2>&1', shell=True )
 
     # Stop Jack
     if jackd:
-        print( '(start.py) STOPPING JACKD' )
+        print( f'({ME}) STOPPING JACKD' )
         sp.Popen( 'pkill -KILL -f jackd >/dev/null 2>&1', shell=True )
 
     sleep(1)
@@ -165,7 +154,7 @@ def prepare_extra_cards( channels = 2 ):
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
-        print( f'(start.py) loading resampled extra card: {card}' )
+        print( f'({ME}) loading resampled extra card: {card}' )
         #print(cmd) # DEBUG
         sp.Popen( cmd.split() )
 
@@ -175,7 +164,7 @@ def run_scripts(mode='start'):
         #    e.g the ecasound_peq, so we need to extract the script name.
         if type(script) == dict:
             script = list(script.keys())[0]
-        print( f'(start.py) will {mode} the script \'{script}\' ...' )
+        print( f'({ME}) will {mode} the script \'{script}\' ...' )
         sp.Popen( f'{BDIR}/share/scripts/{script} {mode}', shell=True)
     if mode == 'stop':
         sleep(.5) # this is necessary because of asyncronous stopping
@@ -208,8 +197,8 @@ def kill_bill():
     # Just display the processes to be killed, if any.
     # Also write them to a file for debugging purposes.
     with open(f'{BDIR}/start.py.killbill','w') as f:
-        f.write( '-'*21 + ' (start.py) killing running before me ' + '-'*21 + '\n')
-        print( '-'*21 + ' (start.py) killing running before me ' + '-'*21 )
+        f.write( '-'*21 + f' ({ME}) killing running before me ' + '-'*21 + '\n')
+        print( '-'*21 + f' ({ME}) killing running before me ' + '-'*21 )
         for rawpid in rawpids:
             print(rawpid)
             f.write(rawpid + '\n')
@@ -223,23 +212,22 @@ def kill_bill():
 
     # Killing the remaining pids, if any:
     for pid in pids:
-        print('(start.py) killing old \'start.py\' processes:', pid)
+        print(f'({ME}) killing old \'start.py\' processes:', pid)
         sp.Popen( f'kill -KILL {pid}'.split() )
         sleep(.1)
     sleep(.5)
 
 def check_state_file():
-
-    STATEFILE = f'{BDIR}/.state.yml'
-    with open( STATEFILE, 'r') as f:
+    state_file = f'{BDIR}/.state.yml'
+    with open( state_file, 'r') as f:
         state = f.read()
-        # if th file is ok
+        # if the file is ok, lets backup it
         if 'xo_set:' in state:
-            sp.Popen( f'cp {STATEFILE} {STATEFILE}.BAK'.split() )
-            print( f'(start.py) (i) .state.yml copied to .state.yml.BAK' )
+            sp.Popen( f'cp {state_file} {state_file}.BAK'.split() )
+            print( f'({ME}) (i) .state.yml copied to .state.yml.BAK' )
         # if it is damaged:
         else:
-            print( f'(start.py) ERROR \'state.yml\' is damaged, ' +
+            print( f'({ME}) ERROR \'state.yml\' is damaged, ' +
                     'you can restore it from \'.state.yml.BAK\'' )
             sys.exit()
 
@@ -268,7 +256,7 @@ if __name__ == "__main__":
             stop_processes(jackd=True)
             # Trying to start JACKD
             if not start_jackd():
-                print('(start.py) Problems starting JACK ')
+                print('({ME}) Problems starting JACK ')
 
         else:
             print(__doc__)
@@ -309,13 +297,11 @@ if __name__ == "__main__":
         core.save_yaml(state, core.STATE_PATH)
 
         # SERVICES (TCP SERVERS):
-        # (i) - The system control service 'pasysctl.py' needs jack to be running.
-        #     - From now on, 'pasysctl.py' MUST BE the ONLY OWNER of STATE_PATH.
-        #     - The special 'aux' service will be managed at the end of this script.
-        svcs = get_services()
-        svcs.remove('aux')
-        for svc in svcs:
-            restart_service( svc )
+        # (i) - The preamp control service 'predic' needs jack to be running.
+        #     - From now on, 'predic' MUST BE the ONLY OWNER of STATE_PATH.
+        for idx, svc in enumerate( ('predic', 'players') ):
+            port = TCP_BASE_PORT + idx + 1
+            restart_service( svc, port=port )
 
         # PREAMP  --> MONITORS
         # Needs to check if monitors ports are created, or simply wait a bit.
@@ -324,8 +310,8 @@ if __name__ == "__main__":
                 core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=10 )
 
     else:
-        print( '(start.py) JACK not detected')
+        print( f'({ME}) JACK not detected')
 
-    # We allways restart the 'aux' service, so that some functions
-    # keeps availabe: amplifier switching and web macros.
-    restart_service( 'aux', todevnull=True )
+    # The 'peaudiosys' service always runs, so that we can do basic operation
+    restart_service( 'peaudiosys', address= CONFIG['peaudiosys_address'],
+                      todevnull=True )
