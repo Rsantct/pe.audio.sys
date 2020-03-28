@@ -81,6 +81,10 @@ def check_for_CDDA(d):
     except:
         print( f'({ME}) This script needs \'cdtool\' (command line cdrom tool)' )
 
+def stop():
+    Popen( f'pkill -KILL -f autoplay_cdda'.split() )
+    sleep(.5)
+
 def main():
     # Main observer daemon
     context = pyudev.Context()
@@ -98,21 +102,23 @@ if __name__ == '__main__':
     # pe.audio.sys service addressing
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            A = yaml.safe_load(f)['services_addressing']
-            CTL_HOST, CTL_PORT = A['peaudiosys_address'], A['peaudiosys_port']
+            cfg = yaml.safe_load(f)
+            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
     except:
-        print('ERROR with \'pe.audio.sys/config.yml\'')
+        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
         exit()
 
     if sys.argv[1:]:
 
         if sys.argv[1] == 'start':
+            stop()
             main()
 
         elif sys.argv[1] == 'stop':
-            Popen( f'pkill -KILL -f autoplay_cdda'.split() )
-
+            stop()
+            
         else:
             print(__doc__)
     else:
         print(__doc__)
+
