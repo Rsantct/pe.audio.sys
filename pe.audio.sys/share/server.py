@@ -126,12 +126,8 @@ def run_server(host, port, verbose=False):
 
             # If not a reserved word, then process the received data as a command:
             else:
-
-                #######################################################################
-                # PROCESSING by using the IMPORTED MODULE when starting up this server,
-                # always must use the the module do() function.
+                # Processing the command through by the do() module function:
                 result = MODULE.do(data)
-                #######################################################################
                 if verbose:
                     print( f'(server.py [{service}]) Tx: ', result )
                 # And sending back the result
