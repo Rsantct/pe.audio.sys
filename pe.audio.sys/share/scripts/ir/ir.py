@@ -48,25 +48,15 @@ class Color:
    END = '\033[0m'
 
 def send_cmd(cmd):
-    if cmd[:4] == 'aux ':
-        host, port = AUX_HOST, AUX_PORT
-        cmd = cmd[4:]
-        svcName = 'aux'
-    elif cmd[:8] == 'players ':
-        host, port = PLY_HOST, PLY_PORT
-        cmd = cmd[8:]
-        svcName = 'players'
-    else:
-        host, port = CTL_HOST, CTL_PORT
-        svcName = 'control'
-    print(Color.RED+'sending:', cmd, f'to {host}:{port}\n'+Color.END)
+    host, port = CTL_HOST, CTL_PORT
+    print(f'({ME})', Color.RED+'sending:', cmd, f'to {host}:{port}\n'+Color.END)
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
         except:
-            print (f'(ir.py) service \'{svcName}\' socket error on port {port}')
+            print (f'({ME}) socket error on {host}:{port}')
     return
 
 def irpacket2cmd(p):
@@ -181,6 +171,7 @@ if __name__ == "__main__":
 
     UHOME = os.path.expanduser("~")
     THISPATH = os.path.dirname(os.path.abspath(__file__))
+    ME = __file__.split('/')[-1]
 
     if '-h' in sys.argv:
         print(__doc__)
@@ -188,13 +179,11 @@ if __name__ == "__main__":
 
     debugMode = True if '-d' in sys.argv else False
 
-    # pe.audio.sys services addressing
+    # pe.audio.sys service addressing
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
             A = yaml.safe_load(f)['services_addressing']
-            CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
-            AUX_HOST, AUX_PORT = A['aux_address'], A['aux_port']
-            PLY_HOST, PLY_PORT = A['players_address'], A['players_port']
+            CTL_HOST, CTL_PORT = A['peaudiosys_address'], A['peaudiosys_port']
     except:
         print('ERROR with \'pe.audio.sys/config.yml\'')
         exit()
