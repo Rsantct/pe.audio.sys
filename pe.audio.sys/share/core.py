@@ -589,7 +589,7 @@ class Preamp(object):
             # REFUSED
             return 'not enough headroom'
 
-    # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
+    # Bellow we use *dummy to accommodate the predic.py parser mechanism wich
     # will include two arguments for any function call, even when not necessary.
 
     def get_state(self, *dummy):
@@ -842,7 +842,7 @@ class Convolver(object):
         self.ways = get_brutefir_config('ways')
         # print('ways:', self.ways) # debug
 
-    # Bellow we use *dummy to accommodate the pasysctrl.py parser mechanism wich
+    # Bellow we use *dummy to accommodate the predic.py parser mechanism wich
     # will include two arguments for any function call, even when not necessary.
 
     def set_drc(self, drc, *dummy):
