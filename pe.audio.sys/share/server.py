@@ -149,7 +149,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # Optional -v for verbose printing out (debug)
-    if '-v' in sys.argv[4]:
+    if '-v' in sys.argv:
         verbose = True
     else:
         verbose = False
