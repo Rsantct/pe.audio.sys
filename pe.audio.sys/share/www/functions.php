@@ -66,14 +66,11 @@
     }
 
 
-    // Communicates to the pe.audio.sys TCP/IP servers.
-    // Notice: server address and port are specified
-    //         into 'config.yml' for each service,
-    //         for instance 'control', 'players' or 'aux'.
-    function system_socket ($service, $cmd) {
+    // Communicates to the pe.audio.sys TCP server.
+    function system_socket ($cmd) {
 
-        $address =         get_config( $service."_address" );
-        $port    = intval( get_config( $service."_port" ) );
+        $address =         get_config( "peaudiosys_address" );
+        $port    = intval( get_config( "peaudiosys_port"    ) );
 
         // Creates a TCP socket
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -113,15 +110,6 @@
     // echo system_socket('control', 'status'); // DEBUG
 
     $command = $_REQUEST["command"];
-
-    if     ( substr( $command, 0, 4 ) === "aux " ) {
-        echo system_socket( 'aux', substr( $command, 4,  ) );
-    }
-    elseif ( substr( $command, 0, 8 ) === "players " ) {
-        echo system_socket( 'players', substr( $command, 8,  ) );
-    }
-    else {
-        echo system_socket( 'pasysctrl', $command );
-    }
+    echo system_socket( $command );
 
 ?>
