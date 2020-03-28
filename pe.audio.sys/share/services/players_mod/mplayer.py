@@ -73,10 +73,10 @@ cdda_playing_status = 'stop'
 ## pe.audio.sys services addressing
 try:
     with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        A = yaml.safe_load(f)['services_addressing']
-        CTL_HOST, CTL_PORT = A['peaudiosys_address'], A['peaudiosys_port']
+        cfg = yaml.safe_load(f)
+        CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
 except:
-    print('({ME}) ERROR with \'pe.audio.sys/config.yml\'')
+    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 
 # Auxiliary to talk to the main pe.audio.sys control service.
