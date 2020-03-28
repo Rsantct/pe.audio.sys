@@ -182,10 +182,10 @@ if __name__ == "__main__":
     # pe.audio.sys service addressing
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            A = yaml.safe_load(f)['services_addressing']
-            CTL_HOST, CTL_PORT = A['peaudiosys_address'], A['peaudiosys_port']
+            cfg = yaml.safe_load(f)
+            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
     except:
-        print('ERROR with \'pe.audio.sys/config.yml\'')
+        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
         exit()
 
     # IR config file
@@ -202,7 +202,7 @@ if __name__ == "__main__":
             EOPtolerance = REMCFG['EOPtolerance'] if REMCFG['EOPtolerance'] else 5
             maxVariance  = REMCFG['maxVariance']  if REMCFG['maxVariance']  else 5
     except:
-        print(f'ERROR with \'{THISPATH}/ir.config\'')
+        print(f'({ME}) ERROR with \'{THISPATH}/ir.config\'')
         exit()
 
     # testing mode to learn new keys
