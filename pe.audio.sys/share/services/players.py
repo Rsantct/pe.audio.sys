@@ -189,39 +189,39 @@ def init():
         f.write('stop')
 
 # Interface entry function for this module from 'server.py'
-def do(task):
+def do(cmd):
     """ This do() is the entry interface function from a listening server.
-        Only certain received 'tasks' will be validated and processed,
+        Only certain received 'cmd' will be validated and processed,
         then returns back some useful info to the asking client.
     """
 
     result = 'nothing done'
 
-    # First clearing the task phrase
-    task = task.strip()
+    # First clearing the cmd phrase
+    cmd = cmd.strip()
 
     # Getting METADATA
-    if task == 'get_meta':
+    if cmd == 'get_meta':
         with open( f'{MAINFOLDER}/.player_metadata', 'r') as f:
             result = f.read()
 
     # PLAYBACK CONTROL. (i) Some commands need to be adequated later,
     # e.g. Mplayer does not understand 'previous', 'next'
-    elif task in ('state', 'stop', 'pause', 'play', 
+    elif cmd in ('state', 'stop', 'pause', 'play',
                        'next', 'previous', 'rew', 'ff'):
-        result = player_control( task[7:] )
+        result = player_control( cmd )
 
     # Special command for DISK TRACK playback
-    elif task.startswith('play_track_'):
-        result = player_control( task[7:] )
+    elif cmd.startswith('play_track_'):
+        result = player_control( cmd[7:] )
 
     # EJECTS unconditionally the CD tray
-    elif task == 'eject':
+    elif cmd == 'eject':
         result = mplayer_cmd('eject', 'cdda')
 
     # An URL to be played back by the istreams Mplayer service:
-    elif task.startswith('http://'):
-        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'
+    elif cmd.startswith('http://'):
+        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {cmd}'
                   .split() )
         result = 'done'
 
