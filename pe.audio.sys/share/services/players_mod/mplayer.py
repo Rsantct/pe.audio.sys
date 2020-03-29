@@ -309,21 +309,6 @@ def mplayer_cmd(cmd, service):
         input:  a command string
         result: a result string
     """
-    # (i) Mplayer sends its responses to the terminal where Mplayer was launched,
-    #     or to a redirected file.
-    #     See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
-
-    # (i) "keep_pausing get_property pause" doesn't works well with CDDA
-    # so will keep a variable to selfcontrol the CDDA plating status.
-    global cdda_playing_status
-    if cmd == 'state':
-        if service == 'cdda':
-            return cdda_playing_status
-        else:
-            return 'play'
-
-    eject_disk = False
-
     # Aux function to save the CD info to a json file
     def save_cd_info():
 
@@ -399,6 +384,22 @@ def mplayer_cmd(cmd, service):
                 return True
         return False
 
+
+    # (i) Mplayer sends its responses to the terminal where Mplayer was launched,
+    #     or to a redirected file.
+    #     See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
+
+    # (i) "keep_pausing get_property pause" doesn't works well with CDDA
+    # so will keep a variable to selfcontrol the CDDA plating status.
+    global cdda_playing_status
+    if cmd == 'state':
+        if service == 'cdda':
+            return cdda_playing_status
+        else:
+            return 'play'
+
+    eject_disk = False
+
     if service == 'istreams':
 
         # useful when playing a mp3 stream e.g. some long playing time podcast url
@@ -432,7 +433,7 @@ def mplayer_cmd(cmd, service):
                 cdda_playing_status =   {'play':'pause', 'pause':'play'
                                         }[cdda_playing_status]
                 # (i) Because of mplayer cdda pausing becomes on
-                #     strange behavior (there is a kind of brief sttuter 
+                #     strange behavior (there is a kind of brief sttuter
                 #     with audio), then we will MUTE the preamp.
                 if cdda_playing_status == 'pause':
                     audio_mute('on')
@@ -457,7 +458,7 @@ def mplayer_cmd(cmd, service):
                 n = 15
                 while n:
                     if cdda_in_mplayer(): break
-                    print( f'({ME}) waiting for Mplayer to load disk' ) 
+                    print( f'({ME}) waiting for Mplayer to load disk' )
                     sleep(1)
                     n -= 1
                 if n:
@@ -466,7 +467,7 @@ def mplayer_cmd(cmd, service):
                     print( '({ME}) TIMED OUT detecting '
                             'Mplayer disk loaded' )
 
-            # Retrieving the current track 
+            # Retrieving the current track
             curr_track = 1
             if cdda_playing_status in ('play', 'pause'):
                 curr_track = json.loads( cdda_meta() )['track_num'].split()[0]
@@ -512,7 +513,7 @@ def mplayer_cmd(cmd, service):
         Popen( f'eject {CDROM_DEVICE}'.split() )
         # Flush .cdda_info (blank the metadata file)
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
-            f.write( "{}" ) 
+            f.write( "{}" )
         # Unmute preamp
         audio_mute('off')
 
