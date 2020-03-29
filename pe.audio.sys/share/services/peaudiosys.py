@@ -40,7 +40,7 @@ AMP_STATE_FILE      = f'{UHOME}/.amplifier'
 PLAYER_META_FILE    = f'{MAIN_FOLDER}/.player_metadata'
 STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 
-aux_info = {    'amp':'off', 
+aux_info = {    'amp':'off',
                 'loudness_monitor': 0.0,
                 'user_macros': [],
                 'web_config': {}
@@ -107,7 +107,7 @@ def process_players( cmd, arg=None ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
     return send_cmd( service='players', cmd=cmd )
-    
+
 # Main function for AUX commands processing
 def process_aux( cmd, arg=None ):
     """ input:  a tuple (prefix, command, arg)
@@ -164,7 +164,7 @@ def process_aux( cmd, arg=None ):
         result = 'tried'
 
     # RESET the LOUDNESS MONITOR DAEMON:
-    elif cmd == 'loudness_monitor_reset':
+    elif cmd == 'loudness_monitor_reset' or cmd.lower() == 'lu_monitor_reset':
         try:
             with open(LOUD_MON_CTRL_FILE, 'w') as f:
                 f.write('reset')
@@ -172,9 +172,9 @@ def process_aux( cmd, arg=None ):
         except:
             result = 'error'
 
-    # Get the LOUDNESS MONITOR VALUE from the 
+    # Get the LOUDNESS MONITOR VALUE from the
     # loudness monitor daemon's output file:
-    elif cmd == 'get_loudness_monitor':
+    elif cmd == 'get_loudness_monitor' or cmd.lower() == 'get_lu_monitor':
         try:
             with open(LOUD_MON_VAL_FILE, 'r') as f:
                 result = round( float(f.read().strip()), 1)
@@ -260,7 +260,7 @@ def do( command_phrase ):
         # than on space as delimiter inside the command_phrase:
         chunks = [x for x in command_phrase.split(' ') if x]
 
-        if not chunks[0] in ('predic', 'players', 'aux'):
+        if not chunks[0] in ('predic', 'player', 'aux'):
             chunks.insert(0, 'predic')
         pfx = chunks[0]
 
@@ -278,7 +278,7 @@ def do( command_phrase ):
         pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
         result = {  'predic':   process_predic,
-                    'players':  process_players,
+                    'player':   process_players,
                     'aux':      process_aux } [pfx](cmd, arg)
         if type(result) != str:
             result = json.dumps(result)
