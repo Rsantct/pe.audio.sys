@@ -192,16 +192,8 @@ Some points:
 Here you are an uncommented bare example of `config.yml`:
 
 
-    services_addressing:
-
-        pasysctrl_address:      0.0.0.0
-        pasysctrl_port:         9989
-
-        aux_address:            localhost
-        aux_port:               9988
-
-        players_address:        0.0.0.0
-        players_port:           9987
+    peaudiosys_address:     localhost
+    peaudiosys_port:        9900
 
     system_card: hw:UDJ6
 
