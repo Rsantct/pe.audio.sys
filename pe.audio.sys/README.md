@@ -91,7 +91,7 @@ All commands prefixed with `preamp`. This prexix can be omited.
 
 ## Players control
 
-All commands prefixed with `players`:
+All commands prefixed with `player`:
 
     state                                   The playback state: play, pause or stop.
 
@@ -103,6 +103,19 @@ All commands prefixed with `players`:
     http://url                              Plays the internet audio stream at given url
     
     get_meta                                Gets metadata info from current player if available 
+
+## Miscel controls
+
+All commands prefixed with `aux`:
+
+    amp_switch   on | off                   Switch an amplifier
+    
+    LU_monitor_reset                        Force to reset the LU_monitor daemon
+
+    get_LU_monitor                          Gets the monitored LU value
+
+    restart                                 Restarts pe.audio.sys
+
 
 ## Monitoring the system
 
