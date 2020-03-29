@@ -306,16 +306,16 @@ def mplayer_meta(service, readonly=False):
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_cmd(cmd, service):
     """ Sends a command to Mplayer trough by its input fifo
+        input:  a command string
+        result: a result string
     """
-    # Notice: Mplayer sends its responses to the terminal where Mplayer was launched,
-    #         or to a redirected file.
+    # (i) Mplayer sends its responses to the terminal where Mplayer was launched,
+    #     or to a redirected file.
+    #     See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
-    # See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
-
-    global cdda_playing_status
-
-    # "keep_pausing get_property pause" doesn't works well with CDDA
+    # (i) "keep_pausing get_property pause" doesn't works well with CDDA
     # so will keep a variable to selfcontrol the CDDA plating status.
+    global cdda_playing_status
     if cmd == 'state':
         if service == 'cdda':
             return cdda_playing_status
@@ -474,7 +474,9 @@ def mplayer_cmd(cmd, service):
             if cmd.startswith('play_track_'):
                 curr_track = cmd[11:]
                 if not curr_track.isdigit():
-                    return
+                    tmp = f'({ME}) BAD command {cmd}'
+                    print( tmp )
+                    return tmp
 
             chapter = int(curr_track) -1
             cmd = f'seek_chapter {str(chapter)} 1'
@@ -485,8 +487,9 @@ def mplayer_cmd(cmd, service):
             eject_disk = True
 
     else:
-        print( f'({ME}) unknown Mplayer service \'{service}\'' )
-        return
+        tmp = f'({ME}) unknown Mplayer service \'{service}\''
+        print( tmp )
+        return tmp
 
     # Sending the command to the corresponding fifo
     print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
@@ -513,3 +516,4 @@ def mplayer_cmd(cmd, service):
         # Unmute preamp
         audio_mute('off')
 
+    return 'done'
