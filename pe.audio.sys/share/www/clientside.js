@@ -323,15 +323,15 @@ function page_update() {
 
 }
 
-//////// PLAYER SERVER FUNCTIONS ////////
+//////// PLAYERS FUNCTIONS ////////
 // Controls the player
 function playerCtrl(action) {
-    control_cmd( 'players player_' + action );
+    control_cmd( 'players ' + action );
 }
 // Updates the player control buttons, hightlights the corresponding button to the playback state
 function update_player_controls() {
     try{
-        var playerState = control_cmd( 'players player_state' );
+        var playerState = control_cmd( 'players state' );
     }catch{
         return;
     }
@@ -361,7 +361,7 @@ function update_player_controls() {
 // Shows the playing info metadata
 function update_player_info() {
     try{
-        var tmp = control_cmd( 'players player_get_meta' );
+        var tmp = control_cmd( 'players get_meta' );
     }catch{
         return;
     }
@@ -416,7 +416,7 @@ function update_player_info() {
 function select_track() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
-        control_cmd( 'players player_play_track_' + tracknum );
+        control_cmd( 'players play_track_' + tracknum );
     }
 }
 // Sends an url to the server, to be played back
@@ -427,7 +427,7 @@ function play_url() {
     }
 }
 
-//////// AUX SERVER FUNCTIONS ////////
+//////// AUX FUNCTIONS ////////
 // Restart procedure
 function audio_restart() {
     control_cmd('aux restart');
