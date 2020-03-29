@@ -213,7 +213,7 @@ def do(cmd):
 
     # Special command for DISK TRACK playback
     elif cmd.startswith('play_track_'):
-        result = player_control( cmd[7:] )
+        result = player_control( cmd )
 
     # EJECTS unconditionally the CD tray
     elif cmd == 'eject':
