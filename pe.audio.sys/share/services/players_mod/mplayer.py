@@ -74,20 +74,20 @@ cdda_playing_status = 'stop'
 try:
     with open(f'{MAINFOLDER}/config.yml', 'r') as f:
         cfg = yaml.safe_load(f)
-        CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
+        CTL_PORT = cfg['peaudiosys_port']
 except:
     print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 
 # Auxiliary client to MUTE the preamp when CDDA is paused.
 def audio_mute(mode):
-    host, port = CTL_HOST, CTL_PORT
     with socket() as s:
         try:
+            host, port = 'localhost', CTL_PORT
             s.connect( (host, port) )
             s.send( f'predic mute {mode}'.encode() )
             s.close()
-            print (f'({ME}) sending \'{cmd }\' to \'peaudiosys\'')
+            print (f'({ME}) sending \'mute {mode}\' to \'peaudiosys\'')
         except:
             print (f'({ME}) socket error on {host}:{port}')
     return
