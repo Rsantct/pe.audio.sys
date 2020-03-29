@@ -78,8 +78,8 @@ def run_server(host, port, verbose=False):
     while True:
         # initiate the socket in listen (server) mode
         s.listen()
-        if verbose:
-            print( f'(server.py [{service}]) listening on \'localhost\':{port}' )
+        #if verbose:
+        #    print( f'(server.py [{service}]) listening on \'localhost\':{port}' )
 
         # Waits for a client to be connected:
         # 'conn' is a socket itself
@@ -93,10 +93,14 @@ def run_server(host, port, verbose=False):
             try:
                 # Reception of 1024
                 data = conn.recv(1024).decode()
+                if verbose:
+                    print  (f'(server.py [{service}]) Rx: {data.strip()}' )
             except:
                 if verbose:
-                    print (f'(server.py [{service}]) ERROR receiving from client' )
-
+                    print (f'(server.py [{service}]) ERROR receiving from client, closing.' )
+                conn.close()
+                break
+                
             if not data:
                 # Nothing in buffer, then will close
                 if verbose:
@@ -105,37 +109,31 @@ def run_server(host, port, verbose=False):
                 conn.close()
                 break
 
-            if verbose:
-                print  (f'(server.py [{service}]) Rx: {data.strip()}' )
-
             # Reserved words for controling the communication ('quit' or 'shutdown')
-            if data.rstrip('\r\n') == 'quit':
-                #conn.send(b'OK\n')
+            if data.rstrip() == 'quit':
                 if verbose:
                     print( f'(server.py [{service}]) \'quit\', closing connection...' )
                 conn.close()
                 break
 
-            elif data.rstrip('\r\n') == 'shutdown':
-                #conn.send(b'OK\n')
+            elif data.rstrip() == 'shutdown':
                 if verbose:
-                    print( f'(server.py [{service}]) Shutting down the server...' )
+                    print( f'(server.py [{service}]) shutting down the server...' )
                 conn.close()
                 s.close()
                 sys.exit(1)
 
             # If not a reserved word, then process the received data as a command:
             else:
-                # Processing the command through by the do() module function:
-                result = MODULE.do(data)
-                if verbose:
-                    print( f'(server.py [{service}]) Tx: ', result )
+                # PROCESSING THE COMMAND through by MODULE.do()
+                result = MODULE.do(data).decode()
+                if verbose and result:
+                    print( f'(server.py [{service}]) Tx: {result}' )
                 # And sending back the result
-                # NOTICE: it is expected to receive a result as a bytes-like object
                 if result:
-                    conn.send( result )
+                    conn.send( result.encode() )
                 else:
-                    # sending crlf instead of empty because will hang the php side
+                    # sending crlf instead of empty to avoid hanging the receiver.
                     conn.send( b'\r\n' )
 
 
