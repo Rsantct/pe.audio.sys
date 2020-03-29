@@ -25,7 +25,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-
+import json
 from core import Preamp, Convolver, save_yaml, STATE_PATH
 from os.path import expanduser
 UHOME = expanduser("~")
@@ -161,5 +161,6 @@ def process_commands( full_command ):
 def do( cmdline ):
     result = process_commands( cmdline )
     save_yaml( preamp.state, STATE_PATH )
-    # The server needs bytes-like (encoded) things
+    if type(result) != str:
+        result = json.dumps(result)
     return result.encode()
