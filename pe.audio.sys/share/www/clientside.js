@@ -441,8 +441,8 @@ function ampli(mode) {
 // Queries the remote amplifier switch state
 function update_ampli_switch() {
     try{
-        const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
-                                      .replace('\n','') );
+        const amp_state = control_cmd( 'aux amp_switch state' )
+                           .replace('\n','');
         document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
     }catch{
     document.getElementById("OnOffButton").innerText = '-';
