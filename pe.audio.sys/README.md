@@ -40,13 +40,17 @@ The system core is mainly based on:
 
 # Controling the system
 
-A web page front end is provided so you can easily control the system as well your integrated music players.
+- A web page front end is provided so you can easily control the system as well your integrated music players.
 
-**@rripio** has also an IR interface than can be adapted to control through by an infrared remote.
+- An IR interface is provided to control through by an infrared remote.
 
 Anyway the control of the system works through by **a TCP listening socket** that accepts **a set of commands**.
 
 Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
+
+## Preamp control
+
+All commands prefixed with `preamp`. This prexix can be omited.
 
 ### Geeting help
  
@@ -84,6 +88,21 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 
     set_drc | drc    <name>                 Select a DRC FIR set
     set_xo  | xo     <name>                 Select a XOVER FIR set
+
+## Players control
+
+All commands prefixed with `players`:
+
+    state                                   The playback state: play, pause or stop.
+
+    stop | pause | play | play_track_NN
+    next | previous | rew | ff              Controls the playback
+    
+    eject                                   Ejects the CD tray
+    
+    http://url                              Plays the internet audio stream at given url
+    
+    get_meta                                Gets metadata info from current player if available 
 
 ## Monitoring the system
 
