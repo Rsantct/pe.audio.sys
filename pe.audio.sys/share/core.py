@@ -31,7 +31,6 @@ import socket
 import subprocess as sp
 import threading
 import yaml
-import json
 import jack
 import numpy as np
 from time import sleep
@@ -595,10 +594,10 @@ class Preamp(object):
     def get_state(self, *dummy):
         #return yaml.safe_dump( self.state, default_flow_style=False )
         self.state['convolver_runs'] = brutefir_runs()      # informative value
-        return json.dumps( self.state )
+        return self.state
 
     def get_target_sets(self, *dummy):
-        return json.dumps( self.target_sets )
+        return self.target_sets
 
     def set_level(self, value, relative=False):
         candidate = self.state.copy()
@@ -783,7 +782,7 @@ class Preamp(object):
             return f'something was wrong selecting \'{value}\''
 
     def get_inputs(self, *dummy):
-        return json.dumps( [ x for x in self.inputs.keys() ] )
+        return [ x for x in self.inputs.keys() ]
 
 # THE CONVOLVER: DRC and XO Brutefir stages management =========================
 
@@ -860,10 +859,10 @@ class Convolver(object):
             return f'xo set \'{xo_set}\' not available'
 
     def get_drc_sets(self, *dummy):
-        return json.dumps( self.drc_sets )
+        return self.drc_sets
 
     def get_xo_sets(self, *dummy):
-        return json.dumps( self.xo_sets )
+        return self.xo_sets
 
 
 # JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ================================
