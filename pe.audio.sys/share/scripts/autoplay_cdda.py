@@ -61,11 +61,11 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'player_pause' )
+        send_cmd( 'players pause' )
         sleep(.5)
-        send_cmd( 'input cd' )
+        send_cmd( 'predic input cd' )
         sleep(.5)
-        send_cmd( 'player_play' )
+        send_cmd( 'players play' )
 
     # Verbose if not CDDA
     try:
@@ -109,14 +109,10 @@ if __name__ == '__main__':
         exit()
 
     if sys.argv[1:]:
-
         if sys.argv[1] == 'start':
-            stop()
             main()
-
         elif sys.argv[1] == 'stop':
             stop()
-            
         else:
             print(__doc__)
     else:
