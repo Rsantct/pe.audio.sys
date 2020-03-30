@@ -282,6 +282,6 @@ def do( command_phrase ):
                     'aux':      process_aux } [pfx](cmd, arg)
         if type(result) != str:
             result = json.dumps(result)
-        return result.encode()
+        return result
     else:
-        return 'nothing done'.encode()
+        return 'nothing done'
