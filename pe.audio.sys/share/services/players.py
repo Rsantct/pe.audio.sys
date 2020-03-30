@@ -157,7 +157,7 @@ def player_control(action):
     # Currently only MPD and Spotify Desktop provide 'state' info.
     # 'result' can be 'play', 'pause', 'stop' or ''.
     if not result:
-        result = '' # to avoid None.encode() error
+        result = ''
 
     # Store the player state
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
@@ -228,4 +228,4 @@ def do(cmd):
     if type(result) != str:
         result = json.dumps(result)
 
-    return result.encode()
+    return result
