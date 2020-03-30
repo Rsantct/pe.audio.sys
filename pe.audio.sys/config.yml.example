@@ -1,7 +1,7 @@
 # ================= pe.audio.sys TCP SERVER address  ===========================
 # set _address to 'localhost' or your IP if you want to listen outside
 peaudiosys_address:     localhost
-peaudiosys_port:        9900
+peaudiosys_port:        9990
 
 # ===========================  SOUND CARDS =====================================
 
