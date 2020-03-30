@@ -38,3 +38,33 @@
     set_drc | drc    <name>                 Select a DRC FIR set
     set_xo  | xo     <name>                 Select a XOVER FIR set
 
+
+--- Music player control
+
+    All commands prefixed with player:
+
+    state                                   Gets the playback state: play, pause or stop.
+
+    stop | pause | play | play_track_NN
+    next | previous | rew | ff              Controls the playback
+
+    eject                                   Ejects the CD tray
+
+    http://url                              Plays the internet audio stream at given url
+
+    get_meta                                Gets metadata info from current player if available
+
+--- Miscel controls
+
+    All commands prefixed with aux:
+
+    amp_switch   on | off                   Switch an amplifier
+
+
+
+    LU_monitor_reset                        Force to reset the LU_monitor daemon
+
+    get_LU_monitor                          Gets the monitored LU value
+
+    restart                                 Restarts pe.audio.sys
+
