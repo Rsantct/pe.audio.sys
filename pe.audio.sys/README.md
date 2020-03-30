@@ -82,18 +82,18 @@ All commands prefixed with `preamp`. This prexix can be omited.
     bass            xx [add]
     loudness_ref    xx [add]
     loudness | loudness_track     on | off | toggle   Loudness compensation
-    set_target       <name>                           Select a target curve
+    set_target       <name>                           Selects a target curve
 
 ### Convolver stages:
 
-    set_drc | drc    <name>                 Select a DRC FIR set
-    set_xo  | xo     <name>                 Select a XOVER FIR set
+    set_drc | drc    <name>                 Selects a DRC FIR set
+    set_xo  | xo     <name>                 Selects a XOVER FIR set
 
 ## Players control
 
 All commands prefixed with `player`:
 
-    state                                   The playback state: play, pause or stop.
+    state                                   Gets the playback state: play, pause or stop.
 
     stop | pause | play | play_track_NN
     next | previous | rew | ff              Controls the playback
