@@ -225,7 +225,7 @@ Here you are an uncommented bare example of `config.yml`:
 
 
     peaudiosys_address:     localhost
-    peaudiosys_port:        9900
+    peaudiosys_port:        9990
 
     system_card: hw:UDJ6
 
