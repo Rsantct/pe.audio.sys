@@ -100,7 +100,7 @@ def process_commands( full_command ):
 
     def print_help(*dummy):
         with open( f'{UHOME}/pe.audio.sys/peaudiosys.hlp', 'r') as f:
-            return f.read()
+            print(f.read())
 
     # HERE BEGINS THE COMMAND PROCESSING:
     result  = 'nothing has been done'
