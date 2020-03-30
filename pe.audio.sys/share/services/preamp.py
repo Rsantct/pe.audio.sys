@@ -157,7 +157,7 @@ def process_commands( full_command ):
 
     return result
 
-# INTERFACE FUNCTION TO PLUG THIS ON SERVER.PY
+# INTERFACE FUNCTION TO PLUG THIS MODULE ON SERVER.PY
 def do( cmdline ):
     result = process_commands( cmdline )
     save_yaml( preamp.state, STATE_PATH )
