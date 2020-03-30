@@ -100,7 +100,7 @@ def run_server(host, port, verbose=False):
                     print (f'(server.py [{service}]) ERROR receiving from client, closing.' )
                 conn.close()
                 break
-                
+
             if not data:
                 # Nothing in buffer, then will close
                 if verbose:
@@ -126,7 +126,7 @@ def run_server(host, port, verbose=False):
             # If not a reserved word, then process the received data as a command:
             else:
                 # PROCESSING THE COMMAND through by MODULE.do()
-                result = MODULE.do(data).decode()
+                result = MODULE.do(data)
                 if verbose and result:
                     print( f'(server.py [{service}]) Tx: {result}' )
                 # And sending back the result
