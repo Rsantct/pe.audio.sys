@@ -121,7 +121,7 @@ def stop_processes(jackd=False):
         run_scripts( mode = 'stop' )
 
     # Stop services:
-    for idx, svc in enumerate( ('predic', 'players') ):
+    for idx, svc in enumerate( ('preamp', 'players') ):
         port = TCP_BASE_PORT + idx + 1
         restart_service( svc, port=port, onlystop=True )
 
@@ -297,9 +297,9 @@ if __name__ == "__main__":
         core.save_yaml(state, core.STATE_PATH)
 
         # SERVICES (TCP SERVERS):
-        # (i) - The preamp control service 'predic' needs jack to be running.
-        #     - From now on, 'predic' MUST BE the ONLY OWNER of STATE_PATH.
-        for idx, svc in enumerate( ('predic', 'players') ):
+        # (i) - The 'preamp' control service needs jack to be running.
+        #     - From now on, 'preamp' MUST BE the ONLY OWNER of STATE_PATH.
+        for idx, svc in enumerate( ('preamp', 'players') ):
             port = TCP_BASE_PORT + idx + 1
             restart_service( svc, port=port )
 
