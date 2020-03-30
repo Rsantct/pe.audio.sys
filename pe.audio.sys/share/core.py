@@ -199,11 +199,12 @@ def bf_cli(command):
             print (f'(core) Brutefir socket error')
 
 def bf_set_midside( mode ):
-    """ midside (formerly mono) is implemented at the f.eq.X stages:
-        in.L  ------->  eq.L
+    """ midside (formerly mono) is implemented by routing and mixing
+        from the input to the first filter stages (f.eq.X):
+        in.L  ------->  f.eq.L
                 \/
                 /\
-        in.L  ------->  eq.L
+        in.L  ------->  f.eq.L
     """
     if   mode == 'mid':
         bf_cli( 'cfia "f.eq.L" "in.L" m0.5 ; cfia "f.eq.L" "in.R" m0.5 ;'
