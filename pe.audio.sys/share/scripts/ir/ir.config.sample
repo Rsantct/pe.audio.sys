@@ -54,15 +54,15 @@ remotes:
             00 2d 6d 2d b9 39 69 ad ff: aux run_macro 7_Dyns-dipojorns  # 14
             00 2d 6d 2d a9 ad 6d 6b fb: aux run_macro 8_Trigon-On-Off   # 15
             00 2d 6d 2d 39 ad 39 ad ff: aux run_macro 9_Power-OFF       # 16
-            00 2d 6d 2d 69 ad 2d ad ff: players player_pause            # 17
+            00 2d 6d 2d 69 ad 2d ad ff: player pause                    # 17
 
             00 2d 6d 2d b9 6b 2b 6b ff:                                 # 18
             00 2d 6d 2d 29 6b bb 39 ff:                                 # 19
-            00 2d 6d 2d 39 3b b9 39 ff: players player_eject            # 20
+            00 2d 6d 2d 39 3b b9 39 ff: player eject                    # 20
 
-            00 2d 6d 2d 29 2b bb 6d ff: players player_play             # ps
-            00 2d 6d 2d 39 29 bb bb ff: players player_previous         # <p
-            00 2d 6d 2d 29 a9 bb bb ff: players player_next             # p>
+            00 2d 6d 2d 29 2b bb 6d ff: player play                     # ps
+            00 2d 6d 2d 39 29 bb bb ff: player player_previous          # <p
+            00 2d 6d 2d 29 a9 bb bb ff: player player_next              # p>
 
             00 2d 6d 2d 39 29 6b bb ff: mute toggle                     # fmm
             00 2d 6d 2d b9 29 b9 bb ff: level -3 add                    # ol-
@@ -79,11 +79,11 @@ remotes:
         EOPtolerance:                       3
         maxVariance:                        2
         keymap:
-            00 b6 b7 db b3 97 9b 9b 00 ff:  players player_previous # prev
-            00 b6 b7 db b3 9b da d3 ff:     players player_next     # next
+            00 b6 b7 db b3 97 9b 9b 00 ff:  player previous         # prev
+            00 b6 b7 db b3 9b da d3 ff:     player next             # next
             00 b7 b6 db b3 b3 db d3 ff:     level +3 add            # vol+
             00 b7 b7 db b2 b7 db d3 ff:     level -3 add            # vol-
-            00 b6 b7 db b3 93 9b 9b 00 ff:  players player_pause    # play_pause
+            00 b6 b7 db b3 93 9b 9b 00 ff:  player pause            # play_pause
             00 b7 b7 db b3 93 b3 f3 00 ff:  mute toggle             # menu
 
 
@@ -123,13 +123,13 @@ remotes:
             98 00 01 02 82 82 fd:           level -3 add            # volDown
             98 00 01 02 44 88 fa:           mute toggle             # mute
             00 00 00 00 00 00 00:           aux amp_switch toggle   #
-            98 00 01 02 54 51 d4:           aux player prev         #  <--
-            98 00 01 02 22 22 fd:           aux player play_pause   #  ok
-            98 00 01 02 aa 52 51:           aux player next         #  -->
+            98 00 01 02 54 51 d4:           player prev             #  <--
+            98 00 01 02 22 22 fd:           player play_pause       #  ok
+            98 00 01 02 aa 52 51:           player next             #  -->
                                                                     # dvd:
-            98 00 01 09 88 12 55:           aux player prev         #  <<
-            98 00 01 09 90 90 e9:           aux player play_pause   #  ||
-            98 00 01 09 90 22 55:           aux player next         #  >>
-            98 00 01 09 50 50 e9:           aux player play_pause   #  >
-            98 00 01 09 00 a0 fd:           aux player stop         #  []
+            98 00 01 09 88 12 55:           player prev             #  <<
+            98 00 01 09 90 90 e9:           player pause            #  ||
+            98 00 01 09 90 22 55:           player next             #  >>
+            98 00 01 09 50 50 e9:           player play             #  >
+            98 00 01 09 00 a0 fd:           player stop             #  []
 
