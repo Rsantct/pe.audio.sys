@@ -89,7 +89,7 @@ def get_eq_curve(curv, state):
         index_min   = 0
         index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
         index_flat  = LOUD_FLAT_CURVE_INDEX
-        
+
         try:
             loud_ceil = CONFIG['loud_ceil']
         except:
@@ -137,9 +137,9 @@ def find_eq_curves():
                                        np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
                 pendings -= 1
             else:
-                print(f'(core.py) too much \'...{fname}\' files under share/eq/')
+                print(f'(core) too much \'...{fname}\' files under share/eq/')
         else:
-                print(f'(core.py) ERROR finding a \'...{fname}\' file under share/eq/')
+                print(f'(core) ERROR finding a \'...{fname}\' file under share/eq/')
 
     if not pendings:
         return EQ_CURVES
@@ -196,7 +196,7 @@ def bf_cli(command):
             command = command + '; quit\n'
             s.send(command.encode())
         except:
-            print (f'(core.py) Brutefir socket error')
+            print (f'(core) Brutefir socket error')
 
 def bf_set_midside( mode ):
     """ midside (formerly mono) is implemented at the f.eq.X stages:
@@ -393,10 +393,10 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
     #print('CAPTURE  ====> ', cap_ports) # debug
     #print('PLAYBACK ====> ', pbk_ports) # debug
     if not cap_ports:
-        print( f'(core) cannot find "{cap_pattern}"' )
+        print( f'(core) cannot find jack port "{cap_pattern}"' )
         return
     if not pbk_ports:
-        print( f'(core) cannot find "{pbk_pattern}"' )
+        print( f'(core) cannot find jack port "{pbk_pattern}"' )
         return
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     i=0
@@ -871,7 +871,7 @@ class Convolver(object):
 try:
     JCLI = jack.Client('tmp', no_start_server=True)
 except:
-    print( '(core.py) ERROR cannot commuticate to the JACK SOUND SERVER.' )
+    print( '(core) ERROR cannot commuticate to the JACK SOUND SERVER.' )
 
 # COMMON USE VARIABLES: ========================================================
 
@@ -883,7 +883,7 @@ EQ_FOLDER       = f'{UHOME}/pe.audio.sys/share/eq'
 EQ_CURVES       = find_eq_curves()
 
 if not EQ_CURVES:
-    print( '(core.py) ERROR loading EQ_CURVES from share/eq/' )
+    print( '(core) ERROR loading EQ_CURVES from share/eq/' )
     sys.exit()
 
 LOUD_FLAT_CURVE_INDEX = find_loudness_flat_curve_index()
