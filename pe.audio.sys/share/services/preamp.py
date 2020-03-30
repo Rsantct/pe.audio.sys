@@ -163,4 +163,4 @@ def do( cmdline ):
     save_yaml( preamp.state, STATE_PATH )
     if type(result) != str:
         result = json.dumps(result)
-    return result.encode()
+    return result
