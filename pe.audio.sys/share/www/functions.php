@@ -104,7 +104,7 @@
         
             "GET", "functions.php?command=level -15"
             "GET", "functions.php?command=aux amp_switch on"
-            "GET", "functions.php?command=players player_stop"
+            "GET", "functions.php?command=player stop"
     */
 
     // echo system_socket('control', 'status'); // DEBUG
