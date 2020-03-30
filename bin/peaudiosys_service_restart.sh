@@ -35,7 +35,7 @@ fi
 
 if [[ $svc == 'peaudiosys' ]]; then
     :
-elif [[ $svc == 'predic' ]]; then
+elif [[ $svc == 'preamp' ]]; then
     ADDR='localhost'
     (( PORT += 1 ))
 elif [[ $svc == 'players' ]]; then
