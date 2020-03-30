@@ -85,7 +85,7 @@ def audio_mute(mode):
         try:
             host, port = 'localhost', CTL_PORT
             s.connect( (host, port) )
-            s.send( f'predic mute {mode}'.encode() )
+            s.send( f'preamp mute {mode}'.encode() )
             s.close()
             print (f'({ME}) sending \'mute {mode}\' to \'peaudiosys\'')
         except:
