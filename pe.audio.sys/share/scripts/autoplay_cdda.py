@@ -54,18 +54,18 @@ def send_cmd(cmd):
         except:
             print (f'({ME}) socket error on {host}:{port}')
     return
-    
+
 def check_for_CDDA(d):
 
     srDevice = d.device_path.split('/')[-1]
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'players pause' )
+        send_cmd( 'player pause' )
         sleep(.5)
         send_cmd( 'predic input cd' )
         sleep(.5)
-        send_cmd( 'players play' )
+        send_cmd( 'player play' )
 
     # Verbose if not CDDA
     try:
@@ -117,4 +117,3 @@ if __name__ == '__main__':
             print(__doc__)
     else:
         print(__doc__)
-
