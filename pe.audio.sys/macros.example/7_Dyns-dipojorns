@@ -3,6 +3,9 @@
 """
     Alternates between two loudspeaker sets, both attached to differents
     channels ports from the same system sound card.
+
+        >:-)
+
 """
 ##############################################
 ############### USER SETTINGS: ###############
@@ -16,12 +19,11 @@ lspk_B = {  'name':         'DynC5+AMRsub',
             'xo_set':       'lp_60Hz'}
 
 
-
-
 #### DETAILS:
 #
 #    (i) FOA please prepare a set of copies of config.yml,
-#        appropiately configured, and named as follow:
+#        appropriately configured and named as following example:
+
 #           config.yml.dipojorns
 #           config.yml.DynC5+AMRsub
 #
@@ -32,19 +34,21 @@ lspk_B = {  'name':         'DynC5+AMRsub',
 #        > ecasound_peq.py:  dj_estant.ecs     -not set-
 #
 #    Macro procedure:
-#    
-#        - stop pasysctrl.py service
-#        - stop ecasound script
-#        - stop Brutefir process
-#        - copy config.yml.YOURLSPK --> config.yml
-#        - adjust .state.yml so that resuming audio settings later works properly.
-#        - restart Brutefir (cd to your lspk folder)
+#
+#        - Stop preamp.py service to release .state.yml
+#        - Stop ecasound script
+#        - Stop Brutefir process
+#        - Copy config.yml.YOURLSPK --> config.yml
+#        - Adjust .state.yml so that resuming audio settings later works properly.
+#        - Restart Brutefir (cd to your lspk folder)
 #           (!) be SURE that your brutefir_config has a 50 dB initial level atten.
-#        - restart ecasound script if necessary
-#        - resuming audio settings from .state.yml (but leaving current input)
-#        - restart pasysctrl.py service
-#        - if config.yml 'on_init:' section indicates any drc or xo , 
+#        - Restart ecasound script if necessary
+#        - Resuming audio settings from .state.yml (but leaving current input)
+#        - Restart pasysctrl.py service
+#        - If config.yml 'on_init:' section indicates any drc or xo ,
 #          we still need to set the wanted here lspk_A/B
+#        - Finally, will reselect the current input in order to retrieve any
+#          particular input setting.
 
 from subprocess import Popen
 from shutil import copyfile
@@ -106,7 +110,7 @@ def peaudiosys_command(cmd):
 
 
 if __name__ == "__main__":
-    
+
     configPath   = f'{MAINFOLDER}/config.yml'
     configPath_A = f'{MAINFOLDER}/config.yml.{lspk_A["name"]}'
     configPath_B = f'{MAINFOLDER}/config.yml.{lspk_B["name"]}'
@@ -114,25 +118,24 @@ if __name__ == "__main__":
 
     # Reading pe.audio.sys configuration
     current_config = load_yaml( configPath )
-    control_addr = current_config["services_addressing"]["pasysctrl_address"]
-    control_port = current_config["services_addressing"]["pasysctrl_port"]
+    control_addr = current_config["peaudiosys_address"]
+    control_port = current_config["peaudiosys_port"]
 
     # Toggling thinks
     if current_config["loudspeaker"] == lspk_A["name"]:
         lspk_New = lspk_B
     else:
         lspk_New = lspk_A
-        
+
     # Turning on Dynaudio AMP if needed
     if 'DynC5' in lspk_New["name"]:
-        if not check_Dyn_AMP(outlets=[1,4]):        
+        if not check_Dyn_AMP(outlets=[1,4]):
             turn_on__Dyn_AMP(outlets=[1,4])
 
     #  Macro procedure:
 
-    # 1- Stop pasysctrl.py service
-    Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl stop'.split() )
-       
+    # 1- Stop preamp.py service (the owner of state.yml)
+    Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh preamp stop'.split() )
 
     # 2- Stop ecasound script
     ecasound_in_use = False
@@ -145,11 +148,11 @@ if __name__ == "__main__":
     # 3- Stop Brutefir process
     Popen( f'pkill -f -KILL brutefir'.split() )
     sleep(.25)
-    
+
     # 4- Copy config.yml.YOURLSPK --> config.yml
-    copyfile( f'{MAINFOLDER}/config.yml.{lspk_New["name"]}', 
+    copyfile( f'{MAINFOLDER}/config.yml.{lspk_New["name"]}',
               f'{MAINFOLDER}/config.yml')
-    
+
     # 5- Adjust .state.yml so that init_audio_settings can do its job later
     # (i) It is needed to use typ='safe' to avoid 'off' as False
     new_state = load_yaml( statePath, typ='safe')
@@ -158,7 +161,7 @@ if __name__ == "__main__":
     # (i) It is needed to use typ='safe' to ensure
     #     xxx:'off' instead of xxx:off
     dump_yaml(new_state, statePath, typ='safe')
-    
+
     # 6- Restart Brutefir (cd to your lspk folder)
     #    (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
     os.chdir( f'{MAINFOLDER}/loudspeakers/{lspk_New["name"]}' )
@@ -167,7 +170,7 @@ if __name__ == "__main__":
     sleep(.5) # wait a while for Brutefir to start ...
     sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split() )
     sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split() )
-    
+
     # 7- Restart ecasound script if necessary
     #    ( ecasound_eq.py will automagically insert it before Brutefir ports )
     current_config = load_yaml( configPath )
@@ -186,16 +189,20 @@ if __name__ == "__main__":
     state = core.init_audio_settings()
     core.save_yaml(state, statePath)
     #state = core.init_source() # NO
-    
-    # 9- restart pasysctrl.py service
+
+    # 9- restart preamp.py service
     #  (i) From now on, 'pasysctl.py' is the ONLY OWNER of STATE_PATH.
-    Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh pasysctrl'.split() )
+    Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh preamp'.split() )
     sleep(2)
-    
-    # 10- If config.yml 'on_init:' section indicates any drc or xo , 
+
+    # 10- If config.yml 'on_init:' section indicates any drc or xo ,
     #     we still need to set the wanted here at the very beginning
     #     for lspk_A or lspk_B
-    peaudiosys_command( f'set_drc {lspk_New["drc_set"]}' )
-    peaudiosys_command( f'set_xo  {lspk_New["xo_set"]}'  )
+    peaudiosys_command( f'preamp set_drc {lspk_New["drc_set"]}' )
+    peaudiosys_command( f'preamp set_xo  {lspk_New["xo_set"]}'  )
+
+    # 11- Reselect the source to set appropriate input settings
+    sleep(.2)
+    peaudiosys_command( f'preamp input  {new_state["input"]}'  )
 
 
