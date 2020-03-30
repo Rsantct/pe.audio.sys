@@ -61,8 +61,8 @@ remotes:
             00 2d 6d 2d 39 3b b9 39 ff: player eject                    # 20
 
             00 2d 6d 2d 29 2b bb 6d ff: player play                     # ps
-            00 2d 6d 2d 39 29 bb bb ff: player player_previous          # <p
-            00 2d 6d 2d 29 a9 bb bb ff: player player_next              # p>
+            00 2d 6d 2d 39 29 bb bb ff: player previous                 # <p
+            00 2d 6d 2d 29 a9 bb bb ff: player next                     # p>
 
             00 2d 6d 2d 39 29 6b bb ff: mute toggle                     # fmm
             00 2d 6d 2d b9 29 b9 bb ff: level -3 add                    # ol-
