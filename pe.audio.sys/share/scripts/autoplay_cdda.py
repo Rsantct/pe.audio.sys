@@ -63,7 +63,7 @@ def check_for_CDDA(d):
     def autoplay_CDDA():
         send_cmd( 'player pause' )
         sleep(.5)
-        send_cmd( 'predic input cd' )
+        send_cmd( 'preamp input cd' )
         sleep(.5)
         send_cmd( 'player play' )
 
@@ -117,3 +117,4 @@ if __name__ == '__main__':
             print(__doc__)
     else:
         print(__doc__)
+
