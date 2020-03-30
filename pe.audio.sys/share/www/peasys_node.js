@@ -38,7 +38,7 @@ if ( opcs.indexOf('-v') != -1 ){
     verbose = true;
 }
 
-// Reading addresses and ports from the pe.audio.sys config.yml file
+// Reading address & port to communicate to pe.audio.sys
 try {
     const UHOME = require('os').homedir();
     let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config.yml', 'utf8');
@@ -97,7 +97,7 @@ function onHttpReq( httpReq, httpRes ){
 
         if ( cmd_phrase ){
 
-            // debugging received commands but no repeating :-)
+            // debugging received commands but not repeating :-)
             if (last_cmd_phrase !== cmd_phrase){
                 if (verbose){
                     console.log('(node) httpServer RX: /?command=' + cmd_phrase);
@@ -105,7 +105,7 @@ function onHttpReq( httpReq, httpRes ){
                 last_cmd_phrase = cmd_phrase;
             }
 
-            // Create a socket client to PREAMP, AUX or PLAYERS TCP servers
+            // Create a socket client to pe.audio.sys TCP server
             const client = net.createConnection( { port:PEAUDIOSYS_PORT,
                                                    host:PEAUDIOSYS_ADDR },
                                                    () => {
