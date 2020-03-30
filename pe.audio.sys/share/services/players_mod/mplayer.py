@@ -126,8 +126,8 @@ def cdda_meta():
             try:
                 tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
-                print( 'players.py: problem running the program \'cdcd\' for CDDA metadata reading' )
-                print( '             Check also your cdrom-device setting under .mplayer/config' )
+                print( 'mplayer.py: Problem running the program \'cdcd\' for CDDA metadata reading' )
+                print( '            Check also your cdrom-device setting under .mplayer/config' )
         for line in tmp:
             if line and line[6] == '>':
                 t = line[:2].strip()
