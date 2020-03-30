@@ -40,13 +40,17 @@ The system core is mainly based on:
 
 # Controling the system
 
-A web page front end is provided so you can easily control the system as well your integrated music players.
+- A web page front end is provided so you can easily control the system as well your integrated music players.
 
-**@rripio** has also an IR interface than can be adapted to control through by an infrared remote.
+- An IR interface is provided to control through by an infrared remote.
 
 Anyway the control of the system works through by **a TCP listening socket** that accepts **a set of commands**.
 
 Some commands have aliases to keep backwards compatibility from FIRtro or pre.di.c controllers.
+
+## Preamp control
+
+All commands prefixed with `preamp`. This prexix can be omited.
 
 ### Geeting help
  
@@ -78,12 +82,40 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
     bass            xx [add]
     loudness_ref    xx [add]
     loudness | loudness_track     on | off | toggle   Loudness compensation
-    set_target       <name>                           Select a target curve
+    set_target       <name>                           Selects a target curve
 
 ### Convolver stages:
 
-    set_drc | drc    <name>                 Select a DRC FIR set
-    set_xo  | xo     <name>                 Select a XOVER FIR set
+    set_drc | drc    <name>                 Selects a DRC FIR set
+    set_xo  | xo     <name>                 Selects a XOVER FIR set
+
+## Music player control
+
+All commands prefixed with `player`:
+
+    state                                   Gets the playback state: play, pause or stop.
+
+    stop | pause | play | play_track_NN
+    next | previous | rew | ff              Controls the playback
+    
+    eject                                   Ejects the CD tray
+    
+    http://url                              Plays the internet audio stream at given url
+    
+    get_meta                                Gets metadata info from current player if available 
+
+## Miscel controls
+
+All commands prefixed with `aux`:
+
+    amp_switch   on | off                   Switch an amplifier
+    
+    LU_monitor_reset                        Force to reset the LU_monitor daemon
+
+    get_LU_monitor                          Gets the monitored LU value
+
+    restart                                 Restarts pe.audio.sys
+
 
 ## Monitoring the system
 
@@ -192,16 +224,8 @@ Some points:
 Here you are an uncommented bare example of `config.yml`:
 
 
-    services_addressing:
-
-        pasysctrl_address:      0.0.0.0
-        pasysctrl_port:         9989
-
-        aux_address:            localhost
-        aux_port:               9988
-
-        players_address:        0.0.0.0
-        players_port:           9987
+    peaudiosys_address:     localhost
+    peaudiosys_port:        9990
 
     system_card: hw:UDJ6
 

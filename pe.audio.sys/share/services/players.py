@@ -124,7 +124,7 @@ def player_get_meta(readonly=False):
         md = json.dumps( METATEMPLATE.copy() )
 
     # As this is used by a server, we will return a bytes-like object:
-    return md.encode()
+    return md
 
 # Generic function to control any player
 def player_control(action):
@@ -157,14 +157,14 @@ def player_control(action):
     # Currently only MPD and Spotify Desktop provide 'state' info.
     # 'result' can be 'play', 'pause', 'stop' or ''.
     if not result:
-        result = '' # to avoid None.encode() error
+        result = ''
 
     # Store the player state
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
         f.write(result)
 
     # As this is used by a server, we will return a bytes-like object:
-    return result.encode()
+    return result
 
 # init() will be autostarted from server.py when loading this module
 def init():
@@ -176,7 +176,7 @@ def init():
     """
     def store_meta(timer=2):
         while True:
-            md = player_get_meta().decode()
+            md = player_get_meta()
             with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
                 f.write( md )
             sleep(timer)
@@ -189,36 +189,43 @@ def init():
         f.write('stop')
 
 # Interface entry function for this module from 'server.py'
-def do(task):
+def do(cmd):
     """ This do() is the entry interface function from a listening server.
-        Only certain received 'tasks' will be validated and processed,
+        Only certain received 'cmd' will be validated and processed,
         then returns back some useful info to the asking client.
     """
 
-    # First clearing the task phrase
-    task = task.strip()
+    result = 'nothing done'
+
+    # First clearing the cmd phrase
+    cmd = cmd.strip()
 
     # Getting METADATA
-    if task == 'player_get_meta':
+    if cmd == 'get_meta':
         with open( f'{MAINFOLDER}/.player_metadata', 'r') as f:
-            return f.read().encode()
+            result = f.read()
 
     # PLAYBACK CONTROL. (i) Some commands need to be adequated later,
     # e.g. Mplayer does not understand 'previous', 'next'
-    elif task[7:] in ('state', 'stop', 'pause', 'play', 
+    elif cmd in ('state', 'stop', 'pause', 'play',
                        'next', 'previous', 'rew', 'ff'):
-        return player_control( task[7:] )
+        result = player_control( cmd )
 
     # Special command for DISK TRACK playback
-    elif task[7:18] == 'play_track_':
-        return player_control( task[7:] )
+    elif cmd.startswith('play_track_'):
+        result = player_control( cmd )
 
     # EJECTS unconditionally the CD tray
-    elif task[7:] == 'eject':
-        return mplayer_cmd('eject', 'cdda')
+    elif cmd == 'eject':
+        result = mplayer_cmd('eject', 'cdda')
 
     # An URL to be played back by the istreams Mplayer service:
-    elif task[:7] == 'http://':
-        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {task}'
+    elif cmd.startswith('http://'):
+        sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {cmd}'
                   .split() )
+        result = 'done'
 
+    if type(result) != str:
+        result = json.dumps(result)
+
+    return result

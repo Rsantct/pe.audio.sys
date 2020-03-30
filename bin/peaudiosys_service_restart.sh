@@ -13,24 +13,36 @@ fi
 
 # a little trick, you can use the former 'control' service name
 if [[ $svc = 'control' ]]; then
-    svc=pasysctrl
+    svc=peaudiosys
 fi
 
 # Killing the running service:
 # (triple quoted is needed for this to work)
 pkill -KILL -f """server.py $svc"""
-if [[ $opc == 'stop' ]]; then
+if [[ $opc == *'stop'* ]]; then
     exit 0
 fi
 sleep .25
 
-# Reading addresses and ports from the pe.audio.sy config file
-SRV_ADDR=$( grep "$svc"_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
-SRV_ADDR=${SRV_ADDR//\"/}; SRV_ADDR=${SRV_ADDR//\'/}
-SRV_PORT=$( grep "$svc"_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+# Reading TCP address and port from the pe.audio.sy config file
+ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+ADDR=${ADDR//\"/}; CTL_ADDR=${ADDR//\'/}
+PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+if [[ ! $ADDR ]]; then
+    echo ERROR reading config.yml
+    exit -1
+fi
 
-if [[ ! $SRV_ADDR ]]; then
-    echo unknown \'$svc\'
+if [[ $svc == 'peaudiosys' ]]; then
+    :
+elif [[ $svc == 'preamp' ]]; then
+    ADDR='localhost'
+    (( PORT += 1 ))
+elif [[ $svc == 'players' ]]; then
+    ADDR='localhost'
+    (( PORT += 2 ))
+else
+    echo $svc NOT valid
     exit -1
 fi
 
@@ -39,7 +51,7 @@ fi
 #     if the launcher session has been closed (e.g. a crontab job),
 #     except if -v --verbose is indicated
 if [[ $opc == *"-v"* ]]; then
-    python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" -v &
+    python3 ~/pe.audio.sys/share/server.py "$svc" "$ADDR" "$PORT" -v &
 else
-    python3 ~/pe.audio.sys/share/server.py "$svc" "$SRV_ADDR" "$SRV_PORT" >/dev/null 2>&1 &
+    python3 ~/pe.audio.sys/share/server.py "$svc" "$ADDR" "$PORT" >/dev/null 2>&1 &
 fi

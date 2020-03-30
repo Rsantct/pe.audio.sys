@@ -167,12 +167,6 @@ def beeps():
     sp.Popen( ['aplay', f'-D{alsaplugin}', beepPath],
               stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 
-def get_control_port():
-    
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        config = yaml.safe_load(f)
-    return str( config['services_addressing']['pasysctrl_port'] )
-
 def main_loop(alertdB=alertdB, beep=beep):
 
     level_ups = False
@@ -223,7 +217,9 @@ def stop():
 if __name__ == "__main__":
     
     try:
-        control_port = get_control_port()
+        with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+            cfg = yaml.safe_load(f)
+        control_port = cfg['services_addressing']['peaudiosys_port']
     except:
         print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
         exit()

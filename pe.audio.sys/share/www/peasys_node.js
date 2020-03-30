@@ -38,20 +38,13 @@ if ( opcs.indexOf('-v') != -1 ){
     verbose = true;
 }
 
-// Reading addresses and ports from the pe.audio.sys config.yml file
+// Reading address & port to communicate to pe.audio.sys
 try {
     const UHOME = require('os').homedir();
     let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config.yml', 'utf8');
     let CFG = yaml.safeLoad(fileContents);
-    const SVCS = CFG.services_addressing;
-
-    var PREAMP_ADDR =   SVCS.pasysctrl_address;
-    var PREAMP_PORT =   SVCS.pasysctrl_port;
-    var AUX_ADDR =      SVCS.aux_address;
-    var AUX_PORT =      SVCS.aux_port;
-    var PLAYERS_ADDR =  SVCS.players_address;
-    var PLAYERS_PORT =  SVCS.players_port;
-
+    var PEAUDIOSYS_ADDR =   CFG.peaudiosys_address;
+    var PEAUDIOSYS_PORT =   CFG.peaudiosys_port;
 } catch (e) {
     console.log(e);
 }
@@ -104,7 +97,7 @@ function onHttpReq( httpReq, httpRes ){
 
         if ( cmd_phrase ){
 
-            // debugging received commands but no repeating :-)
+            // debugging received commands but not repeating :-)
             if (last_cmd_phrase !== cmd_phrase){
                 if (verbose){
                     console.log('(node) httpServer RX: /?command=' + cmd_phrase);
@@ -112,29 +105,10 @@ function onHttpReq( httpReq, httpRes ){
                 last_cmd_phrase = cmd_phrase;
             }
 
-            // if prefix 'aux', remove prefix and point to the AUX server
-            if ( cmd_phrase.slice(0,4) == 'aux ' ){
-                cmd_phrase = cmd_phrase.slice(4,);
-                cli_addr = AUX_ADDR;
-                cli_port = AUX_PORT;
-
-            }
-            // if prefix 'players', remove prefix and point to the PLAYERS server
-            else if ( cmd_phrase.slice(0,8) == 'players ' ){
-                cmd_phrase = cmd_phrase.slice(8,);
-                cli_addr = PLAYERS_ADDR;
-                cli_port = PLAYERS_PORT;
-
-            }
-            // else: a regular preamp command will point to the PREAMP server
-            else {
-                cli_addr = PREAMP_ADDR;
-                cli_port = PREAMP_PORT;
-            }
-
-            // Create a socket client to PREAMP, AUX or PLAYERS TCP servers
-            const client = net.createConnection( { port:cli_port,host:cli_addr },
-                                                 () => {
+            // Create a socket client to pe.audio.sys TCP server
+            const client = net.createConnection( { port:PEAUDIOSYS_PORT,
+                                                   host:PEAUDIOSYS_ADDR },
+                                                   () => {
             });
 
             // If the TCP server is unavailable, then do nothing but ending the http stuff

@@ -43,24 +43,16 @@ from subprocess import check_output, Popen
 #       python-dev libcdio-dev libiso9660-dev swig pkg-config
 # Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
-def send_cmd(svcName, cmd):
-    if   svcName == 'aux':
-        host, port = AUX_HOST, AUX_PORT
-    elif svcName == 'players':
-        host, port = PLY_HOST, PLY_PORT
-    elif svcName == 'pasysctrl':
-        host, port = CTL_HOST, CTL_PORT
-    else:
-        print( f'({ME}) unknown {svcName}' )
-        return
-    print( f'({ME}) sending: {cmd} to {svcName} at {host}:{port}')
+def send_cmd(cmd):
+    host, port = CTL_HOST, CTL_PORT
+    print( f'({ME}) sending: {cmd} to {host}:{port}')
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
         except:
-            print (f'({ME}) service \'{svcName}\' socket error on port {port}')
+            print (f'({ME}) socket error on {host}:{port}')
     return
 
 def check_for_CDDA(d):
@@ -69,11 +61,11 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'players', 'player_pause' )
+        send_cmd( 'player pause' )
         sleep(.5)
-        send_cmd( 'pasysctrl', 'input cd' )
+        send_cmd( 'preamp input cd' )
         sleep(.5)
-        send_cmd( 'players', 'player_play' )
+        send_cmd( 'player play' )
 
     # Verbose if not CDDA
     try:
@@ -89,6 +81,10 @@ def check_for_CDDA(d):
     except:
         print( f'({ME}) This script needs \'cdtool\' (command line cdrom tool)' )
 
+def stop():
+    Popen( f'pkill -KILL -f autoplay_cdda'.split() )
+    sleep(.5)
+
 def main():
     # Main observer daemon
     context = pyudev.Context()
@@ -103,25 +99,20 @@ if __name__ == '__main__':
     UHOME = os.path.expanduser("~")
     ME = __file__.split('/')[-1]
 
-    # pe.audio.sys services addressing
+    # pe.audio.sys service addressing
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            A = yaml.safe_load(f)['services_addressing']
-            CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
-            AUX_HOST, AUX_PORT = A['aux_address'],       A['aux_port']
-            PLY_HOST, PLY_PORT = A['players_address'],   A['players_port']
+            cfg = yaml.safe_load(f)
+            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
     except:
-        print('ERROR with \'pe.audio.sys/config.yml\'')
+        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
         exit()
 
     if sys.argv[1:]:
-
         if sys.argv[1] == 'start':
             main()
-
         elif sys.argv[1] == 'stop':
-            Popen( f'pkill -KILL -f autoplay_cdda'.split() )
-
+            stop()
         else:
             print(__doc__)
     else:

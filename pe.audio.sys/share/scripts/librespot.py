@@ -68,14 +68,15 @@ def start():
 
 def stop():
     Popen( 'pkill -KILL -f bin\/librespot'.split() )
+    sleep(.5)
 
 if sys.argv[1:]:
-    try:
-        option = {
-            'start' : start,
-            'stop'  : stop
-            }[ sys.argv[1] ]()
-    except:
-        print( '(scripts/librespot.py) bad option' )
+    if sys.argv[1] == 'start':
+        stop()
+        start()
+    elif sys.arvg[1] == 'stop':
+        stop()
+    else:
+        print(__doc__)
 else:
     print(__doc__)

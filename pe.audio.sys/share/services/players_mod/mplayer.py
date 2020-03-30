@@ -38,8 +38,9 @@ import yaml
 from time import sleep
 from socket import socket
 
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
+ME          = __file__.split('/')[-1]
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 ## generic metadata template
 METATEMPLATE = {
@@ -72,24 +73,23 @@ cdda_playing_status = 'stop'
 ## pe.audio.sys services addressing
 try:
     with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        A = yaml.safe_load(f)['services_addressing']
-        CTL_HOST, CTL_PORT = A['pasysctrl_address'], A['pasysctrl_port']
+        cfg = yaml.safe_load(f)
+        CTL_PORT = cfg['peaudiosys_port']
 except:
-    print('(players.py) ERROR with \'pe.audio.sys/config.yml\'')
+    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 
-# Auxiliary to talk to the main pe.audio.sys control service.
-# (i) Because we need to MUTE the preamp when CDDA is paused.
-def pre_control_cmd(cmd):
-    host, port = CTL_HOST, CTL_PORT
+# Auxiliary client to MUTE the preamp when CDDA is paused.
+def audio_mute(mode):
     with socket() as s:
         try:
+            host, port = 'localhost', CTL_PORT
             s.connect( (host, port) )
-            s.send( cmd.encode() )
+            s.send( f'preamp mute {mode}'.encode() )
             s.close()
-            print (f'(players.py) sending \'{cmd }\' to \'pasysctrl\'')
+            print (f'({ME}) sending \'mute {mode}\' to \'peaudiosys\'')
         except:
-            print (f'(players.py) service \'pasysctrl\' socket error on port {port}')
+            print (f'({ME}) socket error on {host}:{port}')
     return
 
 # Auxiliary function to format hh:mm:ss
@@ -126,8 +126,8 @@ def cdda_meta():
             try:
                 tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
-                print( 'players.py: problem running the program \'cdcd\' for CDDA metadata reading' )
-                print( '             Check also your cdrom-device setting under .mplayer/config' )
+                print( 'mplayer.py: Problem running the program \'cdcd\' for CDDA metadata reading' )
+                print( '            Check also your cdrom-device setting under .mplayer/config' )
         for line in tmp:
             if line and line[6] == '>':
                 t = line[:2].strip()
@@ -306,24 +306,9 @@ def mplayer_meta(service, readonly=False):
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_cmd(cmd, service):
     """ Sends a command to Mplayer trough by its input fifo
+        input:  a command string
+        result: a result string
     """
-    # Notice: Mplayer sends its responses to the terminal where Mplayer was launched,
-    #         or to a redirected file.
-
-    # See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
-
-    global cdda_playing_status
-
-    # "keep_pausing get_property pause" doesn't works well with CDDA
-    # so will keep a variable to selfcontrol the CDDA plating status.
-    if cmd == 'state':
-        if service == 'cdda':
-            return cdda_playing_status
-        else:
-            return 'play'
-
-    eject_disk = False
-
     # Aux function to save the CD info to a json file
     def save_cd_info():
 
@@ -360,7 +345,7 @@ def mplayer_cmd(cmd, service):
             try:
                 tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
             except:
-                print( '(players.py) Problem running the program \'cdcd\' for CDDA metadata reading.' )
+                print( '({ME}) Problem running the program \'cdcd\' for CDDA metadata reading.' )
                 print( '             Check also your cdrom-device setting under .mplayer/config' )
 
 
@@ -384,7 +369,7 @@ def mplayer_cmd(cmd, service):
 
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cd_info ) )
-        print( f'(players.py) CD info saved to {MAINFOLDER}/.cdda_info' )
+        print( f'({ME}) CD info saved to {MAINFOLDER}/.cdda_info' )
 
     # Aux function to check if Mplayer has loaded a disk
     def cdda_in_mplayer():
@@ -398,6 +383,22 @@ def mplayer_cmd(cmd, service):
             if line.startswith('ANS_FILENAME='):
                 return True
         return False
+
+
+    # (i) Mplayer sends its responses to the terminal where Mplayer was launched,
+    #     or to a redirected file.
+    #     See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
+
+    # (i) "keep_pausing get_property pause" doesn't works well with CDDA
+    # so will keep a variable to selfcontrol the CDDA plating status.
+    global cdda_playing_status
+    if cmd == 'state':
+        if service == 'cdda':
+            return cdda_playing_status
+        else:
+            return 'play'
+
+    eject_disk = False
 
     if service == 'istreams':
 
@@ -432,19 +433,19 @@ def mplayer_cmd(cmd, service):
                 cdda_playing_status =   {'play':'pause', 'pause':'play'
                                         }[cdda_playing_status]
                 # (i) Because of mplayer cdda pausing becomes on
-                #     strange behavior (there is a kind of brief sttuter 
+                #     strange behavior (there is a kind of brief sttuter
                 #     with audio), then we will MUTE the preamp.
                 if cdda_playing_status == 'pause':
-                    pre_control_cmd('mute on')
+                    audio_mute('on')
                 elif cdda_playing_status == 'play':
-                    pre_control_cmd('mute off')
+                    audio_mute('off')
 
         elif cmd.startswith('play'):
 
             # Prepare to play if a disk is not loaded into Mplayer
             if not cdda_in_mplayer():
-                pre_control_cmd('mute on')
-                print( f'(players.py) loading disk ...' )
+                audio_mute('on')
+                print( f'({ME}) loading disk ...' )
                 # Save disk info into a json file
                 save_cd_info()
                 # Flushing the mplayer events file
@@ -457,16 +458,16 @@ def mplayer_cmd(cmd, service):
                 n = 15
                 while n:
                     if cdda_in_mplayer(): break
-                    print( f'(players.py) waiting for Mplayer to load disk' ) 
+                    print( f'({ME}) waiting for Mplayer to load disk' )
                     sleep(1)
                     n -= 1
                 if n:
-                    print( '(players.py) Mplayer disk loaded' )
+                    print( '({ME}) Mplayer disk loaded' )
                 else:
-                    print( '(players.py) TIMED OUT detecting '
+                    print( '({ME}) TIMED OUT detecting '
                             'Mplayer disk loaded' )
 
-            # Retrieving the current track 
+            # Retrieving the current track
             curr_track = 1
             if cdda_playing_status in ('play', 'pause'):
                 curr_track = json.loads( cdda_meta() )['track_num'].split()[0]
@@ -474,7 +475,9 @@ def mplayer_cmd(cmd, service):
             if cmd.startswith('play_track_'):
                 curr_track = cmd[11:]
                 if not curr_track.isdigit():
-                    return
+                    tmp = f'({ME}) BAD command {cmd}'
+                    print( tmp )
+                    return tmp
 
             chapter = int(curr_track) -1
             cmd = f'seek_chapter {str(chapter)} 1'
@@ -485,11 +488,12 @@ def mplayer_cmd(cmd, service):
             eject_disk = True
 
     else:
-        print( f'(players.py) unknown Mplayer service \'{service}\'' )
-        return
+        tmp = f'({ME}) unknown Mplayer service \'{service}\''
+        print( tmp )
+        return tmp
 
     # Sending the command to the corresponding fifo
-    print( f'(players.py) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
+    print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
 
@@ -502,14 +506,15 @@ def mplayer_cmd(cmd, service):
             # This delay avoids audio stutter because of above pausing,
             # done when preparing (loading) traks into Mplayer
             sleep(.5)
-            pre_control_cmd('mute off')
+            audio_mute('off')
 
     if eject_disk:
         # Eject
         Popen( f'eject {CDROM_DEVICE}'.split() )
         # Flush .cdda_info (blank the metadata file)
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
-            f.write( "{}" ) 
+            f.write( "{}" )
         # Unmute preamp
-        pre_control_cmd('mute off')
+        audio_mute('off')
 
+    return 'done'

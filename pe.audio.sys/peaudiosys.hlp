@@ -2,7 +2,13 @@
                 ||||||   pe.audio.sys commands list    ||||||
                 \\\\\\                                 //////
 
---- Getting info:
+--- Preamp control:
+
+All commands prefixed with 'preamp':
+(this prexix can be omited)
+
+
+  - Getting info:
 
     state | status | get_state  Returns the whole system status parameters,
                                 as per stored in .state.yml
@@ -13,7 +19,7 @@
     get_xo_sets                 List of xover sets available under the loudspeaker folder
 
 
---- Selector stage:
+  - Selector stage:
 
     input | source  <name>
     solo            off |  l  | r
@@ -22,7 +28,7 @@
     mute            off | on  | toggle
 
 
---- Gain and Eq stage:
+  - Gain and Eq stage:
 
     level           xx [add]               'xx' in dB, use 'add' for a relative adjustment
     balance         xx [add]
@@ -33,8 +39,35 @@
     set_target       <name>                           Select a target curve
 
 
---- Convolver stages:
+  - Convolver stages:
 
     set_drc | drc    <name>                 Select a DRC FIR set
     set_xo  | xo     <name>                 Select a XOVER FIR set
 
+
+--- Music player control
+
+All commands prefixed with 'player':
+
+    state                                   Gets the playback state: play, pause or stop.
+
+    stop | pause | play | play_track_NN
+    next | previous | rew | ff              Controls the playback
+
+    eject                                   Ejects the CD tray
+
+    http://url                              Plays the internet audio stream at given url
+
+    get_meta                                Gets metadata info from current player if available
+
+--- Miscel controls
+
+All commands prefixed with 'aux':
+
+    amp_switch   on | off                   Switch an amplifier
+
+    LU_monitor_reset                        Force to reset the LU_monitor daemon
+
+    get_LU_monitor                          Gets the monitored LU value
+
+    restart                                 Restarts pe.audio.sys

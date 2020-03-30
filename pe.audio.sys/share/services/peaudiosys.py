@@ -20,6 +20,7 @@
     This module is loaded by 'server.py'
 """
 
+from socket import socket
 import yaml
 import json
 from subprocess import Popen, check_output
@@ -29,18 +30,30 @@ import sys
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
 
-UHOME = os.path.expanduser("~")
+ME                  = __file__.split('/')[-1]
+UHOME               = os.path.expanduser("~")
 MAIN_FOLDER         = f'{UHOME}/pe.audio.sys'
 MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
 LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
 LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
+PLAYER_META_FILE    = f'{MAIN_FOLDER}/.player_metadata'
+STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 
-aux_info = {    'amp':'off', 
+aux_info = {    'amp':'off',
                 'loudness_monitor': 0.0,
                 'user_macros': [],
                 'web_config': {}
             }
+
+## preamp service addressing
+try:
+    with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
+        cfg = yaml.safe_load(f)
+        BASE_PORT = cfg['peaudiosys_port']
+except:
+    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
+    exit()
 
 # Gets the amp manager script as defined inside config.yml
 try:
@@ -58,31 +71,51 @@ try:
 except:
         WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
 
-# Auxiliary to parse a command phrase string into a tuple (cmd,arg) 
-def read_command_phrase(command_phrase):
-    cmd, arg = None, None
-    # This is to avoid empty values when there are more
-    # than on space as delimiter inside the command_phrase:
-    opcs = [x for x in command_phrase.split(' ') if x]
-    try:
-        cmd = opcs[0]
-    except:
-        raise
-    try:
-        # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
-        arg = ' '.join( opcs[1:] )
-    except:
-        pass
-    return cmd, arg
+# Auxiliary client to talk to othes server.py instances (preamp and players)
+def send_cmd(service, cmd):
 
-# Main function for command processing
-def process( cmd, arg=None ):
-    """ input:  a tuple (command, arg)
+    host = 'localhost'
+    # (i) start.py will assign 'preamp' port number this way:
+    if service == 'preamp':
+        port = BASE_PORT + 1
+    elif service == 'players':
+        port = BASE_PORT + 2
+    else:
+        raise Exception(f'({ME}) wrong service \'{service}\'')
+
+    ans = ''
+    with socket() as s:
+        try:
+            s.connect( (host, port) )
+            s.send( cmd.encode() )
+            print (f'({ME}) Tx to {service}:   \'{cmd }\'')
+            ans = s.recv(1024).decode()
+            print (f'({ME}) Rx from {service}: \'{ans }\' ')
+            s.close()
+        except:
+            print (f'({ME}) service \'peaudiosys\' socket error on port {port}')
+    return ans
+
+# Main function for PREDIC commands processing
+def process_preamp( cmd, arg=None ):
+    if arg:
+        cmd  = ' '.join( (cmd, arg) )
+    return send_cmd( service='preamp', cmd=cmd )
+
+# Main function for PLAYERS commands processing
+def process_players( cmd, arg=None ):
+    if arg:
+        cmd  = ' '.join( (cmd, arg) )
+    return send_cmd( service='players', cmd=cmd )
+
+# Main function for AUX commands processing
+def process_aux( cmd, arg=None ):
+    """ input:  a tuple (prefix, command, arg)
         output: a result string
     """
     result = ''
 
-    # Amplifier switching
+    # AMPLIFIER SWITCHING
     if cmd == 'amp_switch':
 
         # current switch state
@@ -97,7 +130,7 @@ def process( cmd, arg=None ):
                 curr_sta = '-'
                 raise
         except:
-            print( f'(aux) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
+            print( f'({ME}) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
 
         if arg == 'state':
             return curr_sta
@@ -109,12 +142,12 @@ def process( cmd, arg=None ):
         if arg in ('on','off'):
             new_sta = arg
 
-        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
+        print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
         Popen( f'{AMP_MANAGER} {new_sta}'.split(), shell=False )
         return new_sta
 
 
-    # List of macros under macros/ folder
+    # LIST OF MACROS under macros/ folder
     elif cmd == 'get_macros':
         macro_files = []
         with os.scandir( f'{MACROS_FOLDER}' ) as entries:
@@ -124,14 +157,14 @@ def process( cmd, arg=None ):
                     macro_files.append(fname)
         result = macro_files
 
-    # Run a macro
+    # RUN MACRO
     elif cmd == 'run_macro':
-        print( f'(aux) running macro: {arg}' )
+        print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
         result = 'tried'
 
-    # Send reset to the loudness monitor daemon through by its control file
-    elif cmd == 'loudness_monitor_reset':
+    # RESET the LOUDNESS MONITOR DAEMON:
+    elif cmd == 'loudness_monitor_reset' or cmd.lower() == 'lu_monitor_reset':
         try:
             with open(LOUD_MON_CTRL_FILE, 'w') as f:
                 f.write('reset')
@@ -139,8 +172,9 @@ def process( cmd, arg=None ):
         except:
             result = 'error'
 
-    # Get the loudness monitor value from the loudness monitor daemon's output file
-    elif cmd == 'get_loudness_monitor':
+    # Get the LOUDNESS MONITOR VALUE from the
+    # loudness monitor daemon's output file:
+    elif cmd == 'get_loudness_monitor' or cmd.lower() == 'get_lu_monitor':
         try:
             with open(LOUD_MON_VAL_FILE, 'r') as f:
                 result = round( float(f.read().strip()), 1)
@@ -157,13 +191,13 @@ def process( cmd, arg=None ):
         try:
             Popen( f'{restart_action}'.split() )
         except:
-            print( f'(aux) Problems running \'{restart_action}\'' )
+            print( f'({ME}) Problems running \'{restart_action}\'' )
 
-    # Get the web.config dictionary
+    # Get the WEB.CONFIG dictionary
     elif cmd == 'get_web_config':
         result = WEBCONFIG
 
-    # Help
+    # HELP
     elif '-h' in cmd:
         print(__doc__)
         result =  'done'
@@ -171,7 +205,7 @@ def process( cmd, arg=None ):
     return result
 
 # Dumps pe.audio.sys/.aux_info
-def update_aux_info():
+def dump_aux_info():
     aux_info['amp'] =               process('amp_switch', 'state')
     aux_info['loudness_monitor'] =  process('get_loudness_monitor')
     aux_info['user_macros'] =       process('get_macros')
@@ -185,15 +219,15 @@ class My_files_event_handler(FileSystemEventHandler):
     """
     def on_modified(self, event):
         path = event.src_path
-        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
+        #print( f'({ME}) file {event.event_type}: \'{path}\'' ) # DEBUG
         if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
-            update_aux_info()
+            dump_aux_info()
 
 # init() will be autostarted from server.py when loading this module
 def init():
 
     # First update
-    update_aux_info()
+    dump_aux_info()
 
     # Starts a WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
@@ -211,17 +245,48 @@ def init():
 
 # Interface function to plug this on server.py
 def do( command_phrase ):
-    cmd, arg = read_command_phrase( command_phrase
-                                              .replace('\n','').replace('\r','') )
-    result = process( cmd, arg )
-    return json.dumps(result).encode()
 
-# command line use (DEPRECATED)
-if __name__ == '__main__':
+    def read_command_phrase(command_phrase):
 
-    if sys.argv[1:]:
+        # (i) command phrase SYNTAX must start with an appropriate prefix:
+        #           preamp  command  arg1 ...
+        #           players command  arg1 ...
+        #           aux     command  arg1 ...
+        #     The 'preamp' prefix can be omited
 
-        command_phrase = ' '.join (sys.argv[1:] )
-        cmd, arg = read_command_phrase( command_phrase )
-        result = process( cmd, arg )
-        print( result )
+        pfx, cmd, arg = None, None, None
+
+        # This is to avoid empty values when there are more
+        # than on space as delimiter inside the command_phrase:
+        chunks = [x for x in command_phrase.split(' ') if x]
+
+        # If not prefix, will treat as a preamp command kind of
+        if not chunks[0] in ('preamp', 'player', 'aux'):
+            chunks.insert(0, 'preamp')
+        pfx = chunks[0]
+
+        if chunks[1:]:
+            cmd = chunks[1]
+        else:
+            raise Exception(f'({ME}) BAD command: {command_phrase}')
+        if chunks[2:]:
+            # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
+            arg = ' '.join( chunks[2:] )
+
+        return pfx, cmd, arg
+
+    if command_phrase.strip():
+        pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
+        #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
+        if cmd == 'help':
+            Popen( f'cat {MAIN_FOLDER}/peaudiosys.hlp', shell=True)
+            return 'help has been printed to stdout, also available on ' \
+                    '\'~/pe.audio.sys/peaudiosys.hlp\''
+        result = {  'preamp':   process_preamp,
+                    'player':   process_players,
+                    'aux':      process_aux } [pfx](cmd, arg)
+        if type(result) != str:
+            result = json.dumps(result)
+        return result
+    else:
+        return 'nothing done'

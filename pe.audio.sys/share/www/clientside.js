@@ -323,15 +323,15 @@ function page_update() {
 
 }
 
-//////// PLAYER SERVER FUNCTIONS ////////
+//////// PLAYERS FUNCTIONS ////////
 // Controls the player
 function playerCtrl(action) {
-    control_cmd( 'players player_' + action );
+    control_cmd( 'player ' + action );
 }
 // Updates the player control buttons, hightlights the corresponding button to the playback state
 function update_player_controls() {
     try{
-        var playerState = control_cmd( 'players player_state' );
+        var playerState = control_cmd( 'player state' );
     }catch{
         return;
     }
@@ -361,7 +361,7 @@ function update_player_controls() {
 // Shows the playing info metadata
 function update_player_info() {
     try{
-        var tmp = control_cmd( 'players player_get_meta' );
+        var tmp = control_cmd( 'player get_meta' );
     }catch{
         return;
     }
@@ -416,24 +416,24 @@ function update_player_info() {
 function select_track() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
-        control_cmd( 'players player_play_track_' + tracknum );
+        control_cmd( 'player play_track_' + tracknum );
     }
 }
 // Sends an url to the server, to be played back
 function play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
-        control_cmd( 'players ' + url );
+        control_cmd( 'player ' + url );
     }
 }
 
-//////// AUX SERVER FUNCTIONS ////////
+//////// AUX FUNCTIONS ////////
 // Restart procedure
 function audio_restart() {
     control_cmd('aux restart');
     advanced_controls = false;
     page_update();
-}    
+}
 // Switch the amplifier
 function ampli(mode) {
     control_cmd( 'aux amp_switch ' + mode );
@@ -441,8 +441,8 @@ function ampli(mode) {
 // Queries the remote amplifier switch state
 function update_ampli_switch() {
     try{
-        const amp_state = JSON.parse( control_cmd( 'aux amp_switch state' )
-                                      .replace('\n','') );
+        const amp_state = control_cmd( 'aux amp_switch state' )
+                           .replace('\n','');
         document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
     }catch{
     document.getElementById("OnOffButton").innerText = '-';
