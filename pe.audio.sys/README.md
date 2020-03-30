@@ -152,6 +152,7 @@ This way, the loudness compensation feature of the calibrated volume control of 
  
 It is planned to provide a servo feature for tracking the monitored LU then auto adjust the LU offset compensation. The monitored LU could be reset also when the track metadata info changes.
 
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/LU_monitor.png" align="center" width="400" ></a>
 
 ## Tools
 
