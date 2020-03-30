@@ -46,7 +46,7 @@ aux_info = {    'amp':'off',
                 'web_config': {}
             }
 
-## predic service addressing
+## preamp service addressing
 try:
     with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
         cfg = yaml.safe_load(f)
@@ -75,8 +75,8 @@ except:
 def send_cmd(service, cmd):
 
     host = 'localhost'
-    # (i) start.py will assign 'predic' port number this way:
-    if service == 'predic':
+    # (i) start.py will assign 'preamp' port number this way:
+    if service == 'preamp':
         port = BASE_PORT + 1
     elif service == 'players':
         port = BASE_PORT + 2
@@ -97,10 +97,10 @@ def send_cmd(service, cmd):
     return ans
 
 # Main function for PREDIC commands processing
-def process_predic( cmd, arg=None ):
+def process_preamp( cmd, arg=None ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    return send_cmd( service='predic', cmd=cmd )
+    return send_cmd( service='preamp', cmd=cmd )
 
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg=None ):
@@ -249,10 +249,10 @@ def do( command_phrase ):
     def read_command_phrase(command_phrase):
 
         # (i) command phrase SYNTAX must start with an appropriate prefix:
-        #           predic  command  arg1 ...
+        #           preamp  command  arg1 ...
         #           players command  arg1 ...
         #           aux     command  arg1 ...
-        #     The 'predic' prefix can be omited
+        #     The 'preamp' prefix can be omited
 
         pfx, cmd, arg = None, None, None
 
@@ -260,8 +260,9 @@ def do( command_phrase ):
         # than on space as delimiter inside the command_phrase:
         chunks = [x for x in command_phrase.split(' ') if x]
 
-        if not chunks[0] in ('predic', 'player', 'aux'):
-            chunks.insert(0, 'predic')
+        # If not prefix, will treat as a preamp command kind of
+        if not chunks[0] in ('preamp', 'player', 'aux'):
+            chunks.insert(0, 'preamp')
         pfx = chunks[0]
 
         if chunks[1:]:
@@ -277,7 +278,7 @@ def do( command_phrase ):
     if command_phrase.strip():
         pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
-        result = {  'predic':   process_predic,
+        result = {  'preamp':   process_preamp,
                     'player':   process_players,
                     'aux':      process_aux } [pfx](cmd, arg)
         if type(result) != str:
