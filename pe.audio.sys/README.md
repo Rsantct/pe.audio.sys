@@ -125,6 +125,34 @@ An LCD service is provided to plug a LCD display to show the system status as we
 
 You can also use the above getting info commands, through by a TCP connection.
 
+## Monitorig the EBU R128 Integrated Loudness of the audio signal
+
+Most music rock and pop kind of records from 80's onwards have been mastered under the 'loudness war' age.
+
+To deal with this, you can load an optional script `loudness_monitor.py` under your `config.yml` preferences.
+
+This script will automatically measure the EBU R128 Integrated Loudness of the current preamp source.
+
+The monitored value will be available in several flavours:
+
+- A graphic bar 'LU monitor' is displayed inside the control web page.
+- The LCD will also display the 'LUmon' value.
+- By a special command: `peaudiosys_control get_LU_monitor`.
+
+A **reset** function is also provided for the monitored LU value, by a web button or by command line. An auto reset will be done when changing the preamp input.
+
+To compensate for high LU-Integrated values, we provide some options:
+
+- The control web offers a 'LU offset' slider for you to compensate the displayed LU monitor value: simply adjust the slider as per the displayed bar span. For convenience, the adjusted value steps in 3 dB from 0 to 12 dB.
+- You can preset an estimated 'loudness_reference' value under your favourite sources inside 'config.yml'
+- You can prepare your own macros (linked to control web buttons). For instance you can set 0 dB for classical radio stations, or say about 9 dB for pop & rock radio stations.
+
+
+This way, the loudness compensation feature of the calibrated volume control of pe.audio.sys will apply the appropriate contour curve when you listen below your reference SPL (level = 0 dBSPL).
+ 
+It is planned to provide a servo feature for tracking the monitored LU then auto adjust the LU offset compensation. The monitored LU could be reset also when the track metadata info changes.
+
+
 ## Tools
 
 Some nice tools are provided under your `~/bin` folder, below a brief description.
