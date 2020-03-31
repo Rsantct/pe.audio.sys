@@ -46,30 +46,26 @@ aux_info = {    'amp':'off',
                 'web_config': {}
             }
 
-## preamp service addressing
+## Reading config.yml
 try:
     with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
-        cfg = yaml.safe_load(f)
-        BASE_PORT = cfg['peaudiosys_port']
+        CONFIG = yaml.safe_load(f)
+    BASE_PORT = CONFIG['peaudiosys_port']
 except:
     print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
-
-# Gets the amp manager script as defined inside config.yml
 try:
-    with open( f'{MAIN_FOLDER}/config.yml' , 'r' ) as f:
-        tmp = yaml.safe_load( f )
     AMP_MANAGER =  tmp['aux']['amp_manager']
 except:
-    # This will be printed out to the terminal to advice the user:
-    AMP_MANAGER =  'echo For amp switching please configure config.yml'
-
-# Gets the web page config as defined in web.yml
+    AMP_MANAGER =  'For amp switching please configure config.yml'
 try:
-    with open( f'{MAIN_FOLDER}/web.yml' , 'r' ) as f:
-        WEBCONFIG = yaml.safe_load( f )
+    WEBCONFIG = CONFIG['web_page']
+    WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
 except:
-        WEBCONFIG = { 'at_startup':{'hide_macro_buttons':False} }
+    # default web options
+    WEBCONFIG = {   'hide_macro_buttons':False,
+                    'hide_LU':False,
+                    'restart_cmd_info': CONFIG['restart_cmd'] }
 
 # Auxiliary client to talk to othes server.py instances (preamp and players)
 def send_cmd(service, cmd):
