@@ -11,11 +11,11 @@ This is based on the former **FIRtro** and the current **pre.di.c** projects, as
 
 The system is intended as a personal audio system based on a PC.
 
-The originary main features were:
+The originary main features are:
 
-- Digital crossover for sophysticated loudspeakers management
-- Preamplifier with loudness compensated and calibrated volume control.
-- Web page for system control (FIRtro)
+- **Digital crossover** for sophysticated loudspeakers management
+- Preamplifier with **loudness compensated and calibrated volume control**.
+- **Web page for system control** (FIRtro)
 
  Additional features on **pe.audio.sys** are extended to involve:
 
