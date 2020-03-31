@@ -777,6 +777,11 @@ class Preamp(object):
                 candidate["loudness_ref"] = CONFIG["sources"][value]['loudness_ref']
             except:
                 pass
+            # Special source target setting overrides the one in on_init behavior
+            try:
+                candidate["target"] = CONFIG["sources"][value]['target']
+            except:
+                candidate["target"] = CONFIG["on_init"]['target']
             self._validate( candidate )
             return result
         else:
