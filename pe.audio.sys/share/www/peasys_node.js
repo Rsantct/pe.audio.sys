@@ -61,6 +61,9 @@ var last_http_sent  = '';
 // when some httpRequest is received.
 function onHttpReq( httpReq, httpRes ){
 
+    let server_header = 'pe.audio.sys / Node.js ' + process.version
+    httpRes.setHeader('server', server_header);
+
     // Serve our HTML code index.html as an http response
     if (httpReq.url === '/' || httpReq.url === '/index.html') {
 
@@ -170,4 +173,5 @@ function onHttpReq( httpReq, httpRes ){
 // a function when a 'request' event occurs.
 http.createServer( onHttpReq ).listen( NODEJS_PORT );
 
+console.log('Node.js', process.version);
 console.log('Server running at http://localhost:' + NODEJS_PORT + '/');
