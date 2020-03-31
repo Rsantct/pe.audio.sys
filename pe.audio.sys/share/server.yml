@@ -1,7 +1,0 @@
-# Put here the relative paths (from your home dir) where
-# server.py will look for 'processing modules' to be plugged in.
-# More info:     server.py --help
-
-paths:
-    - pe.audio.sys/share/services
-    - pe.audio.sys/share/scripts
