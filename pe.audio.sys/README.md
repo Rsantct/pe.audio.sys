@@ -253,9 +253,6 @@ Some points:
 Here you are an uncommented bare example of `config.yml`:
 
 
-    peaudiosys_address:     localhost
-    peaudiosys_port:        9990
-
     system_card: hw:UDJ6
 
     external_cards:
@@ -322,8 +319,17 @@ Here you are an uncommented bare example of `config.yml`:
         - librespot.py
         - zita-n2j_mcast.py
 
-    aux:
-        amp_manager:  /home/predic/bin/ampli.sh
+    peaudiosys_address:     localhost
+    peaudiosys_port:        9990
+
+    amp_manager:  /home/predic/bin/ampli.sh
+
+    restart_cmd: peaudiosys_restart.sh
+
+    web_config:
+        hide_macro_buttons: false
+        hide_LU: false
+
 
 
 # The share/eq folder
