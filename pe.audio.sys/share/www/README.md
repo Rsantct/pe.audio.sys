@@ -4,7 +4,7 @@ This folder hosts the web page that manages your pe.audio.sys, for instance from
 
 ## Web page behavior
 
-Some configurations are available on the file **`~/pe.audio.sys/web.yml`**:
+Some options can be configured inside **`~/pe.audio.sys/config.yml`**:
 - command to run when the reboot button is pressed
 - show or hide the macro buttons array at startup
 
