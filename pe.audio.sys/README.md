@@ -144,7 +144,7 @@ A **reset** function is also provided for the monitored LU value, by a web butto
 To compensate for high LU-Integrated values on your listening audio program, we provide some options:
 
 - The control web offers a 'LU offset' slider for you to compensate the displayed LU monitor value: simply adjust the slider as per the displayed bar span. For convenience, the adjusted value steps in 3 dB from 0 to 12 dB.
-- You can preset an estimated 'loudness_reference' value under your favourite sources inside 'config.yml'
+- You can preset an estimated 'loudness_reference' value under your favourite sources inside `config.yml`
 - You can prepare your own macros (linked to control web buttons). For instance you can set 0 dB for classical radio stations, or say about 9 dB for pop & rock radio stations.
 
 
