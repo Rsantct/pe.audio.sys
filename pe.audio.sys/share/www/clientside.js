@@ -84,7 +84,11 @@ function control_cmd( cmd ) {
     ans = myREQ.responseText;
     //console.log('httpRX: ' + ans);
 
-    return ans;
+    if ( ans.includes('socket_connect\(\) failed' ) ){
+        return '';
+    }else{
+        return ans;
+    }
 }
 
 // Page INITIATE
@@ -441,12 +445,16 @@ function ampli(mode) {
 // Queries the remote amplifier switch state
 function update_ampli_switch() {
     try{
-        const amp_state = control_cmd( 'aux amp_switch state' )
+        var amp_state = control_cmd( 'aux amp_switch state' )
                            .replace('\n','');
-        document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
+        // cosmetic for button not void
+        if ( ! amp_state ) {
+            var amp_state = '-';
+        }
     }catch{
-    document.getElementById("OnOffButton").innerText = '-';
+        var amp_state = '-';
     }
+    document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
 }
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
