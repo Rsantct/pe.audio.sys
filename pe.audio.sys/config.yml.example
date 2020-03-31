@@ -142,7 +142,7 @@ sources:
     tv:
         capture_port:   system
         gain:           +6.0                # low level source
-        xo:             mp                  # low latency
+        xo:             mp                  # low latency filtering
         target:         +0.0-0.0_target     # preferred for movie dialogue
 
 
