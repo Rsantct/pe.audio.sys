@@ -55,7 +55,7 @@ except:
     print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
     exit()
 try:
-    AMP_MANAGER =  tmp['aux']['amp_manager']
+    AMP_MANAGER =  CONFIG['amp_manager']
 except:
     AMP_MANAGER =  'For amp switching please configure config.yml'
 try:
