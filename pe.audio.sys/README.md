@@ -292,22 +292,29 @@ Here you are an uncommented bare example of `config.yml`:
         solo:              'off'
 
     sources:
+    
         spotify:
             capture_port:   alsa_loop
             gain:           0.0
-            xo:             mp
+            xo:             lp
         mpd:
-            capture_port:   mpd_loop
+            capture_port:   mpd
             gain:           0.0
-            xo:             mp
+            xo:             lp
         istreams:
-            capture_port:   istreams_loop
+            capture_port:   mplayer_istreams
             gain:           0.0
-            xo:             mp
-        salon:
+            xo:             lp
+        room1:
             capture_port:   zita-n2j
             gain:           0.0
-            xo:             mp
+            xo:             lp
+        tv:
+            capture_port:   system
+            gain:           +6.0                # low level source
+            xo:             mp                  # low latency filtering
+            target:         +0.0-0.0_target     # preferred for movie dialogue
+
 
     source_monitors:
 
