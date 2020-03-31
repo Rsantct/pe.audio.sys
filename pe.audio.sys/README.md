@@ -137,7 +137,7 @@ The monitored value will be available in several flavours:
 
 - A graphic bar 'LU monitor' is displayed inside the control web page.
 - The LCD will also display the 'LUmon' value.
-- By a special command: `peaudiosys_control get_LU_monitor`.
+- By a special command: `aux get_LU_monitor`.
 
 A **reset** function is also provided for the monitored LU value, by a web button or by command line. An auto reset will be done when changing the preamp input.
 
