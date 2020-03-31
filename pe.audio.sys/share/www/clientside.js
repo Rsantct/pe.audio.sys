@@ -54,12 +54,12 @@ var metablank = {                       // A player's metadata blank dict
     }
 var last_loudspeaker = ''               // Will detect if audio processes has beeen
                                         // restarted with new loudspeaker configuration.
-
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch{
-    var web_config = { 'at_startup':{'hide_macro_buttons':false} };
-    web_config.reboot_button_action = 'peaudiosys_restart.sh';
+    var web_config = {  'hide_macro_buttons':false,
+                        'hide_LU':false,
+                        'restart_cmd_info': '' };
 }
 
 // Talks to the pe.audio.sys HTTP SERVER
@@ -108,9 +108,9 @@ function page_initiate(){
         document.getElementById("LU_offset").style.display = 'block';
         document.getElementById("LU_monitor").style.display = 'block';
     }
-    // Updates the title of the reboot button as per the web_config dict
-    document.getElementById("reboot_switch").title = 'RESTART: ' +
-                                                web_config.reboot_button_action;
+    // Updates the title of the restart button as per config.yml
+    document.getElementById("restart_switch").title = 'RESTART: ' +
+                                         web_config.restart_cmd_info;
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -429,7 +429,7 @@ function play_url() {
 
 //////// AUX FUNCTIONS ////////
 // Restart procedure
-function audio_restart() {
+function peaudiosys_restart() {
     control_cmd('aux restart');
     advanced_controls = false;
     page_update();
