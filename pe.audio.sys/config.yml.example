@@ -1,8 +1,3 @@
-# ================= pe.audio.sys TCP SERVER address  ===========================
-# set _address to 'localhost' or your IP if you want to listen outside
-peaudiosys_address:     localhost
-peaudiosys_port:        9990
-
 # ===========================  SOUND CARDS =====================================
 
 # Main system card alsa name
@@ -219,14 +214,27 @@ scripts:
     #- loudness_monitor.py
     
 
+# ========================= MISCEL CONFIGURATIONS ==============================
 
-# ==================== AUX SERVICES CONFIGURATION ==============================
+# set _address to 'localhost', or set your IP if you want to listen outside
+peaudiosys_address:     localhost
+peaudiosys_port:        9990
 
-aux:
+# Configure here your command line script to SWITCH ON/OFF your AMPLIFIER.
+# (i) It is expected that the script will store the amplifier state
+#         'on'|'1'    or    'off'|'0'
+#     into the file '~/.amplifier' so that others processes could know about.
+amp_manager:  /home/predic/bin/ampli.sh
 
-    # Configure here your command line script to SWITCH ON/OFF your AMPLIFIER.
-    # (i) It is expected that the script will store the amplifier state
-    #         'on'|'1'    or    'off'|'0'
-    #     into the file '~/.amplifier' so that others processes could know about.
-    amp_manager:  /home/predic/bin/ampli.sh
+# Put here some command line (from your PATH) you want to run
+# when ordering the 'aux restart' command
+# e.g.: 'sudo reboot', 'peaudiosys_restart.sh'
+restart_cmd: peaudiosys_restart.sh
+
+# Control web page behavior
+web_config:
+    # hide macro buttons at web startup
+    hide_macro_buttons: false
+    # hide the LU offset slider and the LU monitor bar
+    hide_LU: false
 
