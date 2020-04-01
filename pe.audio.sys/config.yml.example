@@ -99,7 +99,9 @@ on_init:
 
 
 # =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
-# (i) Leave blank these fields or indicate a value to force.
+# (i) This is intended to forget or keep some of your runtime settings (tone, etc)
+#     after you select a new music source.
+#     Leave blank these fields to keep or indicate a value to forget.
 #     Use quotes for string type options (midside and solo).
 
 on_change_input:
