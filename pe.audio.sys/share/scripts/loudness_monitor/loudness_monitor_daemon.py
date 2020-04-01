@@ -17,26 +17,26 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    Measures EBU R128 (I)ntegrated Loudness on runtime from an audio 
+    Measures EBU R128 (I)ntegrated Loudness on runtime from an audio
     sound device.
 
     Will write it to an --output_file
-    
+
     You can reset the current (I) by writing 'reset' into --control-file
 """
-# Thanks to https://python-sounddevice.readthedocs.io
+import os, sys
+from time import sleep
 import argparse
 import numpy as np
 from scipy import signal
-import sounddevice as sd
 import queue
-
+import yaml
+# Thanks to https://python-sounddevice.readthedocs.io
+import sounddevice as sd
 # Will reset the (I) measurement when input changes
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import threading
-import yaml
-import os, sys
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
@@ -70,7 +70,7 @@ def parse_cmdline():
     parser.add_argument('-of', '--output_file', type=str, default='.loudness_events',
             help='output file')
 
-    parser.add_argument('-cf', '--control_file', type=str, default='.loudness_control',
+    parser.add_argument('-cf', '--control_fifo', type=str, default='.loudness_control',
             help='control file')
 
     parser.add_argument('-p', '--print', action="store_true", default=False,
@@ -111,6 +111,28 @@ def lfilter( x, coeffs):
     y[:,1], _ = signal.lfilter( b, a, x[:,1], zi=zi*x[:,1][0] )
     return y
 
+def control_fifo_prepare(fname):
+    try:
+        if os.path.exists(fname):
+            os.remove(fname)
+        os.mkfifo(fname)
+    except:
+        print(f'(loudness_monitor.py) ERROR preparing fifo {fname}')
+        raise
+
+def fifo_loop_reading(fname):
+    global reset
+    while True:
+        # opening fifo...
+        with open(fname) as f:
+            while True:
+                f_data = f.read().strip()
+                if len(f_data) == 0:
+                    break
+                # Check the control command (only 'reset' currently)
+                if f_data == 'reset':
+                    reset = True
+
 # Handler class to do actions when a file change occurs
 class My_files_event_handler(FileSystemEventHandler):
     """ Triggers reset=True to restart (I) measuring when:
@@ -118,66 +140,61 @@ class My_files_event_handler(FileSystemEventHandler):
         - .loudness_control contains the 'reset' command.
     """
     def on_modified(self, event):
+
         global reset, last_input
-
         path = event.src_path
-        # If the pre.di.c STATE file has changed
-        if STATEPATH in path:
-            with open( STATEPATH, 'r' ) as status_file:
-                state = yaml.safe_load(status_file)
-                if not state:
-                    return
-                current_input = state['input']
-                if last_input != current_input:
-                    last_input = current_input
-                    reset = True
-        # If control file has changed
-        if '.loudness_control' in path:
-            with open( args.control_file, 'r') as fin:
-                cmd = fin.read()
-                if cmd:
-                    # if any command will flush the file:
-                    with open( args.control_file, 'w') as fin:
-                        fin.write('')
-                    if cmd.startswith('reset'):
-                        reset = True
 
-    
+        # If preamp input has changed will flag reset=True
+        if STATEPATH in path:
+            with open( STATEPATH, 'r' ) as f:
+                preamp_state = yaml.safe_load(f)
+                if not preamp_state:
+                    return
+                if last_input != preamp_state['input']:
+                    last_input = preamp_state['input']
+                    reset = True
+                    sleep(.25) # anti bouncing
+
 if __name__ == '__main__':
+
+    # Reading command line args
+    args = parse_cmdline()
 
     # The accumulated (I) can be RESET on the fly:
     # - by writing 'reset' to the control_file,
     # - or if pre.di.c input changes.
     reset = False
+
+    # Reading current input source
     with open( STATEPATH, 'r' ) as state_file:
         last_input = yaml.safe_load(state_file)['input']
 
-    # Starts a WATCHDOG to observe file changes
+    # Threading to control this script (currently only the 'reset' flag)
+    control_fifo_prepare(args.control_fifo)
+    control = threading.Thread( target=fifo_loop_reading, args=(args.control_fifo,) )
+    control.start()
+
+    # Starts an Observer watchdog for file changes
     #   https://watchdog.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     #   Use recursive=True to observe also subfolders
     #  (i) Even observing recursively the CPU load is negligible
-
-    # Will observe for changes in files under ~/pe.audio.sys/
     observer = Observer()
     observer.schedule( event_handler=My_files_event_handler(),
                        path=MAINFOLDER, recursive=False )
     obsthread = threading.Thread( target = observer.start() )
     obsthread.start()
 
-    # FIFO queue
+    # Internal FIFO queue
     qIn    = queue.Queue()
 
-    # Reading command line args
-    args = parse_cmdline()
-    
     # Setting parameters
     fs = sd.query_devices(args.input_device, 'input')['default_samplerate']
     # 100ms block size
     BS = int( fs * 0.100 )
-    
-    # precalculating coeffs for scipy.lfilter
+
+    # Precalculating coeffs for scipy.lfilter
     hpf_coeffs =    get_coeffs(fs, 100,  .707, 'hpf'            )
     hshelf_coeffs = get_coeffs(fs, 1000, .707, 'highshelf', 4.0 )
 
@@ -196,7 +213,7 @@ if __name__ == '__main__':
     # Main loop: open a capture stream that process 100ms audio blocks
     ##################################################################
     print('(loudness_monitor) Start monitoring')
-    with sd.InputStream( device=args.input_device, 
+    with sd.InputStream( device=args.input_device,
                           callback=callback,
                           blocksize  = BS,
                           samplerate = fs,
@@ -204,7 +221,7 @@ if __name__ == '__main__':
                           dither_off = True):
 
         while True:
-            
+
             # Reading captured 100 ms (b)locks:
             b100 = qIn.get()
 
@@ -215,25 +232,25 @@ if __name__ == '__main__':
             # Sliding the 400ms (w)indow
             w400[ : BS*3 ] = w400[ BS : ]
             w400[ BS*3 : ] = f100
-        
+
             # Mean square calculation for 400ms audio blocks
             msqL = np.sum( np.square( w400[:,0] ) ) / (fs * 0.4)
             msqR = np.sum( np.square( w400[:,1] ) ) / (fs * 0.4)
-            
+
             # Stereo (M)omentary Loudness
             if msqL or msqR: # avoid log10(0)
                 M = -0.691 + 10 * np.log10 (msqL + msqR)
-            
+
             # Dual gatting to compute (I)ntegrated Loudness.
             if M > -70.0:
                 # cumulative moving average
                 G1 += 1
                 G1mean = G1mean + (M - G1mean) / G1
-                
+
             if M > (G1mean - 10.0):
                 G2 += 1
                 I = G1mean + (M - G1mean) / G2
-            
+
             # Converting FS (Full Scale) to LU (Loudness Units) ref to -23dBFS
             M_LU = M - -23.0
             I_LU = I - -23.0
@@ -246,7 +263,7 @@ if __name__ == '__main__':
                     fout.write( str( round(I_LU,0) ) )
                     fout.close()
                 Iprev = I
-            
+
             # Reseting the (I) measurement. <reset> is a global that can
             # be modified on the fly.
             if reset:
