@@ -38,9 +38,10 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import threading
 
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-STATEPATH   = f'{MAINFOLDER}/.state.yml'
+UHOME           = os.path.expanduser("~")
+MAINFOLDER      = f'{UHOME}/pe.audio.sys'
+STATEPATH       = f'{MAINFOLDER}/.state.yml'
+METADATAPATH    = f'{MAINFOLDER}/.player_metadata'
 
 # https://github.com/AudioHumLab/audiotools
 sys.path.append( f'{UHOME}/audiotools' )
@@ -141,7 +142,7 @@ class My_files_event_handler(FileSystemEventHandler):
     """
     def on_modified(self, event):
 
-        global reset, last_input
+        global reset, last_input, last_md
         path = event.src_path
 
         # If preamp input has changed will flag reset=True
@@ -155,6 +156,18 @@ class My_files_event_handler(FileSystemEventHandler):
                     reset = True
                     sleep(.25) # anti bouncing
 
+        # If metadata info has changed
+        if METADATAPATH in path and md_key:
+            with open( METADATAPATH, 'r' ) as f:
+                md = yaml.safe_load(f)
+                if not md:
+                    return
+                if last_md != md[md_key]:
+                    last_md = md[md_key]
+                    reset = True
+                    sleep(.25) # anti bouncing
+
+
 if __name__ == '__main__':
 
     # Reading command line args
@@ -164,6 +177,22 @@ if __name__ == '__main__':
     # - by writing 'reset' to the control_file,
     # - or if pre.di.c input changes.
     reset = False
+
+    # The metadata key ('album', 'title', '') to reset the measured LU-I:
+    # If void '' then will reset on selected input changes.
+    try:
+        with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+            md_key = yaml.safe_load(f)['LU_reset_md_field']
+            if not md_key: # None --> ''
+                md_key = ''
+    except:
+        # Defaults to album if not configured
+        md_key = 'album'
+    if not ( md_key in ('album', 'title', '') ):
+        raise Exception(f'(loudness_monitor) metadata field \'{md_key}\' not valid')
+
+    # Initialize a 'last metatada' value to trigger resetting measured LU
+    last_md = ''
 
     # Reading current input source
     with open( STATEPATH, 'r' ) as state_file:
