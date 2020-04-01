@@ -139,7 +139,7 @@ The monitored value will be available in several flavours:
 - The LCD will also display the 'LUmon' value.
 - By a special command: `aux get_LU_monitor`.
 
-A **reset** function is also provided for the monitored LU value, by a web button or by command line. An auto reset will be done when changing the preamp input.
+A **reset** function is also provided for the monitored LU value, by a web button or by command line. An auto reset will occur when **changing the preamp input**. Optionally, the LU value could be reset also when **the played album or title changes** (option inside `config.yml`).
 
 To compensate for high LU-Integrated values on your listening audio program, we provide some options:
 
@@ -150,7 +150,7 @@ To compensate for high LU-Integrated values on your listening audio program, we 
 
 This way, the loudness compensation feature of the calibrated volume control of pe.audio.sys will apply the appropriate contour curve when you listen below your reference SPL (level = 0 dBSPL).
  
-It is planned to provide a servo feature for tracking the monitored LU then auto adjust the LU offset compensation. The monitored LU could be reset also when the track metadata info changes.
+It is planned to provide a servo feature for tracking the monitored LU then auto adjust the LU offset compensation.
 
 <a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/LU_monitor.png" align="center" width="400" ></a>
 
