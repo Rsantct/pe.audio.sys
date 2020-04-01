@@ -242,3 +242,7 @@ web_config:
     # hide the LU offset slider and the LU monitor bar
     hide_LU: false
 
+# The metadata field ('album', 'title') to trigger to reset the measured LU.
+# (leave blank to reset only when selected input changes)
+LU_reset_md_field: album
+
