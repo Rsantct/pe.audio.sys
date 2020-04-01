@@ -339,6 +339,7 @@ Here you are an uncommented bare example of `config.yml`:
         hide_macro_buttons: false
         hide_LU: false
 
+    LU_reset_md_field: album
 
 
 # The share/eq folder
