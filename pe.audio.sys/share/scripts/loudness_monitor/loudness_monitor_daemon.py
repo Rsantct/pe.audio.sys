@@ -120,7 +120,7 @@ def control_fifo_prepare(fname):
         print(f'(loudness_monitor.py) ERROR preparing fifo {fname}')
         raise
 
-def fifo_loop_reading(fname):
+def control_fifo_read_loop(fname):
     global reset
     while True:
         # opening fifo...
@@ -129,7 +129,7 @@ def fifo_loop_reading(fname):
                 f_data = f.read().strip()
                 if len(f_data) == 0:
                     break
-                # Check the control command (only 'reset' currently)
+                # Will flag reset=True
                 if f_data == 'reset':
                     reset = True
 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     # Threading to control this script (currently only the 'reset' flag)
     control_fifo_prepare(args.control_fifo)
-    control = threading.Thread( target=fifo_loop_reading, args=(args.control_fifo,) )
+    control = threading.Thread( target=control_fifo_read_loop, args=(args.control_fifo,) )
     control.start()
 
     # Starts an Observer watchdog for file changes
