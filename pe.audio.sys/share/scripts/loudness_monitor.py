@@ -38,14 +38,10 @@ def stop():
 
 def start():
     stop()
-    # Create the auxiliary loudness monitor control file
-    with open(CTRLFNAME, 'w') as f:
-        f.write('')
-
     cmd = f'{MAINFOLDER}/share/scripts/loudness_monitor/' \
             'loudness_monitor_daemon.py' \
            f' --input_device pre_in_loop' \
-           f' --control_file  {CTRLFNAME} ' \
+           f' --control_fifo {CTRLFNAME} ' \
            f' --output_file {MAINFOLDER}/.loudness_monitor'
 
     Popen( cmd.split() )
