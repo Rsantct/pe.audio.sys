@@ -1,5 +1,7 @@
 #
 # https://www.musicpd.org/doc/html/user.html#configuration
+# to check compiled features:   mpd --version
+# to debug:                     mpd --stdout --no-daemon --verbose
 #
 
 port                    "6600"
