@@ -31,16 +31,20 @@
 # .{service}_events 'r'     Mplayer info output is redirected here
 #
 
-import os
+import os, sys
 from subprocess import Popen, check_output
 import json
 import yaml
 from time import sleep
 from socket import socket
 
+sys.path.append( os.path.dirname(__file__) )
+import cdda
+
 ME          = __file__.split('/')[-1]
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+
 
 ## generic metadata template
 METATEMPLATE = {
@@ -116,42 +120,9 @@ def timestring2sec(t):
 # Aux Mplayer metadata only for the CDDA service
 def cdda_meta():
 
-    # Aux to get the current track by using the external program 'cdcd tracks'
-    # CURRENTLY NOT USED.
-    def get_current_track_from_cdcd():
-        t = "1"
-        try:
-            tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('utf-8').split('\n')
-        except:
-            try:
-                tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
-            except:
-                print( 'mplayer.py: Problem running the program \'cdcd\' for CDDA metadata reading' )
-                print( '            Check also your cdrom-device setting under .mplayer/config' )
-        for line in tmp:
-            if line and line[6] == '>':
-                t = line[:2].strip()
-        return t
-
-    # Aux to get the current track by querying Mplayer 'chapter'
-    # NOT USED because it is observed that querying Mplayer with
-    # 'get_property chapter' produces cd audio gaps :-/
-    def get_current_track_from_mplayer_chapter():
-        t = 0
-        # (!) Must use the prefix 'pausing_keep', otherwise pause will be released
-        #     when querying 'get_property ...' or anything else.
-        with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
-            f.write( 'pausing_keep get_property chapter\n' )
-        with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
-            tmp = f.read().split('\n')
-        for line in tmp[-10:]:
-            if line.startswith('ANS_chapter='):
-                t = line.replace('ANS_chapter=', '').strip()
-        # ANS_chapter counts from 0 for 1st track
-        return str( int(t) + 1 )
-
     # Aux to get the current track and track time position by querying Mplayer 'time_pos'
-    # USED: fortunately querying 'time_pos' does not produce any audio gap :-)
+    # (i) 'get_property chapter' produces cd audio gaps :-/
+    #     'time_pos'             does not :-)
     def get_current_track_from_mplayer_time_pos():
 
         # (i) When querying Mplayer, always must use the prefix 'pausing_keep',
@@ -240,7 +211,7 @@ def cdda_meta():
         last_track = len( [ x for x in cd_info if x.isdigit() ] )
         md['track_num'] += f'\n{last_track}'
 
-    return json.dumps( md )
+    return md
 
 # MAIN Mplayer metadata
 def mplayer_meta(service, readonly=False):
@@ -249,7 +220,7 @@ def mplayer_meta(service, readonly=False):
     """
     # This works only for DVB or iSTREAMS, but not for CDDA
     if service == 'cdda':
-        return cdda_meta()
+        return json.dumps( cdda_meta() )
 
     md = METATEMPLATE.copy()
 
@@ -309,67 +280,6 @@ def mplayer_cmd(cmd, service):
         input:  a command string
         result: a result string
     """
-    # Aux function to save the CD info to a json file
-    def save_cd_info():
-
-        global cd_info
-
-        # CDDA info is based on external shell program 'cdcd'
-        # Example using cdcd
-        #   $ cdcd tracks
-        #   Album name:     All For You
-        #   Album artist:   DIANA KRALL
-        #   Total tracks:   13      Disc length:    59:19
-        #
-        #   Track   Length      Title
-        #   ----------------------------------------------------------------------------------------------------------
-        #    1:     [ 2:56.13]  I'm An Errand Girl For Rhythm
-        #    2:     [ 4:07.20]  Gee Baby, Ain't I Good To You
-        #    3:     [ 4:37.10]  You Call It Madness
-        #    4:     [ 5:00.52]  Frim Fram Sauce
-        #    5:     [ 6:27.15]  Boulevard Of Broken Dreams
-        #    6:     [ 3:36.10]  Baby Baby All The Time
-        #    7:     [ 4:16.55]  Hit That Jive Jack
-        #    8:     [ 5:33.10]  You're Looking At Me
-        #    9:     [ 4:25.73]  I'm Thru With Love
-        #   10:     [ 3:31.52]  Deed I Do
-        #   11:     [ 5:12.58]  A Blossom Fell
-        #   12:   > [ 4:56.67]  If I Had You
-        #   13:     [ 4:35.00]  When I Grow Too Old To Dream
-
-        tmp = ''
-        cd_info = {}
-        try:
-            tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('utf-8').split('\n')
-        except:
-            try:
-                tmp = check_output(f'/usr/bin/cdcd -d {CDROM_DEVICE} tracks', shell=True).decode('iso-8859-1').split('\n')
-            except:
-                print( '({ME}) Problem running the program \'cdcd\' for CDDA metadata reading.' )
-                print( '             Check also your cdrom-device setting under .mplayer/config' )
-
-
-        for line in tmp:
-
-
-            if line.startswith('Album name'):
-                cd_info['album'] = line[16:].strip()
-
-            if line.startswith('Album artist'):
-                cd_info['artist'] = line[16:].strip()
-
-            if line and line[2] == ':' and line[8] == '[':
-                track_num       = line[:2].strip()
-                track_length    = line[9:17].strip()
-                track_title     = line[20:].strip()
-
-                cd_info[track_num] = {}
-                cd_info[track_num]['length'] = track_length
-                cd_info[track_num]['title']  = track_title
-
-        with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
-            f.write( json.dumps( cd_info ) )
-        print( f'({ME}) CD info saved to {MAINFOLDER}/.cdda_info' )
 
     # Aux function to check if Mplayer has loaded a disk
     def cdda_in_mplayer():
@@ -447,7 +357,7 @@ def mplayer_cmd(cmd, service):
                 audio_mute('on')
                 print( f'({ME}) loading disk ...' )
                 # Save disk info into a json file
-                save_cd_info()
+                cdda.save_disc_metadata(CDROM_DEVICE)
                 # Flushing the mplayer events file
                 with open(f'{MAINFOLDER}/.cdda_events', 'w') as f:
                     pass
@@ -470,7 +380,7 @@ def mplayer_cmd(cmd, service):
             # Retrieving the current track
             curr_track = 1
             if cdda_playing_status in ('play', 'pause'):
-                curr_track = json.loads( cdda_meta() )['track_num'].split()[0]
+                curr_track = cdda_meta()['track_num'].split()[0]
 
             if cmd.startswith('play_track_'):
                 curr_track = cmd[11:]
