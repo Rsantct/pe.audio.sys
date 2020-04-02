@@ -357,7 +357,8 @@ def mplayer_cmd(cmd, service):
                 audio_mute('on')
                 print( f'({ME}) loading disk ...' )
                 # Save disk info into a json file
-                cdda.save_disc_metadata(CDROM_DEVICE)
+                cdda.save_disc_metadata(device=CDROM_DEVICE,
+                                        fname=f'{UHOME}/pe.audio.sys/.cdda_info')
                 # Flushing the mplayer events file
                 with open(f'{MAINFOLDER}/.cdda_events', 'w') as f:
                     pass
