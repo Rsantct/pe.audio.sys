@@ -43,7 +43,6 @@ def stop():
     sleep(1)
 
 def start():
-    stop()
     Popen( f'mpd {MPDCONF}', shell=True )
 
 if __name__ == '__main__':
