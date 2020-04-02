@@ -18,12 +18,10 @@
 
 """ A module to manage CD-AUDIO
 """
-
 # (i) I/O FILES MANAGED HERE:
 #
 # .cdda_info        'w'     CDDA album and tracks info in json format
 #
-
 
 import discid
 import musicbrainzngs as mz
@@ -31,6 +29,10 @@ from os.path import expanduser
 import json
 
 UHOME = expanduser("~")
+
+def cdda_meta_template():
+    return {'artist':'n/a', 'album':'n/a',
+            '1':{'title':'n/a', 'length':'00:00.00'} }
 
 def msec2string(msec):
     """ input:  millisecs  (float)
@@ -43,7 +45,7 @@ def msec2string(msec):
 
 def get_disc_metadata(device):
 
-    md = {}
+    md = cdda_meta_template()
 
     mz.set_useragent('tmp', '0.1', 'dummy@mail')
 
