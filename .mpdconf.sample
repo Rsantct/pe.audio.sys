@@ -1,110 +1,53 @@
-# --- DIRECTORIOS ---
-music_directory         "/home/peasys/music"
-#playlist_directory      "/home/peasys/.config/mpd/playlists"
-playlist_directory      "/mnt/qnas/media/playlists/"
-db_file                 "/home/peasys/.config/mpd/database"
-log_file                "/home/peasys/.config/mpd/log"
-pid_file                "/home/peasys/.config/mpd/pid"
-state_file              "/home/peasys/.config/mpd/mpd_state"
-state_file_interval     "1"
-sticker_file            "/home/peasys/.config/mpd/sticker.sqlite"
+#
+# https://www.musicpd.org/doc/html/user.html#configuration
+#
 
-# --- LISTENING ---
 port                    "6600"
-# escucha tcp/ip:
-#bind_to_address         "any"
-bind_to_address         "0.0.0.0"
-# escucha socket unix:
-bind_to_address         "/home/peasys/.config/mpd/socket"
 
-# --- USUARIO que mostrará MPD al ejecutarse desde un usuario root
-#user                    "predic"
-#group                   "audio"
-
-# --- DATA BASE UPDATE ---
-auto_update             "yes"
-#auto_update_depth       "3"
+music_directory         "~/music"
 follow_outside_symlinks "yes"
 follow_inside_symlinks  "no"
 
-# --- ENTRADAS ---
-# Reproducción de URLs:
+playlist_directory      "~/.config/mpd/playlists"
+#playlist_directory      "/mnt/SOME/SHARED/playlists/"
+
+pid_file                "~/.config/mpd/pid"
+state_file              "~/.config/mpd/state"
+state_file_interval     "30"
+
+database {
+    plugin "simple"
+    path "~/.config/mpd/database"
+}
+
 input {
-    plugin "curl"
-}
-# Reproducción de URLs:
-input {
-    plugin "cdio_paranoia"
+    plugin  "cdio_paranoia"
+    speed   "1"
 }
 
-# --- DECODERS ---
-# (suelen venir enabled "yes" en el programa mpd compilado.
-# decoder {
-    # plugin "flac"
-    # enabled "no"
-    # }
-# decoder {
-    # plugin "mad"
-    # enabled "no"
-    # }
-
-    
-# --- SALIDAS ---    
 audio_output {
-    type        "jack"
-    name        "jack"
-    client_name "mpd"
-    destination_ports "pre_in_loop:input_1,pre_in_loop:input_2"
-#    format          "*:*:6"
-#    Control de volumen:
-#    mixer_type "software"
-#    mixer_type "null"
-    mixer_type "none"
-    enabled     "yes"
-    always_on   "yes"
+    type            "jack"
+    enabled         "yes"
+    name            "jack"
+    client_name     "mpd"
+    always_on       "no"
+    source_ports    "out_0,out_1"
+    # (!) MUST declare destination_ports to avoid autoconnect to system
+    destination_ports    "mpd_loop:input_1,mpd_loop:input_2"
 }
 
-# (i) configuración en pruebas para leer en ALSA un falso ajuste de volumen en MPD
-# que será ajustado desde un cliente y así poder gobernar el volumen del FIRtro.
 audio_output {
-    type        "alsa"
-    name        "alsa_dummy"
-    mixer_type      "hardware"
-    mixer_device    "hw:Dummy"
+    # This allows to have a volume control synced with pe.audio.sys
+    # (needs snd_dummy to be enabled)
+    type            "alsa"
+    enabled         "no"
+    name            "alsa_dummy"
+    device          "hw:Dummy"
     mixer_control   "Master"
-    enabled "no"
+    mixer_type      "hardware"
 }
 
-# --- RESAMPLING para adecuarse a la salida ---
-#samplerate_converter        "soxr high"
-samplerate_converter        "soxr very high"
-#samplerate_converter       "Medium Sinc Interpolator"
-#samplerate_converter       "Best Sinc Interpolator"
-
-# --- REPLAY GAIN ---
-replaygain                  "album"
-#replaygain_preamp           "0"
-#volume_normalization        "no"
-
-# --- MISCEL ---
-filesystem_charset "UTF-8"
-#log_level                 "default"
-# audio_buffer_size        "4096"
-# buffer_before_play        "20%"
-# metadata_to_use "artist, albumartist, album, title, track, name, genre, date, composer, performer, comment, disc"
-#gapless_mp3_playback               "yes"
-#restore_paused                     "no"
-#save_absolute_paths_in_playlists   "no"
-
-# --- AJUSTES LOW LEVEL ---
-#connection_timeout          "60"    (default)
-#max_connections             "5"        (default)
-#max_playlist_length         "16384"    (default)
-#max_command_list_size       "2048"    (default)
-#max_output_buffer_size      "8192"    (default)
-#                           
-
-# --- ZEROCONF ---
-zeroconf_enabled             "yes"
-zeroconf_name                "Atinker mpd :-)"
-
+resampler {
+  plugin "soxr"
+  quality "very high"
+}
