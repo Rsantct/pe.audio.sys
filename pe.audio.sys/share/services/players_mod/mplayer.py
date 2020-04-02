@@ -179,37 +179,24 @@ def cdda_meta():
             tmp = f.read()
         cd_info = json.loads(tmp)
     except:
-        cd_info = {}
+        cd_info = cdda.cdda_meta_template()
 
     # Getting the current track and track time position.
     md['track_num'], md['time_pos'] = get_current_track_from_mplayer_time_pos()
 
-    # Completing the metadata dict, skipping if not cd_info available:
-    if cd_info:
+    # Completing the metadata dict:
+    md['artist'] = cd_info['artist']
+    md['album'] = cd_info['album']
 
-        # if cdcd cannot retrieve cddb info, artist or album field will be not dumped.
-        if 'artist' in cd_info:
-            if cd_info['artist']:
-                md['artist'] = cd_info['artist']
-        else:
-            md['artist'] = 'CD info not found'
+    if md['track_num'] in cd_info.keys():
+        md['title']     = cd_info[ md['track_num'] ]['title']
+        md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3] # omit decimals
+    else:
+        md['title'] = 'Track ' + md['track_num']
 
-        if 'album' in cd_info:
-            if cd_info['album']:
-                md['album'] = cd_info['album']
-
-        title = cd_info[ md['track_num'] ]['title']
-
-        if title:
-            md['title'] = cd_info[ md['track_num'] ]['title']
-        else:
-            md['title'] = 'Track ' + md['track_num']
-
-        md['time_tot']   = cd_info[ md['track_num'] ]['length'][:-3] # omit decimals
-
-        # adding last track to track_num metadata
-        last_track = len( [ x for x in cd_info if x.isdigit() ] )
-        md['track_num'] += f'\n{last_track}'
+    # adding last track to track_num metadata
+    last_track = len( [ x for x in cd_info if x.isdigit() ] )
+    md['track_num'] += f'\n{last_track}'
 
     return md
 
@@ -424,7 +411,7 @@ def mplayer_cmd(cmd, service):
         Popen( f'eject {CDROM_DEVICE}'.split() )
         # Flush .cdda_info (blank the metadata file)
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
-            f.write( "{}" )
+            f.write( json.dumps( cdda.cdda_meta_template() ) )
         # Unmute preamp
         audio_mute('off')
 
