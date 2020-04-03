@@ -35,11 +35,11 @@
 #
 # loadfile cdda://A-B:S     play tracks from A to B at speed S
 #
-# get_property filename     get the tracks to be played as 
+# get_property filename     get the tracks to be played as
 #                           'A' (single track)
 #                           or 'A-B' (range of tracks)
 #
-# get_property chapter      get the current track index inside 
+# get_property chapter      get the current track index inside
 #                           the filename property (first is 0)
 #
 # seek_chapter 1            go to next track
@@ -55,33 +55,33 @@ import sys
 import time
 import subprocess as sp
 from pathlib import Path
+import yaml
 
-# --- Mplayer options ---
+## --- Mplayer options ---
 # -quiet: see channels change
 # -really-quiet: silent
 options = '-quiet -nolirc -slave -idle'
 
-# Input FIFO. Mplayer runs in server mode (-slave) and
-# will read commands from a fifo:
+## Input FIFO. Mplayer runs in server mode (-slave) and
+#  will read commands from a fifo:
 input_fifo = f'{MAINFOLDER}/.cdda_fifo'
 f = Path( input_fifo )
 if  not f.is_fifo():
     sp.Popen ( f'mkfifo {input_fifo}'.split() )
 del(f)
 
-# Mplayer output is redirected to a file,
-# so it can be read what it is been playing:
+## Mplayer output is redirected to a file,
+#  so it can be read what it is been playing:
 redirection_path = f'{MAINFOLDER}/.cdda_events'
 
-# cdrom device to use from .mplayer/config
+## cdrom device to use
 try:
-    with open(f'{UHOME}/.mplayer/config', 'r') as f:
-        tmp = f.readlines()
-        tmp = [x for x in tmp if 'cdrom-device' in x  and not '#' in x][0] \
-                .strip().split('=')[-1].strip()
-        cdrom_device = tmp
+    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+        PEASYSCONFIG = yaml.safe_load(f)
+    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
 except:
-    cdrom_device = '/dev/cdrom'
+    CDROM_DEVICE = '/dev/cdrom'
+    print(f'(CDDA.py) Using default \'{CDROM_DEVICE}\'')
 
 def control_play(track_num=1):
 
@@ -135,12 +135,13 @@ def control_stop():
 
 def control_eject():
     control_stop()
-    sp.Popen( f'eject {cdrom_device}'.split() )
+    sp.Popen( f'eject {CDROM_DEVICE}'.split() )
 
 def start():
-    cmd = f'mplayer {options} -profile cdda -input file={input_fifo}'
+    cmd = f'mplayer {options} -profile cdda -cdrom-device {CDROM_DEVICE}' \
+          f' -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
-        sp.Popen( cmd.split(), shell=False, 
+        sp.Popen( cmd.split(), shell=False,
                   stdout=redirfile, stderr=redirfile )
 
 def stop():
