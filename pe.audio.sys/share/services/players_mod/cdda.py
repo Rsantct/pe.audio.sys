@@ -27,12 +27,23 @@ import discid
 import musicbrainzngs as mz
 from os.path import expanduser
 import json
+import yaml
 
 UHOME = expanduser("~")
 
+## cdrom device to use
+try:
+    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+        PEASYSCONFIG = yaml.safe_load(f)
+    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
+except:
+    CDROM_DEVICE = '/dev/cdrom'
+    print(f'(cdda.py) Using default \'{CDROM_DEVICE}\'')
+
+
 def cdda_meta_template():
-    return {'artist':'n/a', 'album':'n/a',
-            '1':{'title':'n/a', 'length':'00:00.00'} }
+    return {'artist':'-', 'album':'-',
+            '1':{'title':'-', 'length':'00:00.00'} }
 
 def msec2string(msec):
     """ input:  millisecs  (float)
@@ -43,7 +54,7 @@ def msec2string(msec):
     ss   = f'{sec %  60:.2f}'.zfill(5)
     return f'{mm}:{ss}'
 
-def get_disc_metadata(device):
+def get_disc_metadata(device=CDROM_DEVICE):
 
     md = cdda_meta_template()
 
@@ -64,14 +75,14 @@ def get_disc_metadata(device):
 
 
     if result.get('disc'):
-        print('(cdda.py) musicbrainz got \'disc\'' )
+        print(f'(cdda.py) musicbrainz got \'disc\': {disc.id}' )
         mz_md = result['disc']['release-list'][0]
         md['artist'] = mz_md['artist-credit-phrase']
         md['album']  = mz_md['title']
         track_list   = mz_md['medium-list'][0]['track-list']
 
     elif result.get('cdstub'):
-        print('(cdda.py) musicbrainz got \'cdstub\'' )
+        print(f'(cdda.py) musicbrainz got \'cdstub\': {disc.id}' )
         mz_md = result['cdstub']
         md['artist'] = mz_md['artist-credit-phrase']
         md['album']  = mz_md['title']
@@ -84,6 +95,7 @@ def get_disc_metadata(device):
 
     return md
 
-def save_disc_metadata(device, fname=f'{UHOME}/pe.audio.sys/.cdda_info'):
+def save_disc_metadata(device=CDROM_DEVICE,
+                       fname=f'{UHOME}/pe.audio.sys/.cdda_info'):
     with open(fname, 'w') as f:
         f.write( json.dumps( get_disc_metadata(device) ) )
