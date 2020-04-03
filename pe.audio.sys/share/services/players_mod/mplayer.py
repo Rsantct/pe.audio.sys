@@ -349,15 +349,15 @@ def mplayer_cmd(cmd, service):
                 # Waiting for the disk to be loaded (usually about 8 sec)
                 n = 15
                 while n:
-                    if cdda_in_mplayer(): break
+                    if cdda_in_mplayer():
+                        break
                     print( f'({ME}) waiting for Mplayer to load disk' )
                     sleep(1)
                     n -= 1
                 if n:
-                    print( '({ME}) Mplayer disk loaded' )
+                    print( f'({ME}) Mplayer disk loaded' )
                 else:
-                    print( '({ME}) TIMED OUT detecting '
-                            'Mplayer disk loaded' )
+                    print( f'({ME}) TIMED OUT detecting Mplayer disk' )
 
             # Retrieving the current track
             curr_track = 1
