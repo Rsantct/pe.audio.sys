@@ -224,6 +224,9 @@ scripts:
 peaudiosys_address:     localhost
 peaudiosys_port:        9990
 
+# CD-ROM device
+cdrom_device:  /dev/cdrom
+
 # Configure here your command line script to SWITCH ON/OFF your AMPLIFIER.
 # (i) It is expected that the script will store the amplifier state
 #         'on'|'1'    or    'off'|'0'
