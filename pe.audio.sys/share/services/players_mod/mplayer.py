@@ -45,6 +45,19 @@ ME          = __file__.split('/')[-1]
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
+## pe.audio.sys control port
+try:
+    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+        PEASYSCONFIG = yaml.safe_load(f)
+    CTL_PORT = PEASYSCONFIG['peaudiosys_port']
+except:
+    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
+    exit()
+## cdrom device to use
+try:
+    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
+except:
+    CDROM_DEVICE = '/dev/cdrom'
 
 ## generic metadata template
 METATEMPLATE = {
@@ -59,29 +72,10 @@ METATEMPLATE = {
     'state':        'stop'
     }
 
-## CDDA settings
-# cdrom device to use from .mplayer/config
-try:
-    with open(f'{UHOME}/.mplayer/config', 'r') as f:
-        tmp = f.readlines()
-        tmp = [x for x in tmp if 'cdrom-device' in x  and not '#' in x][0] \
-                .strip().split('=')[-1].strip()
-        CDROM_DEVICE = tmp
-except:
-    CDROM_DEVICE = '/dev/cdrom'
-# Global variables to store the CDDA Audio info and CDDA playing status
-# (see mplayer_cmd() below)
+## Global variables to store the CDDA Audio info and CDDA playing status
+## (see mplayer_cmd() below)
 cd_info = {}
 cdda_playing_status = 'stop'
-
-## pe.audio.sys services addressing
-try:
-    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        cfg = yaml.safe_load(f)
-        CTL_PORT = cfg['peaudiosys_port']
-except:
-    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-    exit()
 
 # Auxiliary client to MUTE the preamp when CDDA is paused.
 def audio_mute(mode):
