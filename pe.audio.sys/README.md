@@ -341,6 +341,8 @@ Here you are an uncommented bare example of `config.yml`:
 
     LU_reset_md_field: album
 
+    cdrom_device:  /dev/cdrom
+
 
 # The share/eq folder
 
