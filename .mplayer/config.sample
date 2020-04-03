@@ -16,8 +16,6 @@ ao=jack:name=mplayer_cdda:port=pre_in_loop
 speed=1
 # Try cache=1024 to avoid playback breakdowns
 cache=1024
-cdrom-device=/dev/cdrom
-#cdrom-device=/dev/sr1
 
 [istreams]
 ao=jack:name=mplayer_istreams:port=pre_in_loop
