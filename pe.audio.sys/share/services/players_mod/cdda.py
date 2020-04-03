@@ -71,7 +71,7 @@ def get_disc_metadata(device):
         track_list   = mz_md['medium-list'][0]['track-list']
 
     elif result.get('cdstub'):
-        print('(musicbrainz) got \'cdstub\'' )
+        print('(cdda.py) musicbrainz got \'cdstub\'' )
         mz_md = result['cdstub']
         md['artist'] = mz_md['artist-credit-phrase']
         md['album']  = mz_md['title']
