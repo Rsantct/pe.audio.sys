@@ -28,6 +28,7 @@ import musicbrainzngs as mz
 from os.path import expanduser
 import json
 import yaml
+import sys
 
 UHOME = expanduser("~")
 
@@ -44,6 +45,19 @@ except:
 def cdda_meta_template():
     return {'artist':'-', 'album':'-',
             '1':{'title':'-', 'length':'00:00.00'} }
+
+def mmsscc2msec(mmsscc):
+    """ input:   'mm:ss.cc' (str)
+        output:  millisecs  (int)
+    """
+    mm   = int( mmsscc.split(':')[0] )
+    sscc =      mmsscc.split(':')[1]
+    ss   = int( sscc.split('.')[0]   )
+    cc   = int( sscc.split('.')[1]   )
+
+    millisec = mm*60*1000 + ss*1000 + cc*10
+
+    return millisec
 
 def msec2string(msec):
     """ input:  millisecs  (float)
@@ -99,3 +113,71 @@ def save_disc_metadata(device=CDROM_DEVICE,
                        fname=f'{UHOME}/pe.audio.sys/.cdda_info'):
     with open(fname, 'w') as f:
         f.write( json.dumps( get_disc_metadata(device) ) )
+
+def make_pls():
+
+    md = get_disc_metadata()
+
+    pls =   '<?xml version="1.0" encoding="UTF-8"?>\n'
+    pls +=  '<playlist version="1" xmlns="http://xspf.org/ns/0/">\n'
+    pls +=  '  <trackList>\n'
+
+    for k in md.keys():
+
+        if not k.isdigit():
+            continue
+
+        duration = mmsscc2msec( md[k]["length"] )
+
+        pls +=  '    <track>\n'
+        pls += f'      <location>cdda:///{k}</location>\n'
+        pls += f'      <creator>{md["artist"]}</creator>\n'
+        pls += f'      <album>{md["album"]}</album>\n'
+        pls += f'      <title>{md[k]["title"]}</title>\n'
+        pls += f'      <duration>{duration}</duration>\n'
+        pls +=  '    </track>\n'
+
+    pls +=  '  </trackList>\n'
+    pls +=  '</playlist>\n'
+
+    return pls
+
+def make_m3u():
+
+    md = get_disc_metadata()
+
+    m3u =   '#EXTM3U\n'
+
+    for k in md.keys():
+
+        if not k.isdigit():
+            continue
+
+        durationms = mmsscc2msec( md[k]["length"] )
+        durationsec = str( int(round( durationms/1e3, 0)) )
+
+        m3u += '#EXTINF:'
+        m3u += f'{durationsec},'
+        m3u += f'{md[k]["title"]}\n'
+        m3u += f'cdda:/{CDROM_DEVICE}/{k}\n'
+
+    return m3u
+
+def save_cdda_playlist(mode='m3u'):
+    """ As an extra, saves a playlist for MPD
+    """
+    folder= f'{UHOME}/.config/mpd/playlists'
+    if mode == 'm3u':
+        tmp = make_m3u()
+        fname = f'{folder}/.cdda.m3u'
+    elif mode == 'pls':
+        tmp = make_pls()
+        fname = f'{folder}/.cdda.pls'
+    else:
+        return
+    with open(f'{fname}', 'w') as f:
+        f.write(tmp)
+
+if __name__ == "__main__":
+    if sys.argv[1:] and '-s' in sys.argv[1]:
+        save_cdda_playlist()
