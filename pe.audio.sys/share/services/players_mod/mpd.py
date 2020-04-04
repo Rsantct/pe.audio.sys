@@ -24,8 +24,6 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## MPD settings:
-MPD_HOST    = 'localhost'
-MPD_PORT    = 6600
 MPD_PASSWD  = None
 
 ## generic metadata template
@@ -54,11 +52,27 @@ def timeFmt(x):
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
+def curr_playlist_is_cdda():
+    """ returns True if the curren playlist has only cdda tracks
+    """
+    # :-/ the current playlist doesn't have any kind of propiertry to
+    # check if the special 'cdda.m3u' is the currently loaded one.
+
+    c = mpd.MPDClient()
+    try:
+        c.connect(MPD_HOST, MPD_PORT)
+        if MPD_PASSWD:
+            c.password(MPD_PASSWD)
+    except:
+        return False
+
+    return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
+
 # MPD control, status and metadata
-def mpd_client(query):
+def mpd_client(query, port=6600):
     """ Comuticates to MPD music player daemon
-        Input: a command to query to the MPD daemon
-        Returns: the MPD response: pb state word or metadata json string.
+        Input:  - a command to query to the MPD daemon
+        Return: the MPD response: pb state word or metadata json string.
         I/O: .mpd_metadata (w)
     """
 
@@ -72,30 +86,30 @@ def mpd_client(query):
         # artist, title, album, track, etc fields may NOT be provided
         # file, time, duration, pos, id           are ALWAYS provided
 
-        try:    md['title']     = client.currentsong()['title']
-        except: md['title']     = client.currentsong()['file'] \
+        try:    md['title']     = c.currentsong()['title']
+        except: md['title']     = c.currentsong()['file'] \
                                                .split('/')[-1]
-        try:    md['artist']    = client.currentsong()['artist']
+        try:    md['artist']    = c.currentsong()['artist']
         except: pass
 
-        try:    md['album']     = client.currentsong()['album']
+        try:    md['album']     = c.currentsong()['album']
         except: pass
 
-        try:    md['track_num'] = client.currentsong()['track']
+        try:    md['track_num'] = c.currentsong()['track']
         except: pass
 
-        try:    md['bitrate']   = client.status()['bitrate'] # kbps
+        try:    md['bitrate']   = c.status()['bitrate'] # kbps
         except: pass
 
         try:    md['time_pos']  = timeFmt( float(
-                                    client.status()['elapsed'] ) )
+                                    c.status()['elapsed'] ) )
         except: pass
 
-        try:    md['time_tot']  = timeFmt( float( 
-                                    client.currentsong()['time'] ) )
+        try:    md['time_tot']  = timeFmt( float(
+                                    c.currentsong()['time'] ) )
         except: pass
 
-        try:    md['state'] = client.status()['state']
+        try:    md['state'] = c.status()['state']
         except: pass
 
         # As an add-on, we will dump metadata to a file
@@ -105,47 +119,47 @@ def mpd_client(query):
         return json.dumps( md )
 
     def state():
-        return client.status()['state']
+        return c.status()['state']
 
     def stop():
-        client.stop()
-        return client.status()['state']
+        c.stop()
+        return c.status()['state']
 
     def pause():
-        client.pause()
-        return client.status()['state']
+        c.pause()
+        return c.status()['state']
 
     def play():
-        client.play()
-        return client.status()['state']
+        c.play()
+        return c.status()['state']
 
     def next():
         try:
-            client.next() # avoids error if some playlist has wrong items
+            c.next() # avoids error if some playlist has wrong items
         except:
             pass
-        return client.status()['state']
+        return c.status()['state']
 
     def previous():
         try:
-            client.previous()
+            c.previous()
         except:
             pass
-        return client.status()['state']
+        return c.status()['state']
 
     def rew(): # for REW and FF will move 30 seconds
-        client.seekcur('-30')
-        return client.status()['state']
+        c.seekcur('-30')
+        return c.status()['state']
 
     def ff():
-        client.seekcur('+30')
-        return client.status()['state']
+        c.seekcur('+30')
+        return c.status()['state']
 
-    client = mpd.MPDClient()
+    c = mpd.MPDClient()
     try:
-        client.connect(MPD_HOST, MPD_PORT)
+        c.connect('localhost', port)
         if MPD_PASSWD:
-            client.password(MPD_PASSWD)
+            c.password(MPD_PASSWD)
     except:
         return ''
 
@@ -160,6 +174,6 @@ def mpd_client(query):
                 'ff':         ff
              }[query]()
 
-    client.close()
+    c.close()
     return result
 
