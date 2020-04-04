@@ -26,24 +26,19 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 """
     usage:  mpd.py  start|stop
-
-    (i) will run by loading the standard user configuration file ~/.mpdconf
-        edit this script if you need to load any else.
-
 """
 import sys, os
 from subprocess import Popen
 from time import sleep
 
 UHOME = os.path.expanduser("~")
-MPDCONF = f'{UHOME}/.mpdconf'
 
 def stop():
-    Popen( 'pkill mpd', shell=True )
-    sleep(1)
+    Popen( ['pkill', '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
+    sleep(.5)
 
 def start():
-    Popen( f'mpd {MPDCONF}', shell=True )
+    Popen( f'mpd {UHOME}/.mpdconf'.split() )
 
 if __name__ == '__main__':
 
