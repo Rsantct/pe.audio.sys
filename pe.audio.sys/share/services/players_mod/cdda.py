@@ -164,7 +164,7 @@ def make_m3u():
     return m3u
 
 def save_cdda_playlist(mode='m3u'):
-    """ As an extra, saves a playlist for MPD
+    """ Saves a playlist for MPD :-)
     """
     folder= f'{UHOME}/.config/mpd/playlists'
     if mode == 'm3u':
