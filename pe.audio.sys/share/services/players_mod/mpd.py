@@ -23,9 +23,6 @@ import json
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
-## MPD settings:
-MPD_PASSWD  = None
-
 ## generic metadata template
 METATEMPLATE = {
     'player':       'mpd',
@@ -158,8 +155,6 @@ def mpd_client(query, port=6600):
     c = mpd.MPDClient()
     try:
         c.connect('localhost', port)
-        if MPD_PASSWD:
-            c.password(MPD_PASSWD)
     except:
         return ''
 
