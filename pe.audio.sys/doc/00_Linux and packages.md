@@ -60,12 +60,16 @@ Also install the following packages on your linux installation:
     sudo apt install ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
 
-Disable default system wide MPD setup:
+Disable default MPD setup:
 
     sudo systemctl stop mpd.service
     sudo systemctl disable mpd.service
     sudo systemctl stop mpd.socket
     sudo systemctl disable mpd.socket
+    sudo systemctl --user stop mpd.service
+    sudo systemctl --user disable mpd.service
+    sudo systemctl --user stop mpd.socket
+    sudo systemctl --user disable mpd.socket
 
 
 ## Python3 packages
