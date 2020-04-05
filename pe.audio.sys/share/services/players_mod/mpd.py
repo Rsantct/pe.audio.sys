@@ -69,7 +69,7 @@ def curr_playlist_is_cdda():
 def mpd_client(query, port=6600):
     """ Comuticates to MPD music player daemon
         Input:  - a command to query to the MPD daemon
-        Return: the MPD response: pb state word or metadata json string.
+        Return: the MPD response: pb state string or metadata dict.
         I/O: .mpd_metadata (w)
     """
 
@@ -113,7 +113,7 @@ def mpd_client(query, port=6600):
         with open( f'{MAINFOLDER}/.mpd_metadata', 'w' ) as file:
             file.write( json.dumps( md ) )
 
-        return json.dumps( md )
+        return md
 
     def state():
         return c.status()['state']
