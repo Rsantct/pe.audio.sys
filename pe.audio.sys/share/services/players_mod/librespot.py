@@ -21,22 +21,16 @@ import os
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
-## generic metadata template
-METATEMPLATE = {
-    'player':       'librespot',
-    'time_pos':     '',
-    'time_tot':     '',
-    'bitrate':      '',
-    'artist':       '',
-    'album':        '',
-    'title':        '',
-    'track_num':    '',
-    'state':        'play'
-    }
+def librespot_control(throwit):
+    """ fake control, always will return 'play'
+        input:  a fake command
+        output: the resulting status
+    """
+    return 'play'
 
 # librespot (Spotify Connect client) metatata
-def librespot_meta():
-    """ Input:  --
+def librespot_meta(md):
+    """ Input:  blank md dict
         Output: metadata dict derived from librespot printouts
         I/O:    .librespot_events (r) - librespot redirected printouts
     """
@@ -53,7 +47,7 @@ def librespot_meta():
     except:
         librespot_bitrate = '-'
 
-    md = METATEMPLATE.copy()
+    md['player'] = 'librespot'
     md['bitrate'] = librespot_bitrate
 
     try:
