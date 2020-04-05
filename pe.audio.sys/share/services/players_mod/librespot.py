@@ -17,7 +17,6 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import json
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
@@ -38,8 +37,8 @@ METATEMPLATE = {
 # librespot (Spotify Connect client) metatata
 def librespot_meta():
     """ Input:  --
-        Output: metadata info from librespot in json format
-        I/O:    .librespot_events (r) - librespot redirected printouts 
+        Output: metadata dict derived from librespot printouts
+        I/O:    .librespot_events (r) - librespot redirected printouts
     """
 
     # Unfortunately librespot only prints out the title metadata, nor artist neither album.
@@ -84,6 +83,5 @@ def librespot_meta():
     except:
         pass
 
-    # json metadata
-    return json.dumps( md )
+    return md
 
