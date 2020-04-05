@@ -49,7 +49,7 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## Spotify client detection
-spotify_client = detect_spotify_client()
+SPOTIFY_CLIENT = detect_spotify_client()
 
 ## generic metadata template (!) remember to use copies of this ;-)
 METATEMPLATE = {
@@ -94,9 +94,9 @@ def player_get_meta(readonly=False):
     md = METATEMPLATE.copy()
 
     if   'librespot' in source or 'spotify' in source.lower():
-        if spotify_client == 'desktop':
+        if SPOTIFY_CLIENT == 'desktop':
             md = spotify_meta(md)
-        elif spotify_client == 'librespot':
+        elif SPOTIFY_CLIENT == 'librespot':
             md = librespot_meta(md)
         # source is spotify like but no client running has been detected:
         else:
@@ -129,9 +129,9 @@ def player_control(action):
         nstate = mpd_control(action)
 
     elif source.lower() == 'spotify':
-        if   spotify_client == 'desktop':
+        if   SPOTIFY_CLIENT == 'desktop':
             nstate = spotify_control(action)
-        elif spotify_client == 'librespot':
+        elif SPOTIFY_CLIENT == 'librespot':
             nstate = librespot_control(action)
 
     elif 'tdt' in source or 'dvb' in source:
