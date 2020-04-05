@@ -37,8 +37,7 @@ from time import sleep
 import json
 from  players_mod.mpd               import  mpd_client
 from  players_mod.mplayer           import  mplayer_cmd,            \
-                                            mplayer_meta,           \
-                                            cdda_meta
+                                            mplayer_meta
 from  players_mod.librespot         import  librespot_meta
 from  players_mod.spotify_desktop   import  spotify_control,        \
                                             spotify_meta,           \
@@ -103,7 +102,6 @@ def player_get_meta(readonly=False):
         # source is spotify like but no client running has been detected:
         else:
             md['player'] = 'Spotify'
-            md = json.dumps( md )
 
     # Getting metadata from MPD:
     elif source == 'mpd':
@@ -121,9 +119,8 @@ def player_get_meta(readonly=False):
 
     # Unknown source, blank metadata:
     else:
-        md = json.dumps( METATEMPLATE.copy() )
+        md = METATEMPLATE.copy()
 
-    # As this is used by a server, we will return a bytes-like object:
     return md
 
 # Generic function to control any player
@@ -178,7 +175,7 @@ def init():
         while True:
             md = player_get_meta()
             with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
-                f.write( md )
+                f.write( json.dumps(md ))
             sleep(timer)
     # Loop storing metadata
     meta_timer = 2
@@ -188,11 +185,11 @@ def init():
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
         f.write('stop')
 
-# Interface entry function for this module from 'server.py'
+# Interface entry function for this module plugged inside 'server.py'
 def do(cmd):
-    """ This do() is the entry interface function from a listening server.
-        Only certain received 'cmd' will be validated and processed,
-        then returns back some useful info to the asking client.
+    """ Entry interface function for a parent server.py listener.
+        - in:   a command phrase
+        - out:  a string result (dicts are json dumped)
     """
 
     result = 'nothing done'
