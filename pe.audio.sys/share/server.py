@@ -133,8 +133,8 @@ def run_server(host, port, verbose=False):
                 if result:
                     conn.send( result.encode() )
                 else:
-                    # sending crlf instead of empty to avoid hanging the receiver.
-                    conn.send( b'\r\n' )
+                    # sending CRLF instead of empty to avoid hanging the receiver.
+                    conn.send( '\r\n'.encode() )
 
 
 if __name__ == "__main__":
