@@ -80,19 +80,6 @@ try:
 except:
     CD_CAPTURE_PORT = 'mplayer_cdda'
 
-## generic metadata template
-METATEMPLATE = {
-    'player':       'Mplayer',
-    'time_pos':     '',
-    'time_tot':     '',
-    'bitrate':      '',
-    'artist':       '',
-    'album':        '',
-    'title':        '',
-    'track_num':    '',
-    'state':        'stop'
-    }
-
 ## Global variables to store the CDDA Audio info and CDDA playing status
 ## (see mplayer_cmd() below)
 cd_info = {}
@@ -119,155 +106,11 @@ def timestring2sec(t):
         s += float( t[-1] )
     return s
 
-# Aux Mplayer metadata only for the CDDA service
-def cdda_meta():
-
-    # Aux to get the current track and track time position by querying Mplayer 'time_pos'
-    # (i) 'get_property chapter' produces cd audio gaps :-/
-    #     'time_pos'             does not :-)
-    def get_current_track_from_mplayer_time_pos():
-
-        # (i) When querying Mplayer, always must use the prefix 'pausing_keep',
-        #     otherwise pause will be released.
-
-        # Aux to derive the track and the track time position from
-        # the whole disk relative time position.
-        def get_track_and_pos(globalPos):
-            trackNum = 1
-            cummTracksLength = 0.0
-            trackPos = 0.0
-            # Iterate tracks until globalPos is exceeded
-            while str(trackNum) in cd_info:
-                trackLength = timestring2sec( cd_info[ str(trackNum) ]['length'] )
-                cummTracksLength += trackLength
-                if cummTracksLength > globalPos:
-                    trackPos = globalPos - ( cummTracksLength - trackLength )
-                    break
-                trackNum += 1
-            return trackNum, trackPos
-
-        track    = 1
-        trackPos = 0
-        globalPos  = 0
-
-        # Querying Mplayer to get the timePos, the answer in seconds will be
-        # a 'global position' refered to the global disk duration.
-        with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
-            f.write( 'pausing_keep get_time_pos\n' )
-        with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
-            tmp = f.read().split('\n')
-        for line in tmp[-10:]:
-            if line.startswith('ANS_TIME_POSITION='):
-                globalPos = float( line.replace('ANS_TIME_POSITION=', '').strip() )
-
-        # Find the track and track time position
-        track, trackPos = get_track_and_pos(globalPos)
-
-        # Ceiling track to the last available
-        last_track = len( [ x for x in cd_info if x.isdigit() ] )
-        if track > last_track:
-            track = last_track
-
-        return str( track ), timeFmt( trackPos )
-
-    # Initialize a metadata dictionary
-    md = METATEMPLATE.copy()
-    md['track_num'] = '1'
-    md['bitrate'] = '1411'
-
-    # Reading the CD info from a json file previously dumped when playing started.
-    try:
-        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
-            tmp = f.read()
-        cd_info = json.loads(tmp)
-    except:
-        cd_info = cdda.cdda_meta_template()
-
-    # Getting the current track and track time position.
-    md['track_num'], md['time_pos'] = get_current_track_from_mplayer_time_pos()
-
-    # Completing the metadata dict:
-    md['artist'] = cd_info['artist']
-    md['album'] = cd_info['album']
-
-    if md['track_num'] in cd_info.keys():
-        md['title']     = cd_info[ md['track_num'] ]['title']
-        md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3] # omit decimals
-    else:
-        md['title'] = 'Track ' + md['track_num']
-
-    # adding last track to track_num metadata
-    last_track = len( [ x for x in cd_info if x.isdigit() ] )
-    md['track_num'] += f'\n{last_track}'
-
-    return md
-
-# MAIN Mplayer metadata
-def mplayer_meta(service, readonly=False):
-    """ gets metadata from Mplayer as per
-        http://www.mplayerhq.hu/DOCS/tech/slave.txt
-    """
-    # (!) DIVERTING: this works only for DVB or iSTREAMS, but not for CDDA
-    if service == 'cdda':
-        return cdda_meta()
-
-    md = METATEMPLATE.copy()
-
-    # This is the file were Mplayer standard output has been redirected to,
-    # so we can read there any answer when required to Mplayer slave daemon:
-    mplayer_redirection_path = f'{MAINFOLDER}/.{service}_events'
-
-    # Communicates to Mplayer trough by its input fifo to get the current media filename and bitrate:
-    if not readonly:
-        mplayer_cmd(cmd='get_audio_bitrate', service=service)
-        mplayer_cmd(cmd='get_file_name',     service=service)
-        mplayer_cmd(cmd='get_time_pos',      service=service)
-        mplayer_cmd(cmd='get_time_length',   service=service)
-        # Waiting Mplayer ANS_xxxx to be writen to output file
-        sleep(.25)
-
-    # Trying to read the ANS_xxxx from the Mplayer output file
-    with open(mplayer_redirection_path, 'r') as file:
-        try:
-            tmp = file.read().split('\n')[-5:] # get last 4 lines plus the empty one when splitting
-        except:
-            tmp = []
-
-    #print('DEBUG\n', tmp)
-
-    # Flushing the Mplayer output file to avoid continue growing:
-    if not readonly:
-        with open(mplayer_redirection_path, 'w') as file:
-            file.write('')
-
-    # Reading the intended metadata chunks
-    if len(tmp) >= 4: # to avoid indexes issues while no relevant metadata are available
-
-        if 'ANS_AUDIO_BITRATE=' in tmp[0]:
-            bitrate = tmp[0].split('ANS_AUDIO_BITRATE=')[1].split('\n')[0].replace("'","")
-            md['bitrate'] = bitrate.split()[0]
-
-        if 'ANS_FILENAME=' in tmp[1]:
-            # this way will return the whole url:
-            #md['title'] = tmp[1].split('ANS_FILENAME=')[1]
-            # this way will return just the filename:
-            md['title'] = tmp[1].split('ANS_FILENAME=')[1].split('?')[0].replace("'","")
-
-        if 'ANS_TIME_POSITION=' in tmp[2]:
-            time_pos = tmp[2].split('ANS_TIME_POSITION=')[1].split('\n')[0]
-            md['time_pos'] = timeFmt( float( time_pos ) )
-
-        if 'ANS_LENGTH=' in tmp[3]:
-            time_tot = tmp[3].split('ANS_LENGTH=')[1].split('\n')[0]
-            md['time_tot'] = timeFmt( float( time_tot ) )
-
-    return md
-
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
-def mplayer_cmd(cmd, service):
+def mplayer_control(cmd, service):
     """ Sends a command to Mplayer trough by its input fifo
         input:  a command string
-        result: a result string
+        result: a result string: 'play' | 'stop' | 'pause' | ''
     """
 
     # Aux to disconect Mplayer jack ports from preamp ports.
@@ -308,14 +151,17 @@ def mplayer_cmd(cmd, service):
     # (i) "keep_pausing get_property pause" doesn't works well with CDDA
     # so will keep a variable to selfcontrol the CDDA plating status.
     global cdda_playing_status
+
+    # Early return if no action command i.e. 'state'
     if cmd == 'state':
         if service == 'cdda':
             return cdda_playing_status
         else:
-            return 'play'
+            return ''
 
-    eject_disk = False
+    eject_disc = False
 
+    # Action commands i.e. playback control
     if service == 'istreams':
 
         # useful when playing a mp3 stream e.g. some long playing time podcast url
@@ -394,8 +240,6 @@ def mplayer_cmd(cmd, service):
                 curr_track = cmd[11:]
                 if not curr_track.isdigit():
                     tmp = f'({ME}) BAD command {cmd}'
-                    print( tmp )
-                    return tmp
 
             chapter = int(curr_track) -1
             cmd = f'seek_chapter {str(chapter)} 1'
@@ -403,12 +247,11 @@ def mplayer_cmd(cmd, service):
 
         elif cmd == 'eject':
             cmd = 'stop'
-            eject_disk = True
+            eject_disc = True
 
     else:
         tmp = f'({ME}) unknown Mplayer service \'{service}\''
         print( tmp )
-        return tmp
 
     # Sending the command to the corresponding fifo
     print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
@@ -427,7 +270,7 @@ def mplayer_cmd(cmd, service):
             # Unmute mplayer
             pre_connect('on', CD_CAPTURE_PORT)
 
-    if eject_disk:
+    if eject_disc:
         # Eject
         Popen( f'eject {CDROM_DEVICE}'.split() )
         # Flush .cdda_info (blank the metadata file)
@@ -437,3 +280,151 @@ def mplayer_cmd(cmd, service):
         pre_connect('on', CD_CAPTURE_PORT)
 
     return 'done'
+
+# Aux Mplayer metadata only for the CDDA service
+def cdda_meta(md):
+
+    # Aux to get the current track and track time position by querying Mplayer 'time_pos'
+    # (i) 'get_property chapter' produces cd audio gaps :-/
+    #     'time_pos'             does not :-)
+    def get_current_track_from_mplayer_time_pos():
+
+        # (i) When querying Mplayer, always must use the prefix 'pausing_keep',
+        #     otherwise pause will be released.
+
+        # Aux to derive the track and the track time position from
+        # the whole disk relative time position.
+        def get_track_and_pos(globalPos):
+            trackNum = 1
+            cummTracksLength = 0.0
+            trackPos = 0.0
+            # Iterate tracks until globalPos is exceeded
+            while str(trackNum) in cd_info:
+                trackLength = timestring2sec( cd_info[ str(trackNum) ]['length'] )
+                cummTracksLength += trackLength
+                if cummTracksLength > globalPos:
+                    trackPos = globalPos - ( cummTracksLength - trackLength )
+                    break
+                trackNum += 1
+            return trackNum, trackPos
+
+        track    = 1
+        trackPos = 0
+        globalPos  = 0
+
+        # Querying Mplayer to get the timePos, the answer in seconds will be
+        # a 'global position' refered to the global disk duration.
+        with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
+            f.write( 'pausing_keep get_time_pos\n' )
+        with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
+            tmp = f.read().split('\n')
+        for line in tmp[-10:]:
+            if line.startswith('ANS_TIME_POSITION='):
+                globalPos = float( line.replace('ANS_TIME_POSITION=', '').strip() )
+
+        # Find the track and track time position
+        track, trackPos = get_track_and_pos(globalPos)
+
+        # Ceiling track to the last available
+        last_track = len( [ x for x in cd_info if x.isdigit() ] )
+        if track > last_track:
+            track = last_track
+
+        return str( track ), timeFmt( trackPos )
+
+    # Initialize a metadata dictionary
+    md['track_num'] = '1'
+    md['bitrate'] = '1411'
+
+    # Reading the CD info from a json file previously dumped when playing started.
+    try:
+        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
+            tmp = f.read()
+        cd_info = json.loads(tmp)
+    except:
+        cd_info = cdda.cdda_meta_template()
+
+    # Getting the current track and track time position.
+    md['track_num'], md['time_pos'] = get_current_track_from_mplayer_time_pos()
+
+    # Completing the metadata dict:
+    md['artist'] = cd_info['artist']
+    md['album'] = cd_info['album']
+
+    if md['track_num'] in cd_info.keys():
+        md['title']     = cd_info[ md['track_num'] ]['title']
+        md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3] # omit decimals
+    else:
+        md['title'] = 'Track ' + md['track_num']
+
+    # adding last track to track_num metadata
+    last_track = len( [ x for x in cd_info if x.isdigit() ] )
+    md['track_num'] += f'\n{last_track}'
+
+    return md
+
+# MAIN Mplayer metadata
+def mplayer_meta(md, service, readonly=False):
+    """ gets metadata from Mplayer as per
+        http://www.mplayerhq.hu/DOCS/tech/slave.txt
+        in:     a blank metadata dict
+                service: 'cdda' or any else
+        out:    the md dict
+    """
+
+    md['player'] = 'Mplayer'
+
+    # (!) DIVERTING: this works only for DVB or iSTREAMS, but not for CDDA
+    if service == 'cdda':
+        return cdda_meta(md)
+
+    # This is the file were Mplayer standard output has been redirected to,
+    # so we can read there any answer when required to Mplayer slave daemon:
+    mplayer_redirection_path = f'{MAINFOLDER}/.{service}_events'
+
+    # Communicates to Mplayer trough by its input fifo to get the current media filename and bitrate:
+    if not readonly:
+        mplayer_control(cmd='get_audio_bitrate', service=service)
+        mplayer_control(cmd='get_file_name',     service=service)
+        mplayer_control(cmd='get_time_pos',      service=service)
+        mplayer_control(cmd='get_time_length',   service=service)
+        # Waiting Mplayer ANS_xxxx to be writen to output file
+        sleep(.25)
+
+    # Trying to read the ANS_xxxx from the Mplayer output file
+    with open(mplayer_redirection_path, 'r') as file:
+        try:
+            tmp = file.read().split('\n')[-5:] # get last 4 lines plus the empty one when splitting
+        except:
+            tmp = []
+
+    #print('DEBUG\n', tmp)
+
+    # Flushing the Mplayer output file to avoid continue growing:
+    if not readonly:
+        with open(mplayer_redirection_path, 'w') as file:
+            file.write('')
+
+    # Reading the intended metadata chunks
+    if len(tmp) >= 4: # to avoid indexes issues while no relevant metadata are available
+
+        if 'ANS_AUDIO_BITRATE=' in tmp[0]:
+            bitrate = tmp[0].split('ANS_AUDIO_BITRATE=')[1].split('\n')[0].replace("'","")
+            md['bitrate'] = bitrate.split()[0]
+
+        if 'ANS_FILENAME=' in tmp[1]:
+            # this way will return the whole url:
+            #md['title'] = tmp[1].split('ANS_FILENAME=')[1]
+            # this way will return just the filename:
+            md['title'] = tmp[1].split('ANS_FILENAME=')[1].split('?')[0].replace("'","")
+
+        if 'ANS_TIME_POSITION=' in tmp[2]:
+            time_pos = tmp[2].split('ANS_TIME_POSITION=')[1].split('\n')[0]
+            md['time_pos'] = timeFmt( float( time_pos ) )
+
+        if 'ANS_LENGTH=' in tmp[3]:
+            time_tot = tmp[3].split('ANS_LENGTH=')[1].split('\n')[0]
+            md['time_tot'] = timeFmt( float( time_tot ) )
+
+    return md
+
