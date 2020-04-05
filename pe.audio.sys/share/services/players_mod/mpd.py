@@ -18,27 +18,9 @@
 
 import os
 import mpd
-import json
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
-
-## generic metadata template
-METATEMPLATE = {
-    'player':       'mpd',
-    'time_pos':     '',
-    'time_tot':     '',
-    'bitrate':      '',
-    'artist':       '',
-    'album':        '',
-    'title':        '',
-    'track_num':    '',
-    'state':        'stop'
-    }
-
-# Flush .mpd_metadata
-with open( f'{MAINFOLDER}/.mpd_metadata', 'w' ) as file:
-    file.write( json.dumps( METATEMPLATE ) )
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
@@ -65,55 +47,11 @@ def curr_playlist_is_cdda():
 
     return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
 
-# MPD control, status and metadata
-def mpd_client(query, port=6600):
+def mpd_control(query, port=6600):
     """ Comuticates to MPD music player daemon
-        Input:  - a command to query to the MPD daemon
-        Return: the MPD response: pb state string or metadata dict.
-        I/O: .mpd_metadata (w)
+        Input:      a command to query to the MPD daemon
+        Return:     playback state string
     """
-
-    def get_meta():
-        """ gets info from mpd """
-
-        md = METATEMPLATE.copy()
-        md['player'] = 'MPD'
-
-        # (i) Not all tracks have complete currentsong() fields:
-        # artist, title, album, track, etc fields may NOT be provided
-        # file, time, duration, pos, id           are ALWAYS provided
-
-        try:    md['title']     = c.currentsong()['title']
-        except: md['title']     = c.currentsong()['file'] \
-                                               .split('/')[-1]
-        try:    md['artist']    = c.currentsong()['artist']
-        except: pass
-
-        try:    md['album']     = c.currentsong()['album']
-        except: pass
-
-        try:    md['track_num'] = c.currentsong()['track']
-        except: pass
-
-        try:    md['bitrate']   = c.status()['bitrate'] # kbps
-        except: pass
-
-        try:    md['time_pos']  = timeFmt( float(
-                                    c.status()['elapsed'] ) )
-        except: pass
-
-        try:    md['time_tot']  = timeFmt( float(
-                                    c.currentsong()['time'] ) )
-        except: pass
-
-        try:    md['state'] = c.status()['state']
-        except: pass
-
-        # As an add-on, we will dump metadata to a file
-        with open( f'{MAINFOLDER}/.mpd_metadata', 'w' ) as file:
-            file.write( json.dumps( md ) )
-
-        return md
 
     def state():
         return c.status()['state']
@@ -158,8 +96,7 @@ def mpd_client(query, port=6600):
     except:
         return ''
 
-    result = {  'get_meta':   get_meta,
-                'state':      state,
+    result = {  'state':      state,
                 'stop':       stop,
                 'pause':      pause,
                 'play':       play,
@@ -171,4 +108,50 @@ def mpd_client(query, port=6600):
 
     c.close()
     return result
+
+def mpd_meta(md, port=6600):
+    """ Comuticates to MPD music player daemon
+        Input:      blank metadata dict
+        Return:     track metadata dict
+    """
+
+    md['player'] = 'MPD'
+
+    c = mpd.MPDClient()
+    try:
+        c.connect('localhost', port)
+    except:
+        return md
+
+    # (i) Not all tracks have complete currentsong() fields:
+    # artist, title, album, track, etc fields may NOT be provided
+    # file, time, duration, pos, id           are ALWAYS provided
+
+    try:    md['title']     = c.currentsong()['title']
+    except: md['title']     = c.currentsong()['file'] \
+                                           .split('/')[-1]
+    try:    md['artist']    = c.currentsong()['artist']
+    except: pass
+
+    try:    md['album']     = c.currentsong()['album']
+    except: pass
+
+    try:    md['track_num'] = c.currentsong()['track']
+    except: pass
+
+    try:    md['bitrate']   = c.status()['bitrate'] # kbps
+    except: pass
+
+    try:    md['time_pos']  = timeFmt( float(
+                                c.status()['elapsed'] ) )
+    except: pass
+
+    try:    md['time_tot']  = timeFmt( float(
+                                c.currentsong()['time'] ) )
+    except: pass
+
+    try:    md['state'] = c.status()['state']
+    except: pass
+
+    return md
 
