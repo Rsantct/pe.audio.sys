@@ -66,10 +66,10 @@ Disable default MPD setup:
     sudo systemctl disable mpd.service
     sudo systemctl stop mpd.socket
     sudo systemctl disable mpd.socket
-    sudo systemctl --user stop mpd.service
-    sudo systemctl --user disable mpd.service
-    sudo systemctl --user stop mpd.socket
-    sudo systemctl --user disable mpd.socket
+    systemctl --user stop mpd.service
+    systemctl --user disable mpd.service
+    systemctl --user stop mpd.socket
+    systemctl --user disable mpd.socket
 
 
 ## Python3 packages
