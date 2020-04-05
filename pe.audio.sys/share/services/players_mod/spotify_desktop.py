@@ -61,7 +61,7 @@ def spotify_meta():
     """ Analize the MPRIS metadata info retrieved by the daemon scripts/spotify_monitor
         which monitorizes a Spotify Desktop Client
         Input:      --
-        Output:     Spotify metadata in json format
+        Output:     Spotify metadata
         I/O:        .spotify_events (r) MPRIS desktop metadata from spotify_monitor.py
     """
     md = METATEMPLATE.copy()
@@ -102,7 +102,7 @@ def spotify_meta():
     except:
         pass
 
-    return json.dumps( md )
+    return md
 
 # Spotify Desktop control
 def spotify_control(cmd):
