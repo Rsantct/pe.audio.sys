@@ -155,10 +155,9 @@ def player_control(action):
 # init() will be autostarted from server.py when loading this module
 def init():
     """ This init function will:
-        - Periodically store the metadata info to
-            MAINFOLDER/.player_metadata
+        - Periodically store the metadata info to .player_metadata file
           so that can be read from any process interested in it.
-        - Also will flush metadata and state files
+        - Also will flush the .player_state file
     """
     def store_meta(timer=2):
         while True:
