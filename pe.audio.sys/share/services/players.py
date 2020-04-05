@@ -35,12 +35,14 @@ import threading
 import yaml
 from time import sleep
 import json
-from  players_mod.mpd               import  mpd_client
-from  players_mod.mplayer           import  mplayer_cmd,            \
+from  players_mod.mpd               import  mpd_control,                \
+                                            mpd_meta
+from  players_mod.mplayer           import  mplayer_control,            \
                                             mplayer_meta
-from  players_mod.librespot         import  librespot_meta
-from  players_mod.spotify_desktop   import  spotify_control,        \
-                                            spotify_meta,           \
+from  players_mod.librespot         import  librespot_control,          \
+                                            librespot_meta
+from  players_mod.spotify_desktop   import  spotify_control,            \
+                                            spotify_meta,               \
                                             detect_spotify_client
 
 UHOME = os.path.expanduser("~")
@@ -52,14 +54,13 @@ spotify_client = detect_spotify_client()
 ## generic metadata template (!) remember to use copies of this ;-)
 METATEMPLATE = {
     'player':       '',
-    'time_pos':     '',
-    'time_tot':     '',
-    'bitrate':      '',
-    'artist':       '',
-    'album':        '',
-    'title':        '',
-    'track_num':    '',
-    'state':        'stop'
+    'time_pos':     '-',
+    'time_tot':     '-',
+    'bitrate':      '-',
+    'artist':       '-',
+    'album':        '-',
+    'title':        '-',
+    'track_num':    '-',
     }
 
 # Aux to get the current preamp input source
@@ -80,9 +81,8 @@ def get_source():
 
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
 def player_get_meta(readonly=False):
-    """ Makes a dictionary-like string with the current track metadata
+    """ Returns a dictionary with the current track metadata
         '{player: xxxx, artist: xxxx, album:xxxx, title:xxxx, etc... }'
-        Then will return a bytes-like object from the referred string.
     """
     # 'readonly=True':
     #   Only useful for mplayer_meta(). It avoids to query Mplayer
@@ -93,33 +93,26 @@ def player_get_meta(readonly=False):
 
     md = METATEMPLATE.copy()
 
-    # Getting metadata from a Spotify client:
     if   'librespot' in source or 'spotify' in source.lower():
         if spotify_client == 'desktop':
-            md = spotify_meta()
+            md = spotify_meta(md)
         elif spotify_client == 'librespot':
-            md = librespot_meta()
+            md = librespot_meta(md)
         # source is spotify like but no client running has been detected:
         else:
             md['player'] = 'Spotify'
 
-    # Getting metadata from MPD:
     elif source == 'mpd':
-        md = mpd_client('get_meta')
+        md = mpd_meta(md)
 
-    # Getting metadata from Mplayer based sources:
     elif source == 'istreams':
-        md = mplayer_meta(service='istreams', readonly=readonly)
+        md = mplayer_meta(md, service='istreams', readonly=readonly)
 
     elif source == 'tdt' or 'dvb' in source:
-        md = mplayer_meta(service='dvb', readonly=readonly)
+        md = mplayer_meta(md, service='dvb', readonly=readonly)
 
     elif 'cd' in source:
-        md = mplayer_meta(service='cdda', readonly=readonly)
-
-    # Unknown source, blank metadata:
-    else:
-        md = METATEMPLATE.copy()
+        md = mplayer_meta(md, service='cdda', readonly=readonly)
 
     return md
 
@@ -127,41 +120,37 @@ def player_get_meta(readonly=False):
 def player_control(action):
     """ controls the playback
         returns: 'stop' | 'play' | 'pause'
+        I/O:     .player_state
     """
 
     source = get_source()
-    result = ''
 
-    if   source == 'mpd':
-        result = mpd_client(action)
+    if source == 'mpd':
+        nstate = mpd_control(action)
 
     elif source.lower() == 'spotify':
-        # We can control only Spotify Desktop (not librespot)
         if   spotify_client == 'desktop':
-            result = spotify_control(action)
+            nstate = spotify_control(action)
         elif spotify_client == 'librespot':
-            result = 'play'
+            nstate = librespot_control(action)
 
     elif 'tdt' in source or 'dvb' in source:
-        result = mplayer_cmd(cmd=action, service='dvb')
+        nstate = mplayer_control(cmd=action, service='dvb')
 
     elif source in ['istreams', 'iradio']:
-        result = mplayer_cmd(cmd=action, service='istreams')
+        nstate = mplayer_control(cmd=action, service='istreams')
 
     elif source == 'cd':
-        result = mplayer_cmd(cmd=action, service='cdda')
+        nstate = mplayer_control(cmd=action, service='cdda')
 
-    # Currently only MPD and Spotify Desktop provide 'state' info.
-    # 'result' can be 'play', 'pause', 'stop' or ''.
-    if not result:
-        result = ''
+    else:
+        nstate = ''
 
-    # Store the player state
+    # Store the player nstate
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write(result)
+        f.write(nstate)
 
-    # As this is used by a server, we will return a bytes-like object:
-    return result
+    return nstate
 
 # init() will be autostarted from server.py when loading this module
 def init():
@@ -169,7 +158,7 @@ def init():
         - Periodically store the metadata info to
             MAINFOLDER/.player_metadata
           so that can be read from any process interested in it.
-        - Also will initiate MAINFOLDER/.player_state
+        - Also will flush metadata and state files
     """
     def store_meta(timer=2):
         while True:
@@ -181,9 +170,9 @@ def init():
     meta_timer = 2
     meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
-    # Initiate the player state file
+    # Flush state file:
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write('stop')
+        f.write('')
 
 # Interface entry function for this module plugged inside 'server.py'
 def do(cmd):
@@ -202,10 +191,13 @@ def do(cmd):
         with open( f'{MAINFOLDER}/.player_metadata', 'r') as f:
             result = f.read()
 
+    # PLAYBACK STATE
+    elif cmd == 'state':
+        result = player_control( cmd )
+
     # PLAYBACK CONTROL. (i) Some commands need to be adequated later,
     # e.g. Mplayer does not understand 'previous', 'next'
-    elif cmd in ('state', 'stop', 'pause', 'play',
-                       'next', 'previous', 'rew', 'ff'):
+    elif cmd in ('stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff'):
         result = player_control( cmd )
 
     # Special command for DISK TRACK playback
