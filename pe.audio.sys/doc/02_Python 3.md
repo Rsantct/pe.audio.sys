@@ -36,16 +36,20 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install JACK-Client
     ```
 
-Necessary for CD-AUDIO metadata:
+## Necessary for CD-AUDIO metadata:
 
     sudo pip3 install discid musicbrainzngs
 
-Optionaly recommended if you wan to run `scripts/loudness_monitor.py`:
+and maybe:
+
+    sudo apt install libdiscid0
+
+## Optionaly recommended if you wan to run `scripts/loudness_monitor.py`:
 
     sudo pip3 install sounddevice watchdog
     sudo apt install libportaudio2
     
-The serial port extensions for the IR receiver
+## The serial port extensions for the IR receiver
 
     apt install python3-serial
     (or python3 -m pip install pyserial)
