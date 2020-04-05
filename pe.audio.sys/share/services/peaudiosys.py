@@ -37,7 +37,6 @@ MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
 LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
 LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
-PLAYER_META_FILE    = f'{MAIN_FOLDER}/.player_metadata'
 STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 
 aux_info = {    'amp':'off',
@@ -180,7 +179,7 @@ def process_aux( cmd, arg=None ):
     # RESTART
     elif cmd == 'restart':
         try:
-            restart_action = WEBCONFIG["reboot_button_action"]
+            restart_action = CONFIG["restart_cmd"]
         except:
             restart_action = 'peaudiosys_restart.sh'
 
