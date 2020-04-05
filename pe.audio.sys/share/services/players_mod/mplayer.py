@@ -31,12 +31,28 @@
 # .{service}_events 'r'     Mplayer info output is redirected here
 #
 
+# --- Some info about Mplayer SLAVE commands ---
+#
+# loadfile cdda://A-B:S     load CD tracks from A to B at speed S
+#
+# get_property filename     get the tracks to be played as
+#                           'A' (single track)
+#                           or 'A-B' (range of tracks)
+#
+# get_property chapter      get the current track index inside
+#                           the filename property (first is 0)
+#
+# seek_chapter 1            go to next track
+# seek_chapter -1           go to prev track
+#
+# seek X seconds
+
 import os, sys
 from subprocess import Popen, check_output
 import json
 import yaml
 from time import sleep
-from socket import socket
+import jack
 
 sys.path.append( os.path.dirname(__file__) )
 import cdda
@@ -58,6 +74,11 @@ try:
     CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
 except:
     CDROM_DEVICE = '/dev/cdrom'
+## CD preamp ports
+try:
+    CD_CAPTURE_PORT = PEASYSCONFIG['sources']['cd']['capture_port']
+except:
+    CD_CAPTURE_PORT = 'mplayer_cdda'
 
 ## generic metadata template
 METATEMPLATE = {
@@ -76,19 +97,6 @@ METATEMPLATE = {
 ## (see mplayer_cmd() below)
 cd_info = {}
 cdda_playing_status = 'stop'
-
-# Auxiliary client to MUTE the preamp when CDDA is paused.
-def audio_mute(mode):
-    with socket() as s:
-        try:
-            host, port = 'localhost', CTL_PORT
-            s.connect( (host, port) )
-            s.send( f'preamp mute {mode}'.encode() )
-            s.close()
-            print (f'({ME}) sending \'mute {mode}\' to \'peaudiosys\'')
-        except:
-            print (f'({ME}) socket error on {host}:{port}')
-    return
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
@@ -199,9 +207,9 @@ def mplayer_meta(service, readonly=False):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt
     """
-    # This works only for DVB or iSTREAMS, but not for CDDA
+    # (!) DIVERTING: this works only for DVB or iSTREAMS, but not for CDDA
     if service == 'cdda':
-        return json.dumps( cdda_meta() )
+        return cdda_meta()
 
     md = METATEMPLATE.copy()
 
@@ -253,7 +261,7 @@ def mplayer_meta(service, readonly=False):
             time_tot = tmp[3].split('ANS_LENGTH=')[1].split('\n')[0]
             md['time_tot'] = timeFmt( float( time_tot ) )
 
-    return json.dumps( md )
+    return md
 
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_cmd(cmd, service):
@@ -262,9 +270,26 @@ def mplayer_cmd(cmd, service):
         result: a result string
     """
 
+    # Aux to disconect Mplayer jack ports from preamp ports.
+    def pre_connect(mode, pname='mplayer'):
+        try:
+            jc = jack.Client('mplayer.py', no_start_server=True)
+            sources = jc.get_ports(  pname,   is_output=True )
+            sinks   = jc.get_ports( 'pre_in', is_input =True )
+            if mode == 'on':
+                for a,b in zip(sources, sinks):
+                    jc.connect(a,b)
+            else:
+                for a,b in zip(sources, sinks):
+                    jc.disconnect(a,b)
+        except:
+            pass
+        return
+
     # Aux function to check if Mplayer has loaded a disk
     def cdda_in_mplayer():
-        # Querying Mplayer to get the FILENAME (if it results void it means no playing)
+        # Querying Mplayer to get the FILENAME
+        # (if it results void it means no playing)
         with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
             f.write('get_file_name\n')
         sleep(.1)
@@ -276,8 +301,8 @@ def mplayer_cmd(cmd, service):
         return False
 
 
-    # (i) Mplayer sends its responses to the terminal where Mplayer was launched,
-    #     or to a redirected file.
+    # (i) Mplayer sends its responses to the terminal where Mplayer
+    #     was launched, or to a redirected file.
     #     See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
     # (i) "keep_pausing get_property pause" doesn't works well with CDDA
@@ -323,19 +348,20 @@ def mplayer_cmd(cmd, service):
             if cdda_playing_status in ('play', 'pause'):
                 cdda_playing_status =   {'play':'pause', 'pause':'play'
                                         }[cdda_playing_status]
-                # (i) Because of mplayer cdda pausing becomes on
-                #     strange behavior (there is a kind of brief sttuter
-                #     with audio), then we will MUTE the preamp.
+                # (i) Mplayer cdda pausing becomes on strange behavior,
+                #     there is a kind of brief sttuter in audio output.
+                #     even if a 'pausing_keep mute 1' command was issued.
+                #     So will temporary disconnect jack ports
                 if cdda_playing_status == 'pause':
-                    audio_mute('on')
+                    pre_connect('off', CD_CAPTURE_PORT)
                 elif cdda_playing_status == 'play':
-                    audio_mute('off')
+                    pre_connect('on', CD_CAPTURE_PORT)
 
         elif cmd.startswith('play'):
 
             # Prepare to play if a disk is not loaded into Mplayer
             if not cdda_in_mplayer():
-                audio_mute('on')
+                pre_connect('off', CD_CAPTURE_PORT)
                 print( f'({ME}) loading disk ...' )
                 # Save disk info into a json file
                 cdda.save_disc_metadata(device=CDROM_DEVICE,
@@ -398,7 +424,8 @@ def mplayer_cmd(cmd, service):
             # This delay avoids audio stutter because of above pausing,
             # done when preparing (loading) traks into Mplayer
             sleep(.5)
-            audio_mute('off')
+            # Unmute mplayer
+            pre_connect('on', CD_CAPTURE_PORT)
 
     if eject_disk:
         # Eject
@@ -406,7 +433,7 @@ def mplayer_cmd(cmd, service):
         # Flush .cdda_info (blank the metadata file)
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cdda.cdda_meta_template() ) )
-        # Unmute preamp
-        audio_mute('off')
+        # Unmute mplayer
+        pre_connect('on', CD_CAPTURE_PORT)
 
     return 'done'
