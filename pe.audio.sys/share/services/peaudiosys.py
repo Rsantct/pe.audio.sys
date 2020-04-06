@@ -92,19 +92,19 @@ def send_cmd(service, cmd):
     return ans
 
 # Main function for PREDIC commands processing
-def process_preamp( cmd, arg=None ):
+def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
     return send_cmd( service='preamp', cmd=cmd )
 
 # Main function for PLAYERS commands processing
-def process_players( cmd, arg=None ):
+def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
     return send_cmd( service='players', cmd=cmd )
 
 # Main function for AUX commands processing
-def process_aux( cmd, arg=None ):
+def process_aux( cmd, arg='' ):
     """ input:  a tuple (prefix, command, arg)
         output: a result string
     """
@@ -249,7 +249,7 @@ def do( command_phrase ):
         #           aux     command  arg1 ...
         #     The 'preamp' prefix can be omited
 
-        pfx, cmd, arg = None, None, None
+        pfx, cmd, arg = '', '', ''
 
         # This is to avoid empty values when there are more
         # than on space as delimiter inside the command_phrase:
