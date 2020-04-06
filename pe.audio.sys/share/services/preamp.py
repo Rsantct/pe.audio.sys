@@ -51,12 +51,12 @@ def process_commands( full_command ):
         # 'arg' is given only with some commands
         # 'add' is given as an option for relative values ordering
 
-        command, arg, add = None, None, False
+        command, arg, add = '', '', False
 
         cmd_list = full_cmd.replace('\r','').replace('\n','').split()
 
         if not cmd_list[0:]:
-            return (None, None, False)
+            return ('', '', False)
 
         command = cmd_list[0]
         if cmd_list[1:]:
@@ -65,7 +65,7 @@ def process_commands( full_command ):
                 if cmd_list[2] == 'add':
                     add = True
                 else:
-                    return (None, None, False)
+                    return ('', '', False)
 
         return (command, arg, add)
 
