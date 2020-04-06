@@ -258,15 +258,14 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
     def compose_marquee(md):
-        """ Modify the metadata dict by composing a joined string with
-            selected fields to be displayed on the LCD bottom line marquee.
-        """
-        tmp = '{ "bottom_marquee":"'
+        # Will compose a unique value by joining artist+album+title
+        # into a new filed 'bottom_marquee' previously prepared as a screen
+        # widget, so it can be directly mapped to be displayed.
+        mdNew = { 'bottom_marquee':''}
         for k,v in md.items():
             if k in ('artist', 'album', 'title') and v != '-':
-                tmp += k[:2] + ':' + str(v) + ' '
-        tmp += '" }'
-        mdNew = json.loads(tmp)
+                mdNew['bottom_marquee'] += k[:2] + ':' + \
+                                           str(v).replace('"', '\\"') + ' '
         return mdNew
 
     # Read metadata file
@@ -279,10 +278,14 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
         return
     _last_md = md
 
-    # Will compose a unique marquee widget with all metadata fields,
-    # else will keep the standard separate widgets dictionary format.
+    # Modify the metadata dict to have a new field 'composed_marquue'
+    # with artist+album+title to be displayed on the LCD bottom line marquee.
     if mode == 'composed_marquee':
         md = compose_marquee(md)
+    # This is for a screen displaying separate fields for artist, album, title
+    # (mode not in use)
+    else:
+        pass
 
     # Info
     print( f'(lcd_service) uptating metadata: {md}' )
