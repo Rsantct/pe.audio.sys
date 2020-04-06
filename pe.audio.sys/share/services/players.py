@@ -204,7 +204,7 @@ def do(cmd):
 
     # EJECTS unconditionally the CD tray
     elif cmd == 'eject':
-        result = mplayer_cmd('eject', 'cdda')
+        result = mplayer_control('eject', 'cdda')
 
     # An URL to be played back by the istreams Mplayer service:
     elif cmd.startswith('http://'):
