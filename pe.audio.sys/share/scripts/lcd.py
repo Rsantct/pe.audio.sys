@@ -30,9 +30,6 @@ UHOME = os.path.expanduser("~")
 LCDFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/lcd'
 
 def start():
-
-    stop()
-
     # the server
     Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
     sleep(3)
