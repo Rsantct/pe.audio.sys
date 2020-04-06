@@ -89,9 +89,10 @@ def player_get_meta(readonly=False):
     #   and flushing its metadata file.
     #   It is used from the 'change files handler' on lcd_service.py.
 
+    md = METATEMPLATE.copy()
+
     source = get_source()
 
-    md = METATEMPLATE.copy()
 
     if   'librespot' in source or 'spotify' in source.lower():
         if SPOTIFY_CLIENT == 'desktop':
@@ -122,6 +123,7 @@ def player_control(action):
         returns: 'stop' | 'play' | 'pause'
         I/O:     .player_state
     """
+    nstate = ''
 
     source = get_source()
 
@@ -142,9 +144,6 @@ def player_control(action):
 
     elif source == 'cd':
         nstate = mplayer_control(cmd=action, service='cdda')
-
-    else:
-        nstate = ''
 
     # Store the player nstate
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
