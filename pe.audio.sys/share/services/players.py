@@ -61,6 +61,7 @@ METATEMPLATE = {
     'album':        '-',
     'title':        '-',
     'track_num':    '-',
+    'tracks_tot':   '-'
     }
 
 # Aux to get the current preamp input source

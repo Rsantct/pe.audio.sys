@@ -332,7 +332,7 @@ def cdda_meta(md):
 
         return str( track ), timeFmt( trackPos )
 
-    # Initialize a metadata dictionary
+    # Preparing the metadata dictionary
     md['track_num'] = '1'
     md['bitrate'] = '1411'
 
@@ -357,9 +357,9 @@ def cdda_meta(md):
     else:
         md['title'] = 'Track ' + md['track_num']
 
-    # adding last track to track_num metadata
+    # adding last track
     last_track = len( [ x for x in cd_info if x.isdigit() ] )
-    md['track_num'] += f'\n{last_track}'
+    md['tracks_tot'] = f'{last_track}'
 
     return md
 
