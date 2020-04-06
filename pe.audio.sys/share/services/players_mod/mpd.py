@@ -127,30 +127,33 @@ def mpd_meta(md, port=6600):
     # artist, title, album, track, etc fields may NOT be provided
     # file, time, duration, pos, id           are ALWAYS provided
 
-    try:    md['title']     = c.currentsong()['title']
-    except: md['title']     = c.currentsong()['file'] \
-                                           .split('/')[-1]
-    try:    md['artist']    = c.currentsong()['artist']
+    try:    md['title']         = c.currentsong()['title']
+    except: md['title']         = c.currentsong()['file'] \
+                                               .split('/')[-1]
+    try:    md['artist']        = c.currentsong()['artist']
     except: pass
 
-    try:    md['album']     = c.currentsong()['album']
+    try:    md['album']         = c.currentsong()['album']
     except: pass
 
-    try:    md['track_num'] = c.currentsong()['track']
+    try:    md['track_num']     = c.currentsong()['track']
     except: pass
 
-    try:    md['bitrate']   = c.status()['bitrate'] # kbps
+    try:    md['tracks_tot']    = c.status()['playlistlength']
     except: pass
 
-    try:    md['time_pos']  = timeFmt( float(
-                                c.status()['elapsed'] ) )
+    try:    md['bitrate']       = c.status()['bitrate'] # kbps
     except: pass
 
-    try:    md['time_tot']  = timeFmt( float(
-                                c.currentsong()['time'] ) )
+    try:    md['time_pos']      = timeFmt( float(
+                                           c.status()['elapsed'] ) )
     except: pass
 
-    try:    md['state'] = c.status()['state']
+    try:    md['time_tot']      = timeFmt( float(
+                                           c.currentsong()['time'] ) )
+    except: pass
+
+    try:    md['state']         = c.status()['state']
     except: pass
 
     return md
