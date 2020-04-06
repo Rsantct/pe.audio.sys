@@ -20,7 +20,16 @@
 """
 # (i) I/O FILES MANAGED HERE:
 #
-# .cdda_info        'w'     CDDA album and tracks info in json format
+# .cdda_info        'w'     CDDA album and tracks info in json format.
+#
+#   Example:
+#
+#   {   'artist': 'xxxx',
+#        'album': 'xxxx',
+#            '1': { 'title': 'xxxx', 'length': 'mm:ss.cc' }
+#            '2': { ... ...
+#            ...
+#   }
 #
 
 import discid
@@ -32,6 +41,9 @@ import sys
 
 UHOME = expanduser("~")
 
+CDDA_INFO_TEMPLATE = { 'artist':'-', 'album':'-',
+                       '1': {'title':'-', 'length':'00:00.00'} }
+
 ## cdrom device to use
 try:
     with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
@@ -41,10 +53,8 @@ except:
     CDROM_DEVICE = '/dev/cdrom'
     print(f'(cdda.py) Using default \'{CDROM_DEVICE}\'')
 
-
 def cdda_meta_template():
-    return {'artist':'-', 'album':'-',
-            '1':{'title':'-', 'length':'00:00.00'} }
+    return CDDA_INFO_TEMPLATE
 
 def mmsscc2msec(mmsscc):
     """ input:   'mm:ss.cc' (str)
@@ -70,7 +80,8 @@ def msec2string(msec):
 
 def get_disc_metadata(device=CDROM_DEVICE):
 
-    md = cdda_meta_template()
+    # will complete md with info retrieved from musicbrainz
+    md = CDDA_INFO_TEMPLATE.copy()
 
     mz.set_useragent('tmp', '0.1', 'dummy@mail')
 
@@ -100,7 +111,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
         mz_md = result['cdstub']
         md['artist'] = mz_md['artist-credit-phrase']
         md['album']  = mz_md['title']
-        # (!) pending on investigate more on getting 'cdstub' instead of 'disc'
+        # (!) pending on investigate more on tracks under 'cdstub'
         track_list   = []
 
     for track in track_list:
