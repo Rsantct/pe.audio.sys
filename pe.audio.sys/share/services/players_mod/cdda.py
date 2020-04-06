@@ -100,6 +100,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
         mz_md = result['cdstub']
         md['artist'] = mz_md['artist-credit-phrase']
         md['album']  = mz_md['title']
+        # (!) pending on investigate more on getting 'cdstub' instead of 'disc'
         track_list   = []
 
     for track in track_list:
