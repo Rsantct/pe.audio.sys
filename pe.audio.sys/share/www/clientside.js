@@ -43,14 +43,15 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 var state = {loudspeaker:"not connected"};
 var advanced_controls = false;          // Default for displaying advanced controls
 var metablank = {                       // A player's metadata blank dict
-    'player':       '-',
-    'time_pos':     '-:-',
-    'time_tot':     '-:-',
-    'bitrate':      '-',
-    'artist':       '-',
-    'album':        '-',
-    'title':        '-',
-    'track_num':    '-'
+    'player':       '',
+    'time_pos':     '',
+    'time_tot':     '',
+    'bitrate':      '',
+    'artist':       '',
+    'album':        '',
+    'title':        '',
+    'track_num':    '',
+    'tracks_tot':   ''
     }
 var last_loudspeaker = ''               // Will detect if audio processes has beeen
                                         // restarted with new loudspeaker configuration.
@@ -395,9 +396,14 @@ function update_player_info() {
             document.getElementById("artist").innerText = "-"
         }
         if (d['track_num']) {
-            document.getElementById("track").innerText   = d['track_num'];
+            document.getElementById("track_info").innerText   = d['track_num'];
         } else {
-            document.getElementById("track").innerText = "-"
+            document.getElementById("track_info").innerText = "-"
+        }
+        if (d['tracks_tot']) {
+            document.getElementById("track_info").innerText += ('\n' + d['tracks_tot']);
+        } else {
+            document.getElementById("track_info").innerText += "\n-"
         }
         if (d['time_pos']) {
             document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
