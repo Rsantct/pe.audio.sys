@@ -29,7 +29,7 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 
 def try_backends():
-    result = None
+    result = ''
     ftmp = '/tmp/librespot.test'
     for be in ('rodio', 'pulseaudio', 'alsa'):
         with open(ftmp, 'w') as f:
