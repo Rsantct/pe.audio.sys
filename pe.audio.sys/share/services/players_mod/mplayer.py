@@ -278,7 +278,7 @@ def mplayer_control(cmd, service):
 
     elif service == 'cdda':
         # Info about CDDA playing (http://www.mplayerhq.hu/DOCS/tech/slave.txt)
-        # - There is not a 'play' command, yu must 'loadlist' or 'loadfile'
+        # - There is not a 'play' command, you must 'loadlist' or 'loadfile'
         # - 'loadlist' <playlist_file> doesn't allow smooth track changes.
         # - playback starts when 'loadfile' is issued
         # - 'pause' in Mplayer will pause-toggle
