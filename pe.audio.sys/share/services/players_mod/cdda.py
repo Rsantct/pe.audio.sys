@@ -53,7 +53,7 @@ except:
     CDROM_DEVICE = '/dev/cdrom'
     print(f'(cdda.py) Using default \'{CDROM_DEVICE}\'')
 
-def cdda_meta_template():
+def cdda_info_template():
     return CDDA_INFO_TEMPLATE
 
 def mmsscc2msec(mmsscc):
