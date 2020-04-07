@@ -80,6 +80,34 @@ def msec2string(msec):
 
 def get_disc_metadata(device=CDROM_DEVICE):
 
+    def simple_md(disc):
+        """ For disc not found, we can derive the tracks and tracks length
+            from the 'disc' object properties.
+        """
+        print( f'(cdda.py) {disc.last_track_num} tracks found on discid \'{disc.id}\'' )
+        # https://musicbrainz.org/doc/Development/XML_Web_Service/Version_2#discid
+        # The toc consists of the following:
+        #   First track (always 1)
+        #   total number of tracks
+        #   sector offset of the leadout (end of the disc
+        #   a list of sector offsets for each track, beginning with track 1 (generally 150 sectors)
+        #
+        # Example of TOC for a 7 tracks disc:
+        # disc.toc_string: '1 7 235745 150 40742 77847 108042 118682 154277 191952'
+        toc = disc.toc_string.split()
+
+        # A second of CD-AUDIO has 75 frames (or sectors) -wikipedia-
+        track_sectors = toc[3:] + [toc[2]]
+        track_sectors = [int(x) for x in track_sectors]
+        for i in range(len(track_sectors)):
+            if i==0:
+                continue
+            trackNum = i
+            trackLen = ( track_sectors[i] - track_sectors[i-1] ) / 75
+            md[str(trackNum)] = {'title':'-',
+                                 'length': msec2string(trackLen*1e3)}
+        return md
+
     # will complete md with info retrieved from musicbrainz
     md = CDDA_INFO_TEMPLATE.copy()
 
@@ -96,8 +124,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
                                       includes=['artists','recordings'] )
     except mz.ResponseError:
         print('(cdda.py) disc not found or bad response')
-        return md
-
+        return simple_md(disc)
 
     if result.get('disc'):
         print(f'(cdda.py) musicbrainz got \'disc\': {disc.id}' )
