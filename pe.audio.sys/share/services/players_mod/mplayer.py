@@ -264,7 +264,7 @@ def mplayer_control(cmd, service):
 
     status = playing_status()
 
-    # Early returns if no action commands
+    # Early return if no action commands
     if cmd == 'state':
         return status
     if cmd == 'eject':
