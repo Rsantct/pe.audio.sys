@@ -57,7 +57,6 @@ def check_Spotify_Desktop_process():
     return False
 
 def start():
-    stop()
     if not check_Spotify_Desktop_process():
         exit()
     v = get_playerctl_version()
