@@ -30,7 +30,7 @@ Some *end user* and *user friendly* features has been added here.
 
     - A stream url can be entered into the web control page to start playing it.
     
-    - Integrated Loudness program visualizer for loudness tracking
+    - EBU R128 Integrated Loudness Units (LU-I) visualizer to help desired SPL and loudness EQ-curves compensation level.
 
 - A mouse can be used to control volume and mute easily.
 
