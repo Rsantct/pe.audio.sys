@@ -104,7 +104,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
                 continue
             trackNum = i
             trackLen = ( track_sectors[i] - track_sectors[i-1] ) / 75
-            md[str(trackNum)] = {'title':'-',
+            md[str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
                                  'length': msec2string(trackLen*1e3)}
         return md
 
