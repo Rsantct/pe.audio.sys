@@ -31,7 +31,8 @@
 # .{service}_events 'r'     Mplayer info output is redirected here
 #
 
-# --- Some info about Mplayer SLAVE commands ---
+#-----------------------------------------------------------------------
+# Info about CDDA playing (http://www.mplayerhq.hu/DOCS/tech/slave.txt)
 #
 # loadfile cdda://A-B:S     load CD tracks from A to B at speed S
 #
@@ -46,6 +47,16 @@
 # seek_chapter -1           go to prev track
 #
 # seek X seconds
+#
+# Rules:
+#   - There is not a 'play' command, you must 'loadlist' or 'loadfile'
+#   - 'loadlist' <playlist_file> doesn't allow smooth track changes.
+#   - playback starts when 'loadfile' is issued
+#   - 'pause' in Mplayer will pause-toggle
+#   - 'stop' empties the loaded stuff
+#   - 'seekxxxx' resumes playing
+#-----------------------------------------------------------------------
+
 
 import os, sys
 from subprocess import Popen, check_output
@@ -80,8 +91,6 @@ try:
 except:
     CD_CAPTURE_PORT = 'mplayer_cdda'
 
-## Global variable to store the playing status
-playing_status = ''
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
@@ -132,13 +141,10 @@ def cdda_load():
     # Save disk info into a json file
     cdda.save_disc_metadata(device=CDROM_DEVICE,
                             fname=f'{MAINFOLDER}/.cdda_info')
-    # Flushing the mplayer events file
-    with open(f'{MAINFOLDER}/.cdda_events', 'w') as f:
-        pass
-    # Loading the disk but pausing
-    with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
-        f.write( 'pausing loadfile \'cdda://1-100:1\'\n' )
-    # Waiting for the disk to be loaded (usually about 8 sec)
+    # Loading disc in Mplayer
+    cmd = 'pausing loadfile \'cdda://1-100:1\''
+    send_cmd(cmd, service='cdda')
+    # Waiting for the disk to be loaded (usually ~ 5 sec)
     n = 15
     while n:
         if cdda_is_loaded():
@@ -204,6 +210,47 @@ def cdda_get_current_track():
 
     return trackNum, trackPos
 
+# Aux to disconect Mplayer jack ports from preamp ports.
+def pre_connect(mode, pname=CD_CAPTURE_PORT):
+    # (i) Mplayer cdda pausing becomes on strange behavior,
+    #     a stutter audio frame stepping phenomena,
+    #     even if a 'pausing_keep mute 1' command was issued.
+    #     So will temporary disconnect jack ports
+    try:
+        jc = jack.Client('mplayer.py', no_start_server=True)
+        sources = jc.get_ports(  pname,   is_output=True )
+        sinks   = jc.get_ports( 'pre_in', is_input =True )
+        if mode == 'on':
+            for a,b in zip(sources, sinks):
+                jc.connect(a,b)
+        else:
+            for a,b in zip(sources, sinks):
+                jc.disconnect(a,b)
+    except:
+        pass
+    return
+
+# Aux to query Mplayer if paused or playing
+def playing_status(service='cdda'):
+    with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
+        f.write( 'pausing_keep_force get_property pause\n' )
+    sleep(.1)
+    with open(f'{MAINFOLDER}/.{service}_events', 'r') as f:
+        tmp = f.read().split('\n')
+    for line in tmp[-2:]:
+        if 'ANS_pause=yes' in line:
+            return 'pause'
+    return 'play'
+
+# Aux to send Mplayer commands through by the corresponding fifo
+def send_cmd(cmd, service):
+    print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
+    with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
+        f.write( f'{cmd}\n' )
+    if cmd == 'stop':
+        # Mplayer needs a while to report the actual state ANS_pause=yes
+        sleep(2)
+
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_control(cmd, service):
     """ Sends a command to Mplayer trough by its input fifo
@@ -211,49 +258,23 @@ def mplayer_control(cmd, service):
         result: a result string: 'play' | 'stop' | 'pause' | ''
     """
 
-    # Sending a Mplayer command through by the corresponding fifo
-    def send_cmd(cmd):
-        print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
-        with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
-            f.write( f'{cmd}\n' )
-
-    # Aux to disconect Mplayer jack ports from preamp ports.
-    def pre_connect(mode, pname=CD_CAPTURE_PORT):
-        try:
-            jc = jack.Client('mplayer.py', no_start_server=True)
-            sources = jc.get_ports(  pname,   is_output=True )
-            sinks   = jc.get_ports( 'pre_in', is_input =True )
-            if mode == 'on':
-                for a,b in zip(sources, sinks):
-                    jc.connect(a,b)
-            else:
-                for a,b in zip(sources, sinks):
-                    jc.disconnect(a,b)
-        except:
-            pass
-        return
-
     # (i) Mplayer sends its responses to the terminal where Mplayer
     #     was launched, or to a redirected file.
     #     See available commands at http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
-    # (i) "keep_pausing get_property pause" doesn't works well with CDDA
-    # so will keep a variable to selfcontrol the CDDA playing status.
-    global playing_status
+    status = playing_status()
 
     # Early returns if no action commands
     if cmd == 'state':
-        return playing_status
+        return status
     if cmd == 'eject':
+        Popen( f'eject {CDROM_DEVICE}'.split() )
+        # Flush .cdda_info
+        with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
+            f.write( json.dumps( cdda.cdda_info_template() ) )
         # Flush Mplayer playlist
-        send_cmd('stop')
-        playing_status = 'stop'
-        if service == 'cdda':
-            # Flush .cdda_info
-            with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
-                f.write( json.dumps( cdda.cdda_info_template() ) )
-            Popen( f'eject {CDROM_DEVICE}'.split() )
-        return playing_status
+        send_cmd('stop', service)
+        return playing_status()
 
     # Action commands i.e. playback control
     if service == 'istreams':
@@ -264,7 +285,7 @@ def mplayer_control(cmd, service):
         elif cmd == 'ff':         cmd = 'seek +60  0'
         elif cmd == 'next':       cmd = 'seek +300 0'
 
-        send_cmd(cmd)
+        send_cmd(cmd, service)
 
     elif service == 'dvb':
 
@@ -274,80 +295,64 @@ def mplayer_control(cmd, service):
         elif cmd == 'ff':         cmd = 'seek_chapter +1 0'
         elif cmd == 'next':       cmd = 'tv_step_channel next'
 
-        send_cmd(cmd)
+        send_cmd(cmd, service)
 
     elif service == 'cdda':
-        # Info about CDDA playing (http://www.mplayerhq.hu/DOCS/tech/slave.txt)
-        # - There is not a 'play' command, you must 'loadlist' or 'loadfile'
-        # - 'loadlist' <playlist_file> doesn't allow smooth track changes.
-        # - playback starts when 'loadfile' is issued
-        # - 'pause' in Mplayer will pause-toggle
-        # - 'stop' empties the loaded stuff
-        # - 'seekxxxx' resumes playing
-
-        # Loading disc if necessary
-        if not cdda_is_loaded():
-            cdda_load()
 
         if   cmd == 'previous':
-            cmd = 'seek_chapter -1 0'
-            playing_status = 'play'
+            cmd = 'seek_chapter -1 0' # 0: relative seek
 
         elif cmd == 'rew':
             cmd = 'seek -30 0'
-            playing_status = 'play'
 
         elif cmd == 'ff':
             cmd = 'seek +30 0'
-            playing_status = 'play'
 
         elif cmd == 'next':
             cmd = 'seek_chapter +1 0'
-            playing_status = 'play'
 
         elif cmd == 'stop':
-            playing_status = 'stop'
+            cmd = 'stop'
 
-        elif cmd == 'pause' and playing_status == 'play':
-            cmd = 'pause'
-            playing_status = 'pause'
+        elif cmd == 'pause' and status == 'play':
+            cmd = 'pause' # Mplayer will toggle to pause
+            pre_connect('off')
 
         elif cmd == 'play':
-            if not playing_status == 'pause':
-                curr_track, throwit = cdda_get_current_track()
-                chapter = int(curr_track) -1
-                cmd = f'seek_chapter {str(chapter)} 1'
-                playing_status = 'play'
+            # Loading disc if necessary
+            if not cdda_is_loaded():
+                cdda_load()
             else:
-                cmd = ''
-                playing_status = 'play'
+                if status == 'pause':
+                    cmd = 'pause' # Mplayer will toggle to play
+                else:
+                    cmd = ''
 
         elif cmd.startswith('play_track_'):
+            # Loading disc if necessary
+            if not cdda_is_loaded():
+                cdda_load()
             if cmd[11:].isdigit():
                 curr_track = int( cmd[11:] )
                 chapter = int(curr_track) -1
-                cmd = f'seek_chapter {str(chapter)} 1'
-                playing_status = 'play'
+                cmd = f'seek_chapter {str(chapter)} 1' # 1: absolute seek
             else:
                 print( f'({ME}) BAD track {cmd[11:]}' )
-                return 'error'
+                return 'bad track number'
 
+        if cmd:
+            send_cmd(cmd, service)
 
-        # (i) Mplayer cdda pausing becomes on strange behavior,
-        #     a stutter audio frame stepping phenomena,
-        #     even if a 'pausing_keep mute 1' command was issued.
-        #     So will temporary disconnect jack ports
-        if playing_status == 'pause':
-            pre_connect('off')
-        else:
+        status = playing_status()
+
+        if status == 'play':
             pre_connect('on')
 
-        send_cmd(cmd)
 
     else:
         print( f'({ME}) unknown Mplayer service \'{service}\'' )
 
-    return playing_status
+    return status
 
 # Aux Mplayer metadata only for the CDDA service
 def cdda_meta(md):
