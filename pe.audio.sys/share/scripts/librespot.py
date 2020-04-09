@@ -74,7 +74,7 @@ if sys.argv[1:]:
     if sys.argv[1] == 'start':
         stop()
         start()
-    elif sys.arvg[1] == 'stop':
+    elif sys.argv[1] == 'stop':
         stop()
     else:
         print(__doc__)
