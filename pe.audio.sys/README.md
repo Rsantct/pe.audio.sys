@@ -235,7 +235,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
 
 All system features are configured under **`config.yml`**.
 
-We provide a **`config.yml.example`** with clarifying comments, please take a look on it because you'll find there some useful info.
+We provide a **`config.yml.sample`** with clarifying comments, please take a look on it because you'll find there some useful info.
 
 Few user scripts or shared modules can have its own `xxx.yml` file of the same base name for configuration if necessary.
 
@@ -371,7 +371,7 @@ You can easily visualize these curves by using the command line tool `peaudiosys
 
 If you want to use another sound processors, you can hold here some more files.
 
-For instance, you can use Ecasound to add a parametric EQ processor before Brutefir, for more info see the section `scripts:` under the provided `config.yml.example` file.
+For instance, you can use Ecasound to add a parametric EQ processor before Brutefir, for more info see the section `scripts:` under the provided `config.yml.sample` file.
 
 # The audio routing
 
