@@ -27,10 +27,15 @@
 
 
 """
-    options:
-        'all ':                 restart all
+    usage:  start.py <mode> [ --log ]
+
+    mode:
+        'all '              :   restart all
         'stop' or 'shutdown':   stop all
-        'core':                 restart core except Jackd
+        'core'              :   restart core except Jackd
+
+    --log   messages redirected to 'pe.audio.sys/start.log'
+
 """
 
 import os
@@ -62,14 +67,15 @@ def start_jackd():
     jack_backend_options = CONFIG["jack_backend_options"].replace(
                             '$system_card', CONFIG["system_card"] )
 
-    tmplist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
+    cmdlist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
               f'{jack_backend_options}'.split()
-    #print( ' '.join(tmplist) ) ; sys.exit() # DEBUG
+    #print( ' '.join(cmdlist) ) ; sys.exit() # DEBUG
 
-    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
-        tmplist = ['pasuspender', '--'] + tmplist
+    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
+                                                   shell=True).decode():
+        cmdlist = ['pasuspender', '--'] + cmdlist
 
-    sp.Popen( tmplist )
+    sp.Popen( cmdlist, stdout=sys.stdout, stderr=sys.stderr )
     sleep(1)
 
     # will check if JACK ports are available
@@ -89,7 +95,8 @@ def start_jackd():
 def start_brutefir():
     os.chdir( LSPK_FOLDER )
     #os.system('pwd') # debug
-    sp.Popen( 'brutefir brutefir_config'.split() )
+    sp.Popen( 'brutefir brutefir_config'.split(), stdout=sys.stdout,
+                                                  stderr=sys.stderr )
     os.chdir ( UHOME )
     print( f'({ME}) STARTING BRUTEFIR' )
     sleep(1) # wait a while for Brutefir to start ...
@@ -99,7 +106,8 @@ def restart_service( service, address='localhost', port=TCP_BASE_PORT,
     # Stop
     print( f'({ME}) stopping SERVICE: \'{service}\'' )
     sp.Popen( f'pkill -KILL -f "server.py {service}" \
-               >/dev/null 2>&1', shell=True )
+               >/dev/null 2>&1', shell=True, stdout=sys.stdout,
+                                             stderr=sys.stderr )
     if onlystop:
         return
     sleep(.25) # this is necessary because of asyncronous stopping
@@ -111,7 +119,7 @@ def restart_service( service, address='localhost', port=TCP_BASE_PORT,
         with open('/dev/null', 'w') as fnull:
             sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
     else:
-        sp.Popen( cmd, shell=True)
+        sp.Popen( cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def stop_processes(jackd=False):
@@ -156,7 +164,7 @@ def prepare_extra_cards( channels = 2 ):
 
         print( f'({ME}) loading resampled extra card: {card}' )
         #print(cmd) # DEBUG
-        sp.Popen( cmd.split() )
+        sp.Popen( cmd.split(), stdout=sys.stdout, stderr=sys.stderr )
 
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
@@ -165,7 +173,8 @@ def run_scripts(mode='start'):
         if type(script) == dict:
             script = list(script.keys())[0]
         print( f'({ME}) will {mode} the script \'{script}\' ...' )
-        sp.Popen( f'{BDIR}/share/scripts/{script} {mode}', shell=True)
+        sp.Popen( f'{BDIR}/share/scripts/{script} {mode}', shell=True,
+                                  stdout=sys.stdout, stderr=sys.stderr )
     if mode == 'stop':
         sleep(.5) # this is necessary because of asyncronous stopping
 
@@ -195,14 +204,10 @@ def kill_bill():
             rawpids.remove(rawpid)
 
     # Just display the processes to be killed, if any.
-    # Also write them to a file for debugging purposes.
-    with open(f'{BDIR}/start.py.killbill','w') as f:
-        f.write( '-'*21 + f' ({ME}) killing running before me ' + '-'*21 + '\n')
-        print( '-'*21 + f' ({ME}) killing running before me ' + '-'*21 )
-        for rawpid in rawpids:
-            print(rawpid)
-            f.write(rawpid + '\n')
-        print( '-'*80 )
+    print( '-'*21 + f' ({ME}) killing running before me ' + '-'*21 )
+    for rawpid in rawpids:
+        print(rawpid)
+    print( '-'*80 )
 
     if not rawpids:
         return
@@ -233,36 +238,52 @@ def check_state_file():
 
 if __name__ == "__main__":
 
+    run_level = ''
+    logFlag = False
+
+    # READING OPTIONS FROM COMMAND LINE
+    if sys.argv[1:]:
+        mode = sys.argv[1]
+    else:
+        print(__doc__)
+        sys.exit()
+    if sys.argv[2:] and '-l' in sys.argv[2]:
+        logFlag = True
+
+
+    if logFlag:
+        flog = open( f'{BDIR}/start.log', 'w')
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        sys.stdout = flog
+        sys.stderr = flog
+
+
     # Lets backup .state.yml to help us if it get damaged.
     check_state_file()
 
     # KILLING ANY PREVIOUS INSTANCE OF THIS
     kill_bill()
 
-    # READING OPTIONS FROM COMMAND LINE
-    run_level = ''
-    if sys.argv[1:]:
+    if mode in ['stop', 'shutdown']:
+        run_level = 'all'
+        stop_processes(jackd=True)
 
-        if sys.argv[1] in ['stop', 'shutdown']:
-            run_level = 'all'
-            stop_processes(jackd=True)
+    elif mode == 'core':
+        run_level = 'core'
+        stop_processes(jackd=False)
 
-        elif sys.argv[1] == 'core':
-            run_level = 'core'
-            stop_processes(jackd=False)
-
-        elif sys.argv[1] == 'all':
-            run_level = 'all'
-            stop_processes(jackd=True)
-            # Trying to start JACKD
-            if not start_jackd():
-                print('({ME}) Problems starting JACK ')
-
-        else:
-            print(__doc__)
-            sys.exit()
+    elif mode == 'all':
+        run_level = 'all'
+        stop_processes(jackd=True)
+        # Trying to start JACKD
+        if not start_jackd():
+            print('({ME}) Problems starting JACK ')
 
     else:
+        if logFlag:
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
         print(__doc__)
         sys.exit()
 
@@ -315,3 +336,8 @@ if __name__ == "__main__":
     # The 'peaudiosys' service always runs, so that we can do basic operation
     restart_service( 'peaudiosys', address= CONFIG['peaudiosys_address'],
                       todevnull=True )
+
+    if logFlag:
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+        print( f'start process logged at \'{BDIR}/start.log\'' )
