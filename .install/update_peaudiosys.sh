@@ -110,7 +110,7 @@ else
     cd "$HOME"/pe.audio.sys
 
     cp .state.yml.sample         .state.yml
-    cp config.yml.example        config.yml
+    cp config.yml.sample         config.yml
     cp DVB-T.yml.sample          DVB-T.yml        >/dev/null 2>&1
     cp istreams.yml.sample       istreams.yml     >/dev/null 2>&1
     echo "(i) New config.yml and .state files NEED to be adapted"
