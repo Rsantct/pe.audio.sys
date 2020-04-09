@@ -1,0 +1,6 @@
+#!/bin/bash
+
+eject /dev/sr0
+eject /dev/sr1
+
+sudo poweroff
