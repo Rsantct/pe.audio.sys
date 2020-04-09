@@ -244,7 +244,7 @@ def playing_status(service='cdda'):
 
 # Aux to send Mplayer commands through by the corresponding fifo
 def send_cmd(cmd, service):
-    print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' )
+    #print( f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)' ) # DEBUG only
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
     if cmd == 'stop':
