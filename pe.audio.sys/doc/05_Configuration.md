@@ -5,7 +5,7 @@ Before turn on your amp, here we propose some check points to help you to prepar
 
 ## [  ] The `config.yml` file
 
-Take the given `config.yml.example` as a guide for your custom config.
+Take the given `config.yml.sample` as a guide for your custom config.
 
 Main points to check for:
 
