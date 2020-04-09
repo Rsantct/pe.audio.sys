@@ -218,7 +218,7 @@ def update_lcd_state(scr='scr_1'):
             # sintax for string widgets:
             #   widget_set screen widget coordinate "text"
             cmd = f'widget_set {scr} {key} {pos} "{lbl}"'
-            #print(cmd)
+            #print(cmd) # DEBUG only
             LCD.send( cmd )
 
         # The big screen to display the level value
@@ -229,7 +229,7 @@ def update_lcd_state(scr='scr_1'):
         _state = yaml.safe_load(f)
         # avoid if reading an empty file:
         if _state and _state != _last_state:
-            print( '(lcd_service) uptating STATE' )
+            #print( '(lcd_service) uptating STATE' ) # DEBUG only
             show_state( _state )
             _last_state = _state
 
@@ -250,7 +250,7 @@ def update_lcd_loudness_monitor(scr='scr_1'):
 
     lbl += lu.rjust(3)
     cmd = f'widget_set {scr} {wdg} {pos} "{lbl}"'
-    print( f'(lcd_service) uptating {lbl}' )
+    #print( f'(lcd_service) uptating {lbl}' ) # DEBUG only
     LCD.send( cmd )
 
 def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
@@ -287,8 +287,7 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
     else:
         pass
 
-    # Info
-    print( f'(lcd_service) uptating metadata: {md}' )
+    #print( f'(lcd_service) uptating metadata: {md}' ) # DEBUG only
 
     # Updating:
     for key, value in md.items():
@@ -311,7 +310,7 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
             # sintax for scroller widgets:
             #   widget_set screen widget left top right bottom direction speed "text"
             cmd = f'widget_set {scr} {key} {left} {top} {right} {bottom} {direction} {speed} "{lbl}"'
-            #print(cmd) # DEBUG
+            #print(cmd) # DEBUG only
             LCD.send( cmd )
 
 class changed_files_handler(FileSystemEventHandler):
@@ -320,7 +319,7 @@ class changed_files_handler(FileSystemEventHandler):
     def on_modified(self, event):
 
         path = event.src_path
-        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG
+        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG only
 
         # pe.audio.sys STATE changes
         if STATE_file in path:
