@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+connect(){
+    jack_connect     system:capture_1  system:playback_1 >/dev/null 2>&1
+    jack_connect     system:capture_2  system:playback_2 >/dev/null 2>&1
+    # this is for 'mono':
+    #jack_connect     system:capture_1  system:playback_2 >/dev/null 2>&1
+    #jack_connect     system:capture_2  system:playback_1 >/dev/null 2>&1
+}
+
+disconnect(){
+    jack_disconnect  system:capture_1  system:playback_1 >/dev/null 2>&1
+    jack_disconnect  system:capture_2  system:playback_2 >/dev/null 2>&1
+    jack_disconnect  system:capture_1  system:playback_2 >/dev/null 2>&1
+    jack_disconnect  system:capture_2  system:playback_1 >/dev/null 2>&1
+}
+
+
+current=$(jack_lsp -c system:playback_1)
+
+# TOGGLE:
+if [[ "$current" == *"system:capture"* ]]; then
+    # it is connected, then will disconnect:
+    disconnect
+else
+    # it is disconected, then will connect:
+    connect
+fi
