@@ -2,7 +2,7 @@
 
 ### Python3 basic packages
 
-- Distro installation
+- Distro installation option:
 
 First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 
@@ -12,7 +12,7 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install --upgrade setuptools
 ```
 
-- PIP standard installation:
+- PIP standard installation option:
 
     ```
     python3 -m pip install pyaml
