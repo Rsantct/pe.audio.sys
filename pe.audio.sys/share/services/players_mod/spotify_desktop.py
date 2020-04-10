@@ -26,6 +26,7 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 # bitrate HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE   = '320'
 
+
 # Auxiliary to detect the Spotify Client in use: desktop or librespot
 def detect_spotify_client():
     cname = None
@@ -43,6 +44,20 @@ def detect_spotify_client():
         pass
     return cname
 
+
+# Auxiliary function to format hh:mm:ss
+def timeFmt(x):
+    """ in:     x seconds   (float)
+        out:    'hh:mm:ss'  (string)
+    """
+    # x must be float
+    h = int( x / 3600 )         # hours
+    x = int( round(x % 3600) )  # updating x to reamining seconds
+    m = int( x / 60 )           # minutes from the new x
+    s = int( round(x % 60) )    # and seconds
+    return f'{h:0>2}:{m:0>2}:{s:0>2}'
+
+
 # Spotify Desktop control
 def spotify_control(cmd):
     """ Controls the Spotify Desktop player
@@ -50,10 +65,9 @@ def spotify_control(cmd):
         output: the resulting status string
     """
     # It is assumed that you have the mpris2-dbus utility 'playerctl' installed.
-         #https://wiki.archlinux.org/index.php/spotify#MPRIS
+    #      https://wiki.archlinux.org/index.php/spotify#MPRIS
     # dbus-send command can also work
-         #http://www.skybert.net/linux/spotify-on-the-linux-command-line/
-
+    #       http://www.skybert.net/linux/spotify-on-the-linux-command-line/
 
     # playerctl - Available Commands:
     #   play                    Command the player to play
@@ -75,7 +89,8 @@ def spotify_control(cmd):
     result = ''
     if cmd == 'state':
         try:
-            result = scheck_output( f'playerctl --player=spotify status'.split() ).decode()
+            result = check_output( f'playerctl --player=spotify status'
+                                    .split() ).decode()
         except:
             pass
     # playerctl just returns 'Playing' or 'Paused'
@@ -83,6 +98,7 @@ def spotify_control(cmd):
         return 'play'
     else:
         return 'pause'
+
 
 # Spotify Desktop metadata
 def spotify_meta(md):
@@ -125,10 +141,9 @@ def spotify_meta(md):
         # track_num:
         md['track_num'] = tmp["xesam:trackNumber"]
         # and time lenght:
-        md['time_tot'] = timeFmt( tmp["mpris:length"]/1e6 )
+        md['time_tot'] = timeFmt( tmp["mpris:length"] / 1e6 )
 
     except:
         pass
 
     return md
-
