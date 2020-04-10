@@ -22,6 +22,7 @@ import mpd
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
+
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
     # x must be float
@@ -31,7 +32,8 @@ def timeFmt(x):
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
-def curr_playlist_is_cdda():
+
+def curr_playlist_is_cdda( port=6600 ):
     """ returns True if the curren playlist has only cdda tracks
     """
     # :-/ the current playlist doesn't have any kind of propiertry to
@@ -39,15 +41,14 @@ def curr_playlist_is_cdda():
 
     c = mpd.MPDClient()
     try:
-        c.connect(MPD_HOST, MPD_PORT)
-        if MPD_PASSWD:
-            c.password(MPD_PASSWD)
+        c.connect('localhost', port)
     except:
         return False
 
     return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
 
-def mpd_control(query, port=6600):
+
+def mpd_control( query, port=6600 ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
         Return:     playback state string
@@ -70,7 +71,7 @@ def mpd_control(query, port=6600):
 
     def next():
         try:
-            c.next() # avoids error if some playlist has wrong items
+            c.next()  # avoids error if some playlist has wrong items
         except:
             pass
         return c.status()['state']
@@ -82,7 +83,7 @@ def mpd_control(query, port=6600):
             pass
         return c.status()['state']
 
-    def rew(): # for REW and FF will move 30 seconds
+    def rew():  # for REW and FF will move 30 seconds
         c.seekcur('-30')
         return c.status()['state']
 
@@ -109,7 +110,8 @@ def mpd_control(query, port=6600):
     c.close()
     return result
 
-def mpd_meta(md, port=6600):
+
+def mpd_meta( md, port=6600 ):
     """ Comuticates to MPD music player daemon
         Input:      blank metadata dict
         Return:     track metadata dict
@@ -127,34 +129,51 @@ def mpd_meta(md, port=6600):
     # artist, title, album, track, etc fields may NOT be provided
     # file, time, duration, pos, id           are ALWAYS provided
 
-    try:    md['title']         = c.currentsong()['title']
-    except: md['title']         = c.currentsong()['file'] \
-                                               .split('/')[-1]
-    try:    md['artist']        = c.currentsong()['artist']
-    except: pass
+    try:
+        md['title']         = c.currentsong()['title']
+    except:
+        md['title']         = c.currentsong()['file'] \
+                                             .split('/')[-1]
+    try:
+        md['artist']        = c.currentsong()['artist']
+    except:
+        pass
 
-    try:    md['album']         = c.currentsong()['album']
-    except: pass
+    try:
+        md['album']         = c.currentsong()['album']
+    except:
+        pass
 
-    try:    md['track_num']     = c.currentsong()['track']
-    except: pass
+    try:
+        md['track_num']     = c.currentsong()['track']
+    except:
+        pass
 
-    try:    md['tracks_tot']    = c.status()['playlistlength']
-    except: pass
+    try:
+        md['tracks_tot']    = c.status()['playlistlength']
+    except:
+        pass
 
-    try:    md['bitrate']       = c.status()['bitrate'] # kbps
-    except: pass
+    try:
+        md['bitrate']       = c.status()['bitrate']  # kbps
+    except:
+        pass
 
-    try:    md['time_pos']      = timeFmt( float(
+    try:
+        md['time_pos']      = timeFmt( float(
                                            c.status()['elapsed'] ) )
-    except: pass
+    except:
+        pass
 
-    try:    md['time_tot']      = timeFmt( float(
+    try:
+        md['time_tot']      = timeFmt( float(
                                            c.currentsong()['time'] ) )
-    except: pass
+    except:
+        pass
 
-    try:    md['state']         = c.status()['state']
-    except: pass
+    try:
+        md['state']         = c.status()['state']
+    except:
+        pass
 
     return md
-
