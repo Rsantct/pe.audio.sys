@@ -21,9 +21,9 @@
     use:   loudness_monitor    start | stop
 """
 
-import sys, os
+import sys
+import os
 from subprocess import Popen
-import yaml
 from time import sleep
 
 UHOME       = os.path.expanduser("~")
@@ -32,9 +32,11 @@ CONFIGFNAME = f'{MAINFOLDER}/config.yml'
 STATEFNAME  = f'{MAINFOLDER}/.state.yml'
 CTRLFNAME   = f'{MAINFOLDER}/.loudness_control'
 
+
 def stop():
     Popen( 'pkill -f loudness_monitor_daemon.py'.split() )
     sleep(.5)
+
 
 def start():
     stop()
@@ -46,6 +48,7 @@ def start():
 
     Popen( cmd.split() )
     print(f'(loudness_monitor) spawned PortAudio ports in JACK')
+
 
 if sys.argv[1:]:
     if sys.argv[1] == 'start':
