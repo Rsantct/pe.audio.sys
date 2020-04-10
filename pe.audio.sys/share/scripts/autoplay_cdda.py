@@ -43,6 +43,7 @@ from subprocess import check_output, Popen
 #       python-dev libcdio-dev libiso9660-dev swig pkg-config
 # Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
+
 def send_cmd(cmd):
     host, port = CTL_HOST, CTL_PORT
     print( f'({ME}) sending: {cmd} to {host}:{port}')
@@ -52,8 +53,9 @@ def send_cmd(cmd):
             s.send( cmd.encode() )
             s.close()
         except:
-            print (f'({ME}) socket error on {host}:{port}')
+            print( f'({ME}) socket error on {host}:{port}' )
     return
+
 
 def check_for_CDDA(d):
 
@@ -81,9 +83,11 @@ def check_for_CDDA(d):
     except:
         print( f'({ME}) This script needs \'cdtool\' (command line cdrom tool)' )
 
+
 def stop():
     Popen( f'pkill -KILL -f autoplay_cdda'.split() )
     sleep(.5)
+
 
 def main():
     # Main observer daemon
@@ -91,8 +95,9 @@ def main():
     umonitor = pyudev.Monitor.from_netlink(context)
     umonitor.filter_by(subsystem='block', device_type='disk')
     uobserver = pyudev.MonitorObserver( umonitor, callback=check_for_CDDA )
-    uobserver.daemon = False # if set False will block the process when started.
+    uobserver.daemon = False  # set False will block the process when started.
     uobserver.start()
+
 
 if __name__ == '__main__':
 
@@ -117,4 +122,3 @@ if __name__ == '__main__':
             print(__doc__)
     else:
         print(__doc__)
-
