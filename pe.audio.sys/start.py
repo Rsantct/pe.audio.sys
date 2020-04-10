@@ -55,11 +55,11 @@ LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
 TCP_BASE_PORT   = CONFIG['peaudiosys_port']
 
 
-def is_jack_running():
+def jack_is_running():
     try:
-        sp.check_output( 'jack_lsp' )
+        sp.check_output( 'jack_lsp >/dev/null 2>&1'.split() )
         return True
-    except Exception:
+    except sp.CalledProcessError:
         return False
 
 
@@ -79,18 +79,15 @@ def start_jackd():
     sp.Popen( cmdlist, stdout=sys.stdout, stderr=sys.stderr )
     sleep(1)
 
-    # will check if JACK ports are available
-    c = 6
+    # Will check if JACK ports are available
+    c = 10
     while c:
-        print( f'({ME}) waiting for jackd ' + '.' * c )
-        try:
-            sp.check_output( 'jack_lsp >/dev/null 2>&1'.split() )
-            sleep(1)
+        if jack_is_running():
             print( f'({ME}) JACKD STARTED' )
             return True
-        except Exception:
-            c -= 1
-            sleep(.5)
+        print( f'({ME}) waiting for jackd ' + '.' * c )
+        sleep(.5)
+        c -= 1
     return False
 
 
@@ -159,7 +156,7 @@ def prepare_extra_cards( channels=2 ):
         quality   = str( params['resamplingQ'] )
         try:
             misc = params['misc_params']
-        except Exception:
+        except KeyError:
             misc = ''
 
         cmd = f'{resampler} -d{alsacard} -j{jack_name} ' + \
@@ -198,7 +195,7 @@ def kill_bill():
             f' | grep -v grep'
     try:
         rawpids = sp.check_output( cmd, shell=True ).decode().split('\n')
-    except Exception:
+    except sp.CalledProcessError:
         pass
     # Discard blanks and strip spaces:
     rawpids = [ x.strip().replace('\n', '') for x in rawpids if x ]
@@ -294,7 +291,7 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit()
 
-    if is_jack_running():
+    if jack_is_running():
 
         # (i) Importing core.py needs JACK to be running
         import share.core as core
