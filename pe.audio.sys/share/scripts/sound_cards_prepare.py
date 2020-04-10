@@ -46,9 +46,11 @@
         alsactl -f ~/pe.audio.sys/.asound.MYCARD store MYCARD
 
 """
-import os, sys
+import os
+import sys
 import subprocess as sp
 import yaml
+
 
 def get_pulse_cards():
     pa_cards = {}
@@ -68,12 +70,13 @@ def get_pulse_cards():
 
             if new_card and 'alsa.card_name' in line:
                 pa_cards[cardN]['alsa_name'] = line.split('=')[-1].strip() \
-                                                .replace('"','')
+                                                .replace('"', '')
 
     except:
         pass
 
     return pa_cards
+
 
 def get_config_yml_cards():
     cards = []
@@ -87,6 +90,7 @@ def get_config_yml_cards():
             cards.append( CONFIG["external_cards"][ecard]["alsacard"] )
 
     return cards
+
 
 def PA_release_card( pa_name ):
     """ Release the card from pulseaudio """
@@ -113,10 +117,9 @@ if __name__ == "__main__":
     if pa_cards:
         for pa_card in pa_cards:
             for config_card in config_cards:
-                if config_card.replace('hw:','').split(',')[0] in \
-                   pa_cards[pa_card]["alsa_name"]:
-                        PA_release_card( pa_cards[pa_card]["pa_name"] )
-
+                if config_card.replace('hw:', '').split(',')[0] in \
+                                        pa_cards[pa_card]["alsa_name"]:
+                    PA_release_card( pa_cards[pa_card]["pa_name"] )
 
     # Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
     for card in config_cards:
@@ -132,4 +135,3 @@ if __name__ == "__main__":
         except:
             print(  f'(sound_cards_prepare) PROBLEMS restoring alsa: '
                     f'\'{bareCardName}\'' )
-
