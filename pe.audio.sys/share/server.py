@@ -40,7 +40,7 @@
 import socket
 import sys
 import os
-import yaml
+
 
 def run_server(host, port, verbose=False):
     """ This is the server itself.
@@ -63,7 +63,7 @@ def run_server(host, port, verbose=False):
         # the tcp socket
         try:
             s.bind((host, port))
-        except:
+        except Exception:
             print( f'(server.py [{service}]) Error binding {host}:{port}' )
             s.close()
             sys.exit(-1)
@@ -94,17 +94,17 @@ def run_server(host, port, verbose=False):
                 # Reception of 1024
                 data = conn.recv(1024).decode()
                 if verbose:
-                    print  (f'(server.py [{service}]) Rx: {data.strip()}' )
-            except:
+                    print( f'(server.py [{service}]) Rx: {data.strip()}' )
+            except Exception:
                 if verbose:
-                    print (f'(server.py [{service}]) ERROR receiving from client, closing.' )
+                    print( f'(server.py [{service}]) ERROR receiving from client, closing.' )
                 conn.close()
                 break
 
             if not data:
                 # Nothing in buffer, then will close
                 if verbose:
-                    print (f'(server.py [{service}]) Rx empty, '
+                    print( f'(server.py [{service}]) Rx empty, '
                              'closing connection...' )
                 conn.close()
                 break
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # Mandatory: address and port from command line
     try:
         service, addr, port  = sys.argv[1:4]
-    except:
+    except Exception:
         print(__doc__)
         sys.exit(-1)
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     # Optional MODULE.init (autostart) function:
     try:
         MODULE.init()
-    except:
+    except Exception:
         pass
 
     # Runing the server with the MODULE.do() interface
