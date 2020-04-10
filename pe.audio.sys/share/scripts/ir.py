@@ -21,7 +21,8 @@
     Usage:  ir.py   start|stop
 
 """
-import sys, os
+import sys
+import os
 import subprocess as sp
 
 UHOME    = os.path.expanduser("~")
