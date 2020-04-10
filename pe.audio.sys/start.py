@@ -43,7 +43,6 @@ import sys
 import subprocess as sp
 from time import sleep
 import yaml
-import threading
 
 ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
@@ -55,12 +54,14 @@ LOUDSPEAKER     = CONFIG['loudspeaker']
 LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
 TCP_BASE_PORT   = CONFIG['peaudiosys_port']
 
+
 def is_jack_running():
     try:
         sp.check_output( 'jack_lsp' )
         return True
-    except:
+    except Exception:
         return False
+
 
 def start_jackd():
 
@@ -72,7 +73,7 @@ def start_jackd():
     #print( ' '.join(cmdlist) ) ; sys.exit() # DEBUG
 
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
-                                                   shell=True).decode():
+                                       shell=True).decode():
         cmdlist = ['pasuspender', '--'] + cmdlist
 
     sp.Popen( cmdlist, stdout=sys.stdout, stderr=sys.stderr )
@@ -81,25 +82,27 @@ def start_jackd():
     # will check if JACK ports are available
     c = 6
     while c:
-        print( f'({ME}) waiting for jackd ' + '.'*c )
+        print( f'({ME}) waiting for jackd ' + '.' * c )
         try:
             sp.check_output( 'jack_lsp >/dev/null 2>&1'.split() )
             sleep(1)
             print( f'({ME}) JACKD STARTED' )
             return True
-        except:
+        except Exception:
             c -= 1
             sleep(.5)
     return False
+
 
 def start_brutefir():
     os.chdir( LSPK_FOLDER )
     #os.system('pwd') # debug
     sp.Popen( 'brutefir brutefir_config'.split(), stdout=sys.stdout,
                                                   stderr=sys.stderr )
-    os.chdir ( UHOME )
+    os.chdir( UHOME )
     print( f'({ME}) STARTING BRUTEFIR' )
-    sleep(1) # wait a while for Brutefir to start ...
+    sleep(1)  # wait a while for Brutefir to start ...
+
 
 def restart_service( service, address='localhost', port=TCP_BASE_PORT,
                      onlystop=False, todevnull=False ):
@@ -110,7 +113,7 @@ def restart_service( service, address='localhost', port=TCP_BASE_PORT,
                                              stderr=sys.stderr )
     if onlystop:
         return
-    sleep(.25) # this is necessary because of asyncronous stopping
+    sleep(.25)  # this is necessary because of asyncronous stopping
 
     # Start
     print( f'({ME}) starting SERVICE: \'{service}\'' )
@@ -126,7 +129,7 @@ def stop_processes(jackd=False):
 
     # Stop scripts
     if run_level == 'all':
-        run_scripts( mode = 'stop' )
+        run_scripts( mode='stop' )
 
     # Stop services:
     for idx, svc in enumerate( ('preamp', 'players') ):
@@ -143,28 +146,31 @@ def stop_processes(jackd=False):
 
     sleep(1)
 
-def prepare_extra_cards( channels = 2 ):
+
+def prepare_extra_cards( channels=2 ):
 
     if not CONFIG['external_cards']:
         return
 
     for card, params in CONFIG['external_cards'].items():
         jack_name = card
-        alsacard =  params['alsacard']
+        alsacard  = params['alsacard']
         resampler = params['resampler']
-        quality =   str( params['resamplingQ'] )
+        quality   = str( params['resamplingQ'] )
         try:
             misc = params['misc_params']
-        except:
+        except Exception:
             misc = ''
 
-        cmd = f'{resampler} -d{alsacard} -j{jack_name} -c{channels} -q{quality} {misc}'
+        cmd = f'{resampler} -d{alsacard} -j{jack_name} ' + \
+              f'-c{channels} -q{quality} {misc}'
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
         print( f'({ME}) loading resampled extra card: {card}' )
         #print(cmd) # DEBUG
         sp.Popen( cmd.split(), stdout=sys.stdout, stderr=sys.stderr )
+
 
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
@@ -176,7 +182,8 @@ def run_scripts(mode='start'):
         sp.Popen( f'{BDIR}/share/scripts/{script} {mode}', shell=True,
                                   stdout=sys.stdout, stderr=sys.stderr )
     if mode == 'stop':
-        sleep(.5) # this is necessary because of asyncronous stopping
+        sleep(.5)  # this is necessary because of asyncronous stopping
+
 
 def kill_bill():
     """ killing any previous instance of this, becasue
@@ -186,15 +193,15 @@ def kill_bill():
     # List processes like this one
     processString = f'pe.audio.sys/start.py all'
     rawpids = []
-    cmd = ( f'ps -eo etimes,pid,cmd' +
-            f' | grep "{processString}"' +
-            f' | grep -v grep'  )
+    cmd =   f'ps -eo etimes,pid,cmd' + \
+            f' | grep "{processString}"' + \
+            f' | grep -v grep'
     try:
         rawpids = sp.check_output( cmd, shell=True ).decode().split('\n')
-    except:
+    except Exception:
         pass
     # Discard blanks and strip spaces:
-    rawpids = [ x.strip().replace('\n','')  for x in rawpids if x]
+    rawpids = [ x.strip().replace('\n', '') for x in rawpids if x ]
     # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
 
     # Removing the own pid
@@ -204,10 +211,10 @@ def kill_bill():
             rawpids.remove(rawpid)
 
     # Just display the processes to be killed, if any.
-    print( '-'*21 + f' ({ME}) killing running before me ' + '-'*21 )
+    print( '-' * 21 + f' ({ME}) killing running before me ' + '-' * 21 )
     for rawpid in rawpids:
         print(rawpid)
-    print( '-'*80 )
+    print( '-' * 80 )
 
     if not rawpids:
         return
@@ -221,6 +228,7 @@ def kill_bill():
         sp.Popen( f'kill -KILL {pid}'.split() )
         sleep(.1)
     sleep(.5)
+
 
 def check_state_file():
     state_file = f'{BDIR}/.state.yml'
@@ -236,6 +244,7 @@ def check_state_file():
                     'you can restore it from \'.state.yml.BAK\'' )
             sys.exit()
 
+
 if __name__ == "__main__":
 
     run_level = ''
@@ -250,14 +259,12 @@ if __name__ == "__main__":
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
 
-
     if logFlag:
         flog = open( f'{BDIR}/start.log', 'w')
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         sys.stdout = flog
         sys.stderr = flog
-
 
     # Lets backup .state.yml to help us if it get damaged.
     check_state_file()
@@ -294,7 +301,7 @@ if __name__ == "__main__":
 
         # JACK LOOPS
         sp.Popen( f'{BDIR}/share/jloops_daemon.py' )
-        sleep(1) # this is necessary, or checking for ports to be activated
+        sleep(1)  # this is necessary, or checking for ports to be activated
 
         # Running USER SCRIPTS
         run_scripts()
@@ -334,7 +341,7 @@ if __name__ == "__main__":
         print( f'({ME}) JACK not detected')
 
     # The 'peaudiosys' service always runs, so that we can do basic operation
-    restart_service( 'peaudiosys', address= CONFIG['peaudiosys_address'],
+    restart_service( 'peaudiosys', address=CONFIG['peaudiosys_address'],
                       todevnull=True )
 
     if logFlag:
