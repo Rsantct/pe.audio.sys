@@ -28,7 +28,7 @@
 """
     Starts and stops Mplayer for internet streams playback like
     podcasts or internet radio stations.
-    
+
     Also used to change on the fly the played stream.
 
     Internet stream presets can be configured inside:
@@ -42,7 +42,8 @@
 
 """
 
-import sys, os
+import sys
+import os
 from pathlib import Path
 from time import sleep
 import subprocess as sp
@@ -63,12 +64,13 @@ options += " -allow-dangerous-playlist-parsing"
 # will read commands from a fifo:
 input_fifo = f'{UHOME}/pe.audio.sys/.istreams_fifo'
 f = Path( input_fifo )
-if  not f.is_fifo():
-    sp.Popen ( f'mkfifo {input_fifo}'.split() )
+if not f.is_fifo():
+    sp.Popen( f'mkfifo {input_fifo}'.split() )
 del(f)
 
 # Mplayer output is redirected to a file, so it can be read what is been playing:
 redirection_path = f'{UHOME}/pe.audio.sys/.istreams_events'
+
 
 def load_url(url):
     try:
@@ -80,14 +82,16 @@ def load_url(url):
     except:
         return False
 
+
 def select_by_name(preset_name):
     """ loads a stream by its preset name """
-    for preset,dict in presets.items():
+    for preset, dict in presets.items():
         if dict['name'] == preset_name:
             load_url( dict['url'] )
             return True
     print( f'(istreams.py) preset \'{preset_name}\' not found' )
     return False
+
 
 def select_by_preset(preset_num):
     """ loads a stream by its preset number """
@@ -98,17 +102,20 @@ def select_by_preset(preset_num):
         print( f'(istreams.py) error in preset # {preset_num}' )
         return False
 
+
 def start():
     cmd = f'mplayer {options} -profile istreams \
            -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
         sp.Popen( cmd.split(), shell=False, stdout=redirfile, stderr=redirfile )
 
+
 def stop():
     # Killing our mplayer instance
     sp.Popen( ['pkill', '-KILL', '-f', 'profile istreams'] )
     sleep(.5)
-    
+
+
 if __name__ == '__main__':
 
     ### Reading the stations presets file
@@ -116,7 +123,7 @@ if __name__ == '__main__':
         with open(f'{UHOME}/pe.audio.sys/istreams.yml', 'r') as f:
             presets = yaml.safe_load(f)
     except:
-        print ( '(istreams.py) ERROR reading \'pe.audio.sys/istream.yml\'' )
+        print( '(istreams.py) ERROR reading \'pe.audio.sys/istream.yml\'' )
         sys.exit()
 
     ### Reading the command line
