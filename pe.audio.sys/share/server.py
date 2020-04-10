@@ -63,7 +63,7 @@ def run_server(host, port, verbose=False):
         # the tcp socket
         try:
             s.bind((host, port))
-        except Exception:
+        except:
             print( f'(server.py [{service}]) Error binding {host}:{port}' )
             s.close()
             sys.exit(-1)
@@ -95,7 +95,7 @@ def run_server(host, port, verbose=False):
                 data = conn.recv(1024).decode()
                 if verbose:
                     print( f'(server.py [{service}]) Rx: {data.strip()}' )
-            except Exception:
+            except:
                 if verbose:
                     print( f'(server.py [{service}]) ERROR receiving from client, closing.' )
                 conn.close()
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # Mandatory: address and port from command line
     try:
         service, addr, port  = sys.argv[1:4]
-    except Exception:
+    except:
         print(__doc__)
         sys.exit(-1)
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     # Optional MODULE.init (autostart) function:
     try:
         MODULE.init()
-    except Exception:
+    except:
         pass
 
     # Runing the server with the MODULE.do() interface
