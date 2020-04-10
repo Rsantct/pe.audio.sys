@@ -25,7 +25,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" 
+"""
     Loads the pulseaudio sink, in order to
     Pulseaudio apps to default sound through by JACK.
 
@@ -38,16 +38,20 @@ import sys
 from subprocess import Popen
 from time import sleep
 
+
 def start():
-    tmp = "pactl load-module module-jack-sink channels=2 client_name=pulse_sink connect=False"
+    tmp = "pactl load-module module-jack-sink channels=2 " + \
+          "client_name=pulse_sink connect=False"
     Popen( tmp.split() )
     sleep(.2)
     tmp = "pacmd set-default-sink jack_out"
     Popen( tmp.split() )
 
+
 def stop():
     tmp = "pactl unload-module module-jack-sink"
     Popen( tmp.split() )
+
 
 if sys.argv[1:]:
 
