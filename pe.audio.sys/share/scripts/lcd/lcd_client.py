@@ -16,14 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" 
+"""
     Communicates with an LCDd server daemon
 """
 # https://manpages.debian.org/testing/lcdproc/LCDd.8.en.html
 # http://lcdproc.sourceforge.net/docs/current-dev.html
 
 import socket
-from time import sleep
+
 
 class Client():
     """ A LCDd client
@@ -38,12 +38,12 @@ class Client():
     def connect(self):
         try:
             self.cli.connect( (self.host, self.port) )
-            self.cli.settimeout(.1) # if not timeout s.recv will hang :-/            
-            print (f'(lcd_client) Connected to the LCDd server.')
+            self.cli.settimeout(.1)  # if not timeout s.recv will hang :-/
+            print(f'(lcd_client) Connected to the LCDd server.')
             return True
-            
+
         except:
-            print (f'(lcd_client) Error connecting to the LCDd server.')
+            print(f'(lcd_client) Error connecting to the LCDd server.')
             self.cli.close()
             return False
 
@@ -66,23 +66,23 @@ class Client():
     def register( self ):
         """Try to register a client into the LCDd server"""
         ans = self.query('hello' )
-        if not "huh?" in ans:
+        if "huh?" not in ans:
             if 'success' in self.query( f'client_set name {self.cname}' ):
                 print( f'(lcd_client) LCDd client \'{self.cname}\' registered' )
             else:
                 print( f'(lcd_client) LCDd client \'{self.cname}\' ERROR registering' )
-                
 
     def get_size( self ):
         """gets the LCD size"""
-        w = 0 ; h = 0
-        ans = self.query('hello' ).split()
+        w = 0
+        h = 0
+        ans = self.query('hello').split()
         try:
-            w = int( ans[ ans.index('wid')+1 ] )
-            h = int( ans[ ans.index('hgt')+1 ] )
+            w = int( ans[ ans.index('wid') + 1 ] )
+            h = int( ans[ ans.index('hgt') + 1 ] )
         except:
             pass
-        return {'columns':w, 'rows':h}
+        return {'columns': w, 'rows': h}
 
     def delete_screen( self, sname ):
         self.query( f'screen_del {sname}' )
@@ -100,12 +100,13 @@ class Client():
             self.query( f'screen_set {sname} duration {dur}' )
         if tou != "0":
             self.query( f'screen_set {sname} timeout {tou}' )
-    
+
+
 if __name__ == "__main__":
-    
+
     # This is only for command line test purpose
     c = Client('test', host='localhost', port=13666)
     if c.connect():
         c.register()
-        print ( '(lcd_client)', c.query('hello') )
-        print ( '(lcd_client)', c.get_size() )
+        print( '(lcd_client)', c.query('hello') )
+        print( '(lcd_client)', c.get_size() )
