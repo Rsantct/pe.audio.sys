@@ -72,13 +72,14 @@ alsaplugin  = 'brutefir'
 #       to have a jack plugin that connects to brutefir
 ########################################################################
 
+
 def get_mouse_handlers():
     """ try to find your system's mouse handler
     """
 
     with open('/proc/bus/input/devices', 'r') as f:
         lines = f.read().split('\n')
-    
+
     handlers = []
     found = False
     for line in lines:
@@ -100,6 +101,7 @@ def get_mouse_handlers():
                     break
 
     return handlers
+
 
 def getMouseEvent():
     """
@@ -133,7 +135,7 @@ def getMouseEvent():
     mouse_path = f"/dev/input/{mousedevice}"
 
     fmice =     open( mouse_path, "rb" )
-    buff = fmice.read(3);
+    buff = fmice.read(3)
     m = binascii.hexlify(buff).decode()
     #print m, struct.unpack('3b', buff)  # Unpacks the bytes to integers
     if   m[:2] == "09":
@@ -143,6 +145,7 @@ def getMouseEvent():
     elif m[:2] == "0c":
         return "buttonMid"
     fmice.close()
+
 
 def check_level():
     # To avoid reading issues while state.yml is written
@@ -160,12 +163,14 @@ def check_level():
         time.sleep(.2)
     return 0.0
 
+
 def beeps():
     # The synth on Sox is too slow :-/
     #sp.Popen( 'play --null synth 1 sine 880 gain -10.0 > /dev/null 2>&1' )
     # then will use aplay
     sp.Popen( ['aplay', f'-D{alsaplugin}', beepPath],
               stdout=sp.DEVNULL, stderr=sp.DEVNULL )
+
 
 def main_loop(alertdB=alertdB, beep=beep):
 
@@ -177,19 +182,19 @@ def main_loop(alertdB=alertdB, beep=beep):
     while True:
 
         # Reading the mouse
-        ev = getMouseEvent();
+        ev = getMouseEvent()
 
-        # Dending the order to pre.di.c
-        if   ev == 'buttonLeftDown':
+        # Sending the order to pe.audio.sys
+        if ev == 'buttonLeftDown':
             # Level --
-            tmp = cmd_level.replace('XX',f'-{str(STEPdB)}')
+            tmp = cmd_level.replace('XX', f'-{str(STEPdB)}')
             sp.Popen( tmp, shell=True,
                       stdout=sp.DEVNULL, stderr=sp.DEVNULL )
             level_ups = False
 
         elif ev == 'buttonRightDown':
             # Level ++
-            tmp = cmd_level.replace('XX',f'+{str(STEPdB)}')
+            tmp = cmd_level.replace('XX', f'+{str(STEPdB)}')
             sp.Popen( tmp, shell=True,
                       stdout=sp.DEVNULL, stderr=sp.DEVNULL )
             level_ups = True
@@ -204,18 +209,20 @@ def main_loop(alertdB=alertdB, beep=beep):
             level = check_level()
             if ( level + STEPdB )  >= alertdB:
                 if not beeped and beep:
-                    print('(mouse_volume_daemon.py) BEEEEEEP, BEEEEEP') # debug
+                    print('(mouse_volume_daemon.py) BEEEEEEP, BEEEEEP')
                     beeps()
                     beeped = True
             else:
                 beeped = False
 
+
 def stop():
     # arakiri
     sp.Popen( 'pkill -KILL -f mouse_volume_daemon.py'.split() )
 
+
 if __name__ == "__main__":
-    
+
     try:
         with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
             cfg = yaml.safe_load(f)
@@ -223,14 +230,14 @@ if __name__ == "__main__":
     except:
         print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
         exit()
-    
+
     if sys.argv[1:]:
 
         try:
             option = {
-                'start' : main_loop,
-                'stop'  : stop
-                }[ sys.argv[1] ]()
+                        'start' : main_loop,
+                        'stop'  : stop
+                      }[ sys.argv[1] ]()
         except:
             print( '(init/mouse_volume_daemon) an error occoured,' )
             print( 'do you belong to /dev/input/mouseX read group?' )
