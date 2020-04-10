@@ -39,6 +39,7 @@ import threading
 
 UHOME = os.path.expanduser("~")
 
+
 def jack_loop(clientname, nports=2):
     """ Creates a jack loop with given 'clientname'
         NOTICE: this process will keep running until broken,
@@ -91,8 +92,9 @@ def jack_loop(clientname, nports=2):
             event.wait()
         except KeyboardInterrupt:
             print('\n(jack_loop) Interrupted by user')
-        except:
+        except Exception:
             print('\n(jack_loop)  Terminated')
+
 
 def main():
     """ Preparing the loops:
@@ -100,19 +102,20 @@ def main():
         - as needed from the config.yml sources.
     """
     # 1st loop to prepare: auto spawn the preamp ports
-    jloop = threading.Thread(   target = jack_loop,
-                                args=['pre_in_loop', 2]   )
+    jloop = threading.Thread( target=jack_loop,
+                              args=['pre_in_loop', 2] )
     jloop.start()
     # 2nd: the source's connection loops:
     for source in CONFIG['sources']:
         pname = CONFIG['sources'][source]['capture_port']
         if 'loop' in pname:
-            jloop = threading.Thread( target = jack_loop, args=(pname,) )
+            jloop = threading.Thread( target=jack_loop, args=(pname,) )
             jloop.start()
 
+
 if __name__ == '__main__':
-    
+
     with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
         CONFIG = yaml.safe_load(f)
-        
+
     main()
