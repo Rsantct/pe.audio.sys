@@ -34,7 +34,8 @@
                       name    <channel_name>
 """
 
-import sys,os
+import sys
+import os
 from pathlib import Path
 from time import sleep
 import subprocess as sp
@@ -52,11 +53,12 @@ options = '-quiet -nolirc -slave -idle'
 # will read commands from a fifo:
 input_fifo = f'{UHOME}/pe.audio.sys/.dvb_fifo'
 f = Path( input_fifo )
-if  not f.is_fifo():
-    sp.Popen ( f'mkfifo {input_fifo}'.split() )
+if not f.is_fifo():
+    sp.Popen( f'mkfifo {input_fifo}'.split() )
 del(f)
 
-# Mplayer output is redirected to a file, so it can be read what it is been playing:
+# Mplayer output is redirected to a file,
+# so it can be read what it is been playing:
 redirection_path = f'{UHOME}/pe.audio.sys/.dvb_events'
 
 
@@ -72,7 +74,8 @@ def select_by_name(channel_name):
 
     try:
         print( f'(init/DVB) trying to load \'{channel_name}\'' )
-        # The whole address after 'loadfile' needs to be SINGLE quoted to load properly:
+        # The whole address after 'loadfile' needs to be
+        # SINGLE quoted to load properly:
         command = ('loadfile \'dvb://' + channel_name + '\'\n' )
         f = open( input_fifo, 'w')
         f.write(command)
@@ -81,6 +84,7 @@ def select_by_name(channel_name):
     except:
         print( f'(init/DVB) failed to load \'{channel_name}\'' )
         return False
+
 
 def select_by_preset(preset_num):
     """ loads a stream by its preset number """
@@ -92,15 +96,19 @@ def select_by_preset(preset_num):
         print( f'(init/DVB) error in preset # {preset_num}' )
         return False
 
+
 def start():
     cmd = f'mplayer {options} -profile dvb -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
-        sp.Popen( cmd.split(), shell=False, stdout=redirfile, stderr=redirfile )
+        sp.Popen( cmd.split(), shell=False, stdout=redirfile,
+                                            stderr=redirfile )
+
 
 def stop():
     # Killing our mplayer instance
     sp.Popen( ['pkill', '-KILL', '-f', 'profile dvb'] )
     sleep(.5)
+
 
 if __name__ == '__main__':
 
@@ -109,9 +117,9 @@ if __name__ == '__main__':
         with open(f'{UHOME}/pe.audio.sys/DVB-T.yml', 'r') as f:
             DVB_config = yaml.safe_load(f)
     except:
-        print ( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
+        print( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
         sys.exit()
-    
+
     ### Reading the command line
     if sys.argv[1:]:
 
