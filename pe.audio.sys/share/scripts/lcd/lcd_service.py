@@ -24,7 +24,6 @@
 import lcd_client
 #import lcdbig # NOT USED, displays the level value in full size
 import os
-from time import sleep
 import yaml
 import json
 import threading
@@ -51,8 +50,9 @@ try:
     with open( f'{UHOME}/pe.audio.sys/share/scripts/lcd/lcd.yml', 'r' ) as f:
         LCD_CONFIG = yaml.safe_load( f.read() )
 except:
-    print ( '(lcd_service) YAML error reading lcd.yml' )
+    print( '(lcd_service) YAML error reading lcd.yml' )
     exit()
+
 
 def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
     """An additional screen to display temporary information"""
@@ -68,8 +68,9 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
 
     # Will try to define the screen, if already exist will receive 'huh?'
     ans = LCD.query('screen_add scr_info')
-    if not 'huh?' in ans:
-        LCD.send(f'screen_set scr_info -cursor no -priority foreground -timeout {str(timeout)}' )
+    if 'huh?' not in ans:
+        LCD.send(f'screen_set scr_info -cursor no -priority foreground '
+                  '-timeout {str(timeout)}')
         LCD.send('widget_add scr_info info_tit title')
         LCD.send('widget_add scr_info info_txt2 string')
         LCD.send('widget_add scr_info info_txt3 string')
@@ -81,10 +82,12 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
     # Display the temporary message
     line = 2
     for data in split_by_n(message, 20):
-        LCD.send('widget_set scr_info info_txt' + str(line) + ' 1 ' + str(line) + ' "' + data + '"')
+        LCD.send('widget_set scr_info info_txt' + str(line) + ' 1 ' + \
+                  str(line) + ' "' + data + '"')
         line += 1
         if line > 4:
             break
+
 
 def define_widgets():
 
@@ -102,39 +105,40 @@ def define_widgets():
 
     # If position is set to '0 0' the widget will not be displayed
 
-    global widgets_state # defined text type when prepare_main_screen
+    global widgets_state  # defined text type when prepare_main_screen
     widgets_state = {
-                'input'             : { 'pos':'1  3',    'val':''         },
-                'level'             : { 'pos':'1  1',    'val':'v:'       },
-                'headroom'          : { 'pos':'0  0',    'val':'hrm:'     },
-                'balance'           : { 'pos':'10 1',    'val':'bl:'      },
+                'input'             : { 'pos':'1  3',    'val':''       },
+                'level'             : { 'pos':'1  1',    'val':'v:'     },
+                'headroom'          : { 'pos':'0  0',    'val':'hrm:'   },
+                'balance'           : { 'pos':'10 1',    'val':'bl:'    },
                 # the former 'mono' key is now 'midside'
-                'midside'           : { 'pos':'17 1',    'val':''         },
-                'solo'              : { 'pos':'0  0',    'val':''         },
-                'muted'             : { 'pos':'1  1',    'val':'MUTED    '},
-                'bass'              : { 'pos':'1  2',    'val':'b:'       },
-                'treble'            : { 'pos':'6  2',    'val':'t:'       },
-                'loudness_ref'      : { 'pos':'12 2',    'val':'LUref:'    },
-                'xo_set'            : { 'pos':'0  0',    'val':'xo:'      },
-                'drc_set'           : { 'pos':'0  0',    'val':'drc:'     },
-                'peq_set'           : { 'pos':'0  0',    'val':'peq:'     },
-                'syseq'             : { 'pos':'0  0',    'val':''         },
-                'polarity'          : { 'pos':'0  0',    'val':'pol'      },
-                'target'            : { 'pos':'0  0',    'val':'pol'      }
+                'midside'           : { 'pos':'17 1',    'val':''       },
+                'solo'              : { 'pos':'0  0',    'val':''       },
+                'muted'             : { 'pos':'1  1',    'val':'MUTED'  },
+                'bass'              : { 'pos':'1  2',    'val':'b:'     },
+                'treble'            : { 'pos':'6  2',    'val':'t:'     },
+                'loudness_ref'      : { 'pos':'12 2',    'val':'LUref:' },
+                'xo_set'            : { 'pos':'0  0',    'val':'xo:'    },
+                'drc_set'           : { 'pos':'0  0',    'val':'drc:'   },
+                'peq_set'           : { 'pos':'0  0',    'val':'peq:'   },
+                'syseq'             : { 'pos':'0  0',    'val':''       },
+                'polarity'          : { 'pos':'0  0',    'val':'pol'    },
+                'target'            : { 'pos':'0  0',    'val':'pol'    }
                 }
 
-    global widgets_aux # info outside pe.audio.sys state
+    global widgets_aux   # info outside pe.audio.sys state
     widgets_aux = {
                 'loudness_monitor'  : { 'pos':'12 3',    'val':'LUmon:'   }
                 }
 
-    global widgets_meta # defined scroller type when prepare_main_screen
+    global widgets_meta  # defined scroller type when prepare_main_screen
     widgets_meta = {
                 'artist'            : { 'pos':'0  0',    'val':'' },
                 'album'             : { 'pos':'0  0',    'val':'' },
                 'title'             : { 'pos':'0  0',    'val':'' },
                 'bottom_marquee'    : { 'pos':'1  4',    'val':'' },
                 }
+
 
 def prepare_main_screen():
     """ Defines info main screen 'src_1' and his set of widgets """
@@ -159,6 +163,7 @@ def prepare_main_screen():
         cmd = f'widget_add scr_1 { wName } scroller'
         LCD.send( cmd )
 
+
 def update_lcd_state(scr='scr_1'):
     """ Reads system .state.yml then updates the LCD """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
@@ -175,8 +180,8 @@ def update_lcd_state(scr='scr_1'):
             if not (key in widgets_state.keys()):
                 continue
 
-            pos = widgets_state[key]['pos'] # pos ~> position
-            lbl = widgets_state[key]['val'] # lbl ~> label
+            pos = widgets_state[key]['pos']  # pos ~> position
+            lbl = widgets_state[key]['val']  # lbl ~> label
 
             # When booleans (loudness_track, muted)
             # will leave the defalul widget value or will supress it
@@ -191,13 +196,13 @@ def update_lcd_state(scr='scr_1'):
             #               or void if no loudness_track
             elif key == 'loudness_ref':
                 if data['loudness_track']:
-                    lbl += str( int(round(value,0)) ).rjust(3)
+                    lbl += str( int(round(value, 0)) ).rjust(3)
                 else:
                     lbl = 'LOUDc off'
 
             # Special case: tone will be rounded to integer
             elif key == 'bass' or key == 'treble':
-                lbl += str( int(round(value,0)) ).rjust(2)
+                lbl += str( int(round(value, 0)) ).rjust(2)
 
             # Special case: midside (formerly 'mono')
             elif key == 'midside':
@@ -213,7 +218,6 @@ def update_lcd_state(scr='scr_1'):
             # Any else key:
             else:
                 lbl += str(value)
-
 
             # sintax for string widgets:
             #   widget_set screen widget coordinate "text"
@@ -233,6 +237,7 @@ def update_lcd_state(scr='scr_1'):
             show_state( _state )
             _last_state = _state
 
+
 def update_lcd_loudness_monitor(scr='scr_1'):
     """ Reads the monitored value from the file .loudness_monitor
         then updates the LCD display.
@@ -244,7 +249,7 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     try:
         with open(LOUDNESSMON_file, 'r') as f:
             lu = f.read().strip()
-            lu = str ( int ( round( float(lu), 0) ) )
+            lu = str( int( round( float(lu), 0) ) )
     except:
         lu = '0'
 
@@ -252,6 +257,7 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     cmd = f'widget_set {scr} {wdg} {pos} "{lbl}"'
     #print( f'(lcd_service) uptating {lbl}' ) # DEBUG only
     LCD.send( cmd )
+
 
 def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
     """ Reads the metadata dict then updates the LCD display """
@@ -261,8 +267,8 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
         # Will compose a unique value by joining artist+album+title
         # into a new filed 'bottom_marquee' previously prepared as a screen
         # widget, so it can be directly mapped to be displayed.
-        mdNew = { 'bottom_marquee':''}
-        for k,v in md.items():
+        mdNew = { 'bottom_marquee': ''}
+        for k, v in md.items():
             if k in ('artist', 'album', 'title') and v != '-':
                 mdNew['bottom_marquee'] += k[:2] + ':' + \
                                            str(v).replace('"', '\\"') + ' '
@@ -301,20 +307,23 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
             left, top   = pos.split()
             right       = 20
             bottom      = top
-            direction   = 'm' # (h)orizontal (v)ertical or (m)arquee
+            direction   = 'm'     # (h)orizontal (v)ertical or (m)arquee
             speed       = str( LCD_CONFIG['scroller_speed'] )
             # adding a space for marquee mode
             if direction == 'm':
                 lbl += ' '
 
             # sintax for scroller widgets:
-            #   widget_set screen widget left top right bottom direction speed "text"
-            cmd = f'widget_set {scr} {key} {left} {top} {right} {bottom} {direction} {speed} "{lbl}"'
+            # widget_set scr widget left top right bottom direction speed "text"
+            cmd = f'widget_set {scr} {key} {left} {top} {right} ' \
+                  f'{bottom} {direction} {speed} "{lbl}"'
             #print(cmd) # DEBUG only
             LCD.send( cmd )
 
+
 class changed_files_handler(FileSystemEventHandler):
-    """ This is a handler that will do something when some file has changed """
+    """ This is a handler that will do something when some file has changed
+    """
 
     def on_modified(self, event):
 
@@ -331,6 +340,7 @@ class changed_files_handler(FileSystemEventHandler):
         if path in (LOUDNESSMON_file):
             update_lcd_loudness_monitor()
 
+
 if __name__ == "__main__":
 
     # Registers a client under the LCDd server
@@ -340,7 +350,7 @@ if __name__ == "__main__":
         print( f'(lcd_service) hello: { LCD.query("hello") }' )
     else:
         print( f'(lcd_service) Error registering pe.audio.sys on LCDd' )
-        sys.exit()
+        exit()
 
     # Prepare the main screen
     prepare_main_screen()
@@ -362,5 +372,5 @@ if __name__ == "__main__":
                       path=WATCHED_DIR,
                       recursive=False)
     observer.start()
-    obsloop = threading.Thread( target = observer.join() )
+    obsloop = threading.Thread( target=observer.join() )
     obsloop.start()
