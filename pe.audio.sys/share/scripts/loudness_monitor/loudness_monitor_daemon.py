@@ -24,7 +24,8 @@
 
     You can reset the current (I) by writing 'reset' into --control-file
 """
-import os, sys
+import sys
+import os
 from time import sleep
 import argparse
 import numpy as np
@@ -47,12 +48,14 @@ METADATAPATH    = f'{MAINFOLDER}/.player_metadata'
 sys.path.append( f'{UHOME}/audiotools' )
 import pydsd
 
+
 def int_or_str(text):
     """Helper function for argument parsing."""
     try:
         return int(text)
     except ValueError:
         return text
+
 
 def parse_cmdline():
 
@@ -68,13 +71,16 @@ def parse_cmdline():
     parser.add_argument('-od', '--output_device', type=int_or_str,
             help='output device (numeric ID or substring, see -l)')
 
-    parser.add_argument('-of', '--output_file', type=str, default='.loudness_events',
+    parser.add_argument('-of', '--output_file', type=str,
+            default='.loudness_events',
             help='output file')
 
-    parser.add_argument('-cf', '--control_fifo', type=str, default='.loudness_control',
+    parser.add_argument('-cf', '--control_fifo', type=str,
+            default='.loudness_control',
             help='control file')
 
-    parser.add_argument('-p', '--print', action="store_true", default=False,
+    parser.add_argument('-p', '--print', action="store_true",
+            default=False,
             help='console print out measured loudness')
 
     args = parser.parse_args()
@@ -85,15 +91,18 @@ def parse_cmdline():
 
     return args
 
+
 def callback(indata, frames, time, status):
     """ The handler for input stream audio chunks """
     if status:
         print( f'----- {status} -----' )
     qIn.put( indata )
 
+
 def amplify( x, gain_dB ):
-    gain = 10**(gain_dB/20)
+    gain = 10 ** (gain_dB / 20)
     return x * gain
+
 
 def get_coeffs(fs, f0, Q, ftype, dBgain=0.0):
     """ this calculates coeffs and initial conditions
@@ -103,14 +112,16 @@ def get_coeffs(fs, f0, Q, ftype, dBgain=0.0):
     zi   = signal.lfilter_zi(b, a)
     return b, a, zi
 
+
 def lfilter( x, coeffs):
     # x is a stereo audio block: x[:,0] -> ch0, x[:,1] -> ch1
     # coeffs includes 'b', 'a' and initial condition 'zi' for lfilter
     b, a, zi = coeffs
     y = np.copy( x )
-    y[:,0], _ = signal.lfilter( b, a, x[:,0], zi=zi*x[:,0][0] )
-    y[:,1], _ = signal.lfilter( b, a, x[:,1], zi=zi*x[:,1][0] )
+    y[:, 0], _ = signal.lfilter( b, a, x[:,0], zi = zi * x[:, 0][0] )
+    y[:, 1], _ = signal.lfilter( b, a, x[:,1], zi = zi * x[:, 1][0] )
     return y
+
 
 def control_fifo_prepare(fname):
     try:
@@ -120,6 +131,7 @@ def control_fifo_prepare(fname):
     except:
         print(f'(loudness_monitor.py) ERROR preparing fifo {fname}')
         raise
+
 
 def control_fifo_read_loop(fname):
     global reset
@@ -133,6 +145,7 @@ def control_fifo_read_loop(fname):
                 # Will flag reset=True
                 if f_data == 'reset':
                     reset = True
+
 
 # Handler class to do actions when a file change occurs
 class My_files_event_handler(FileSystemEventHandler):
@@ -154,7 +167,7 @@ class My_files_event_handler(FileSystemEventHandler):
                 if last_input != preamp_state['input']:
                     last_input = preamp_state['input']
                     reset = True
-                    sleep(.25) # anti bouncing
+                    sleep(.25)      # anti bouncing
 
         # If metadata info has changed
         if METADATAPATH in path and md_key:
@@ -165,7 +178,7 @@ class My_files_event_handler(FileSystemEventHandler):
                 if last_md != md[md_key]:
                     last_md = md[md_key]
                     reset = True
-                    sleep(.25) # anti bouncing
+                    sleep(.25)      # anti bouncing
 
 
 if __name__ == '__main__':
@@ -183,7 +196,7 @@ if __name__ == '__main__':
     try:
         with open(f'{MAINFOLDER}/config.yml', 'r') as f:
             md_key = yaml.safe_load(f)['LU_reset_md_field']
-            if not md_key: # None --> ''
+            if not md_key:  # None --> ''
                 md_key = ''
     except:
         # Defaults to album if not configured
@@ -200,7 +213,8 @@ if __name__ == '__main__':
 
     # Threading to control this script (currently only the 'reset' flag)
     control_fifo_prepare(args.control_fifo)
-    control = threading.Thread( target=control_fifo_read_loop, args=(args.control_fifo,) )
+    control = threading.Thread( target=control_fifo_read_loop,
+                                args=(args.control_fifo,) )
     control.start()
 
     # Starts an Observer watchdog for file changes
@@ -212,7 +226,7 @@ if __name__ == '__main__':
     observer = Observer()
     observer.schedule( event_handler=My_files_event_handler(),
                        path=MAINFOLDER, recursive=False )
-    obsthread = threading.Thread( target = observer.start() )
+    obsthread = threading.Thread( target=observer.start() )
     obsthread.start()
 
     # Internal FIFO queue
@@ -228,7 +242,7 @@ if __name__ == '__main__':
     hshelf_coeffs = get_coeffs(fs, 1000, .707, 'highshelf', 4.0 )
 
     # Initialize 400ms stereo block window
-    w400 = np.zeros( (4*BS, 2) , dtype='float32')
+    w400 = np.zeros( (4 * BS, 2) , dtype='float32')
 
     # Intialize (I)ntegrated Loudness and gates to -23.0 dBFS => 0 LU
     M = -23.0
@@ -243,7 +257,7 @@ if __name__ == '__main__':
     ##################################################################
     print('(loudness_monitor) Start monitoring')
     with sd.InputStream( device=args.input_device,
-                          callback=callback,
+                          callback   = callback,
                           blocksize  = BS,
                           samplerate = fs,
                           channels   = 2,
@@ -259,16 +273,16 @@ if __name__ == '__main__':
             f100 = lfilter( f100, hshelf_coeffs )   # 1000Hz High Shelf +4dB
 
             # Sliding the 400ms (w)indow
-            w400[ : BS*3 ] = w400[ BS : ]
-            w400[ BS*3 : ] = f100
+            w400[ : BS * 3 ] = w400[ BS : ]
+            w400[ BS * 3 : ] = f100
 
             # Mean square calculation for 400ms audio blocks
             msqL = np.sum( np.square( w400[:,0] ) ) / (fs * 0.4)
             msqR = np.sum( np.square( w400[:,1] ) ) / (fs * 0.4)
 
             # Stereo (M)omentary Loudness
-            if msqL or msqR: # avoid log10(0)
-                M = -0.691 + 10 * np.log10 (msqL + msqR)
+            if msqL or msqR:    # avoid log10(0)
+                M = -0.691 + 10 * np.log10(msqL + msqR)
 
             # Dual gatting to compute (I)ntegrated Loudness.
             if M > -70.0:
@@ -296,7 +310,8 @@ if __name__ == '__main__':
             # Reseting the (I) measurement. <reset> is a global that can
             # be modified on the fly.
             if reset:
-                print('(loudness_monitor) restarting (I)ntegrated Loudness measurement')
+                print('(loudness_monitor) restarting (I)ntegrated ' +
+                      'Loudness measurement')
                 # RESET the accumulated
                 I = Iprev = -23.0
                 G1mean = -23.0
@@ -310,5 +325,5 @@ if __name__ == '__main__':
 
             # Optionally prints to console
             if args.print:
-                print( f'LUFS: {round(M,1):6.1f}(M) {round(I,1):6.1f}(I)       ' +
-                        f'LU: {round(M_LU,1):6.1f}(M) {round(I_LU,1):6.1f}(I)   ')
+                print( f'LUFS: {round(M, 1):6.1f}(M) {round(I, 1):6.1f}(I)       ' +
+                       f'LU: {round(M_LU, 1):6.1f}(M) {round(I_LU, 1):6.1f}(I)   ')
