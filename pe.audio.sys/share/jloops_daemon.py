@@ -92,7 +92,7 @@ def jack_loop(clientname, nports=2):
             event.wait()
         except KeyboardInterrupt:
             print('\n(jack_loop) Interrupted by user')
-        except Exception:
+        except:
             print('\n(jack_loop)  Terminated')
 
 
