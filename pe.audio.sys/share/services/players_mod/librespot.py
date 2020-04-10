@@ -17,9 +17,11 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import subprocess as sp
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+
 
 def librespot_control(throwit):
     """ fake control, always will return 'play'
@@ -27,6 +29,7 @@ def librespot_control(throwit):
         output: the resulting status
     """
     return 'play'
+
 
 # librespot (Spotify Connect client) metatata
 def librespot_meta(md):
@@ -65,7 +68,7 @@ def librespot_meta(md):
         for line in lines[::-1]:
             if line.strip()[-6:] == "loaded":
                 # raspotify flawors of librespot
-                if not 'player] <' in line:
+                if 'player] <' not in line:
                     md['title'] = line.split('player: Track "')[-1] \
                                       .split('" loaded')[0]
                     break
@@ -78,4 +81,3 @@ def librespot_meta(md):
         pass
 
     return md
-
