@@ -25,14 +25,13 @@
 """
 
 import os
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-
 import sys
-import time
 import subprocess as sp
 from pathlib import Path
 import yaml
+
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## --- Mplayer options ---
 # -quiet: see channels change
@@ -43,8 +42,8 @@ options = '-quiet -nolirc -slave -idle'
 #  will read commands from a fifo:
 input_fifo = f'{MAINFOLDER}/.cdda_fifo'
 f = Path( input_fifo )
-if  not f.is_fifo():
-    sp.Popen ( f'mkfifo {input_fifo}'.split() )
+if not f.is_fifo():
+    sp.Popen( f'mkfifo {input_fifo}'.split() )
 del(f)
 
 ## Mplayer output is redirected to a file,
@@ -60,8 +59,10 @@ except:
     CDROM_DEVICE = '/dev/cdrom'
     print(f'(CDDA.py) Using default \'{CDROM_DEVICE}\'')
 
+
 def eject():
     sp.Popen( f'eject {CDROM_DEVICE}'.split() )
+
 
 def start():
     cmd = f'mplayer {options} -profile cdda -cdrom-device {CDROM_DEVICE}' \
@@ -70,8 +71,10 @@ def start():
         sp.Popen( cmd.split(), shell=False,
                   stdout=redirfile, stderr=redirfile )
 
+
 def stop():
     sp.Popen( ['pkill', '-KILL', '-f', 'profile cdda'] )
+
 
 if __name__ == '__main__':
 
