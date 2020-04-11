@@ -149,9 +149,7 @@ You may want to prepare some script to restart the whole `pe.audio.sys`, if so p
 
     export JACK_NO_AUDIO_RESERVATION=1
 
-    python3 /home/YourUser/pe.audio.sys/start.py all  \
-    1>/home/YourUser/pe.audio.sys/start.py.log \
-    2>&1 &
+    ~/pe.audio.sys/start.py all
 
 
 
