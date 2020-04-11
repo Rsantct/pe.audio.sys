@@ -75,8 +75,8 @@ try:
 except:
     CFG = { 'STEPdB':        3.0,
             'alertdB':      -6.0,
-            # For beep sound you need to configure your .asondrc
-            # to have a jack plugin that connects to brutefir
+            # (i) Beta: for beep sound you need to configure your
+            # .asondrc to have a jack plugin that connects to brutefir
             'beep':         False,
             'alsaplugin':   'brutefir' }
 
@@ -189,8 +189,7 @@ def check_level():
 
 
 def beeps():
-
-    # (i) PENDING to pythonise this stuff ;-)
+    # (i) It is PENDING to pythonise this stuff ;-)
 
     # The synth on Sox is too slow :-/
     #sp.Popen( 'play --null synth 1 sine 880 gain -10.0 > /dev/null 2>&1' )
