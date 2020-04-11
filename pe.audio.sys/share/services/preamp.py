@@ -25,6 +25,10 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" Controls the preamp (inputs, level, tones and convolver)
+    This module is loaded by 'server.py'
+"""
+
 import json
 from core import Preamp, Convolver, save_yaml, STATE_PATH
 from os.path import expanduser
