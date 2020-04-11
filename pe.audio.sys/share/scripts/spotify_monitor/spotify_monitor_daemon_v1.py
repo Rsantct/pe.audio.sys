@@ -53,47 +53,46 @@
 import gi
 gi.require_version('Playerctl', '1.0')
 from gi.repository import Playerctl, GLib
-
-import sys, os
-import time
-import subprocess as sp
+import sys
+import os
 import json
 
 UHOME = os.path.expanduser("~")
-####  events dumping file for pre.di.c's players.py reading ####
+
+##  events dumping file for pre.di.c's players.py reading from
 events_file = f'{UHOME}/pe.audio.sys/.spotify_events'
-################################################################
+
 
 def on_metadata(player, metadata):
-    """ Handler functions when Spotify announces metadata. 
+    """ Handler functions when Spotify announces metadata.
         Dumps a json file containing spotify metadata extracted from gi.GLib
     """
     #print("on_metadata handler triggered")
 
     # metadata example:
     # {
-    # 'mpris:trackid': <'spotify:track:0AvA3sGmYZRtlj1gV4RS9c'>, 
-    # 'mpris:length': <uint64 305000000>, 
-    # 'mpris:artUrl': <'https://open.spotify.com/image/48a93e16069610d640b7731cd677daa295ce74a0'>, 
-    # 'xesam:album': <'Part: Cello Concerto / Perpetuum Mobile / Symphonies No. 1, No. 2 and No. 3'>, 
-    # 'xesam:albumArtist': <['Arvo Pärt']>, 
-    # 'xesam:artist': <['Arvo Pärt']>, 
-    # 'xesam:autoRating': <0.040000000000000001>, 
-    # 'xesam:discNumber': <1>, 
-    # 'xesam:title': <'Pro et contra: I. Maestoso'>, 
-    # 'xesam:trackNumber': <1>, 
+    # 'mpris:trackid': <'spotify:track:0AvA3sGmYZRtlj1gV4RS9c'>,
+    # 'mpris:length': <uint64 305000000>,
+    # 'mpris:artUrl': <'https://open.spotify.com/image/48a93e16069610d640b7731cd677daa295ce74a0'>,
+    # 'xesam:album': <'Part: Cello Concerto / Perpetuum Mobile / Symphonies No. 1, No. 2 and No. 3'>,
+    # 'xesam:albumArtist': <['Arvo Pärt']>,
+    # 'xesam:artist': <['Arvo Pärt']>,
+    # 'xesam:autoRating': <0.040000000000000001>,
+    # 'xesam:discNumber': <1>,
+    # 'xesam:title': <'Pro et contra: I. Maestoso'>,
+    # 'xesam:trackNumber': <1>,
     # 'xesam:url': <'https://open.spotify.com/track/0AvA3sGmYZRtlj1gV4RS9c'>
     # }
-    
+
     # As per 'metadata' type is <class 'gi.overrides.GLib.Variant'>,
     # lets make a standard dictionary for json compatibility:
     d = {}
     for k in metadata.keys():
         d[k] = metadata[k]
 
-    f = open( events_file, 'w' )
-    f.write( json.dumps( d ) )
-    f.close()
+    with open( events_file, 'w' ) as f:
+        f.write( json.dumps( d ) )
+
 
 def on_play(player):
     """ Handler function triggered when starting playing
@@ -101,11 +100,13 @@ def on_play(player):
     #print("on_play handler triggered")
     pass
 
+
 def on_pause(player):
     """ Handler function triggered when pausing playing
     """
     #print("on_pause handler triggered")
     pass
+
 
 def main_loop():
 
@@ -124,6 +125,7 @@ def main_loop():
     # Main loop waits for GLib events:
     loop = GLib.MainLoop()
     loop.run()
+
 
 if __name__ == "__main__":
 
