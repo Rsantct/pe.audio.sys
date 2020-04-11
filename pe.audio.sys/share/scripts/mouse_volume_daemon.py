@@ -84,14 +84,14 @@ alsaplugin  = 'brutefir'
 
 def send_cmd(cmd, port=CONTROL_PORT):
     host = 'localhost'
-    #print( f'(mouse_volume) sending: {cmd} to {host}:{port}')  # DEBUG
+    #print( f'(mouse_volume_daemon) sending: {cmd} to {host}:{port}')  # DEBUG
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
         except:
-            print( f'(mouse_volume) socket error on {host}:{port}' )
+            print( f'(mouse_volume_daemon) socket error on {host}:{port}' )
     return
 
 
@@ -228,7 +228,7 @@ def main_loop(alertdB=alertdB, beep=beep):
             level = check_level()
             if ( level + STEPdB )  >= alertdB:
                 if not beeped and beep:
-                    print('(mouse_volume_daemon.py) BEEEEEEP, BEEEEEP')
+                    print('(mouse_volume_daemon) BEEEEEEP, BEEEEEP')
                     beeps()
                     beeped = True
             else:
