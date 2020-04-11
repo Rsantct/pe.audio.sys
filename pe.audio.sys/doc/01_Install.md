@@ -1,5 +1,3 @@
-(Download and install scripts comes from AudioHumLab/FIRtro and has been adapted to pe.audio.sys)
-
 ## Required
 
 You need **Python>=3.6** and all python stuff as indicated in **[README.md](https://github.com/Rsantct/pe.audio.sys/blob/master/pre.di.c/README.md)**. Relogin when done.
