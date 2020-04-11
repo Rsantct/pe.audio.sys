@@ -172,7 +172,7 @@ scripts:
     
     ## Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
     ## This option needs the share/eq/xxxxx.ecs file to be indicated.
-    #- ecasound_peq.py: dj_estant.ecs
+    #- ecasound_peq.py: sub-pi.ecs
 
     ## Releases cards from Pulseaudio and restore alsa mixer settings:
     - sound_cards_prepare.py
