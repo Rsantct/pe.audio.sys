@@ -195,7 +195,7 @@ def beeps():
     #sp.Popen( 'play --null synth 1 sine 880 gain -10.0 > /dev/null 2>&1' )
 
     # then will use aplay
-    beepPath    = f'{THISDIR}/mouse_volume_3beeps.wav'
+    beepPath    = f'{THISDIR}/mouse_volume_daemon/3beeps.wav'
     sp.Popen( ['aplay', f'-D{CFG["alsaplugin"]}', beepPath],
               stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 
