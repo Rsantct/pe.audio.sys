@@ -39,7 +39,6 @@ def stop():
 
 
 def start():
-    stop()
     cmd = f'{MAINFOLDER}/share/scripts/loudness_monitor/' \
             'loudness_monitor_daemon.py' \
            f' --input_device pre_in_loop' \
