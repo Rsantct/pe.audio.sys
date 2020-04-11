@@ -114,7 +114,7 @@ def define_widgets():
                 # the former 'mono' key is now 'midside'
                 'midside'           : { 'pos':'17 1',    'val':''         },
                 'solo'              : { 'pos':'0  0',    'val':''         },
-                'muted'             : { 'pos':'1  1',    'val':'MUTED'    },
+                'muted'             : { 'pos':'1  1',    'val':'(MUTED) ' },
                 'bass'              : { 'pos':'1  2',    'val':'b:'       },
                 'treble'            : { 'pos':'6  2',    'val':'t:'       },
                 'loudness_ref'      : { 'pos':'12 2',    'val':'LUref:'   },
