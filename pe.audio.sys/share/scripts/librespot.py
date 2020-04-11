@@ -78,8 +78,7 @@ def stop():
 
 if sys.argv[1:]:
     if sys.argv[1] == 'start':
-        stop()
-        start()
+        stop()        start()
     elif sys.argv[1] == 'stop':
         stop()
     else:
