@@ -1,4 +1,4 @@
-(obsolete info)
+## ---------------- THIS IS OBSOLETE --------------------
 
 # Python 3 on Raspberry Pi Raspbian
 
