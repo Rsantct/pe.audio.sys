@@ -53,24 +53,46 @@
 
 import os
 import sys
+import socket
 import time
 import subprocess as sp
 import binascii
 import yaml
 #import struct # only to debug see below
 
-UHOME =      os.path.expanduser("~")
-hostDir =   os.path.dirname( os.path.realpath(__file__) )
+UHOME   =  os.path.expanduser("~")
+THISDIR =  os.path.dirname( os.path.realpath(__file__) )
+
+try:
+    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+        cfg = yaml.safe_load(f)
+    CONTROL_PORT = cfg['peaudiosys_port']
+except KeyError:
+    print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
+    exit()
 
 ####################### USER SETTINGS: #################################
 STEPdB      = 2.0
 alertdB     = -6.0
 beep        = False
-beepPath    = f'{hostDir}/mouse_volume_3beeps.wav'
+beepPath    = f'{THISDIR}/mouse_volume_3beeps.wav'
 alsaplugin  = 'brutefir'
 # NOTE: the above needs to you to configure your .asondrc
 #       to have a jack plugin that connects to brutefir
 ########################################################################
+
+
+def send_cmd(cmd, port=CONTROL_PORT):
+    host = 'localhost'
+    #print( f'(mouse_volume) sending: {cmd} to {host}:{port}')  # DEBUG
+    with socket.socket() as s:
+        try:
+            s.connect( (host, port) )
+            s.send( cmd.encode() )
+            s.close()
+        except:
+            print( f'(mouse_volume) socket error on {host}:{port}' )
+    return
 
 
 def get_mouse_handlers():
@@ -132,9 +154,13 @@ def getMouseEvent():
     """
     #  as per seen at /proc/bus/input/devices
     mousedevice = get_mouse_handlers()[0]
-    mouse_path = f"/dev/input/{mousedevice}"
+    try:
+        fmice = open( f'/dev/input/{mousedevice}', 'rb' )
+    except:
+        print(__doc__)
+        print( '\nCheck your access permissions as above.' )
+        exit()
 
-    fmice =     open( mouse_path, "rb" )
     buff = fmice.read(3)
     m = binascii.hexlify(buff).decode()
     #print m, struct.unpack('3b', buff)  # Unpacks the bytes to integers
@@ -176,8 +202,6 @@ def main_loop(alertdB=alertdB, beep=beep):
 
     level_ups = False
     beeped =    False
-    cmd_level = f'echo "level XX add" | nc -N localhost {control_port}'
-    cmd_mute  = f'echo "mute toggle"  | nc -N localhost {control_port}'
 
     while True:
 
@@ -187,22 +211,17 @@ def main_loop(alertdB=alertdB, beep=beep):
         # Sending the order to pe.audio.sys
         if ev == 'buttonLeftDown':
             # Level --
-            tmp = cmd_level.replace('XX', f'-{str(STEPdB)}')
-            sp.Popen( tmp, shell=True,
-                      stdout=sp.DEVNULL, stderr=sp.DEVNULL )
+            send_cmd( f'level -{STEPdB} add' )
             level_ups = False
 
         elif ev == 'buttonRightDown':
             # Level ++
-            tmp = cmd_level.replace('XX', f'+{str(STEPdB)}')
-            sp.Popen( tmp, shell=True,
-                      stdout=sp.DEVNULL, stderr=sp.DEVNULL )
+            send_cmd( f'level +{STEPdB} add' )
             level_ups = True
 
         elif ev == 'buttonMid':
             # Mute toggle
-            sp.Popen( cmd_mute, shell=True,
-                      stdout=sp.DEVNULL, stderr=sp.DEVNULL )
+            send_cmd( 'mute toggle' )
 
         # Alert if crossed the headroom threshold
         if level_ups:
@@ -223,23 +242,12 @@ def stop():
 
 if __name__ == "__main__":
 
-    try:
-        with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            cfg = yaml.safe_load(f)
-        control_port = cfg['services_addressing']['peaudiosys_port']
-    except:
-        print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
-        exit()
-
     if sys.argv[1:]:
-
-        try:
-            option = {
-                        'start' : main_loop,
-                        'stop'  : stop
-                      }[ sys.argv[1] ]()
-        except:
-            print( '(init/mouse_volume_daemon) an error occoured,' )
-            print( 'do you belong to /dev/input/mouseX read group?' )
+        if sys.argv[1] == 'stop':
+            stop()
+        elif sys.argv[1] == 'start':
+            main_loop()
+        else:
+            print(__doc__)
     else:
         print(__doc__)
