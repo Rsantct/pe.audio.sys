@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" MAIN MODULE that controls the whole system:
+""" MAIN SERVICE MODULE that controls the whole system:
         preamp, players and auxiliary functions.
     This module is loaded by 'server.py'
 """
