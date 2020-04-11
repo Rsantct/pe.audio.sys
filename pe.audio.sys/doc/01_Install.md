@@ -4,11 +4,11 @@ You need **Python>=3.6** and all python stuff as indicated in **[README.md](http
 
 ## First install:
 
-0- If you comes from the old version of this distro, please remove any stuff under `~/tmp` 
+1) If you comes from the old version of this distro, please remove any stuff under `~/tmp` 
 
     rm -r ~/tmp/pe.audio.sys-*
 
-1- Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it:
+2) Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it:
 
     cd
     wget https://raw.githubusercontent.com/Rsantct/pe.audio.sys/master/.install/download_peaudiosys.sh
@@ -16,7 +16,7 @@ You need **Python>=3.6** and all python stuff as indicated in **[README.md](http
 
 At this point, the install scripts and the whole 'master' repo will be located under `~/tmp` (and also deleted the above downloaded)
 
-2- Install all stuff:
+3) Install all stuff:
 
     sh tmp/update_peaudiosys.sh master
 
@@ -24,13 +24,13 @@ Say **'N'** when asked *keep your current config?*.
 
 ## Maintenance:
  
-1- Download the last repo from github:
+1) Download the last repo from github:
 
     sh tmp/download_peaudiosys.sh <my_brach>
 
 where `my_branch` can be 'master' or whatever branch name you want to test
 
-2- Update your system:
+2) Update your system:
 
     sh tmp/update_peaudiosys.sh <my_brach>
 
