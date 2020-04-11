@@ -52,7 +52,6 @@
 # v0.5beta: adapted from pre.di.c to pe.audio.sys
 
 import os
-import sys
 import socket
 import time
 import subprocess as sp
@@ -65,22 +64,21 @@ THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 
 try:
     with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        cfg = yaml.safe_load(f)
-    CONTROL_PORT = cfg['peaudiosys_port']
+        CONTROL_PORT = yaml.safe_load(f)['peaudiosys_port']
 except KeyError:
     print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
     exit()
 
-####################### USER SETTINGS: #################################
-STEPdB      = 2.0
-alertdB     = -6.0
-beep        = False
-beepPath    = f'{THISDIR}/mouse_volume_3beeps.wav'
-alsaplugin  = 'brutefir'
-# NOTE: the above needs to you to configure your .asondrc
-#       to have a jack plugin that connects to brutefir
-########################################################################
-
+try:
+    with open(f'{THISDIR}/mouse_volume_daemon.yml', 'r') as f:
+        CFG = yaml.safe_load(f)
+except:
+    CFG = { 'STEPdB':        3.0,
+            'alertdB':      -6.0,
+            # For beep sound you need to configure your .asondrc
+            # to have a jack plugin that connects to brutefir
+            'beep':         False,
+            'alsaplugin':   'brutefir' }
 
 def send_cmd(cmd, port=CONTROL_PORT):
     host = 'localhost'
@@ -191,14 +189,19 @@ def check_level():
 
 
 def beeps():
+
+    # (i) PENDING to pythonise this stuff ;-)
+
     # The synth on Sox is too slow :-/
     #sp.Popen( 'play --null synth 1 sine 880 gain -10.0 > /dev/null 2>&1' )
+
     # then will use aplay
-    sp.Popen( ['aplay', f'-D{alsaplugin}', beepPath],
+    beepPath    = f'{THISDIR}/mouse_volume_3beeps.wav'
+    sp.Popen( ['aplay', f'-D{CFG["alsaplugin"]}', beepPath],
               stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 
 
-def main_loop(alertdB=alertdB, beep=beep):
+def main_loop(alertdB=CFG['alertdB'], beep=CFG['beep']):
 
     level_ups = False
     beeped =    False
@@ -211,12 +214,12 @@ def main_loop(alertdB=alertdB, beep=beep):
         # Sending the order to pe.audio.sys
         if ev == 'buttonLeftDown':
             # Level --
-            send_cmd( f'level -{STEPdB} add' )
+            send_cmd( f'level -{CFG["STEPdB"]} add' )
             level_ups = False
 
         elif ev == 'buttonRightDown':
             # Level ++
-            send_cmd( f'level +{STEPdB} add' )
+            send_cmd( f'level +{CFG["STEPdB"]} add' )
             level_ups = True
 
         elif ev == 'buttonMid':
@@ -226,7 +229,7 @@ def main_loop(alertdB=alertdB, beep=beep):
         # Alert if crossed the headroom threshold
         if level_ups:
             level = check_level()
-            if ( level + STEPdB )  >= alertdB:
+            if ( level + CFG['STEPdB'] )  >= alertdB:
                 if not beeped and beep:
                     print('(mouse_volume_daemon) BEEEEEEP, BEEEEEP')
                     beeps()
@@ -241,13 +244,4 @@ def stop():
 
 
 if __name__ == "__main__":
-
-    if sys.argv[1:]:
-        if sys.argv[1] == 'stop':
-            stop()
-        elif sys.argv[1] == 'start':
-            main_loop()
-        else:
-            print(__doc__)
-    else:
-        print(__doc__)
+    main_loop()
