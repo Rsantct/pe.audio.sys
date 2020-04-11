@@ -35,29 +35,33 @@ import socket
 from time import time
 import os
 
+
 class Color:
-   PURPLE = '\033[95m'
-   CYAN = '\033[96m'
-   DARKCYAN = '\033[36m'
-   BLUE = '\033[94m'
-   GREEN = '\033[92m'
-   YELLOW = '\033[93m'
-   RED = '\033[91m'
-   BOLD = '\033[1m'
-   UNDERLINE = '\033[4m'
-   END = '\033[0m'
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
 
 def send_cmd(cmd):
     host, port = CTL_HOST, CTL_PORT
-    print(f'({ME})', Color.RED+'sending:', cmd, f'to {host}:{port}\n'+Color.END)
+    print( f'({ME})', Color.RED + 'sending:', cmd, \
+           f'to {host}:{port}\n' + Color.END )
     with socket.socket() as s:
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
             s.close()
         except:
-            print (f'({ME}) socket error on {host}:{port}')
+            print( f'({ME}) socket error on {host}:{port}' )
     return
+
 
 def irpacket2cmd(p):
     """ Try to translate to a command according to the keymap table.
@@ -68,11 +72,12 @@ def irpacket2cmd(p):
         return ''
     # converting to a list of octets, e.g. ['00', 'fa', 'b0', ...]
     plist = b2hex(p)
-    if debugMode: print('packet  ',  ' '.join(plist) )
+    if debugMode:
+        print( 'packet  ', ' '.join(plist) )
     # Iterating over the keymap dictionary keys
     for k in keymap:
         if debugMode:
-            print( 'key     ', k , end='')
+            print( 'key     ', k, end='')
         klist = k.split()
         if len(klist) == len(plist):
             # compute variance
@@ -94,13 +99,15 @@ def irpacket2cmd(p):
                 print()
     return ''
 
+
 def b2hex(b):
     """ converts a bytes stream into a easy readable raw hex list, e.g:
         in:     b'\x00-m-i)m\xbb\xff'
         out:    ['00', '2d', '6d', '2d', '69', '29', '6d', 'bb', 'ff']
     """
     bh = b.hex()
-    return [ bh[i*2:i*2+2] for i in range(int(len(bh)/2)) ]
+    return [ bh[ i * 2 : i * 2 + 2 ] for i in range(int(len(bh) / 2)) ]
+
 
 def serial_params(d):
     """ read a remote dict config then returns serial params """
@@ -119,9 +126,10 @@ def serial_params(d):
         stopbits = d['stopbits']
     return baudrate, bytesize, parity, stopbits
 
+
 def main_EOP():
     # LOOPING: reading byte by byte as received
-    lastTimeStamp = time() # helper to avoid bouncing
+    lastTimeStamp = time()  # helper to avoid bouncing
     irpacket = b''
     while True:
         rx  = s.read( 1 )
@@ -143,9 +151,10 @@ def main_EOP():
         else:
             irpacket += rx
 
+
 def main_PL():
     # LOOPING: reading packetLength bytes
-    lastTimeStamp = time() # helper to avoid bouncing
+    lastTimeStamp = time()  # helper to avoid bouncing
     irpacket = b''
     while True:
         irpacket  = s.read( packetLength )
@@ -155,17 +164,18 @@ def main_PL():
                 send_cmd(cmd)
                 lastTimeStamp = time()
 
+
 def main_TM():
     # Test mode will save the received bytes to a file so you can analyze them.
-    irpacket = b''
-    lastTimeStamp = time() # helper to group key pressings
+    lastTimeStamp = time()  # helper to group key pressings
     while True:
         rx  = s.read( 1 )
         flog.write(rx)
-        print( rx.hex().rjust(2,'0')+' ', end='' )
+        print( rx.hex().rjust(2, '0') + ' ', end='' )
         if time() - lastTimeStamp >= .2:
             print()
             lastTimeStamp = time()
+
 
 if __name__ == "__main__":
 
@@ -198,7 +208,7 @@ if __name__ == "__main__":
             baudrate, bytesize, parity, stopbits = serial_params(REMCFG)
             packetLength = REMCFG['packetLength']
             endOfPacket = str(REMCFG['endOfPacket']) if REMCFG['endOfPacket'] \
-                                                     else None # force to str
+                                                     else None  # force to str
             EOPtolerance = REMCFG['EOPtolerance'] if REMCFG['EOPtolerance'] else 5
             maxVariance  = REMCFG['maxVariance']  if REMCFG['maxVariance']  else 5
     except:

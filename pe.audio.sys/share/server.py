@@ -40,7 +40,7 @@
 import socket
 import sys
 import os
-import yaml
+
 
 def run_server(host, port, verbose=False):
     """ This is the server itself.
@@ -94,17 +94,17 @@ def run_server(host, port, verbose=False):
                 # Reception of 1024
                 data = conn.recv(1024).decode()
                 if verbose:
-                    print  (f'(server.py [{service}]) Rx: {data.strip()}' )
+                    print( f'(server.py [{service}]) Rx: {data.strip()}' )
             except:
                 if verbose:
-                    print (f'(server.py [{service}]) ERROR receiving from client, closing.' )
+                    print( f'(server.py [{service}]) ERROR receiving from client, closing.' )
                 conn.close()
                 break
 
             if not data:
                 # Nothing in buffer, then will close
                 if verbose:
-                    print (f'(server.py [{service}]) Rx empty, '
+                    print( f'(server.py [{service}]) Rx empty, '
                              'closing connection...' )
                 conn.close()
                 break

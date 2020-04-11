@@ -23,9 +23,8 @@
 from socket import socket
 import yaml
 import json
-from subprocess import Popen, check_output
+from subprocess import Popen
 import os
-import sys
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
@@ -39,10 +38,10 @@ LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
 STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 
-aux_info = {    'amp':'off',
+aux_info = {    'amp':              'off',
                 'loudness_monitor': 0.0,
-                'user_macros': [],
-                'web_config': {}
+                'user_macros':      [],
+                'web_config':       {}
             }
 
 ## Reading config.yml
@@ -62,9 +61,10 @@ try:
     WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
 except:
     # default web options
-    WEBCONFIG = {   'hide_macro_buttons':False,
-                    'hide_LU':False,
-                    'restart_cmd_info': CONFIG['restart_cmd'] }
+    WEBCONFIG = {   'hide_macro_buttons':   False,
+                    'hide_LU':              False,
+                    'restart_cmd_info':     CONFIG['restart_cmd'] }
+
 
 # Auxiliary client to talk to othes server.py instances (preamp and players)
 def send_cmd(service, cmd):
@@ -83,13 +83,14 @@ def send_cmd(service, cmd):
         try:
             s.connect( (host, port) )
             s.send( cmd.encode() )
-            print (f'({ME}) Tx to {service}:   \'{cmd }\'')
+            print( f'({ME}) Tx to {service}:   \'{cmd }\'' )
             ans = s.recv(1024).decode()
-            print (f'({ME}) Rx from {service}: \'{ans }\' ')
+            print( f'({ME}) Rx from {service}: \'{ans }\' ' )
             s.close()
         except:
-            print (f'({ME}) service \'peaudiosys\' socket error on port {port}')
+            print( f'({ME}) service \'peaudiosys\' socket error on port {port}' )
     return ans
+
 
 # Main function for PREDIC commands processing
 def process_preamp( cmd, arg='' ):
@@ -97,11 +98,13 @@ def process_preamp( cmd, arg='' ):
         cmd  = ' '.join( (cmd, arg) )
     return send_cmd( service='preamp', cmd=cmd )
 
+
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
     return send_cmd( service='players', cmd=cmd )
+
 
 # Main function for AUX commands processing
 def process_aux( cmd, arg='' ):
@@ -117,9 +120,9 @@ def process_aux( cmd, arg='' ):
         try:
             with open( f'{AMP_STATE_FILE}', 'r') as f:
                 tmp =  f.read().strip()
-            if tmp.lower() in ('0','off'):
+            if tmp.lower() in ('0', 'off'):
                 curr_sta = 'off'
-            elif tmp.lower() in ('1','on'):
+            elif tmp.lower() in ('1', 'on'):
                 curr_sta = 'on'
             else:
                 curr_sta = '-'
@@ -132,15 +135,14 @@ def process_aux( cmd, arg='' ):
 
         if arg == 'toggle':
             # if unknown state, this switch defaults to 'on'
-            new_sta = {'on':'off', 'off':'on'}.get(curr_sta, 'on')
+            new_sta = {'on': 'off', 'off': 'on'}.get(curr_sta, 'on')
 
-        if arg in ('on','off'):
+        if arg in ('on', 'off'):
             new_sta = arg
 
         print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
         Popen( f'{AMP_MANAGER} {new_sta}'.split(), shell=False )
         return new_sta
-
 
     # LIST OF MACROS under macros/ folder
     elif cmd == 'get_macros':
@@ -148,7 +150,8 @@ def process_aux( cmd, arg='' ):
         with os.scandir( f'{MACROS_FOLDER}' ) as entries:
             for entrie in entries:
                 fname = entrie.name
-                if ( fname[0] in [str(x) for x in range(1,10)] ) and fname[1]=='_':
+                if ( fname[0] in [str(x) for x in range(1, 10)] ) and \
+                                                        fname[1] == '_':
                     macro_files.append(fname)
         result = macro_files
 
@@ -199,14 +202,16 @@ def process_aux( cmd, arg='' ):
 
     return result
 
+
 # Dumps pe.audio.sys/.aux_info
 def dump_aux_info():
-    aux_info['amp'] =               process('amp_switch', 'state')
-    aux_info['loudness_monitor'] =  process('get_loudness_monitor')
-    aux_info['user_macros'] =       process('get_macros')
-    aux_info['web_config'] =        process('get_web_config')
+    aux_info['amp'] =               process_aux('amp_switch', 'state')
+    aux_info['loudness_monitor'] =  process_aux('get_loudness_monitor')
+    aux_info['user_macros'] =       process_aux('get_macros')
+    aux_info['web_config'] =        process_aux('get_web_config')
     with open(f'{MAIN_FOLDER}/.aux_info', 'w') as f:
         f.write( json.dumps(aux_info) )
+
 
 # Handler class to do actions when a file change occurs
 class My_files_event_handler(FileSystemEventHandler):
@@ -217,6 +222,7 @@ class My_files_event_handler(FileSystemEventHandler):
         #print( f'({ME}) file {event.event_type}: \'{path}\'' ) # DEBUG
         if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
             dump_aux_info()
+
 
 # init() will be autostarted from server.py when loading this module
 def init():
@@ -237,6 +243,7 @@ def init():
                       path=UHOME,
                       recursive=True)
     observer.start()
+
 
 # Interface function to plug this on server.py
 def do( command_phrase ):
@@ -279,7 +286,7 @@ def do( command_phrase ):
                     '\'~/pe.audio.sys/peaudiosys.hlp\''
         result = {  'preamp':   process_preamp,
                     'player':   process_players,
-                    'aux':      process_aux } [pfx](cmd, arg)
+                    'aux':      process_aux }[ pfx ]( cmd, arg )
         if type(result) != str:
             result = json.dumps(result)
         return result

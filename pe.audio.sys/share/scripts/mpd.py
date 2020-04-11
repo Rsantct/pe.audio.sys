@@ -27,27 +27,28 @@
 """
     usage:  mpd.py  start|stop
 """
-import sys, os
+import sys
+import os
 from subprocess import Popen
 from time import sleep
 
 UHOME = os.path.expanduser("~")
 
-def stop():
 
+def stop():
     # some Desktop autostarts MPD user systemd units, even if disabled:
     tmp =  "systemctl --user stop mpd.socket &&"
     tmp += "systemctl --user stop mpd.service &&"
     tmp += "systemctl --user disable mpd.socket &&"
     tmp += "systemctl --user disable mpd.service"
     Popen( tmp, shell=True )
-
     Popen( ['pkill', '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
     sleep(.5)
 
-def start():
 
+def start():
     Popen( f'mpd {UHOME}/.mpdconf'.split() )
+
 
 if __name__ == '__main__':
 

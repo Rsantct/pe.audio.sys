@@ -4,21 +4,21 @@
 
     If you don't want the Brutefir high CPU consumption,
     this runs jackminimix replacing Brutefir  :-O
-    
+
     pre_in_loop    ---- 1 ----\\
                                \\
                    ---- 2 ----( + )----> sound_card
                                /
                    ---- 3 ----/
 
-    
+
     (!) Only works whith a FULLRANGE loudspeaker
         attached to system:playback_1/2
 
     Usage:
-    
+
     jack_minimix.py   start | stop | adjust -gN dB [...]
-    
+
         To adjust jackminimix mixer gains
         use adjust -gN dB (N:1..3)
 
@@ -33,14 +33,14 @@ from subprocess import Popen, check_output
 from time import sleep
 from socket import gethostname
 import yaml
-
-UHOME = expanduser("~")
-sys.path.append( f'{UHOME}/pe.audio.sys' )
-from share.core import  jack_connect_bypattern
-
 # Jackminimix is controled via OSC protocol
 # https://pypi.org/project/python-osc
 from pythonosc.udp_client import SimpleUDPClient
+
+UHOME = expanduser("~")
+sys.path.append( f'{UHOME}/pe.audio.sys' )
+from share.core import jack_connect_bypattern
+
 
 def start_brutefir():
     with open( f'{UHOME}/pe.audio.sys/config.yml', 'r' ) as f:
@@ -48,23 +48,27 @@ def start_brutefir():
     LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
     chdir( LSPK_FOLDER )
     Popen( 'brutefir brutefir_config'.split() )
-    chdir ( UHOME )
+    chdir( UHOME )
     print( '(start.py) STARTING BRUTEFIR' )
-    sleep(1) # wait a while for Brutefir to start ...
+    sleep(1)  # wait a while for Brutefir to start ...
+
 
 def stop_brutefir():
     Popen( 'pkill -KILL -f brutefir >/dev/null 2>&1', shell=True )
 
+
 def check_fullrange():
     # Check if pe.audio.sys loudspeaker is a fullrange kind of
     try:
-        tmp = check_output('jack_lsp system:playback -c'.split()).decode().split()
+        tmp = check_output('jack_lsp system:playback -c'.split()) \
+                                                    .decode().split()
         for BFport in [x for x in tmp if 'brutefir:' in x]:
-            if not 'brutefir:fr' in BFport:
+            if 'brutefir:fr' not in BFport:
                 return False
     except:
         return False
     return True
+
 
 def start_mixer():
     # Check if pe.audio.sys loudspeaker is a fullrange kind of
@@ -76,7 +80,7 @@ def start_mixer():
     # Start JackMinix with 3 input channels
     cmd = f'jackminimix -p 9985 -c 3 -v'
     Popen( cmd.split() )
-    sleep (.5)
+    sleep(.5)
     # Attenuate all channel gains
     client = SimpleUDPClient(gethostname(), 9985)
     client.send_message('/mixer/channel/set_gain', [1, -40.0] )
@@ -86,20 +90,22 @@ def start_mixer():
     jack_connect_bypattern('pre_in_loop', 'minimixer')
     jack_connect_bypattern('minimixer', 'system')
 
+
 def stop_mixer():
     # Kills the mixer
-    Popen( 'pkill -f "jackminimix\ -p"', shell=True )
+    Popen( 'pkill -f "jackminimix -p"', shell=True )
     # Restarts Brutefir
     # (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
     start_brutefir()
     # Connect Brutefir
-    jack_connect_bypattern('pre_in',   'brutefir', wait=60)
+    jack_connect_bypattern('pre_in', 'brutefir', wait=60)
+
 
 def get_args():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('mode', type=str, 
+    parser.add_argument('mode', type=str,
         help='start | stop | adjust | info')
 
     parser.add_argument('-a', type=str, default=gethostname(),
@@ -119,24 +125,24 @@ def get_args():
 
     return parser.parse_args()
 
-    
+
 if __name__ == '__main__':
 
     args = get_args()
 
-    if  args.mode == 'start':
+    if args.mode == 'start':
         start_mixer()
 
     elif args.mode == 'stop':
         stop_mixer()
 
     elif args.mode == 'adjust':
-        client = SimpleUDPClient(args.a, args.p)        
-        if args.g1 != None:
+        client = SimpleUDPClient(args.a, args.p)
+        if args.g1 is not None:
             client.send_message('/mixer/channel/set_gain', [1, args.g1] )
-        if args.g2 != None:
+        if args.g2 is not None:
             client.send_message('/mixer/channel/set_gain', [2, args.g2] )
-        if args.g3 != None:
+        if args.g3 is not None:
             client.send_message('/mixer/channel/set_gain', [3, args.g3] )
 
     elif args.mode == 'info':

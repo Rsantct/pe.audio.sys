@@ -26,7 +26,8 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os, sys
+import os
+import sys
 import socket
 import subprocess as sp
 import threading
@@ -36,22 +37,24 @@ import numpy as np
 from time import sleep
 
 
-# AUX and FILES MANAGEMENT: ====================================================
-
+# AUX and FILES MANAGEMENT: ============================================
 def read_yaml(filepath):
     """ Returns a dictionary from an YAML file """
     with open(filepath) as f:
         d = yaml.safe_load(f)
     return d
 
+
 def save_yaml(dic, filepath):
     """ Save a dict to disk """
     with open( filepath, 'w' ) as f:
         yaml.safe_dump( dic, f, default_flow_style=False )
 
+
 def find_target_sets():
-    """ Returns the uniques target filenames w/o the suffix _mag.dat or _pha.dat,
-        also will add 'none' as an additional set.
+    """ Returns the uniques target filenames w/o the suffix
+        _mag.dat or _pha.dat.
+        Also will add 'none' as an additional set.
     """
     result = ['none']
     files = os.listdir( EQ_FOLDER )
@@ -61,14 +64,16 @@ def find_target_sets():
             result.append( x[:-8] )
     return result
 
+
 def get_peq_in_use():
-    """ Finds out the PEQ (parametic eq) filename used by an inserted Ecasound
-        sound processor, if it is defined as an optional script inside config.yml
+    """ Finds out the PEQ (parametic eq) filename used by an inserted
+        Ecasound sound processor, if included inside config.yml scripts.
     """
     for item in CONFIG['scripts']:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
-            return item["ecasound_peq.py"].replace('.ecs','')
+            return item["ecasound_peq.py"].replace('.ecs', '')
     return 'none'
+
 
 def get_eq_curve(curv, state):
     """ Retrieves the tone or loudness curve.
@@ -82,8 +87,8 @@ def get_eq_curve(curv, state):
     elif curv == 'treb':
         index = 6 - int(round(state['treble']))
 
-    # For loudness eq curves there is a flat curve index previously detected,
-    # also there is a limiting ceiling value inside config.yml
+    # Using the previously detected flat curve index and
+    # also limiting as per the loud_ceil value inside config.yml
     elif curv == 'loud':
 
         index_min   = 0
@@ -91,8 +96,8 @@ def get_eq_curve(curv, state):
         index_flat  = LOUD_FLAT_CURVE_INDEX
 
         try:
-            loud_ceil = CONFIG['loud_ceil']
-        except:
+            loud_ceil = float(CONFIG['loud_ceil'])
+        except KeyError:
             loud_ceil = 0.0
 
         if state['loudness_track'] and ( state['level'] <= loud_ceil ):
@@ -104,7 +109,9 @@ def get_eq_curve(curv, state):
         # Clamp index to the available "loudness deepness" curves set
         index = max( min(index, index_max), index_min )
 
-    return EQ_CURVES[f'{curv}_mag'][:,index], EQ_CURVES[f'{curv}_pha'][:,index]
+    return EQ_CURVES[f'{curv}_mag'][ : , index], \
+           EQ_CURVES[f'{curv}_pha'][ : , index]
+
 
 def find_eq_curves():
     """ Scans share/eq/ and try to collect the whole set of EQ curves
@@ -134,27 +141,32 @@ def find_eq_curves():
         if files:
             if len (files) == 1:
                 EQ_CURVES[ cnames[fname] ] = \
-                                       np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
+                         np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
                 pendings -= 1
             else:
-                print(f'(core) too much \'...{fname}\' files under share/eq/')
+                print(f'(core) too much \'...{fname}\' '
+                       'files under share/eq/')
         else:
-                print(f'(core) ERROR finding a \'...{fname}\' file under share/eq/')
+            print(f'(core) ERROR finding a \'...{fname}\' '
+                   'file under share/eq/')
 
     if not pendings:
         return EQ_CURVES
     else:
         return {}
 
+
 def find_loudness_flat_curve_index():
-    """ scan all curves under the file xxx_loudness_mag.dat to find the flat one """
+    """ find flat curve inside xxx_loudness_mag.dat
+    """
     index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
     index_flat = -1
     for i in range(index_max):
-        if np.sum( abs(EQ_CURVES['loud_mag'][:,i]) ) <= 0.1:
+        if np.sum( abs(EQ_CURVES['loud_mag'][ : , i]) ) <= 0.1:
             index_flat = i
             break
     return index_flat
+
 
 def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
@@ -172,21 +184,27 @@ def calc_eq( state ):
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
-    eq_mag = targ_mag + loud_mag * state['loudness_track'] + bass_mag + treb_mag
-    eq_pha = targ_pha + loud_pha * state['loudness_track'] + bass_pha + treb_pha
+    eq_mag = targ_mag + loud_mag * state['loudness_track'] \
+                                                + bass_mag + treb_mag
+    eq_pha = targ_pha + loud_pha * state['loudness_track'] \
+                                                + bass_pha + treb_pha
 
     return eq_mag, eq_pha
 
+
 def calc_gain( state ):
-    """ Calculates the gain from: level, ref_level_gain and the source gain offset
+    """ Calculates the gain from:   level,
+                                    ref_level_gain
+                                    source gain offset
     """
-    gain    = state['level'] + float(CONFIG['ref_level_gain']) - state['loudness_ref']
+    gain    = state['level'] + float(CONFIG['ref_level_gain']) \
+                             - state['loudness_ref']
     if state['input'] != 'none':
         gain += float( CONFIG['sources'][state['input']]['gain'] )
     return gain
 
-# BRUTEFIR MANAGEMENT: =========================================================
 
+# BRUTEFIR MANAGEMENT: =================================================
 def bf_cli(command):
     """ send commands to Brutefir and disconnects from it """
     # using 'with' will disconnect the socket when done
@@ -197,6 +215,7 @@ def bf_cli(command):
             s.send(command.encode())
         except:
             print (f'(core) Brutefir socket error')
+
 
 def bf_set_midside( mode ):
     """ midside (formerly mono) is implemented by routing and mixing
@@ -218,8 +237,10 @@ def bf_set_midside( mode ):
     else:
         pass
 
+
 def bf_set_gains( state ):
-    """ Adjust Brutefir gain at drc.X stages as per the provided state values """
+    """ Adjust Brutefir gain at drc.X stages as per the provided state values
+    """
 
     gain    = calc_gain( state )
 
@@ -234,19 +255,20 @@ def bf_set_gains( state ):
     m_solo_R = {'off': 1, 'l': 0, 'r': 1} [ solo ]
     m_mute   = {True: 0, False: 1}        [ muted ]
 
-    gain_L = (gain - balance/2.0)
-    gain_R = (gain + balance/2.0)
+    gain_L = (gain - balance / 2.0)
+    gain_R = (gain + balance / 2.0)
 
     # We compute from dB to a multiplier, this is an alternative to
     # adjusting the attenuation on 'cffa' command syntax
-    m_gain_L = 10**(gain_L/20.0) * m_mute * m_solo_L
-    m_gain_R = 10**(gain_R/20.0) * m_mute * m_solo_R
+    m_gain_L = 10 ** (gain_L / 20.0) * m_mute * m_solo_L
+    m_gain_R = 10 ** (gain_R / 20.0) * m_mute * m_solo_R
 
     # cffa will apply atten at the 'from filters' input section on drc filters
     cmd =   'cffa "f.drc.L" "f.eq.L" m' + str( m_gain_L ) + ';' \
           + 'cffa "f.drc.R" "f.eq.R" m' + str( m_gain_R ) + ';'
     # print(cmd) # debug
     bf_cli(cmd)
+
 
 def bf_set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module  """
@@ -263,16 +285,20 @@ def bf_set_eq( eq_mag, eq_pha ):
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
+
 def bf_read_eq():
-    """ Returns a raw printout from issuing an 'info' query to the Brutefir's EQ module
+    """ Returns a raw printout from issuing an 'info' query
+        to the Brutefir's EQ module
     """
     try:
         cmd = 'lmc eq "c.eq" info; quit'
-        tmp = sp.check_output( f'echo \'{cmd}\' | nc localhost 3000', shell=True ).decode()
-    except:
+        tmp = sp.check_output( f'echo \'{cmd}\' | nc localhost 3000',
+                               shell=True ).decode()
+    except sp.CalledProcessError:
         return ''
     tmp = [x for x in tmp.split('\n') if x]
     return tmp[2:]
+
 
 def bf_set_drc( drcID ):
     """ Changes the FIR for DRC at runtime """
@@ -281,6 +307,7 @@ def bf_set_drc( drcID ):
     else:
         cmd = ( f'cfc "f.drc.L" "drc.L.{drcID}"; cfc "f.drc.R" "drc.R.{drcID}";' )
     bf_cli( cmd )
+
 
 def bf_set_xo( ways, xo_coeffs, xoID ):
     """ Changes the FIRs for XOVER at runtime """
@@ -323,23 +350,25 @@ def bf_set_xo( ways, xo_coeffs, xoID ):
     #print (cmd)
     bf_cli( cmd )
 
+
 def get_brutefir_config(prop):
     """ returns a property from brutefir_config file
         (BETA: currently only works for ludspeaker ways)
     """
-    with open(f'{LSPK_FOLDER}/brutefir_config','r') as f:
+    with open(f'{LSPK_FOLDER}/brutefir_config', 'r') as f:
         lines = f.read().split('\n')
 
     if prop == 'ways':
         ways = []
         for line in [ x for x in lines if x and 'filter' in x.strip().split() ]:
-            if not '"f.eq.' in line and not '"f.drc.' in line and \
-               line.startswith('filter'):
-                   way = line.split()[1].replace('"','')
-                   ways.append( way )
+            if '"f.eq.' not in line and '"f.drc.' not in line and \
+                                              line.startswith('filter'):
+                way = line.split()[1].replace('"', '')
+                ways.append( way )
         return ways
     else:
         return []
+
 
 def brutefir_runs():
     if JCLI.get_ports('brutefir'):
@@ -347,8 +376,8 @@ def brutefir_runs():
     else:
         return False
 
-# JACK MANAGEMENT: =============================================================
 
+# JACK MANAGEMENT: =====================================================
 def jack_connect(p1, p2, mode='connect', wait=1):
     """ Low level tool to connect / disconnect a pair of ports,
         by retriyng for a while
@@ -362,7 +391,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
-                if not p2 in JCLI.get_all_connections(p1):
+                if p2 not in JCLI.get_all_connections(p1):
                     JCLI.connect(p1, p2)
                 else:
                     print ( f'(core) {p1.name} already connected to {p2.name}' )
@@ -373,11 +402,12 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     print ( f'(core) failed to connect \'{p1.name}\' to \'{p2.name}\'')
     return False
 
+
 def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
     """ High level tool to connect/disconnect a given port name patterns """
     # Try to get ports by a port name pattern
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
-    pbk_ports = JCLI.get_ports( pbk_pattern, is_input= True )
+    pbk_ports = JCLI.get_ports( pbk_pattern, is_input=True )
     # If not found, it can be an alias pattern (loopback ports
     # have alias as expected from some source names)
     if not cap_ports:
@@ -400,7 +430,7 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
         print( f'(core) cannot find jack port "{pbk_pattern}"' )
         return
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
-    i=0
+    i = 0
     for cap_port in cap_ports:
         pbk_port = pbk_ports[i]
         job_jc = threading.Thread( target=jack_connect,
@@ -409,6 +439,7 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
                                          mode, wait) )
         job_jc.start()
         i += 1
+
 
 def jack_clear_preamp():
     """ Force clearing ANY clients, no matter what input was selected
@@ -419,8 +450,7 @@ def jack_clear_preamp():
             jack_connect( client, preamp_port, mode='off' )
 
 
-# THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER ===============
-
+# THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER =======
 def init_source():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
@@ -429,7 +459,7 @@ def init_source():
     if CONFIG["on_init"]["input"]:
         preamp.select_source  (   CONFIG["on_init"]["input"]      )
     else:
-        preamp.select_source  (   core.state['input']             )
+        preamp.select_source  (   preamp.state['input']             )
 
     state = preamp.state
     del(preamp)
@@ -444,44 +474,44 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
 
-    # (i) using != None below to detect 0 or False values
+    # (i) using is not None below to detect 0 or False values
 
     on_init = CONFIG["on_init"]
 
-    if on_init["muted"] != None:
+    if on_init["muted"] is not None:
         preamp.set_mute       (   on_init["muted"]                )
     else:
         preamp.set_mute       (   preamp.state['muted']           )
 
-    if on_init["level"] != None:
+    if on_init["level"] is not None:
         preamp.set_level      (   on_init["level"]                )
     else:
         preamp.set_level      (   preamp.state['level']           )
 
-    if on_init["max_level"] != None:
+    if on_init["max_level"] is not None:
         preamp.set_level(  min( on_init["max_level"], preamp.state['level'] ) )
 
-    if on_init["bass"] != None :
+    if on_init["bass"] is not None :
         preamp.set_bass       (   on_init["bass"]                 )
     else:
         preamp.set_bass       (   preamp.state['bass']            )
 
-    if on_init["treble"] != None :
+    if on_init["treble"] is not None :
         preamp.set_treble     (   on_init["treble"]               )
     else:
         preamp.set_treble     (   preamp.state['treble']          )
 
-    if on_init["balance"] != None :
+    if on_init["balance"] is not None :
         preamp.set_balance    (   on_init["balance"]              )
     else:
         preamp.set_balance    (   preamp.state['balance']         )
 
-    if on_init["loudness_track"] != None:
+    if on_init["loudness_track"] is not None:
         preamp.set_loud_track (   on_init["loudness_track"]       )
     else:
         preamp.set_loud_track (   preamp.state['loudness_track']  )
 
-    if on_init["loudness_ref"] != None :
+    if on_init["loudness_ref"] is not None :
         preamp.set_loud_ref   (   on_init["loudness_ref"]         )
     else:
         preamp.set_loud_ref   (   preamp.state['loudness_ref']    )
@@ -518,6 +548,7 @@ def init_audio_settings():
     del(preamp)
 
     return state
+
 
 class Preamp(object):
     """ attributes:
@@ -577,7 +608,7 @@ class Preamp(object):
         b               = candidate['balance']
         eq_mag, eq_pha  = calc_eq( candidate )
 
-        headroom = self.gain_max - g - np.max(eq_mag) - np.abs(b/2.0)
+        headroom = self.gain_max - g - np.max(eq_mag) - np.abs(b / 2.0)
 
         if headroom >= 0:
             # APPROVED
@@ -658,9 +689,11 @@ class Preamp(object):
         if type(value) == bool:
             value = str(value)
         try:
-            value = { 'on':True , 'off':False, 'true':True, 'false':False,
-                      'toggle': {True:False, False:True}[self.state['loudness_track']]
-                    } [ value.lower() ]
+            value = { 'on': True , 'off': False,
+                      'true': True, 'false': False,
+                      'toggle': {True: False, False: True
+                                 }[self.state['loudness_track']]
+                     } [ value.lower() ]
             candidate['loudness_track'] = value
             return self._validate( candidate )
         except:
@@ -687,9 +720,9 @@ class Preamp(object):
             value = str(value)
         try:
             if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
-                value = { 'false':False, 'off':False,
-                          'true' :True,  'on' :True,
-                          'toggle': {False:True, True:False} [ self.state['muted'] ]
+                value = { 'false': False, 'off': False,
+                          'true' : True,  'on' : True,
+                          'toggle': {False: True, True: False} [ self.state['muted'] ]
                         } [ value.lower() ]
                 self.state['muted'] = value
                 bf_set_gains( self.state )
@@ -698,7 +731,7 @@ class Preamp(object):
             return 'bad option'
 
     def set_midside(self, value, *dummy):
-        if   value.lower() in [ 'mid', 'side', 'off' ]:
+        if value.lower() in [ 'mid', 'side', 'off' ]:
             bf_set_midside( value.lower() )
             self.state['midside'] = value.lower()
         else:
@@ -717,7 +750,7 @@ class Preamp(object):
                 jack_clear_preamp()
                 return 'done'
 
-            if not source in self.inputs:
+            if source not in self.inputs:
                 # do nothing
                 return f'source \'{source}\' not defined'
 
@@ -760,7 +793,7 @@ class Preamp(object):
         def on_change_input_behavior(candidate):
             try:
                 for option, value in CONFIG["on_change_input"].items():
-                    if value != None:
+                    if value is not None:
                         candidate[option] = value
             except:
                 print( '(config.yml) missing \'on_change_input\' options' )
@@ -772,9 +805,11 @@ class Preamp(object):
             self.state['input'] = value
             candidate = self.state.copy()
             candidate = on_change_input_behavior(candidate)
-            # Special source loudness_ref overrides the one in on_change_input_behavior
+            # Special source loudness_ref overrides
+            # the one in on_change_input_behavior
             try:
-                candidate["loudness_ref"] = CONFIG["sources"][value]['loudness_ref']
+                candidate["loudness_ref"] = \
+                               CONFIG["sources"][value]['loudness_ref']
             except:
                 pass
             # Special source target setting overrides the one in on_init behavior
@@ -790,8 +825,8 @@ class Preamp(object):
     def get_inputs(self, *dummy):
         return [ x for x in self.inputs.keys() ]
 
-# THE CONVOLVER: DRC and XO Brutefir stages management =========================
 
+# THE CONVOLVER: DRC and XO Brutefir stages management =================
 class Convolver(object):
     """ attributes:
 
@@ -822,7 +857,7 @@ class Convolver(object):
         #   Using C allows to have dedicated FIR per channel if necessary
 
         files   = os.listdir(LSPK_FOLDER)
-        coeffs  = [ x.replace('.pcm','') for x in files ]
+        coeffs  = [ x.replace('.pcm', '') for x in files ]
         self.drc_coeffs = [ x for x in coeffs if x[:4] == 'drc.'  ]
         self.xo_coeffs  = [ x for x in coeffs if x[:3] == 'xo.'   ]
         #print('\nxo_coeffs:', xo_coeffs) # debug
@@ -831,14 +866,14 @@ class Convolver(object):
         self.drc_sets = []
         for drc_coeff in self.drc_coeffs:
             drcSetName = drc_coeff[6:]
-            if not drcSetName in self.drc_sets:
+            if drcSetName not in self.drc_sets:
                 self.drc_sets.append( drcSetName )
 
         # The available XO sets, i.e the last part of a xo_coeff
         self.xo_sets = []
         for xo_coeff in self.xo_coeffs:
             xoSetName = xo_coeff.split('.')[-1]
-            if not xoSetName in self.xo_sets:
+            if xoSetName not in self.xo_sets:
                 self.xo_sets.append( xoSetName )
         #print('xo_sets:', self.xo_sets) # debug
 
@@ -871,16 +906,14 @@ class Convolver(object):
         return self.xo_sets
 
 
-# JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ================================
+# JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ========================
 # IMPORTANT: this module core.py needs JACK to be running.
-
 try:
     JCLI = jack.Client('tmp', no_start_server=True)
 except:
     print( '(core) ERROR cannot commuticate to the JACK SOUND SERVER.' )
 
-# COMMON USE VARIABLES: ========================================================
-
+# COMMON USE VARIABLES: ================================================
 UHOME           = os.path.expanduser("~")
 CONFIG          = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
 LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
@@ -897,4 +930,3 @@ LOUD_FLAT_CURVE_INDEX = find_loudness_flat_curve_index()
 if LOUD_FLAT_CURVE_INDEX < 0:
     print( f'(core) MISSING FLAT LOUDNESS CURVE. BYE :-/' )
     sys.exit()
-

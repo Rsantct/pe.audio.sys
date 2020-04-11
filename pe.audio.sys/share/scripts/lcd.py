@@ -22,12 +22,14 @@
     usage:   lcd   start | stop
 """
 
-import sys, os
+import sys
+import os
 from subprocess import Popen
 from time import sleep
 
 UHOME = os.path.expanduser("~")
 LCDFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/lcd'
+
 
 def start():
     # the server
@@ -36,18 +38,21 @@ def start():
     # the service for pre.di.c info display
     Popen( f'python3 {LCDFOLDER}/lcd_service.py'.split() )
 
+
 def stop():
-    Popen( ['pkill', '-f',  'lcd/LCDd.conf'] )
-    Popen( ['pkill', '-f',  'lcd_service.py'] )
+    Popen( ['pkill', '-f', 'lcd/LCDd.conf'] )
+    Popen( ['pkill', '-f', 'lcd_service.py'] )
     sleep(1)
+
 
 if sys.argv[1:]:
     try:
         option = {
-            'start' : start,
-            'stop'  : stop
-            }[ sys.argv[1] ]()
+                    'start' : start,
+                    'stop'  : stop
+                  }[ sys.argv[1] ]()
     except:
         print( '(scripts/lcd.py) an error occoured' )
+
 else:
     print(__doc__)

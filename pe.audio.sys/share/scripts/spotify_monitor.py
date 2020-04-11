@@ -28,26 +28,29 @@
 # For playerctl v0.x will run spotify_monitor_daemon_v1.py
 # For playerctl v2.x will run spotify_monitor_daemon_v2.py
 
-import sys, os
+import sys
+import os
 from subprocess import Popen, check_output
 from time import sleep
 
 UHOME = os.path.expanduser("~")
 SCRIPTSFOLDER = f'{UHOME}/pe.audio.sys/share/scripts'
 
+
 def get_playerctl_version():
     try:
         tmp = check_output('playerctl --version'.split()).decode()
-        tmp = tmp.lower().replace('v','')
+        tmp = tmp.lower().replace('v', '')
         return tmp[0]
     except:
         return -1
 
+
 def check_Spotify_Desktop_process():
     wait_sec = 15
     while wait_sec:
-        tmp = check_output( 'pgrep -fli spotify | cut -d" " -f2', shell=True) \
-                .decode().split()
+        tmp = check_output( 'pgrep -fli spotify | cut -d" " -f2',
+                            shell=True).decode().split()
         if 'spotify' in tmp:
             print('(spotify_monitor) found Spotify Desktop running')
             return True
@@ -56,21 +59,24 @@ def check_Spotify_Desktop_process():
     print('(spotify_monitor) Unable to detect Spotify Desktop running')
     return False
 
+
 def start():
     if not check_Spotify_Desktop_process():
         exit()
     v = get_playerctl_version()
     if v != '-1':
-        if v in ('0','1'):
+        if v in ('0', '1'):
             v = 1
         Popen( f'{SCRIPTSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
         print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
     else:
         print( '(spotify_monitor) Unable to find playerctl --version)' )
 
+
 def stop():
     Popen( 'pkill -f spotify_monitor_daemon'.split() )
     sleep(.5)
+
 
 if sys.argv[1:]:
     if sys.argv[1] == 'stop':

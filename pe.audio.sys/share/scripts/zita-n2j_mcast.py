@@ -14,8 +14,10 @@ import sys
 import subprocess as sp
 from os import uname
 
+
 # Additional buffering (ms) (default 10, safe value 50, WiFi 100)
 BUFFER = 50
+
 
 def get_default_interface():
     # Getting the machine's used interface name
@@ -36,6 +38,7 @@ def get_default_interface():
                 interface = line.split(':')[-1].strip()
     return interface
 
+
 def start():
     interface = get_default_interface()
     if not interface:
@@ -46,10 +49,13 @@ def start():
 
     # Using a no reserved multicast address 224.0.0.151 and port 65151
     # https://www.iana.org/assignments/multicast-addresses/multicast-addresses.xhtml#multicast-addresses-1
-    sp.Popen( f'zita-n2j --buff {str(int(BUFFER))} 224.0.0.151 65151 {interface}'.split() )
+    tmp = f'zita-n2j --buff {str(int(BUFFER))} 224.0.0.151 65151 {interface}'
+    sp.Popen( tmp.split() )
+
 
 def stop():
     sp.Popen( 'pkill -KILL zita-n2j'.split() )
+
 
 if __name__ == '__main__':
 

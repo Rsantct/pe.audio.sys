@@ -34,11 +34,11 @@
 # spotify_monitor_daaemon_v2.py works with playerctl v2.x
 #########################################################
 
-import sys, os
+import sys
+import os
 import subprocess as sp
 import json
 import time
-
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -46,14 +46,12 @@ from watchdog.events import FileSystemEventHandler
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
-# Will watch for files changed on this folder and subfolders:
-WATCHED_DIR      = MAINFOLDER
-
 # intermediate file from playerctl --follow
 PLAYERCTLfile = f'{MAINFOLDER}/.playerctl_spotify_events'
 
 # events dumping file for pre.di.c's players.py reading:
 SPOTIFYfile   = f'{MAINFOLDER}/.spotify_events'
+
 
 def run_playerctl():
     """ Runs playerctl in --follow mode """
@@ -63,7 +61,9 @@ def run_playerctl():
     # Launch a new one
     cmd = 'playerctl -p spotify metadata --follow'
     with open( PLAYERCTLfile, 'w' ) as redir_file:
-        sp.Popen( cmd.split(), shell=False, stdout=redir_file, stderr=redir_file )
+        sp.Popen( cmd.split(), shell=False, stdout=redir_file,
+                                            stderr=redir_file )
+
 
 def metadata2file(metalines):
     """ Convert the metadalalines from playerclt output to
@@ -85,7 +85,7 @@ def metadata2file(metalines):
     for line in metalines:
         if not line.strip():
             break
-        key, value = line[8:34].strip(), line[34:].strip()
+        key, value = line[8: 34].strip(), line[34: ].strip()
         # mpris:length to integer
         if key == 'mpris:length':
             value = int(value)
@@ -95,6 +95,7 @@ def metadata2file(metalines):
     with open(SPOTIFYfile, 'w') as f:
         f.write( json.dumps( dict ) )
 
+
 class Changed_files_handler(FileSystemEventHandler):
 
     def on_modified(self, event):
@@ -102,8 +103,9 @@ class Changed_files_handler(FileSystemEventHandler):
         if '.playerctl_spotify_events' in path:
             with open(PLAYERCTLfile, 'r') as f:
                 # Playerctrl metadata shows 11 metadata property lines
-                metalines = f.read().split('\n')[-12:]
+                metalines = f.read().split('\n')[-12: ]
                 metadata2file(metalines)
+
 
 if __name__ == "__main__":
 
@@ -119,7 +121,8 @@ if __name__ == "__main__":
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     observer = Observer()
-    observer.schedule(event_handler=Changed_files_handler(), path=WATCHED_DIR, recursive=False)
+    observer.schedule(event_handler=Changed_files_handler(),
+                      path=MAINFOLDER, recursive=False)
     observer.start()
-    obsloop = threading.Thread( target = observer.join() )
+    obsloop = threading.Thread( target=observer.join() )
     obsloop.start()

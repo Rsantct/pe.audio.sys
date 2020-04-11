@@ -1,0 +1,10 @@
+# user settings:
+
+STEPdB      : 3.0
+
+alertdB     : -6.0
+
+# (i) Beta: for beep sound you need to configure your
+# .asondrc to have a jack plugin that connects to brutefir
+beep        : False
+alsaplugin  : 'brutefir'

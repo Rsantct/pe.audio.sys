@@ -36,6 +36,7 @@ preamp = Preamp()
 # INITIATE A CONVOLVER INSTANCE (XO and DRC management)
 convolver = Convolver()
 
+
 # MAIN FUNCTION FOR COMMAND PROCESSING
 def process_commands( full_command ):
     """ Processes commands for audio control
@@ -53,7 +54,7 @@ def process_commands( full_command ):
 
         command, arg, add = '', '', False
 
-        cmd_list = full_cmd.replace('\r','').replace('\n','').split()
+        cmd_list = full_cmd.replace('\r', '').replace('\n', '').split()
 
         if not cmd_list[0:]:
             return ('', '', False)
@@ -75,10 +76,10 @@ def process_commands( full_command ):
     # 'mono' is a former command, here it is redirected to 'midside'
     def set_mono(x, *dummy):
         try:
-            x = {   'on':       'mid',
-                    'off':      'off',
-                    'toggle':   { 'off':'mid', 'side':'off', 'mid':'off'
-                                } [ preamp.state['midside'] ]
+            x = { 'on':     'mid',
+                  'off':    'off',
+                  'toggle': { 'off':'mid', 'side':'off', 'mid':'off'
+                             } [ preamp.state['midside'] ]
                 } [x]
             return preamp.set_midside(x)
         except:
@@ -156,6 +157,7 @@ def process_commands( full_command ):
         result = f'problems processing command: {command}'
 
     return result
+
 
 # INTERFACE FUNCTION TO PLUG THIS MODULE ON SERVER.PY
 def do( cmdline ):

@@ -53,16 +53,16 @@ SPOTIFY_CLIENT = detect_spotify_client()
 
 ## generic metadata template (!) remember to use copies of this ;-)
 METATEMPLATE = {
-    'player':       '',
-    'time_pos':     '-',
-    'time_tot':     '-',
-    'bitrate':      '-',
-    'artist':       '-',
-    'album':        '-',
-    'title':        '-',
-    'track_num':    '-',
-    'tracks_tot':   '-'
-    }
+                'player':       '',
+                'time_pos':     '-',
+                'time_tot':     '-',
+                'bitrate':      '-',
+                'artist':       '-',
+                'album':        '-',
+                'title':        '-',
+                'track_num':    '-',
+                'tracks_tot':   '-' }
+
 
 # Aux to get the current preamp input source
 def get_source():
@@ -80,6 +80,7 @@ def get_source():
         sleep(.25)
     return source
 
+
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
 def player_get_meta(readonly=False):
     """ Returns a dictionary with the current track metadata
@@ -94,8 +95,7 @@ def player_get_meta(readonly=False):
 
     source = get_source()
 
-
-    if   'librespot' in source or 'spotify' in source.lower():
+    if 'librespot' in source or 'spotify' in source.lower():
         if SPOTIFY_CLIENT == 'desktop':
             md = spotify_meta(md)
         elif SPOTIFY_CLIENT == 'librespot':
@@ -117,6 +117,7 @@ def player_get_meta(readonly=False):
         md = mplayer_meta(md, service='cdda', readonly=readonly)
 
     return md
+
 
 # Generic function to control any player
 def player_control(action):
@@ -152,6 +153,7 @@ def player_control(action):
 
     return nstate
 
+
 # init() will be autostarted from server.py when loading this module
 def init():
     """ This init function will:
@@ -172,6 +174,7 @@ def init():
     # Flush state file:
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
         f.write('')
+
 
 # Interface entry function for this module plugged inside 'server.py'
 def do(cmd):

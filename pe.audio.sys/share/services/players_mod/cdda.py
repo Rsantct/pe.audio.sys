@@ -41,8 +41,8 @@ import sys
 
 UHOME = expanduser("~")
 
-CDDA_INFO_TEMPLATE = { 'artist':'-', 'album':'-',
-                       '1': {'title':'-', 'length':'00:00.00'} }
+CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',
+                       '1': {'title': '-', 'length': '00:00.00'} }
 
 ## cdrom device to use
 try:
@@ -53,8 +53,10 @@ except:
     CDROM_DEVICE = '/dev/cdrom'
     print(f'(cdda.py) Using default \'{CDROM_DEVICE}\'')
 
+
 def cdda_info_template():
     return CDDA_INFO_TEMPLATE
+
 
 def mmsscc2msec(mmsscc):
     """ input:   'mm:ss.cc' (str)
@@ -65,9 +67,10 @@ def mmsscc2msec(mmsscc):
     ss   = int( sscc.split('.')[0]   )
     cc   = int( sscc.split('.')[1]   )
 
-    millisec = mm*60*1000 + ss*1000 + cc*10
+    millisec = mm * 60 * 1000 + ss * 1000 + cc * 10
 
     return millisec
+
 
 def msec2string(msec):
     """ input:  millisecs  (float)
@@ -77,6 +80,7 @@ def msec2string(msec):
     mm   = f'{sec // 60:.0f}'.zfill(2)
     ss   = f'{sec %  60:.2f}'.zfill(5)
     return f'{mm}:{ss}'
+
 
 def get_disc_metadata(device=CDROM_DEVICE):
 
@@ -100,12 +104,12 @@ def get_disc_metadata(device=CDROM_DEVICE):
         track_sectors = toc[3:] + [toc[2]]
         track_sectors = [int(x) for x in track_sectors]
         for i in range(len(track_sectors)):
-            if i==0:
+            if i == 0:
                 continue
             trackNum = i
-            trackLen = ( track_sectors[i] - track_sectors[i-1] ) / 75
+            trackLen = ( track_sectors[i] - track_sectors[i - 1] ) / 75
             md[str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
-                                 'length': msec2string(trackLen*1e3)}
+                                 'length': msec2string(trackLen * 1e3)}
         return md
 
     # will complete md with info retrieved from musicbrainz
@@ -121,7 +125,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
 
     try:
         result = mz.get_releases_by_discid( disc.id,
-                                      includes=['artists','recordings'] )
+                                      includes=['artists', 'recordings'] )
     except mz.ResponseError:
         print('(cdda.py) disc not found or bad response')
         return simple_md(disc)
@@ -148,10 +152,12 @@ def get_disc_metadata(device=CDROM_DEVICE):
 
     return md
 
+
 def save_disc_metadata(device=CDROM_DEVICE,
                        fname=f'{UHOME}/pe.audio.sys/.cdda_info'):
     with open(fname, 'w') as f:
         f.write( json.dumps( get_disc_metadata(device) ) )
+
 
 def make_pls():
 
@@ -181,6 +187,7 @@ def make_pls():
 
     return pls
 
+
 def make_m3u():
 
     md = get_disc_metadata()
@@ -193,7 +200,7 @@ def make_m3u():
             continue
 
         durationms = mmsscc2msec( md[k]["length"] )
-        durationsec = str( int(round( durationms/1e3, 0)) )
+        durationsec = str( int(round( durationms / 1e3, 0)) )
 
         m3u += '#EXTINF:'
         m3u += f'{durationsec},'
@@ -202,10 +209,11 @@ def make_m3u():
 
     return m3u
 
+
 def save_cdda_playlist(mode='m3u'):
     """ Saves a playlist for MPD :-)
     """
-    folder= f'{UHOME}/.config/mpd/playlists'
+    folder = f'{UHOME}/.config/mpd/playlists'
     if mode == 'm3u':
         tmp = make_m3u()
         fname = f'{folder}/.cdda.m3u'
@@ -216,6 +224,7 @@ def save_cdda_playlist(mode='m3u'):
         return
     with open(f'{fname}', 'w') as f:
         f.write(tmp)
+
 
 if __name__ == "__main__":
     if sys.argv[1:] and '-s' in sys.argv[1]:
