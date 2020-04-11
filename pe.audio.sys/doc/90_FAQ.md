@@ -37,6 +37,8 @@ Be sure the Apache's PHP module is installed and enabled:
 
 If you run a desktop system with enough CPU, your friend is the official Spotify package for Linux https://www.spotify.com/en/download/linux/
 
+This is the preferred because pe.audio.sys will obtain complete metatada info.
+
 ### Headless
 
 If you want a headless system, your friend is **`librespot`** https://github.com/librespot-org/librespot
@@ -47,6 +49,8 @@ If you want a headless system, your friend is **`librespot`** https://github.com
     cargo install librespot  # This will take a long while to compile
     
 Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA or Coreaudio, as needed.
+
+Unfortunately, librestpot only provides the current song title, nor artist neither album info.
     
  #### Raspberry Pi
  
