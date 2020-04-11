@@ -39,9 +39,15 @@ Some *end user* and *user friendly* features has been added here.
 - IR daemon to use a remote
 
 
-## room correction EQ
+## room correction EQ (DRC)
 
-Regarding your room correction EQ, you can use both IIR (parametric correction) or FIR (impulse correction). I prefer the last one, and I propose multipoint based correction, for example you can try my [multipoint DRC](https://github.com/Rsantct/DRC).
+Regarding room correction EQ, you can use both IIR (parametric correction) or FIR (impulse correction).
+
+FIR DRC is supported under a reserver convolver stage on Brutefir.
+
+IIR DRC can be used through by the provided Ecasound add-on script, then bypassing the convolver stage above.
+
+A multipoint measured based FIR DRC correction software is available [here](https://github.com/Rsantct/DRC).
 
 
 
