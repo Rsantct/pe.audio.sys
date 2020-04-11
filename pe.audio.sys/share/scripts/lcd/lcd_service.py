@@ -50,7 +50,7 @@ try:
     with open( f'{UHOME}/pe.audio.sys/share/scripts/lcd/lcd.yml', 'r' ) as f:
         LCD_CONFIG = yaml.safe_load( f.read() )
 except:
-    print( '(lcd_service) YAML error reading lcd.yml' )
+    print( '(lcd_service) ERROR reading lcd.yml' )
     exit()
 
 
@@ -69,8 +69,8 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
     # Will try to define the screen, if already exist will receive 'huh?'
     ans = LCD.query('screen_add scr_info')
     if 'huh?' not in ans:
-        LCD.send(f'screen_set scr_info -cursor no -priority foreground '
-                  '-timeout {str(timeout)}')
+        LCD.send(f'screen_set scr_info -cursor no -priority foreground ' + \
+                 f'-timeout {str(timeout)}' )
         LCD.send('widget_add scr_info info_tit title')
         LCD.send('widget_add scr_info info_txt2 string')
         LCD.send('widget_add scr_info info_txt3 string')
@@ -82,8 +82,8 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
     # Display the temporary message
     line = 2
     for data in split_by_n(message, 20):
-        LCD.send('widget_set scr_info info_txt' + str(line) + ' 1 ' + \
-                  str(line) + ' "' + data + '"')
+        LCD.send('widget_set scr_info info_txt' + str(line) + ' 1 ' +
+                 str(line) + ' "' + data + '"')
         line += 1
         if line > 4:
             break
@@ -107,23 +107,23 @@ def define_widgets():
 
     global widgets_state  # defined text type when prepare_main_screen
     widgets_state = {
-                'input'             : { 'pos':'1  3',    'val':''       },
-                'level'             : { 'pos':'1  1',    'val':'v:'     },
-                'headroom'          : { 'pos':'0  0',    'val':'hrm:'   },
-                'balance'           : { 'pos':'10 1',    'val':'bl:'    },
+                'input'             : { 'pos':'1  3',    'val':''         },
+                'level'             : { 'pos':'1  1',    'val':'v:'       },
+                'headroom'          : { 'pos':'0  0',    'val':'hrm:'     },
+                'balance'           : { 'pos':'10 1',    'val':'bl:'      },
                 # the former 'mono' key is now 'midside'
-                'midside'           : { 'pos':'17 1',    'val':''       },
-                'solo'              : { 'pos':'0  0',    'val':''       },
-                'muted'             : { 'pos':'1  1',    'val':'MUTED'  },
-                'bass'              : { 'pos':'1  2',    'val':'b:'     },
-                'treble'            : { 'pos':'6  2',    'val':'t:'     },
-                'loudness_ref'      : { 'pos':'12 2',    'val':'LUref:' },
-                'xo_set'            : { 'pos':'0  0',    'val':'xo:'    },
-                'drc_set'           : { 'pos':'0  0',    'val':'drc:'   },
-                'peq_set'           : { 'pos':'0  0',    'val':'peq:'   },
-                'syseq'             : { 'pos':'0  0',    'val':''       },
-                'polarity'          : { 'pos':'0  0',    'val':'pol'    },
-                'target'            : { 'pos':'0  0',    'val':'pol'    }
+                'midside'           : { 'pos':'17 1',    'val':''         },
+                'solo'              : { 'pos':'0  0',    'val':''         },
+                'muted'             : { 'pos':'1  1',    'val':'MUTED'    },
+                'bass'              : { 'pos':'1  2',    'val':'b:'       },
+                'treble'            : { 'pos':'6  2',    'val':'t:'       },
+                'loudness_ref'      : { 'pos':'12 2',    'val':'LUref:'   },
+                'xo_set'            : { 'pos':'0  0',    'val':'xo:'      },
+                'drc_set'           : { 'pos':'0  0',    'val':'drc:'     },
+                'peq_set'           : { 'pos':'0  0',    'val':'peq:'     },
+                'syseq'             : { 'pos':'0  0',    'val':''         },
+                'polarity'          : { 'pos':'0  0',    'val':'pol'      },
+                'target'            : { 'pos':'0  0',    'val':'pol'      }
                 }
 
     global widgets_aux   # info outside pe.audio.sys state
@@ -196,7 +196,7 @@ def update_lcd_state(scr='scr_1'):
             #               or void if no loudness_track
             elif key == 'loudness_ref':
                 if data['loudness_track']:
-                    lbl += str( int(round(value, 0)) ).rjust(3)
+                    lbl += str( int( round(value, 0) ) ).rjust(3)
                 else:
                     lbl = 'LOUDc off'
 
@@ -222,7 +222,6 @@ def update_lcd_state(scr='scr_1'):
             # sintax for string widgets:
             #   widget_set screen widget coordinate "text"
             cmd = f'widget_set {scr} {key} {pos} "{lbl}"'
-            #print(cmd) # DEBUG only
             LCD.send( cmd )
 
         # The big screen to display the level value
@@ -233,7 +232,7 @@ def update_lcd_state(scr='scr_1'):
         _state = yaml.safe_load(f)
         # avoid if reading an empty file:
         if _state and _state != _last_state:
-            #print( '(lcd_service) uptating STATE' ) # DEBUG only
+            #print( '(lcd_service) uptating STATE' )  # DEBUG
             show_state( _state )
             _last_state = _state
 
@@ -255,7 +254,7 @@ def update_lcd_loudness_monitor(scr='scr_1'):
 
     lbl += lu.rjust(3)
     cmd = f'widget_set {scr} {wdg} {pos} "{lbl}"'
-    #print( f'(lcd_service) uptating {lbl}' ) # DEBUG only
+    #print( f'(lcd_service) uptating {lbl}' )  # DEBUG
     LCD.send( cmd )
 
 
@@ -293,7 +292,7 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
     else:
         pass
 
-    #print( f'(lcd_service) uptating metadata: {md}' ) # DEBUG only
+    # print( f'(lcd_service) uptating metadata: {md}' )  # DEBUG
 
     # Updating:
     for key, value in md.items():
@@ -307,17 +306,17 @@ def update_lcd_metadata(mode='composed_marquee', scr='scr_1'):
             left, top   = pos.split()
             right       = 20
             bottom      = top
-            direction   = 'm'     # (h)orizontal (v)ertical or (m)arquee
+            direction   = 'm'  # (h)orizontal (v)ertical or (m)arquee
             speed       = str( LCD_CONFIG['scroller_speed'] )
             # adding a space for marquee mode
             if direction == 'm':
                 lbl += ' '
 
             # sintax for scroller widgets:
-            # widget_set scr widget left top right bottom direction speed "text"
-            cmd = f'widget_set {scr} {key} {left} {top} {right} ' \
-                  f'{bottom} {direction} {speed} "{lbl}"'
-            #print(cmd) # DEBUG only
+            # widget_set screen widget left top right bottom direction speed "text"
+            cmd = f'widget_set {scr} {key} {left} {top} {right} {bottom} ' + \
+                  f'{direction} {speed} "{lbl}"'
+            #print(cmd)  # DEBUG
             LCD.send( cmd )
 
 
@@ -328,7 +327,7 @@ class changed_files_handler(FileSystemEventHandler):
     def on_modified(self, event):
 
         path = event.src_path
-        #print( f'(aux.py) file {event.event_type}: \'{path}\'' ) # DEBUG only
+        #print( f'(lcd_service) file {event.event_type}: \'{path}\'' ) # DEBUG
 
         # pe.audio.sys STATE changes
         if STATE_file in path:
