@@ -65,6 +65,7 @@ coeff "c.eq" {
 };
     
 # -------  COEFFs for DRC --------
+# PCMs found under the loudspeaker folder
 
 coeff "drc.L.p1" {
     filename:    "drc.L.p1.pcm";
