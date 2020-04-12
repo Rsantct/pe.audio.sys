@@ -217,57 +217,54 @@ def bf_cli(command):
             print (f'(core) Brutefir socket error')
 
 
-def bf_set_midside( mode ):
-    """ midside (formerly mono) is implemented by routing and mixing
-        from the input to the first filter stages (f.eq.X):
-        in.L  ------->  f.eq.L
+def bf_set_gains( state ):
+    """ Adjust Brutefir gain at f.lev.Ch stages as per the provided
+        state[level] value. Also manages the channel routing to provide
+        mid (mono) or side (L-R) listening, as well manages state[solo].
+
+        midside (formerly mono) is implemented by routing and mixing
+        from the inputs to the first filter stages (f.lev.Ch):
+        in.L  ------->  f.lev.L
                 \/
                 /\
-        in.L  ------->  f.eq.L
-    """
-    if   mode == 'mid':
-        bf_cli( 'cfia "f.eq.L" "in.L" m0.5 ; cfia "f.eq.L" "in.R" m0.5 ;'
-                'cfia "f.eq.R" "in.L" m0.5 ; cfia "f.eq.R" "in.R" m0.5  ')
-    elif mode == 'side':
-        bf_cli( 'cfia "f.eq.L" "in.L" m0.5 ; cfia "f.eq.L" "in.R" m-0.5 ;'
-                'cfia "f.eq.R" "in.L" m0.5 ; cfia "f.eq.R" "in.R" m-0.5  ')
-    elif mode == 'off':
-        bf_cli( 'cfia "f.eq.L" "in.L" m1.0 ; cfia "f.eq.L" "in.R" m0.0 ;'
-                'cfia "f.eq.R" "in.L" m0.0 ; cfia "f.eq.R" "in.R" m1.0  ')
-    else:
-        pass
-
-
-def bf_set_gains( state ):
-    """ Adjust Brutefir gain at drc.X stages as per the provided state values
+        in.R  ------->  f.lev.R
     """
 
-    gain    = calc_gain( state )
+    dB_gain    = calc_gain( state )
+    dB_balance = state['balance']
+    dB_gain_L  = (dB_gain - dB_balance / 2.0)
+    dB_gain_R  = (dB_gain + dB_balance / 2.0)
 
-    balance = float( state['balance'] )
+    # Prepare some unity multipliers:
+    solo_L = {'off': 1, 'l': 1, 'r': 0} [ state['solo']  ]
+    solo_R = {'off': 1, 'l': 0, 'r': 1} [ state['solo']  ]
+    mute   = {True: 0, False: 1}        [ state['muted'] ]
 
-    # Booleans:
-    solo    = state['solo']
-    muted   = state['muted']
+    # Compute gain from dB to a multiplier, this is an alternative to
+    # adjusting the attenuation on 'cfia' and 'cffa' commands syntax.
+    m_gain_L = 10 ** (dB_gain_L / 20.0) * mute * solo_L
+    m_gain_R = 10 ** (dB_gain_R / 20.0) * mute * solo_R
 
-    # (i) m_xxxx stands for an unity multiplier
-    m_solo_L = {'off': 1, 'l': 1, 'r': 0} [ solo ]
-    m_solo_R = {'off': 1, 'l': 0, 'r': 1} [ solo ]
-    m_mute   = {True: 0, False: 1}        [ muted ]
+    # Compute the final gains as per the midside setting:
+    if   state['midside'] == 'mid':
+        LL = m_gain_L * 0.5; LR = m_gain_R *  0.5
+        RL = m_gain_L * 0.5; RR = m_gain_R *  0.5
 
-    gain_L = (gain - balance / 2.0)
-    gain_R = (gain + balance / 2.0)
+    elif state['midside'] == 'side':
+        LL = m_gain_L * 0.5; LR = m_gain_R * -0.5
+        RL = m_gain_L * 0.5; RR = m_gain_R * -0.5
 
-    # We compute from dB to a multiplier, this is an alternative to
-    # adjusting the attenuation on 'cffa' command syntax
-    m_gain_L = 10 ** (gain_L / 20.0) * m_mute * m_solo_L
-    m_gain_R = 10 ** (gain_R / 20.0) * m_mute * m_solo_R
+    elif state['midside'] == 'off':
+        LL = m_gain_L * 1.0; LR = m_gain_R *  0.0
+        RL = m_gain_L * 0.0; RR = m_gain_R *  1.0
 
-    # cffa will apply atten at the 'from filters' input section on drc filters
-    cmd =   'cffa "f.drc.L" "f.eq.L" m' + str( m_gain_L ) + ';' \
-          + 'cffa "f.drc.R" "f.eq.R" m' + str( m_gain_R ) + ';'
-    # print(cmd) # debug
-    bf_cli(cmd)
+
+    Lcmd = f'cfia "f.lev.L" "in.L" m{LL} ; cfia "f.lev.L" "in.R" m{LR}'
+    Rcmd = f'cfia "f.lev.R" "in.L" m{RL} ; cfia "f.lev.R" "in.R" m{RR}'
+
+    LRcmd = f'{Lcmd}; {Rcmd}'
+
+    bf_cli(LRcmd)
 
 
 def bf_set_eq( eq_mag, eq_pha ):
@@ -732,8 +729,8 @@ class Preamp(object):
 
     def set_midside(self, value, *dummy):
         if value.lower() in [ 'mid', 'side', 'off' ]:
-            bf_set_midside( value.lower() )
             self.state['midside'] = value.lower()
+            bf_set_gains( self.state )
         else:
             return 'bad option'
         return 'done'
