@@ -25,15 +25,19 @@
 import socket
 
 
-class Client():
+class Client(object):
     """ A LCDd client
     """
 
     def __init__(self, cname, host="localhost", port=13666):
-        self.cname  = cname
-        self.host   = host
-        self.port   = port
-        self.cli    = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.cname   = cname
+        self.host    = host
+        self.port    = port
+        self.cli     = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.verbose = False
+
+    def set_verbose(self, mode):
+        self.verbose = mode
 
     def connect(self):
         try:
@@ -62,6 +66,8 @@ class Client():
         """sends a command phrase to LCDd"""
         # This is faster than query to get an answer
         self.cli.send( f'{phrase}\n'.encode() )
+        if self.verbose:
+            print(phrase)
 
     def register( self ):
         """Try to register a client into the LCDd server"""

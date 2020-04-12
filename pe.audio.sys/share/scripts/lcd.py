@@ -17,7 +17,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    Starts the LCD server and lcd_service.py
+    Starts the LCD server and lcd_daemon.py
 
     usage:   lcd   start | stop
 """
@@ -32,16 +32,16 @@ LCDFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/lcd'
 
 
 def start():
-    # the server
+    # The server that manages the LCD display Linux driver.
     Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
     sleep(3)
-    # the service for pre.di.c info display
-    Popen( f'python3 {LCDFOLDER}/lcd_service.py'.split() )
+    # The daemon to display pe.audio.sys info on the LCD
+    Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
 
 
 def stop():
     Popen( ['pkill', '-f', 'lcd/LCDd.conf'] )
-    Popen( ['pkill', '-f', 'lcd_service.py'] )
+    Popen( ['pkill', '-f', 'lcd_daemon.py'] )
     sleep(1)
 
 
