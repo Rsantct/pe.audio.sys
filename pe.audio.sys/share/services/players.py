@@ -89,7 +89,7 @@ def player_get_meta(readonly=False):
     # 'readonly=True':
     #   Only useful for mplayer_meta(). It avoids to query Mplayer
     #   and flushing its metadata file.
-    #   It is used from the 'change files handler' on lcd_service.py.
+    #   It is used from the 'change files handler' on lcd_daemon.py.
 
     md = METATEMPLATE.copy()
 
