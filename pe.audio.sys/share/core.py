@@ -221,12 +221,13 @@ def bf_cli(command):
 
 
 def bf_set_gains( state ):
-    """ Adjust Brutefir gain at f.lev.Ch stages as per the provided
-        state[level] value. Also manages the channel routing to provide
-        mid (mono) or side (L-R) listening, as well manages state[solo].
+    """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
+          provided state values and configured reference levels.
+        - Routes channels to listening modes 'mid' (mono) or 'side' (L-R).
+        - Manages the 'solo' feature.
 
-        midside (formerly mono) is implemented by routing and mixing
-        from the inputs to the first filter stages (f.lev.Ch):
+        (i) Midside (formerly mono) is implemented by routing and mixing
+            from the inputs to the first filter stages (f.lev.Ch):
 
                       f.lev.L
         in.L  --------  LL
