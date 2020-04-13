@@ -39,14 +39,16 @@ from time import sleep
 
 # AUX and FILES MANAGEMENT: ============================================
 def read_yaml(filepath):
-    """ Returns a dictionary from an YAML file """
+    """ Returns a dictionary from an YAML file
+    """
     with open(filepath) as f:
         d = yaml.safe_load(f)
     return d
 
 
 def save_yaml(dic, filepath):
-    """ Save a dict to disk """
+    """ Save a dict to disk
+    """
     with open( filepath, 'w' ) as f:
         yaml.safe_dump( dic, f, default_flow_style=False )
 
@@ -206,7 +208,8 @@ def calc_gain( state ):
 
 # BRUTEFIR MANAGEMENT: =================================================
 def bf_cli(command):
-    """ send commands to Brutefir and disconnects from it """
+    """ send commands to Brutefir and disconnects from it
+    """
     # using 'with' will disconnect the socket when done
     with socket.socket() as s:
         try:
@@ -224,10 +227,15 @@ def bf_set_gains( state ):
 
         midside (formerly mono) is implemented by routing and mixing
         from the inputs to the first filter stages (f.lev.Ch):
-        in.L  ------->  f.lev.L
+
+                      f.lev.L
+        in.L  --------  LL
+               \  ____  LR
                 \/
-                /\
-        in.R  ------->  f.lev.R
+                /\____
+               /        RL
+        in.R  --------  RR
+                      f.lev.R
     """
 
     dB_gain    = calc_gain( state )
@@ -268,7 +276,8 @@ def bf_set_gains( state ):
 
 
 def bf_set_eq( eq_mag, eq_pha ):
-    """ Adjust the Brutefir EQ module  """
+    """ Adjust the Brutefir EQ module
+    """
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
     pha_pairs = []
@@ -298,16 +307,22 @@ def bf_read_eq():
 
 
 def bf_set_drc( drcID ):
-    """ Changes the FIR for DRC at runtime """
+    """ Changes the FIR for DRC at runtime
+    """
+
     if drcID == 'none':
-        cmd = ( f'cfc "f.drc.L" -1             ; cfc "f.drc.R" -1             ;' )
+        cmd = ( f'cfc "f.drc.L" -1 ;'
+                 'cfc "f.drc.R" -1 ;' )
     else:
-        cmd = ( f'cfc "f.drc.L" "drc.L.{drcID}"; cfc "f.drc.R" "drc.R.{drcID}";' )
+        cmd = ( f'cfc "f.drc.L" "drc.L.{drcID}";'
+                f'cfc "f.drc.R" "drc.R.{drcID}";' )
+
     bf_cli( cmd )
 
 
 def bf_set_xo( ways, xo_coeffs, xoID ):
-    """ Changes the FIRs for XOVER at runtime """
+    """ Changes the FIRs for XOVER at runtime
+    """
 
     # example:
     #   ways:
@@ -391,7 +406,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
                 if p2 not in JCLI.get_all_connections(p1):
                     JCLI.connect(p1, p2)
                 else:
-                    print ( f'(core) {p1.name} already connected to {p2.name}' )
+                    print (f'(core) {p1.name} already connected to {p2.name}')
             return True
         except:
             c -= 1
@@ -400,8 +415,10 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     return False
 
 
-def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
-    """ High level tool to connect/disconnect a given port name patterns """
+def jack_connect_bypattern( cap_pattern, pbk_pattern,
+                            mode='connect', wait=1 ):
+    """ High level tool to connect/disconnect a given port name patterns
+    """
     # Try to get ports by a port name pattern
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input=True )
@@ -410,7 +427,7 @@ def jack_connect_bypattern(cap_pattern, pbk_pattern, mode='connect', wait=1):
     if not cap_ports:
         loopback_cap_ports = JCLI.get_ports( 'loopback', is_output=True )
         for p in loopback_cap_ports:
-            # A port can have 2 alias, our user defined alias is the 2nd one.
+            # A port can have 2 alias, our is the 2nd one.
             if cap_pattern in p.aliases[1]:
                 cap_ports.append(p)
     if not pbk_ports:
@@ -486,7 +503,8 @@ def init_audio_settings():
         preamp.set_level      (   preamp.state['level']           )
 
     if on_init["max_level"] is not None:
-        preamp.set_level(  min( on_init["max_level"], preamp.state['level'] ) )
+        preamp.set_level(  min( on_init["max_level"],
+                                preamp.state['level'] ) )
 
     if on_init["bass"] is not None :
         preamp.set_bass       (   on_init["bass"]                 )
@@ -584,8 +602,8 @@ class Preamp(object):
         self.inputs = CONFIG['sources']
         # The state dictionary
         self.state = read_yaml( STATE_PATH )
-        self.state['loudspeaker'] = CONFIG['loudspeaker']   # informative value
-        self.state['peq_set'] = get_peq_in_use()            # informative value
+        self.state['loudspeaker'] = CONFIG['loudspeaker']   # informative
+        self.state['peq_set'] = get_peq_in_use()            # informative
         # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
         # The available span for tone curves
@@ -601,11 +619,12 @@ class Preamp(object):
             does not exceed gain limits
         """
 
-        g               = calc_gain( candidate )
-        b               = candidate['balance']
+        gmax            = self.gain_max
+        gain            = calc_gain( candidate )
         eq_mag, eq_pha  = calc_eq( candidate )
+        bal             = candidate['balance']
 
-        headroom = self.gain_max - g - np.max(eq_mag) - np.abs(b / 2.0)
+        headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0)
 
         if headroom >= 0:
             # APPROVED
@@ -617,12 +636,12 @@ class Preamp(object):
             # REFUSED
             return 'not enough headroom'
 
-    # Bellow we use *dummy to accommodate the preamp.py parser mechanism wich
-    # will include two arguments for any function call, even when not necessary.
+    # Bellow we use *dummy to accommodate the preamp.py parser mechanism
+    # wich always will include two arguments for any function call.
 
     def get_state(self, *dummy):
         #return yaml.safe_dump( self.state, default_flow_style=False )
-        self.state['convolver_runs'] = brutefir_runs()      # informative value
+        self.state['convolver_runs'] = brutefir_runs()      # informative
         return self.state
 
     def get_target_sets(self, *dummy):
@@ -719,7 +738,8 @@ class Preamp(object):
             if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
                 value = { 'false': False, 'off': False,
                           'true' : True,  'on' : True,
-                          'toggle': {False: True, True: False} [ self.state['muted'] ]
+                          'toggle': {False: True, True: False}
+                                                 [ self.state['muted'] ]
                         } [ value.lower() ]
                 self.state['muted'] = value
                 bf_set_gains( self.state )
@@ -793,7 +813,7 @@ class Preamp(object):
                     if value is not None:
                         candidate[option] = value
             except:
-                print( '(config.yml) missing \'on_change_input\' options' )
+                print('(config.yml) missing \'on_change_input\' options')
             return candidate
 
         result = try_select(value)
@@ -809,7 +829,7 @@ class Preamp(object):
                                CONFIG["sources"][value]['loudness_ref']
             except:
                 pass
-            # Special source target setting overrides the one in on_init behavior
+            # Special source target setting overrides the one in on_init
             try:
                 candidate["target"] = CONFIG["sources"][value]['target']
             except:
@@ -845,13 +865,17 @@ class Convolver(object):
     def __init__(self):
 
         # DRC pcm files must be named:
-        #    drc.X.DRCSETNAME.pcm   where X must be L | R
+        #    drc.X.DRCSETNAME.pcm
+        #
+        #       where X must be L | R
         #
         # XO pcm files must be named:
-        #   xo.XX[.C].XOSETNAME.pcm     where XX must be:  fr | lo | mi | hi | sw
-        #                               and channel C is **OPTIONAL**
-        #                               can be: L | R
-        #   Using C allows to have dedicated FIR per channel if necessary
+        #   xo.XX[.C].XOSETNAME.pcm
+        #
+        #       where XX must be:     fr | lo | mi | hi | sw
+        #       and channel C can be:  L | R  (optional)
+        #
+        #       Using C allows to have dedicated FIR per channel
 
         files   = os.listdir(LSPK_FOLDER)
         coeffs  = [ x.replace('.pcm', '') for x in files ]
@@ -879,8 +903,8 @@ class Convolver(object):
         self.ways = get_brutefir_config('ways')
         # print('ways:', self.ways) # debug
 
-    # Bellow we use *dummy to accommodate the preamp.py parser mechanism wich
-    # will include two arguments for any function call, even when not necessary.
+    # Bellow we use *dummy to accommodate the preamp.py parser mechanism
+    # wich always will include two arguments for any function call.
 
     def set_drc(self, drc, *dummy):
         if drc in self.drc_sets or drc == 'none':
@@ -911,12 +935,12 @@ except:
     print( '(core) ERROR cannot commuticate to the JACK SOUND SERVER.' )
 
 # COMMON USE VARIABLES: ================================================
-UHOME           = os.path.expanduser("~")
-CONFIG          = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
-LSPK_FOLDER     = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
-STATE_PATH      = f'{UHOME}/pe.audio.sys/.state.yml'
-EQ_FOLDER       = f'{UHOME}/pe.audio.sys/share/eq'
-EQ_CURVES       = find_eq_curves()
+UHOME       = os.path.expanduser("~")
+CONFIG      = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
+LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
+STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
+EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
+EQ_CURVES   = find_eq_curves()
 
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
