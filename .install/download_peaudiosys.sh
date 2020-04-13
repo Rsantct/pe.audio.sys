@@ -2,7 +2,7 @@
 
 if [ -z $1 ] ; then
     echo usage:
-    echo "    download_peaudiosys.sh  branch_name [git_repo]"
+    echo "    download_peaudiosys.sh  branch_name <git_repo>"
     echo
     exit 0
 fi
