@@ -272,9 +272,7 @@ def bf_set_gains( state ):
     Lcmd = f'cfia "f.lev.L" "in.L" m{LL} ; cfia "f.lev.L" "in.R" m{LR}'
     Rcmd = f'cfia "f.lev.R" "in.L" m{RL} ; cfia "f.lev.R" "in.R" m{RR}'
 
-    LRcmd = f'{Lcmd}; {Rcmd}'
-
-    bf_cli(LRcmd)
+    bf_cli( f'{Lcmd}; {Rcmd}' )
 
 
 def bf_set_eq( eq_mag, eq_pha ):
