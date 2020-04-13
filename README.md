@@ -47,7 +47,7 @@ FIR DRC is supported under a reserver convolver stage on Brutefir.
 
 IIR DRC can be used through by the provided Ecasound add-on script, then bypassing the convolver stage above.
 
-A multipoint measured based FIR DRC correction software is available [here](https://github.com/Rsantct/DRC).
+A multipoint measure based FIR DRC correction software is available [here](https://github.com/Rsantct/DRC).
 
 
 
