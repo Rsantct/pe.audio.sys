@@ -240,8 +240,8 @@ def bf_set_gains( state ):
 
     dB_gain    = calc_gain( state )
     dB_balance = state['balance']
-    dB_gain_L  = (dB_gain - dB_balance / 2.0)
-    dB_gain_R  = (dB_gain + dB_balance / 2.0)
+    dB_gain_L  = dB_gain - dB_balance / 2.0
+    dB_gain_R  = dB_gain + dB_balance / 2.0
 
     # Prepare some unity multipliers:
     solo_L = {'off': 1, 'l': 1, 'r': 0} [ state['solo']  ]
