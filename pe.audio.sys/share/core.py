@@ -254,18 +254,20 @@ def bf_set_gains( state ):
     m_gain_R = 10 ** (dB_gain_R / 20.0) * mute * solo_R
 
     # Compute the final gains as per the midside setting:
+    # mid ==> L + R (mono)
     if   state['midside'] == 'mid':
         LL = m_gain_L * 0.5; LR = m_gain_R *  0.5
         RL = m_gain_L * 0.5; RR = m_gain_R *  0.5
 
+    # side ==> L - R (in-phase sounds will dissapear) 
     elif state['midside'] == 'side':
         LL = m_gain_L * 0.5; LR = m_gain_R * -0.5
         RL = m_gain_L * 0.5; RR = m_gain_R * -0.5
 
+    # off ==> L , R  (regular stereo)
     elif state['midside'] == 'off':
         LL = m_gain_L * 1.0; LR = m_gain_R *  0.0
         RL = m_gain_L * 0.0; RR = m_gain_R *  1.0
-
 
     Lcmd = f'cfia "f.lev.L" "in.L" m{LL} ; cfia "f.lev.L" "in.R" m{LR}'
     Rcmd = f'cfia "f.lev.R" "in.L" m{RL} ; cfia "f.lev.R" "in.R" m{RR}'
