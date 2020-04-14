@@ -114,7 +114,7 @@ def restart_service( service, address='localhost', port=TCP_BASE_PORT,
 
     # Start
     print( f'({ME}) starting SERVICE: \'{service}\'' )
-    cmd = f'python3 {BDIR}/share/server.py {service} {address} {port}'
+    cmd = f'python3 {BDIR}/share/services/server.py {service} {address} {port}'
     if todevnull:
         with open('/dev/null', 'w') as fnull:
             sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
