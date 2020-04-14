@@ -218,11 +218,11 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |   |-- lspk2/
     |   |-- ...
     |
-    \-- share/              system folders
+    \-- share/              System folders
         |
-        |-- eq/             shared tone, loudness and target curves .dat files
+        |-- eq/             Shared tone, loudness and target curves .dat files
         |
-        |-- services/       Services provided through by the tcp server (system control and others)
+        |-- services/       Services to manage the whole system
         |
         |-- scripts/        Additional scripts to launch at start up when issued at config.yml,
         |                   advanced users can write their own here.
