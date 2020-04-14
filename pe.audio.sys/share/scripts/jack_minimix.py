@@ -39,7 +39,7 @@ from pythonosc.udp_client import SimpleUDPClient
 
 UHOME = expanduser("~")
 sys.path.append( f'{UHOME}/pe.audio.sys' )
-from share.core import jack_connect_bypattern
+from share.services.preamp_mod.core import jack_connect_bypattern
 
 
 def start_brutefir():
