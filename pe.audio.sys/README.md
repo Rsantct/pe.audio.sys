@@ -89,7 +89,7 @@ All commands prefixed with `preamp`. This prexix can be omited.
     set_drc | drc    <name>                 Selects a DRC FIR set
     set_xo  | xo     <name>                 Selects a XOVER FIR set
 
-## Music player control
+## Music players control
 
 All commands prefixed with `player`:
 
