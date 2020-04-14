@@ -218,9 +218,9 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |   |-- lspk2/
     |   |-- ...
     |
-    \-- share/              System modules (the core and the tcp server)
+    \-- share/              system folders
         |
-        |-- eq/             Tone, loudness and target curves .dat files
+        |-- eq/             shared tone, loudness and target curves .dat files
         |
         |-- services/       Services provided through by the tcp server (system control and others)
         |
