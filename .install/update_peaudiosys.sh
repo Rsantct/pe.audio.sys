@@ -66,7 +66,7 @@ cd "$HOME"
 if [ -d "pe.audio.sys" ]; then
     echo "(i) Removing old distro files"
     rm -rf  pe.audio.sys/doc/               >/dev/null 2>&1
-    rm      pe.audio.sys/*BRANCH            >/dev/null 2>&1    
+    rm      pe.audio.sys/*BRANCH            >/dev/null 2>&1
 fi
 
 ################################################################################
@@ -93,7 +93,7 @@ if [ "$keepConfig" ]; then
 
     # HOME
     # .asoundrc .mpdconf and .mplyer/* are distributed as .sample files
- 
+
     # PE.AUDIO.SYS
     echo "(i) Restoring pe.audio.sys config files"
     cd "$HOME"/pe.audio.sys
@@ -102,7 +102,7 @@ if [ "$keepConfig" ]; then
         echo "    "$nfile
         mv $file $nfile
     done
-    
+
 ################################################################################
 # If NO KEEPING CONFIG, then overwrite:
 ################################################################################
@@ -120,16 +120,17 @@ fi
 # Restoring exec permissions
 ################################################################################
 cd "$HOME"
-chmod +x    pe.audio.sys/start.py               >/dev/null 2>&1
-chmod +x    pe.audio.sys/pasysctrl              >/dev/null 2>&1
-chmod +x    pe.audio.sys/macros/*               >/dev/null 2>&1
-chmod +x    pe.audio.sys/macros/examples/*      >/dev/null 2>&1
-chmod -x    pe.audio.sys/macros/*.md            >/dev/null 2>&1
-chmod -R +x pe.audio.sys/share/scripts/*        >/dev/null 2>&1
-chmod +x    pe.audio.sys/share/server.py        >/dev/null 2>&1
-chmod +x    pe.audio.sys/share/jloops_daemon.py >/dev/null 2>&1
-chmod +x    bin/*py                             >/dev/null 2>&1
-chmod +x    bin/peaudiosys*                     >/dev/null 2>&1
+chmod +x    pe.audio.sys/start.py                   >/dev/null 2>&1
+chmod +x    pe.audio.sys/pasysctrl                  >/dev/null 2>&1
+chmod +x    pe.audio.sys/macros/*                   >/dev/null 2>&1
+chmod +x    pe.audio.sys/macros/examples/*          >/dev/null 2>&1
+chmod -x    pe.audio.sys/macros/*.md                >/dev/null 2>&1
+chmod -R +x pe.audio.sys/share/scripts/*            >/dev/null 2>&1
+chmod +x    pe.audio.sys/share/services/server.py   >/dev/null 2>&1
+chmod +x    pe.audio.sys/share/services/preamp_mod/jloops_daemon.py \
+                                                    >/dev/null 2>&1
+chmod +x    bin/*py                                 >/dev/null 2>&1
+chmod +x    bin/peaudiosys*                         >/dev/null 2>&1
 
 ################################################################################
 # A helping file to identify the current branch
