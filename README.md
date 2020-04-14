@@ -46,7 +46,7 @@ The preferred software for you to design your own FIRs (loudspeaker EQ and XOVER
 **https://github.com/rripio/DSD**
 
 
-## room correction EQ (DRC)
+## Room correction EQ (DRC)
 
 Regarding room correction EQ, you can use both IIR (parametric correction) or FIR (impulse correction).
 
