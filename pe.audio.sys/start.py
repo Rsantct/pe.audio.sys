@@ -297,7 +297,7 @@ if __name__ == "__main__":
         import share.core as core
 
         # JACK LOOPS
-        sp.Popen( f'{BDIR}/share/jloops_daemon.py' )
+        sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
         sleep(1)  # this is necessary, or checking for ports to be activated
 
         # Running USER SCRIPTS
