@@ -53,6 +53,7 @@ def check_Spotify_Desktop_process():
                             shell=True).decode().split()
         if 'spotify' in tmp:
             print('(spotify_monitor) found Spotify Desktop running')
+            sleep(3)    # wait a while extra to ensure communication
             return True
         wait_sec -= 1
         sleep(1)
