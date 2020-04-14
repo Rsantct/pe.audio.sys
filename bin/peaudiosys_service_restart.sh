@@ -1,5 +1,7 @@
 #!/bin/bash
 
+serverPath="pe.audio.sys/share/services/server.py"
+
 function main {
 
     # Killing the running service:
@@ -37,9 +39,9 @@ function main {
     #     if the launcher session has been closed (e.g. a crontab job),
     #     except if -v --verbose is indicated
     if [[ $opc == *"-v"* ]]; then
-        python3 ~/pe.audio.sys/share/server.py "$svc" "$ADDR" "$PORT" -v &
+        python3 "$HOME"/"$serverPath" "$svc" "$ADDR" "$PORT" -v &
     else
-        python3 ~/pe.audio.sys/share/server.py "$svc" "$ADDR" "$PORT" >/dev/null 2>&1 &
+        python3 "$HOME"/"$serverPath" "$svc" "$ADDR" "$PORT" >/dev/null 2>&1 &
     fi
 }
 
