@@ -39,6 +39,13 @@ Some *end user* and *user friendly* features has been added here.
 - IR daemon to use a remote
 
 
+## Loudspeaker EQ and XOVER filtering
+
+The preferred software for you to design your own FIRs (loudspeaker EQ and XOVER) is DSD:
+
+**https://github.com/rripio/DSD**
+
+
 ## room correction EQ (DRC)
 
 Regarding room correction EQ, you can use both IIR (parametric correction) or FIR (impulse correction).
@@ -47,8 +54,11 @@ FIR DRC is supported under a reserver convolver stage on Brutefir.
 
 IIR DRC can be used through by the provided Ecasound add-on script, then bypassing the convolver stage above.
 
-A multipoint measure based FIR DRC correction software is available [here](https://github.com/Rsantct/DRC).
+The most popular software for room Eq is REW https://www.roomeqwizard.com
 
+As experimental FIR DRC correction software you can consider:
 
+**https://github.com/rripio/DSC**
 
- 
+**https://github.com/Rsantct/DRC**
+
