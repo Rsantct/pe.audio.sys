@@ -30,7 +30,7 @@
   and plots graphs of them.
 
   Usage:
-  
+
     peaudiosys_do_target.py  -rXX -cXX -hXX
 
         -rXX    romm_gain    of XX dB
@@ -43,8 +43,8 @@ import numpy as np
 import curves
 
 UHOME = os.path.expanduser("~")
-sys.path.append( f'{UHOME}/pe.audio.sys/share' )
-from core import EQ_CURVES 
+sys.path.append( f'{UHOME}/pe.audio.sys/share/services/preamp_mod' )
+from core import EQ_CURVES
 
 def do_plot():
     # notice freq is already log spaced
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     # Derive the phase ( notice mag is in dB )
     try:
         from scipy.signal import hilbert
-        eq_pha = np.angle( ( hilbert( np.abs( 10**(eq_mag/20) ) ) ) )    
+        eq_pha = np.angle( ( hilbert( np.abs( 10**(eq_mag/20) ) ) ) )
     # if you have not scipy signal installed, you can just use zeros:
     except:
         eq_pha = np.zeros(len(freq))

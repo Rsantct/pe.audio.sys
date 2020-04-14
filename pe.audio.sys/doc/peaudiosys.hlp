@@ -45,7 +45,7 @@ All commands prefixed with 'preamp':
     set_xo  | xo     <name>                 Select a XOVER FIR set
 
 
---- Music player control
+--- Music players control
 
 All commands prefixed with 'player':
 

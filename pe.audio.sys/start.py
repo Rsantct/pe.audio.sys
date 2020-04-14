@@ -114,7 +114,7 @@ def restart_service( service, address='localhost', port=TCP_BASE_PORT,
 
     # Start
     print( f'({ME}) starting SERVICE: \'{service}\'' )
-    cmd = f'python3 {BDIR}/share/server.py {service} {address} {port}'
+    cmd = f'python3 {BDIR}/share/services/server.py {service} {address} {port}'
     if todevnull:
         with open('/dev/null', 'w') as fnull:
             sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
@@ -294,10 +294,10 @@ if __name__ == "__main__":
     if jack_is_running():
 
         # (i) Importing core.py needs JACK to be running
-        import share.core as core
+        import share.services.preamp_mod.core as core
 
         # JACK LOOPS
-        sp.Popen( f'{BDIR}/share/jloops_daemon.py' )
+        sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
         sleep(1)  # this is necessary, or checking for ports to be activated
 
         # Running USER SCRIPTS
