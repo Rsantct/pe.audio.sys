@@ -104,7 +104,7 @@ def process_commands( full_command ):
         return result
 
     def print_help(*dummy):
-        with open( f'{UHOME}/pe.audio.sys/peaudiosys.hlp', 'r') as f:
+        with open( f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r') as f:
             print(f.read())
 
     # HERE BEGINS THE COMMAND PROCESSING:
