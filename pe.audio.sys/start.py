@@ -294,7 +294,7 @@ if __name__ == "__main__":
     if jack_is_running():
 
         # (i) Importing core.py needs JACK to be running
-        import share.core as core
+        import share.services.preamp_mod.core as core
 
         # JACK LOOPS
         sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
