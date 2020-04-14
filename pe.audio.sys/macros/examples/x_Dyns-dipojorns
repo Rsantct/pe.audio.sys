@@ -169,7 +169,6 @@ if __name__ == "__main__":
 
     # 9- restart preamp.py service
     Popen( f'{UHOME}/bin/peaudiosys_service_restart.sh preamp'.split() )
-    #sleep(1)
 
     # 10- If config.yml 'on_init:' section indicates any drc or xo ,
     #     we still need to set the wanted here at the very beginning
