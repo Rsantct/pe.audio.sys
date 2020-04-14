@@ -30,7 +30,7 @@
 """
 
 import json
-from core import Preamp, Convolver, save_yaml, STATE_PATH
+from preamp_mod.core import Preamp, Convolver, save_yaml, STATE_PATH
 from os.path import expanduser
 UHOME = expanduser("~")
 
