@@ -282,9 +282,9 @@ def do( command_phrase ):
         pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
         if cmd == 'help':
-            Popen( f'cat {MAIN_FOLDER}/peaudiosys.hlp', shell=True)
+            Popen( f'cat {MAIN_FOLDER}/doc/peaudiosys.hlp', shell=True)
             return 'help has been printed to stdout, also available on ' \
-                    '\'~/pe.audio.sys/peaudiosys.hlp\''
+                    '\'~/pe.audio.sys/doc/peaudiosys.hlp\''
         result = {  'preamp':   process_preamp,
                     'player':   process_players,
                     'aux':      process_aux }[ pfx ]( cmd, arg )
