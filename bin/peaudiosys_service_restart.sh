@@ -34,7 +34,7 @@ function main {
         exit -1
     fi
 
-    # Launching again the service.
+    # Re-launching the service.
     # (i) It is IMPORTANT to redirect stdout & stderr to keep it alive even
     #     if the launcher session has been closed (e.g. a crontab job),
     #     except if -v --verbose is indicated
