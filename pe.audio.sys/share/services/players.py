@@ -82,15 +82,10 @@ def get_source():
 
 
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
-def player_get_meta(readonly=False):
+def player_get_meta():
     """ Returns a dictionary with the current track metadata
         '{player: xxxx, artist: xxxx, album:xxxx, title:xxxx, etc... }'
     """
-    # 'readonly=True':
-    #   Only useful for mplayer_meta(). It avoids to query Mplayer
-    #   and flushing its metadata file.
-    #   It is used from the 'change files handler' on lcd_daemon.py.
-
     md = METATEMPLATE.copy()
 
     source = get_source()
@@ -108,13 +103,13 @@ def player_get_meta(readonly=False):
         md = mpd_meta(md)
 
     elif source == 'istreams':
-        md = mplayer_meta(md, service='istreams', readonly=readonly)
+        md = mplayer_meta(md, service='istreams')
 
     elif source == 'tdt' or 'dvb' in source:
-        md = mplayer_meta(md, service='dvb', readonly=readonly)
+        md = mplayer_meta(md, service='dvb')
 
     elif 'cd' in source:
-        md = mplayer_meta(md, service='cdda', readonly=readonly)
+        md = mplayer_meta(md, service='cdda')
 
     return md
 
