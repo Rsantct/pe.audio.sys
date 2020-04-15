@@ -229,15 +229,24 @@ def bf_set_gains( state ):
     dB_gain_L  = dB_gain - dB_balance / 2.0
     dB_gain_R  = dB_gain + dB_balance / 2.0
 
-    # Prepare some unity multipliers:
-    solo_L = {'off': 1, 'l': 1, 'r': 0} [ state['solo']  ]
-    solo_R = {'off': 1, 'l': 0, 'r': 1} [ state['solo']  ]
-    mute   = {True: 0, False: 1}        [ state['muted'] ]
+    # Normalize the polarity string
+    if state['polarity'] == '+':
+        state['polarity'] = '++'
+    elif state['polarity'] == '-':
+        state['polarity'] = '--'
 
-    # Compute gain from dB to a multiplier, this is an alternative to
-    # adjusting the attenuation on 'cfia' and 'cffa' commands syntax.
-    m_gain_L = 10 ** (dB_gain_L / 20.0) * mute * solo_L
-    m_gain_R = 10 ** (dB_gain_R / 20.0) * mute * solo_R
+    # Prepare some unity multipliers:
+    pola_L = {'+': 1, '-': -1}          [ state['polarity'][0] ]
+    pola_R = {'+': 1, '-': -1}          [ state['polarity'][1] ]
+    solo_L = {'off': 1, 'l': 1, 'r': 0} [ state['solo']        ]
+    solo_R = {'off': 1, 'l': 0, 'r': 1} [ state['solo']        ]
+    mute   = {True: 0, False: 1}        [ state['muted']       ]
+
+    # Compute gain from dB to a multiplier, then apply multipliers.
+    # Multiplier is an alternative to dB attenuation available
+    # on 'cfia' and 'cffa' commands syntax.
+    m_gain_L = 10 ** (dB_gain_L / 20.0) * mute * pola_L * solo_L
+    m_gain_R = 10 ** (dB_gain_R / 20.0) * mute * pola_R * solo_R
 
     # Compute the final gains as per the midside setting:
     # mid ==> L + R (mono)
@@ -713,8 +722,16 @@ class Preamp(object):
             return f'target \'{value}\' not available'
 
     def set_solo(self, value, *dummy):
-        if value.lower() in ['off', 'l', 'r']:
+        if value.lower() in ('off', 'l', 'r'):
             self.state['solo'] = value.lower()
+            bf_set_gains( self.state )
+            return 'done'
+        else:
+            return 'bad option'
+
+    def set_polarity(self, value, *dummy):
+        if value in ('+', '-', '++', '--', '+-', '-+'):
+            self.state['polarity'] = value.lower()
             bf_set_gains( self.state )
             return 'done'
         else:
@@ -724,7 +741,7 @@ class Preamp(object):
         if type(value) == bool:
             value = str(value)
         try:
-            if value.lower() in ['false', 'true', 'off', 'on', 'toggle']:
+            if value.lower() in ('false', 'true', 'off', 'on', 'toggle'):
                 value = { 'false': False, 'off': False,
                           'true' : True,  'on' : True,
                           'toggle': {False: True, True: False}
@@ -737,7 +754,7 @@ class Preamp(object):
             return 'bad option'
 
     def set_midside(self, value, *dummy):
-        if value.lower() in [ 'mid', 'side', 'off' ]:
+        if value.lower() in ( 'mid', 'side', 'off' ):
             self.state['midside'] = value.lower()
             bf_set_gains( self.state )
         else:

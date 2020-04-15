@@ -70,8 +70,9 @@ All commands prefixed with `preamp`. This prexix can be omited.
 
     input | source  <name>
     solo            off |  l  | r
-    mono            off | on  | toggle     ( aka midside => mid )
+    mono            off | on  | toggle      ( aka midside => mid )
     midside         off | mid | side
+    polarity        ++  | +-  | -+  | --    LR polarity
     mute            off | on  | toggle
 
 ### Gain and Eq stage:
