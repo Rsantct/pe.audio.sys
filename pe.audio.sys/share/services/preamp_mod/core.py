@@ -38,21 +38,6 @@ from time import sleep
 
 
 # AUX and FILES MANAGEMENT: ============================================
-def read_yaml(filepath):
-    """ Returns a dictionary from an YAML file
-    """
-    with open(filepath) as f:
-        d = yaml.safe_load(f)
-    return d
-
-
-def save_yaml(dic, filepath):
-    """ Save a dict to disk
-    """
-    with open( filepath, 'w' ) as f:
-        yaml.safe_dump( dic, f, default_flow_style=False )
-
-
 def find_target_sets():
     """ Returns the uniques target filenames w/o the suffix
         _mag.dat or _pha.dat.
@@ -260,7 +245,8 @@ def bf_set_gains( state ):
         LL = m_gain_L * 0.5; LR = m_gain_R *  0.5
         RL = m_gain_L * 0.5; RR = m_gain_R *  0.5
 
-    # side ==> L - R (in-phase sounds will dissapear) 
+    # side ==> L - R. No panned and in-phase sounds will disappear
+    #                 if your stereo image works well
     elif state['midside'] == 'side':
         LL = m_gain_L * 0.5; LR = m_gain_R * -0.5
         RL = m_gain_L * 0.5; RR = m_gain_R * -0.5
@@ -476,10 +462,8 @@ def init_source():
     else:
         preamp.select_source  (   preamp.state['input']             )
 
-    state = preamp.state
+    preamp.save_state()
     del(preamp)
-
-    return state
 
 
 def init_audio_settings():
@@ -559,11 +543,9 @@ def init_audio_settings():
     else:
         preamp.set_target     (   preamp.state['target']          )
 
-    state = preamp.state
+    preamp.save_state()
     del(convolver)
     del(preamp)
-
-    return state
 
 
 class Preamp(object):
@@ -578,6 +560,8 @@ class Preamp(object):
             balance_max     max authorised balance
 
         methods:
+
+            save_state      save state dict to disk
 
             select_source
             set_level
@@ -602,7 +586,7 @@ class Preamp(object):
         # The available inputs
         self.inputs = CONFIG['sources']
         # The state dictionary
-        self.state = read_yaml( STATE_PATH )
+        self.state = yaml.safe_load( open(STATE_PATH, 'r') )
         self.state['loudspeaker'] = CONFIG['loudspeaker']   # informative
         self.state['peq_set'] = get_peq_in_use()            # informative
         # The target curves available under the 'eq' folder
@@ -636,6 +620,10 @@ class Preamp(object):
         else:
             # REFUSED
             return 'not enough headroom'
+
+    def save_state(self):
+        with open(STATE_PATH, 'w') as f:
+            yaml.safe_dump( self.state, f, default_flow_style=False )
 
     # Bellow we use *dummy to accommodate the preamp.py parser mechanism
     # wich always will include two arguments for any function call.
@@ -937,7 +925,8 @@ except:
 
 # COMMON USE VARIABLES: ================================================
 UHOME       = os.path.expanduser("~")
-CONFIG      = read_yaml( f'{UHOME}/pe.audio.sys/config.yml' )
+CONFIG_PATH = f'{UHOME}/pe.audio.sys/config.yml'
+CONFIG      = yaml.safe_load(open(CONFIG_PATH, 'r'))
 LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'

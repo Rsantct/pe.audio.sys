@@ -313,17 +313,12 @@ if __name__ == "__main__":
         # Wait 60 sec because Brutefir ports can take some time to be activated.
         core.jack_connect_bypattern('pre_in_loop', 'brutefir', wait=60)
 
-        # RESTORE: audio settings
-        state = core.init_audio_settings()
-        core.save_yaml(state, core.STATE_PATH)
-
-        # RESTORE source as set under config.yml
-        state = core.init_source()
-        core.save_yaml(state, core.STATE_PATH)
+        # RESTORE settings
+        core.init_audio_settings()
+        core.init_source()
 
         # SERVICES (TCP SERVERS):
-        # (i) - The 'preamp' control service needs jack to be running.
-        #     - From now on, 'preamp' MUST BE the ONLY OWNER of STATE_PATH.
+        # (i) the 'preamp' service needs jack to be running.
         for idx, svc in enumerate( ('preamp', 'players') ):
             port = TCP_BASE_PORT + idx + 1
             restart_service( svc, port=port )

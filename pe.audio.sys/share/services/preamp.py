@@ -30,7 +30,7 @@
 """
 
 import json
-from preamp_mod.core import Preamp, Convolver, save_yaml, STATE_PATH
+from preamp_mod.core import Preamp, Convolver
 from os.path import expanduser
 UHOME = expanduser("~")
 
@@ -166,7 +166,7 @@ def process_commands( full_command ):
 # INTERFACE FUNCTION TO PLUG THIS MODULE ON SERVER.PY
 def do( cmdline ):
     result = process_commands( cmdline )
-    save_yaml( preamp.state, STATE_PATH )
+    preamp.save_state()
     if type(result) != str:
         result = json.dumps(result)
     return result
