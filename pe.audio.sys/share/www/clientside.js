@@ -488,7 +488,7 @@ function user_macro(prefix, name) {
 }
 
 ///////////////  MISCEL INTERNAL ////////////
-// Hightlight the MUTE, MONO and LOUDNESS BUTTONS:
+// Highlights the MUTE, MONO and LOUDNESS BUTTONS:
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
@@ -515,6 +515,30 @@ function buttonMonoHighlight(){
         document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
         document.getElementById("buttonMono").style.color = "white";
         document.getElementById("buttonMono").innerText = 'ST';
+    }
+    // 'solo' setting will override displaying mono stereo
+    if ( state.solo == 'l' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = 'L_';
+    } else if ( state.solo == 'r' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = '_R';
+    } else {
+        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
+        document.getElementById("buttonMono").style.color = "white";
+        document.getElementById("buttonMono").innerText = 'ST';
+    }
+    // temporary experimental 'polarity' setting will override 'midside' and 'solo'
+    if ( state.polarity == '+-' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = '+-';
+    } else if ( state.polarity == '-+' ) {
+        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttonMono").innerText = '-+';
     }
 }
 function buttonLoudHighlight(){
