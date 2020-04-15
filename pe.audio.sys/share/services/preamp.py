@@ -134,6 +134,7 @@ def process_commands( full_command ):
             'solo':             preamp.set_solo,
             'mono':             set_mono,
             'midside':          preamp.set_midside,
+            'polarity':         preamp.set_polarity,
             'mute':             preamp.set_mute,
 
             'level':            preamp.set_level,
@@ -155,10 +156,10 @@ def process_commands( full_command ):
             } [ command ] ( arg, add )
 
     except KeyError:
-        result = f'unknown command: {command}'
+        result = f'(preamp) unknown command: {command}'
 
     except:
-        result = f'problems processing command: {command}'
+        result = f'(preamp) problems processing command: {command}'
 
     return result
 
