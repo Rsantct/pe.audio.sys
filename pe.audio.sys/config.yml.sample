@@ -94,6 +94,7 @@ on_init:
     loudness_track:     true
     loudness_ref:       6.0     # most records suffers loudness war mastering
     midside:            'off'
+    polarity:           '++'
     solo:               'off'
     input:              'mpd'
 
