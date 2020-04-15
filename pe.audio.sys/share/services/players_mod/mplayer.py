@@ -400,7 +400,7 @@ def cdda_meta(md):
 
 
 # MAIN Mplayer metadata
-def mplayer_meta(md, service, readonly=False):
+def mplayer_meta(md, service):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
@@ -421,13 +421,13 @@ def mplayer_meta(md, service, readonly=False):
 
     # Communicates to Mplayer trough by its input fifo
     # to get the current media filename and bitrate:
-    if not readonly:
-        mplayer_control(cmd='get_audio_bitrate', service=service)
-        mplayer_control(cmd='get_file_name',     service=service)
-        mplayer_control(cmd='get_time_pos',      service=service)
-        mplayer_control(cmd='get_time_length',   service=service)
-        # Waiting Mplayer ANS_xxxx to be writen to output file
-        sleep(.25)
+    mplayer_control(cmd='get_audio_bitrate', service=service)
+    mplayer_control(cmd='get_file_name',     service=service)
+    mplayer_control(cmd='get_time_pos',      service=service)
+    mplayer_control(cmd='get_time_length',   service=service)
+
+    # Waiting for Mplayer ANS_xxxx to be written to the output file
+    sleep(.25)
 
     # Trying to read the ANS_xxxx from the Mplayer output file
     with open(mplayer_redirection_path, 'r') as file:
@@ -440,9 +440,8 @@ def mplayer_meta(md, service, readonly=False):
     #print('DEBUG\n', tmp)
 
     # Flushing the Mplayer output file to avoid continue growing:
-    if not readonly:
-        with open(mplayer_redirection_path, 'w') as file:
-            file.write('')
+    with open(mplayer_redirection_path, 'w') as file:
+        file.write('')
 
     # Reading the intended metadata chunks
     if len(tmp) >= 4:
