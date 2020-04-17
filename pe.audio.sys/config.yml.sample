@@ -248,6 +248,8 @@ web_config:
     hide_macro_buttons: false
     # hide the LU offset slider and the LU monitor bar
     hide_LU: false
+    # displays drc graphs
+    drc_graph: true
 
 # The metadata field ('album', 'title') to trigger to reset the measured LU.
 # (leave blank to reset only when selected input changes)
