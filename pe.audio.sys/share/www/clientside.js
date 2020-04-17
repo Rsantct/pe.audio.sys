@@ -58,9 +58,12 @@ var last_loudspeaker = ''               // Will detect if audio processes has be
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch{
-    var web_config = {  'hide_macro_buttons':false,
-                        'hide_LU':false,
-                        'restart_cmd_info': '' };
+    console.log('problems with aux get_web_config');
+    var web_config = { 'hide_macro_buttons': false,
+                       'hide_LU':            false,
+                       'restart_cmd_info':   '',
+                       'drc_graph':          false,
+                     };
 }
 
 // Talks to the pe.audio.sys HTTP SERVER
@@ -98,15 +101,13 @@ function page_initiate(){
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
     // Shows or hides the macro buttons
-    const hide_mbuttons = web_config.hide_macro_buttons;
-    if ( hide_mbuttons == true ){
+    if ( web_config.hide_macro_buttons == true ){
         document.getElementById("macro_buttons").style.display = 'none';
     }else{
         document.getElementById("macro_buttons").style.display = 'inline-table';
     }
     // Shows or hides the LU offset slider and the LU monitor bar
-    const hide_LU= web_config.hide_LU;
-    if ( hide_LU == true ){
+    if ( web_config.hide_LU == true ){
         document.getElementById("LU_offset").style.display = 'none';
         document.getElementById("LU_monitor").style.display = 'none';
     }else{
@@ -116,6 +117,10 @@ function page_initiate(){
     // Updates the title of the restart button as per config.yml
     document.getElementById("restart_switch").title = 'RESTART: ' +
                                          web_config.restart_cmd_info;
+    // Enable displaying the drc graph
+    if ( web_config.drc_graph == true ){
+        document.getElementById("drc_graph").style.display = 'block';
+    }
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -297,6 +302,7 @@ function page_update() {
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
     document.getElementById("targetSelector").value = state.target;
+    document.getElementById("drc_img").src = 'images/drc_' + state.drc_set + '.png';
 
     // Highlights activated buttons and related indicators accordingly
     buttonMuteHighlight()
@@ -525,10 +531,6 @@ function buttonMonoHighlight(){
         document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
         document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttonMono").innerText = '_R';
-    } else {
-        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonMono").style.color = "white";
-        document.getElementById("buttonMono").innerText = 'ST';
     }
     // temporary experimental 'polarity' setting will override 'midside' and 'solo'
     if ( state.polarity == '+-' ) {
