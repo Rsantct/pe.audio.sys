@@ -339,8 +339,7 @@ if __name__ == "__main__":
     # Prepare png web images from the loudspeaker's drc pcm files
     if CONFIG["web_config"]["drc_graph"]:
         print( f'({ME}) processing drc sets to web/images in background' )
-        sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py',
-                    CONFIG["loudspeaker"], '-q' ] )
+        sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
 
     if logFlag:
         sys.stdout = original_stdout
