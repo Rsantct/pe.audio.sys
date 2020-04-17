@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
-
-# Copyright (c) 2019 Rafael Sánchez
-# This file is part of 'pe.audio.sys', a PC based personal audio system.
-#
-# 'pe.audio.sys' is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# 'pe.audio.sys' is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
-
-
-""" usage:      drc2png.py  <loudspeaker_name> [--quiet]
+""" usage:      drc2png.py [--quiet]
 """
 
 import sys
@@ -94,14 +76,15 @@ if __name__ == '__main__':
                                   'r') )
     FS = float( CONFIG["jack_backend_options"].split('-r')[1]
                                               .split()[0].strip() )
+    LSPK = CONFIG["loudspeaker"]
+
     verbose = True
     if sys.argv[1:]:
-        LSPK = sys.argv[1]
-        if sys.argv[2:] and '-q' in sys.argv[2]:
+        if '-q' in sys.argv[1]:
             verbose = False
-    else:
-        print(__doc__)
-        exit()
+        if '-h' in sys.argv[1]:
+            print(__doc__)
+            exit()
 
     LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
     drc_sets = get_drc_sets()
