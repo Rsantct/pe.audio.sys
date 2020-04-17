@@ -336,6 +336,12 @@ if __name__ == "__main__":
     restart_service( 'peaudiosys', address=CONFIG['peaudiosys_address'],
                       todevnull=True )
 
+    # Prepare png web images from the loudspeaker's drc pcm files
+    if CONFIG["web_config"]["drc_graph"]:
+        print( f'({ME}) processing drc sets to web/images in background' )
+        sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py',
+                    CONFIG["loudspeaker"], '-q' ] )
+
     if logFlag:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
