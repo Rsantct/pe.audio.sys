@@ -126,7 +126,7 @@ if __name__ == '__main__':
                     linewidth=3
                     )
 
-        ax.legend( facecolor=RGBweb )
+        ax.legend( facecolor=RGBweb, loc='lower right')
         fpng = f'{UHOME}/pe.audio.sys/share/www/images/drc_{drc_set}.png'
         plt.savefig( fpng, facecolor=RGBweb )
         if verbose:
