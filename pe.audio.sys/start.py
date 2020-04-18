@@ -260,12 +260,12 @@ def prepare_drc_graphs():
     png_files = [ x for x in os.listdir(img_folder) if x[:4] == 'drc_' ]
     png_sets =  [ x[4:-4] for x in png_files ]
 
+    # If graphs exist, skip generate them
     if sorted(drc_sets) == sorted(png_sets):
         print( f'({ME}) found drc graphs in web/images folders' )
     else:
         print( f'({ME}) processing drc sets to web/images in background' )
         sp.Popen( [ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
-    exit()
 
 if __name__ == "__main__":
 
