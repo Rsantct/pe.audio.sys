@@ -12,11 +12,13 @@ import yaml
 
 RGBweb = (.15, .15, .15)
 
+
 def readPCM32(fname):
     """ reads impulse from a pcm float32 file
     """
     #return np.fromfile(fname, dtype='float32')
     return np.memmap(fname, dtype='float32', mode='r')
+
 
 def get_spectrum(imp, fs):
     fNyq = fs / 2.0
