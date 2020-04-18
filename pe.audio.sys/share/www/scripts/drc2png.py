@@ -102,8 +102,8 @@ if __name__ == '__main__':
             print( f'(drc2png) working: {LSPK} - {drc_set} ... .. .' )
 
         fig, ax = plt.subplots()
-        fig.set_figwidth( 10 ) # inches
-        fig.set_figheight( 3 )
+        fig.set_figwidth( 5 ) # 5 inches at 100dpi => 500px wide
+        fig.set_figheight( 2.5 )
         fig.set_facecolor( RGBweb )
         ax.set_facecolor( RGBweb )
         ax.set_xscale('log')
