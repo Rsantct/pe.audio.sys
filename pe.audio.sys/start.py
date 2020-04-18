@@ -264,8 +264,8 @@ def prepare_drc_graphs():
         print( f'({ME}) found drc graphs in web/images folders' )
     else:
         print( f'({ME}) processing drc sets to web/images in background' )
-        sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
-
+        sp.Popen( [ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
+    exit()
 
 if __name__ == "__main__":
 
