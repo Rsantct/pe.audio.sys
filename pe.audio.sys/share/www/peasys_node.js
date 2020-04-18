@@ -62,8 +62,6 @@ var last_http_sent  = '';
 // when some httpRequest is received.
 function onHttpReq( httpReq, httpRes ){
 
-    //console.log(httpReq.url.slice(-4,));
-
     let server_header = 'pe.audio.sys / Node.js ' + process.version
     httpRes.setHeader('server', server_header);
 
@@ -93,7 +91,10 @@ function onHttpReq( httpReq, httpRes ){
         });
     }
 
-    // Serve IMAGES
+    // Serve IMAGES.
+    // Pending to use ETag to allow browsers to cache images at client end.
+    // By now, we will use Cache-Control 60 seconds for Safary to chache the
+    // sent image. Firefox uses cached image even if omitted this header.
     else if ( httpReq.url.slice(0,7) === '/images' ) {
 
         if       ( httpReq.url.slice(-4, ) === '.png' ) {
@@ -105,7 +106,8 @@ function onHttpReq( httpReq, httpRes ){
 
         png_path = IMG_FOLDER + '/' + httpReq.url.split('/').slice(-1, );
 
-        httpRes.writeHead(200, {'Content-Type': ct});
+        httpRes.writeHead(200, {'Content-Type': ct,
+                                'Cache-Control': 'max-age=60'});
         fs.readFile(png_path, (err,data) => {
             if (err) throw err;
             httpRes.write(data);
