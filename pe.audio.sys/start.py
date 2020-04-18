@@ -244,11 +244,10 @@ def check_state_file():
 
 def prepare_drc_graphs():
 
-    img_folder = f'{BDIR}/share/www/images'
-
-    pcm_files = os.listdir(LSPK_FOLDER)
-    coeffs  = [ x.replace('.pcm', '') for x in pcm_files ]
-    drc_coeffs = [ x for x in coeffs if x[:4] == 'drc.'  ]
+    # find loudspeaker's drc_sets
+    pcm_files  = os.listdir(LSPK_FOLDER)
+    drc_coeffs  = [ x.replace('.pcm', '') for x in pcm_files
+                                          if x[:4] == 'drc.' ]
     drc_sets = []
     for drc_coeff in drc_coeffs:
         drcSetName = drc_coeff[6:]
@@ -256,14 +255,16 @@ def prepare_drc_graphs():
             drc_sets.append( drcSetName )
     drc_sets += ['none']
 
+    # find existing drc graph images
+    img_folder = f'{BDIR}/share/www/images'
     png_files = [ x for x in os.listdir(img_folder) if x[:4] == 'drc_' ]
     png_sets =  [ x[4:-4] for x in png_files ]
 
     if sorted(drc_sets) == sorted(png_sets):
         print( f'({ME}) found drc graphs in web/images folders' )
-        return
-    print( f'({ME}) processing drc sets to web/images in background' )
-    sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
+    else:
+        print( f'({ME}) processing drc sets to web/images in background' )
+        sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
 
 
 if __name__ == "__main__":
