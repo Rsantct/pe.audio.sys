@@ -57,14 +57,8 @@ try:
     AMP_MANAGER =  CONFIG['amp_manager']
 except:
     AMP_MANAGER =  'For amp switching please configure config.yml'
-try:
-    WEBCONFIG = CONFIG['web_page']
-    WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
-except:
-    # default web options
-    WEBCONFIG = {   'hide_macro_buttons':   False,
-                    'hide_LU':              False,
-                    'restart_cmd_info':     CONFIG['restart_cmd'] }
+WEBCONFIG = CONFIG['web_config']
+WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
 
 
 # Auxiliary client to talk to othes server.py instances (preamp and players)

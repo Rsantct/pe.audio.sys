@@ -52,6 +52,7 @@ try {
 // The files to be HTTP served here
 const INDEX_HTML_PATH = __dirname + '/index.html';
 const CLISIDE_JS_PATH = __dirname + '/clientside.js';
+const IMG_FOLDER      = __dirname + '/images';
 
 // Helpers to printout http TX and RX chunks w/o repeating them
 var last_cmd_phrase = '';
@@ -84,6 +85,30 @@ function onHttpReq( httpReq, httpRes ){
 
         httpRes.writeHead(200, {'Content-Type': 'application/javascript'});
         fs.readFile(CLISIDE_JS_PATH, 'utf8', (err,data) => {
+            if (err) throw err;
+            httpRes.write(data);
+            httpRes.end();
+        });
+    }
+
+    // Serve IMAGES.
+    // Pending to use ETag to allow browsers to cache images at client end.
+    // By now, we will use Cache-Control 60 seconds for Safary to chache the
+    // sent image. Firefox uses cached image even if omitted this header.
+    else if ( httpReq.url.slice(0,7) === '/images' ) {
+
+        if       ( httpReq.url.slice(-4, ) === '.png' ) {
+            ct = 'image/png';
+        }else if ( httpReq.url.slice(-4, ) === '.jpg' ) {
+            ct = 'image/jpg';
+        }
+        console.log( '(node) httpServer TX: ' + ct );
+
+        png_path = IMG_FOLDER + '/' + httpReq.url.split('/').slice(-1, );
+
+        httpRes.writeHead(200, {'Content-Type': ct,
+                                'Cache-Control': 'max-age=60'});
+        fs.readFile(png_path, (err,data) => {
             if (err) throw err;
             httpRes.write(data);
             httpRes.end();
