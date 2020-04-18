@@ -242,6 +242,30 @@ def check_state_file():
             sys.exit()
 
 
+def prepare_drc_graphs():
+
+    img_folder = f'{BDIR}/share/www/images'
+
+    pcm_files = os.listdir(LSPK_FOLDER)
+    coeffs  = [ x.replace('.pcm', '') for x in pcm_files ]
+    drc_coeffs = [ x for x in coeffs if x[:4] == 'drc.'  ]
+    drc_sets = []
+    for drc_coeff in drc_coeffs:
+        drcSetName = drc_coeff[6:]
+        if drcSetName not in drc_sets:
+            drc_sets.append( drcSetName )
+    drc_sets += ['none']
+
+    png_files = [ x for x in os.listdir(img_folder) if x[:4] == 'drc_' ]
+    png_sets =  [ x[4:-4] for x in png_files ]
+
+    if sorted(drc_sets) == sorted(png_sets):
+        print( f'({ME}) found drc graphs in web/images folders' )
+        return
+    print( f'({ME}) processing drc sets to web/images in background' )
+    sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
+
+
 if __name__ == "__main__":
 
     run_level = ''
@@ -262,6 +286,10 @@ if __name__ == "__main__":
         original_stderr = sys.stderr
         sys.stdout = flog
         sys.stderr = flog
+
+    # If necessary will prepare drc graphs for the web page
+    if CONFIG["web_config"]["drc_graph"]:
+        prepare_drc_graphs()
 
     # Lets backup .state.yml to help us if it get damaged.
     check_state_file()
@@ -335,11 +363,6 @@ if __name__ == "__main__":
     # The 'peaudiosys' service always runs, so that we can do basic operation
     restart_service( 'peaudiosys', address=CONFIG['peaudiosys_address'],
                       todevnull=True )
-
-    # Prepare png web images from the loudspeaker's drc pcm files
-    if CONFIG["web_config"]["drc_graph"]:
-        print( f'({ME}) processing drc sets to web/images in background' )
-        sp.Popen( [ f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
 
     if logFlag:
         sys.stdout = original_stdout
