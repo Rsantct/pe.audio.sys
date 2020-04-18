@@ -302,8 +302,11 @@ function page_update() {
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
     document.getElementById("targetSelector").value = state.target;
-    document.getElementById("drc_img").src = 'images/drc_' + state.drc_set + '.png';
-
+    if ( web_config.drc_graph == true ){
+        document.getElementById("drc_img").src = 'images/drc_' + state.drc_set + '.png';
+    }else{
+        document.getElementById("drc_img").src = '';
+    }
     // Highlights activated buttons and related indicators accordingly
     buttonMuteHighlight()
     buttonMonoHighlight()
