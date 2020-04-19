@@ -10,7 +10,40 @@ from scipy import signal
 from matplotlib import pyplot as plt
 import yaml
 
-RGBweb = (.15, .15, .15)
+RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
+RGBlineRED  = (.71, .10, .00)   # a soft red
+RGBlineCYAN = (.00, .64, .85)   # a soft cyan
+
+CONFIG      = yaml.safe_load(open(f'{UHOME}/pe.audio.sys/config.yml','r'))
+LSPK        = CONFIG["loudspeaker"]
+LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
+
+
+def get_Bfir_sample_rate():
+    """ retrieve loudspeaker's filters FS from its Brutefir configuration
+    """
+    FS = 0
+    for fname in (f'{LSPK_FOLDER}/brutefir_config',
+                  f'{UHOME}/.brutefir_defaults'):
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+        for l in lines:
+            if 'sampling_rate:' in l and l.strip()[0] != '#':
+                try:
+                    FS = int( [x for x in l.replace(';', '').split()
+                                         if x.isdigit() ][0] )
+                except:
+                    pass
+        if FS:
+            break   # stops searching if found under lskp folder
+
+    if not FS:
+        raise ValueError('unable to find Brutefir sample_rate')
+
+    if 'defaults' in fname:
+        print( f'(drc2png) *** using .brutefir_defaults SAMPLE RATE ***' )
+
+    return FS
 
 
 def readPCM32(fname):
@@ -74,12 +107,6 @@ def get_drc_sets():
 
 if __name__ == '__main__':
 
-    CONFIG = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml',
-                                  'r') )
-    FS = float( CONFIG["jack_backend_options"].split('-r')[1]
-                                              .split()[0].strip() )
-    LSPK = CONFIG["loudspeaker"]
-
     verbose = True
     if sys.argv[1:]:
         if '-q' in sys.argv[1]:
@@ -88,7 +115,10 @@ if __name__ == '__main__':
             print(__doc__)
             exit()
 
-    LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
+    FS = get_Bfir_sample_rate()
+    if verbose:
+        print( f'(drc2png) using sample rate: {FS}' )
+
     drc_sets = get_drc_sets()
 
     plt.style.use('dark_background')
@@ -123,8 +153,9 @@ if __name__ == '__main__':
             freqs, magdB = get_spectrum( IR["imp"], FS )
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
-                    color={'L': 'cyan', 'R': 'red'}[ IR["channel"] ],
-                    linewidth=2
+                    color={'L': RGBlineCYAN, 'R': RGBlineRED}
+                          [ IR["channel"] ],
+                    linewidth=3
                     )
 
         ax.legend( facecolor=RGBweb, loc='lower right')

@@ -55,6 +55,34 @@ LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
 TCP_BASE_PORT   = CONFIG['peaudiosys_port']
 
 
+def get_Bfir_sample_rate():
+    """ retrieve loudspeaker's filters FS from its Brutefir configuration
+    """
+    FS = 0
+
+    for fname in (f'{LSPK_FOLDER}/brutefir_config',
+                  f'{UHOME}/.brutefir_defaults'):
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+        for l in lines:
+            if 'sampling_rate:' in l and l.strip()[0] != '#':
+                try:
+                    FS = int( [x for x in l.replace(';', '').split()
+                                         if x.isdigit() ][0] )
+                except:
+                    pass
+        if FS:
+            break   # stops searching if found under lskp folder
+
+    if not FS:
+        raise ValueError('unable to find Brutefir sample_rate')
+
+    if 'defaults' in fname:
+        print( f'({ME}) *** using .brutefir_defaults SAMPLE RATE ***' )
+
+    return FS
+
+
 def jack_is_running():
     try:
         sp.check_output( 'jack_lsp >/dev/null 2>&1'.split() )
@@ -65,11 +93,13 @@ def jack_is_running():
 
 def start_jackd():
 
-    jack_backend_options = CONFIG["jack_backend_options"].replace(
-                            '$system_card', CONFIG["system_card"] )
+    jack_backend_options = CONFIG["jack_backend_options"] \
+                    .replace('$autoCard', CONFIG["system_card"]) \
+                    .replace('$autoFS', str(get_Bfir_sample_rate()))
 
     cmdlist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
               f'{jack_backend_options}'.split()
+
     #print( ' '.join(cmdlist) ) ; sys.exit() # DEBUG
 
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",

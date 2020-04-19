@@ -596,8 +596,10 @@ class Preamp(object):
         self.inputs = CONFIG['sources']
         # The state dictionary
         self.state = yaml.safe_load( open(STATE_PATH, 'r') )
-        self.state['loudspeaker'] = CONFIG['loudspeaker']   # informative
-        self.state['peq_set'] = get_peq_in_use()            # informative
+        # will add some informative values:
+        self.state['loudspeaker'] = CONFIG['loudspeaker']
+        self.state['peq_set'] = get_peq_in_use()
+        self.state['fs'] = JCLI.samplerate
         # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
         # The available span for tone curves

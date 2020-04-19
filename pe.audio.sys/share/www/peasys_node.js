@@ -43,8 +43,8 @@ try {
     const UHOME = require('os').homedir();
     let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config.yml', 'utf8');
     let CFG = yaml.safeLoad(fileContents);
-    var PEAUDIOSYS_ADDR =   CFG.peaudiosys_address;
-    var PEAUDIOSYS_PORT =   CFG.peaudiosys_port;
+    var PAS_ADDR =   CFG.peaudiosys_address; // PAS ~> pe.audio.sys
+    var PAS_PORT =   CFG.peaudiosys_port;
 } catch (e) {
     console.log(e);
 }
@@ -120,7 +120,6 @@ function onHttpReq( httpReq, httpRes ){
 
         let q = url.parse(httpReq.url, true).query;
         let cmd_phrase = q.command;
-        let cli_addr, cli_port;
 
 
         if ( cmd_phrase ){
@@ -134,8 +133,8 @@ function onHttpReq( httpReq, httpRes ){
             }
 
             // Create a socket client to pe.audio.sys TCP server
-            const client = net.createConnection( { port:PEAUDIOSYS_PORT,
-                                                   host:PEAUDIOSYS_ADDR },
+            const client = net.createConnection( { port:PAS_PORT,
+                                                   host:PAS_ADDR },
                                                    () => {
             });
 
@@ -147,8 +146,8 @@ function onHttpReq( httpReq, httpRes ){
 
             client.write( cmd_phrase + '\r\n' );
             if (verbose){
-                console.log( '(node) ' + cli_addr + ':' +
-                             cli_port + ' TX: ' + cmd_phrase );
+                console.log( '(node) ' + PAS_ADDR + ':' +
+                             PAS_PORT + ' TX: ' + cmd_phrase );
             }
 
             // The key (*) - the handler for socket received data -
@@ -157,13 +156,13 @@ function onHttpReq( httpReq, httpRes ){
                 const ans = data.toString();
                 if (verbose){
                     if ( ans.length > 40 ){
-                        console.log( '(node) ' + cli_addr + ':' +
-                                     cli_port + ' RX: ' + ans.slice(0,40) +
+                        console.log( '(node) ' + PAS_ADDR + ':' +
+                                     PAS_PORT + ' RX: ' + ans.slice(0,40) +
                                      ' ... ...' );
                     }
                     else {
-                        console.log( '(node) ' + cli_addr + ':' +
-                                     cli_port + ' RX: ' + ans);
+                        console.log( '(node) ' + PAS_ADDR + ':' +
+                                     PAS_PORT + ' RX: ' + ans);
                     }
                 }
 
