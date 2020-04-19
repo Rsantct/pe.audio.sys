@@ -40,10 +40,10 @@ external_cards:
 #jack_options:           -R -d dummy
 #jack_backend_options:   -r 48000 -P 6 -C 2
 
-# ALSA backend (leave $system_card under options below,
-#               it will be replaced by the actual name)
+# ALSA backend (leave $autoCard and $autoFS under options below,
+#               it will be replaced by the actual values)
 jack_options:           -R -d alsa
-jack_backend_options:   -d $system_card -r 48000 -p 1024 -n2 
+jack_backend_options:   -d $autoCard -r autoFS -p 1024 -n2 
 
 
 # =========================  LIMITS  ===========================================
