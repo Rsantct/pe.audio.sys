@@ -92,9 +92,10 @@ if __name__ == '__main__':
     drc_sets = get_drc_sets()
 
     plt.style.use('dark_background')
+    plt.rcParams.update({'font.size': 6})
     freq_ticks  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
-    freq_labels = ['20', '50', '100', '200', '500', '1K', '2K', '5K',
-                   '10K', '20K']
+    freq_labels = ['20', '50', '100', '200', '500', '1K', '2K',
+                   '5K', '10K', '20K']
 
     for drc_set in drc_sets:
 
@@ -103,7 +104,7 @@ if __name__ == '__main__':
 
         fig, ax = plt.subplots()
         fig.set_figwidth( 5 ) # 5 inches at 100dpi => 500px wide
-        fig.set_figheight( 2.5 )
+        fig.set_figheight( 1.5 )
         fig.set_facecolor( RGBweb )
         ax.set_facecolor( RGBweb )
         ax.set_xscale('log')
@@ -123,7 +124,7 @@ if __name__ == '__main__':
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
                     color={'L': 'cyan', 'R': 'red'}[ IR["channel"] ],
-                    linewidth=3
+                    linewidth=2
                     )
 
         ax.legend( facecolor=RGBweb, loc='lower right')
