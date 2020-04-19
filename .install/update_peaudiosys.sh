@@ -152,12 +152,12 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 
 
 ################################################################################
-#                                HTTP SERVER                                   #
+#                                WEB PAGE                                      #
 ################################################################################
 
 ################################################################################
-# clientside.js needs to be adapted depending on you are using
-# Apache os Node.js as your pe.audio.sys http server
+# clientside.js needs to be adapted depending on you using
+# Apache or Node.js as your pe.audio.sys http server
 ################################################################################
 nodeServer=$(pgrep -f peasys_node.js)
 if [ "$nodeServer" ]; then
