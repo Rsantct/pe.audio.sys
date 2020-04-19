@@ -10,7 +10,10 @@ from scipy import signal
 from matplotlib import pyplot as plt
 import yaml
 
-RGBweb      = (.15, .15, .15)
+RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
+RGBlineRED  = (.71, .10, .00)   # a soft red
+RGBlineCYAN = (.00, .64, .85)   # a soft cyan
+
 CONFIG      = yaml.safe_load(open(f'{UHOME}/pe.audio.sys/config.yml','r'))
 LSPK        = CONFIG["loudspeaker"]
 LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
@@ -146,7 +149,8 @@ if __name__ == '__main__':
             freqs, magdB = get_spectrum( IR["imp"], FS )
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
-                    color={'L': 'cyan', 'R': 'red'}[ IR["channel"] ],
+                    color={'L': RGBlineCYAN, 'R': RGBlineRED}
+                          [ IR["channel"] ],
                     linewidth=3
                     )
 
