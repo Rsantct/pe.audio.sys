@@ -59,6 +59,7 @@ def get_Bfir_sample_rate():
     """ retrieve loudspeaker's filters FS from its Brutefir configuration
     """
     FS = 0
+
     for fname in (f'{LSPK_FOLDER}/brutefir_config',
                   f'{UHOME}/.brutefir_defaults'):
         with open(fname, 'r') as f:
@@ -68,9 +69,11 @@ def get_Bfir_sample_rate():
                 try:
                     FS = int( [x for x in l.replace(';', '').split()
                                          if x.isdigit() ][0] )
-                    break
                 except:
                     pass
+        if FS:
+            break   # stops searching if found under lskp folder
+
     if not FS:
         raise ValueError('unable to find Brutefir sample_rate')
 
