@@ -30,11 +30,13 @@ def get_Bfir_sample_rate():
         for l in lines:
             if 'sampling_rate:' in l and l.strip()[0] != '#':
                 try:
-                    FS = float( [x for x in l.replace(';', '').split()
+                    FS = int( [x for x in l.replace(';', '').split()
                                          if x.isdigit() ][0] )
-                    break
                 except:
                     pass
+        if FS:
+            break   # stops searching if found under lskp folder
+
     if not FS:
         raise ValueError('unable to find Brutefir sample_rate')
 
@@ -105,8 +107,6 @@ def get_drc_sets():
 
 if __name__ == '__main__':
 
-    FS = get_Bfir_sample_rate()
-
     verbose = True
     if sys.argv[1:]:
         if '-q' in sys.argv[1]:
@@ -114,6 +114,10 @@ if __name__ == '__main__':
         if '-h' in sys.argv[1]:
             print(__doc__)
             exit()
+
+    FS = get_Bfir_sample_rate()
+    if verbose:
+        print( f'(drc2png) using sample rate: {FS}' )
 
     drc_sets = get_drc_sets()
 
