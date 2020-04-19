@@ -10,7 +10,35 @@ from scipy import signal
 from matplotlib import pyplot as plt
 import yaml
 
-RGBweb = (.15, .15, .15)
+RGBweb      = (.15, .15, .15)
+CONFIG      = yaml.safe_load(open(f'{UHOME}/pe.audio.sys/config.yml','r'))
+LSPK        = CONFIG["loudspeaker"]
+LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
+
+
+def get_Bfir_sample_rate():
+    """ retrieve loudspeaker's filters FS from its Brutefir configuration
+    """
+    FS = 0
+    for fname in (f'{LSPK_FOLDER}/brutefir_config',
+                  f'{UHOME}/.brutefir_defaults'):
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+        for l in lines:
+            if 'sampling_rate:' in l and l.strip()[0] != '#':
+                try:
+                    FS = float( [x for x in l.replace(';', '').split()
+                                         if x.isdigit() ][0] )
+                    break
+                except:
+                    pass
+    if not FS:
+        raise ValueError('unable to find Brutefir sample_rate')
+
+    if 'defaults' in fname:
+        print( f'(drc2png) *** using .brutefir_defaults SAMPLE RATE ***' )
+
+    return FS
 
 
 def readPCM32(fname):
@@ -74,11 +102,7 @@ def get_drc_sets():
 
 if __name__ == '__main__':
 
-    CONFIG = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml',
-                                  'r') )
-    FS = float( CONFIG["jack_backend_options"].split('-r')[1]
-                                              .split()[0].strip() )
-    LSPK = CONFIG["loudspeaker"]
+    FS = get_Bfir_sample_rate()
 
     verbose = True
     if sys.argv[1:]:
@@ -88,7 +112,6 @@ if __name__ == '__main__':
             print(__doc__)
             exit()
 
-    LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
     drc_sets = get_drc_sets()
 
     plt.style.use('dark_background')
@@ -124,7 +147,7 @@ if __name__ == '__main__':
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
                     color={'L': 'cyan', 'R': 'red'}[ IR["channel"] ],
-                    linewidth=2
+                    linewidth=3
                     )
 
         ax.legend( facecolor=RGBweb, loc='lower right')
