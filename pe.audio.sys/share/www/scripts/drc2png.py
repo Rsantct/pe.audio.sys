@@ -57,7 +57,7 @@ def readPCM32(fname):
 def get_spectrum(imp, fs):
     fNyq = fs / 2.0
     # Semispectrum (whole=False -->  w to Nyquist)
-    w, h = signal.freqz(imp, worN=int(len(imp)/2), whole=False)
+    w, h = signal.freqz(imp, worN=int(len(imp) / 2), whole=False)
     # Actual freq from normalized freq
     freqs = w / np.pi * fNyq
     # Magnitude to dB:
@@ -134,7 +134,7 @@ if __name__ == '__main__':
             print( f'(drc2png) working: {LSPK} - {drc_set} ... .. .' )
 
         fig, ax = plt.subplots()
-        fig.set_figwidth( 5 ) # 5 inches at 100dpi => 500px wide
+        fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
         fig.set_figheight( 1.5 )
         fig.set_facecolor( webColor )
         ax.set_facecolor( webColor )
