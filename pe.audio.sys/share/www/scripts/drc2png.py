@@ -10,9 +10,10 @@ from scipy import signal
 from matplotlib import pyplot as plt
 import yaml
 
-RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
-RGBlineRED  = (.71, .10, .00)   # a soft red
-RGBlineCYAN = (.00, .64, .85)   # a soft cyan
+webColor = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
+# https://matplotlib.org/2.0.2/examples/color/named_colors.html
+lineRED  = 'indianred'
+lineBLUE = 'steelblue'
 
 CONFIG      = yaml.safe_load(open(f'{UHOME}/pe.audio.sys/config.yml','r'))
 LSPK        = CONFIG["loudspeaker"]
@@ -135,14 +136,14 @@ if __name__ == '__main__':
         fig, ax = plt.subplots()
         fig.set_figwidth( 5 ) # 5 inches at 100dpi => 500px wide
         fig.set_figheight( 1.5 )
-        fig.set_facecolor( RGBweb )
-        ax.set_facecolor( RGBweb )
+        fig.set_facecolor( webColor )
+        ax.set_facecolor( webColor )
         ax.set_xscale('log')
         ax.set_xlim( 20, 20000 )
         ax.set_ylim( -15, 5 )
         ax.set_xticks( freq_ticks )
         ax.set_xticklabels( freq_labels )
-        ax.set_title( drc_set )
+        ax.set_title( f'DRC: {drc_set}' )
 
         if drc_set != 'none':
             IRs = read_pcms( drc_set )
@@ -153,14 +154,14 @@ if __name__ == '__main__':
             freqs, magdB = get_spectrum( IR["imp"], FS )
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
-                    color={'L': RGBlineCYAN, 'R': RGBlineRED}
+                    color={'L': lineBLUE, 'R': lineRED}
                           [ IR["channel"] ],
                     linewidth=3
                     )
 
-        ax.legend( facecolor=RGBweb, loc='lower right')
+        ax.legend( facecolor=webColor, loc='lower right')
         fpng = f'{UHOME}/pe.audio.sys/share/www/images/drc_{drc_set}.png'
-        plt.savefig( fpng, facecolor=RGBweb )
+        plt.savefig( fpng, facecolor=webColor )
         if verbose:
             print( f'(drc2png) saved: \'{fpng}\' ' )
         #plt.show()
