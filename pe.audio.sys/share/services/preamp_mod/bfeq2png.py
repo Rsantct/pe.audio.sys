@@ -24,7 +24,6 @@ import sys
 import os
 from socket import socket
 import numpy as np
-from scipy import signal
 from matplotlib import pyplot as plt
 import yaml
 
