@@ -2,15 +2,6 @@
 
 # Copyright (c) 2019 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
-
-# This is based on 'pre.di.c,' a preamp and digital crossover
-# https://github.com/rripio/pre.di.c
-# Copyright (C) 2018 Roberto Ripio
-# 'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
-# https://github.com/AudioHumLab/FIRtro
-# Copyright (c) 2006-2011 Roberto Ripio
-# Copyright (c) 2011-2016 Alberto Miguélez
-# Copyright (c) 2016-2018 Rafael Sánchez
 #
 # 'pe.audio.sys' is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,94 +38,33 @@ def run_server(host, port, verbose=False):
         Inside, it is called the desired processing module
         to perform actions and giving results.
     """
+    # https://realpython.com/python-sockets/#echo-client-and-server
+    # One thing that’s imperative to understand is that we now have
+    # a new socket object from accept(). This is important since
+    # it’s the socket that you’ll use to communicate with the client.
+    # It’s distinct from the listening socket that the server is using
+    # to accept new connections
 
-    # https://realpython.com/python-sockets/#tcp-sockets
-
-    def server_socket(host, port):
-        """ Returns a TCP socket object, binded to host:port """
-
-        # We use socket.SO_REUSEADDR to avoid this error:
-        # socket.error: [Errno 98] Address already in use
-        # that can happen if we reinit this script.
-        # This is because the previous execution has left the socket in a
-        # TIME_WAIT state, and cannot be immediately reused.
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # the tcp socket
-        try:
-            s.bind((host, port))
-        except:
-            print( f'(server.py [{service}]) Error binding {host}:{port}' )
-            s.close()
-            sys.exit(-1)
-
-        # returns the socket object
-        return s
-
-    # Instance a binded socket object
-    s = server_socket(host, port)
-
-    # MAIN LOOP to proccess connections
+    # This loop has a blocking stage when calling accept() below
     while True:
-        # initiate the socket in listen (server) mode
-        s.listen()
-        #if verbose:
-        #    print( f'(server.py [{service}]) listening on \'localhost\':{port}' )
-
-        # Waits for a client to be connected:
-        # 'conn' is a socket itself
-        conn, address = s.accept()
-        if verbose:
-            print( f'(server.py [{service}]) connected to client {address[0]}:{address[1]}' )
-
-        # A buffer loop to proccess received data
-        while True:
-
-            try:
-                # Reception of 1024
-                data = conn.recv(1024).decode()
+        # The server (the 1st listening socket)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as srv:
+            srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            srv.bind((host, port))
+            srv.listen()
+            # The connection (the 2nd socket)
+            con, address = srv.accept()  # calling accept() is blocking
+            with con:
+                # Receiving a command phrase
+                cmd = con.recv(1024).decode()
                 if verbose:
-                    print( f'(server.py [{service}]) Rx: {data.strip()}' )
-            except:
+                    print( f'(server.py-{service}) Rx: {cmd.strip()}' )
+                # PROCESSING the command through by the plugged MODULE:
+                result = MODULE.do( cmd.strip() )
+                # Sending back the command processing result:
+                con.sendall( result.encode() )
                 if verbose:
-                    print( f'(server.py [{service}]) ERROR receiving from client, closing.' )
-                conn.close()
-                break
-
-            if not data:
-                # Nothing in buffer, then will close
-                if verbose:
-                    print( f'(server.py [{service}]) Rx empty, '
-                             'closing connection...' )
-                conn.close()
-                break
-
-            # Reserved words for controling the communication ('quit' or 'shutdown')
-            if data.rstrip() == 'quit':
-                if verbose:
-                    print( f'(server.py [{service}]) \'quit\', closing connection...' )
-                conn.close()
-                break
-
-            elif data.rstrip() == 'shutdown':
-                if verbose:
-                    print( f'(server.py [{service}]) shutting down the server...' )
-                conn.close()
-                s.close()
-                sys.exit(1)
-
-            # If not a reserved word, then process the received data as a command:
-            else:
-                # PROCESSING THE COMMAND through by MODULE.do()
-                result = MODULE.do(data)
-                if verbose and result:
-                    print( f'(server.py [{service}]) Tx: {result}' )
-                # And sending back the result
-                if result:
-                    conn.send( result.encode() )
-                else:
-                    # sending CRLF instead of empty to avoid hanging the receiver.
-                    conn.send( '\r\n'.encode() )
+                    print( f'(server.py-{service}) Tx: {result}' )
 
 
 if __name__ == "__main__":
