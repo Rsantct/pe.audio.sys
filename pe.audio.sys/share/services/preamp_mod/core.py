@@ -301,8 +301,8 @@ def bf_set_eq( eq_mag, eq_pha ):
     dump_graph.start()
 
 def bf_read_eq():
-    """ Returns the current freqs, magnitude and phase rendered
-        into the Brutefir eq coeff, in JSON format
+    """ Returns the current freqs, magnitude and phase
+        as rendered into the Brutefir eq coeff.
     """
     ans = bf_cli('lmc eq "c.eq" info;')
     for line in ans.split('\n'):
