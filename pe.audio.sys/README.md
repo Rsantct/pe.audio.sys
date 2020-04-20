@@ -339,6 +339,7 @@ Here you are an uncommented bare example of `config.yml`:
     web_config:
         hide_macro_buttons: false
         hide_LU: false
+        show_graphs: true
 
     LU_reset_md_field: album
 

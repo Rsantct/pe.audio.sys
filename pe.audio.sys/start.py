@@ -319,7 +319,7 @@ if __name__ == "__main__":
         sys.stderr = flog
 
     # If necessary will prepare drc graphs for the web page
-    if CONFIG["web_config"]["drc_graph"]:
+    if CONFIG["web_config"]["show_graphs"]:
         prepare_drc_graphs()
 
     # Lets backup .state.yml to help us if it get damaged.
