@@ -97,6 +97,7 @@ function onHttpReq( httpReq, httpRes ){
     // sent image. Firefox uses cached image even if omitted this header.
     else if ( httpReq.url.slice(0,7) === '/images' ) {
 
+        let ct = 'image';
         if       ( httpReq.url.slice(-4, ) === '.png' ) {
             ct = 'image/png';
         }else if ( httpReq.url.slice(-4, ) === '.jpg' ) {
@@ -104,14 +105,19 @@ function onHttpReq( httpReq, httpRes ){
         }
         console.log( '(node) httpServer TX: ' + ct );
 
-        png_path = IMG_FOLDER + '/' + httpReq.url.split('/').slice(-1, );
+        let img_path = IMG_FOLDER + '/' + httpReq.url.split('/').slice(-1, );
+
+        // The browser's clientside javascript will request some stamp ?xxxx
+        // after the filename, e.g: images/brutefir_eq.png?xxxx
+        img_path = img_path.split('?').slice(0, 1)[0]
 
         httpRes.writeHead(200, {'Content-Type': ct,
                                 'Cache-Control': 'max-age=60'});
-        fs.readFile(png_path, (err,data) => {
-            if (err) throw err;
-            httpRes.write(data);
-            httpRes.end();
+        fs.readFile(img_path, (err, data) => {
+            if (! err) {
+                httpRes.write(data);
+                httpRes.end();
+            }
         });
     }
 
