@@ -62,7 +62,7 @@ try{
     var web_config = { 'hide_macro_buttons': false,
                        'hide_LU':            false,
                        'restart_cmd_info':   '',
-                       'drc_graph':          false,
+                       'show_graphs':        false,
                      };
 }
 
@@ -118,8 +118,9 @@ function page_initiate(){
     document.getElementById("restart_switch").title = 'RESTART: ' +
                                          web_config.restart_cmd_info;
     // Enable displaying the drc graph
-    if ( web_config.drc_graph == true ){
+    if ( web_config.show_graphs == true ){
         document.getElementById("drc_graph").style.display = 'block';
+        document.getElementById("bfeq_graph").style.display = 'block';
     }
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
@@ -302,10 +303,14 @@ function page_update() {
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
     document.getElementById("targetSelector").value = state.target;
-    if ( web_config.drc_graph == true ){
+    if ( web_config.show_graphs == true ){
         document.getElementById("drc_img").src = 'images/drc_' + state.drc_set + '.png';
+        var now = performance.now()
+        now = Math.floor(now/3000);  // artifice to wait 3000 milliseconds to download
+        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'+ now;
     }else{
         document.getElementById("drc_img").src = '';
+        document.getElementById("bfeq_img").src = '';
     }
     // Highlights activated buttons and related indicators accordingly
     buttonMuteHighlight()
