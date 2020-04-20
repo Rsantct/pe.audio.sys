@@ -64,7 +64,6 @@ WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
 # Auxiliary client to talk to othes server.py instances (preamp and players)
 def send_cmd(service, cmd):
 
-    host = 'localhost'
     # (i) start.py will assign 'preamp' port number this way:
     if service == 'preamp':
         port = BASE_PORT + 1
@@ -76,10 +75,15 @@ def send_cmd(service, cmd):
     ans = ''
     with socket() as s:
         try:
-            s.connect( (host, port) )
+            s.connect( ('localhost', port) )
             s.send( cmd.encode() )
             print( f'({ME}) Tx to {service}:   \'{cmd }\'' )
-            ans = s.recv(1024).decode()
+            ans = ''
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
             print( f'({ME}) Rx from {service}: \'{ans }\' ' )
             s.close()
         except:
