@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 
 # Copyright (c) 2019 Rafael Sánchez
@@ -28,13 +29,14 @@
 
 import os
 import sys
-import socket
+from socket import socket
 import subprocess as sp
 import threading
 import yaml
 import jack
 import numpy as np
 from time import sleep
+from .bfeq2png import do_graph as bfEQgraph
 
 
 # AUX and FILES MANAGEMENT: ============================================
@@ -192,17 +194,24 @@ def calc_gain( state ):
 
 
 # BRUTEFIR MANAGEMENT: =================================================
-def bf_cli(command):
-    """ send commands to Brutefir and disconnects from it
+def bf_cli(cmd):
+    """ queries commands to Brutefir
     """
     # using 'with' will disconnect the socket when done
-    with socket.socket() as s:
+    ans = ''
+    with socket() as s:
         try:
             s.connect( ('localhost', 3000) )
-            command = command + '; quit\n'
-            s.send(command.encode())
+            s.send( f'{cmd}; quit;\n'.encode() )
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
+            s.close()
         except:
-            print (f'(core) Brutefir socket error')
+            print( f'(core) unable to connect to Brutefir:3000' )
+    return ans
 
 
 def bf_set_gains( state ):
@@ -272,7 +281,8 @@ def bf_set_gains( state ):
 
 
 def bf_set_eq( eq_mag, eq_pha ):
-    """ Adjust the Brutefir EQ module
+    """ Adjust the Brutefir EQ module,
+        also will dump an EQ graph
     """
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
@@ -286,21 +296,26 @@ def bf_set_eq( eq_mag, eq_pha ):
     pha_str = ', '.join(pha_pairs)
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
-
+    dump_graph = threading.Thread( target=bfEQgraph,
+                                   args=(freqs, eq_mag) )
+    dump_graph.start()
 
 def bf_read_eq():
-    """ Returns a raw printout from issuing an 'info' query
-        to the Brutefir's EQ module
+    """ Returns the current freqs, magnitude and phase rendered
+        into the Brutefir eq coeff, in JSON format
     """
-    try:
-        cmd = 'lmc eq "c.eq" info; quit'
-        tmp = sp.check_output( f'echo \'{cmd}\' | nc localhost 3000',
-                               shell=True ).decode()
-    except sp.CalledProcessError:
-        return ''
-    tmp = [x for x in tmp.split('\n') if x]
-    return tmp[2:]
+    ans = bf_cli('lmc eq "c.eq" info;')
+    for line in ans.split('\n'):
+        if line.strip()[:5] == 'band:':
+            freq = line.split()[1:]
+        if line.strip()[:4] == 'mag:':
+            mag  = line.split()[1:]
+        if line.strip()[:6] == 'phase:':
+            pha  = line.split()[1:]
 
+    return  np.array(freq).astype(np.float), \
+            np.array(mag).astype(np.float),  \
+            np.array(pha).astype(np.float)
 
 def bf_set_drc( drcID ):
     """ Changes the FIR for DRC at runtime
@@ -764,7 +779,9 @@ class Preamp(object):
         return 'done'
 
     def get_eq(self, *dummy):
-        return yaml.safe_dump( bf_read_eq(), default_flow_style=False )
+        freq, mag , pha = bf_read_eq()
+        return { 'band': freq.tolist(), 'mag': mag.tolist(),
+                                        'pha': pha.tolist() }
 
     def select_source(self, value, *dummy):
         """ this is the source selector """
