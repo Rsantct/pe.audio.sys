@@ -25,7 +25,6 @@ import os
 from socket import socket
 import numpy as np
 from matplotlib import pyplot as plt
-import yaml
 
 UHOME       = os.path.expanduser("~")
 RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
@@ -47,7 +46,7 @@ def get_bf_eq():
                 ans += tmp
             s.close()
         except:
-            print( f'(bfeq2png) unable to connect to Brutefir:{port}' )
+            print( f'(bfeq2png) unable to connect to Brutefir:3000' )
 
     for line in ans.split('\n'):
         if line.strip()[:5] == 'band:':
@@ -55,8 +54,8 @@ def get_bf_eq():
         if line.strip()[:4] == 'mag:':
             mags = line.split()[1:]
 
-    return  np.array(freqs).astype(np.float), \
-            np.array(mags).astype(np.float)
+    return np.array(freqs).astype(np.float), \
+           np.array(mags).astype(np.float)
 
 
 def do_graph(freqs, magdB):
@@ -72,7 +71,7 @@ def do_graph(freqs, magdB):
         print( f'(bfeq2png) working ... .. .' )
 
     fig, ax = plt.subplots()
-    fig.set_figwidth( 5 ) # 5 inches at 100dpi => 500px wide
+    fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
     fig.set_figheight( 1.5 )
     fig.set_facecolor( RGBweb )
     ax.set_facecolor( RGBweb )
@@ -93,6 +92,7 @@ def do_graph(freqs, magdB):
         print( f'(bfeq2png) saved: \'{fpng}\' ' )
     #plt.show()
 
+
 if __name__ == '__main__':
 
     if sys.argv[1:]:
@@ -104,4 +104,3 @@ if __name__ == '__main__':
 
     freqs, magdB = get_bf_eq()
     do_graph(freqs, magdB)
-
