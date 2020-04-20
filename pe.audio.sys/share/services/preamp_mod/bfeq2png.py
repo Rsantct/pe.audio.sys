@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 """
-    A module to dupm a graph to share/www/images/brutefir_eq.png
+    A module to dump an EQ stage graph to share/www/images/brutefir_eq.png
 
     command line usage: bfeq2png.py [--verbose]
 """
