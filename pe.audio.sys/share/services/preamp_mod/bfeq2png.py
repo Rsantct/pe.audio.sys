@@ -18,7 +18,7 @@
 """
     A module to dump an EQ stage graph to share/www/images/brutefir_eq.png
 
-    command line usage: bfeq2png.py [--verbose]
+    Command line usage: bfeq2png.py [--verbose]
 """
 import sys
 import os
@@ -31,8 +31,16 @@ RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 3
 lineColor   = 'grey'
 verbose     = False
 
+# Prepare pyplot
+plt.style.use('dark_background')
+plt.rcParams.update({'font.size': 6})
+freq_ticks  = [ 20,   50,   100,   200,   500,   1e3,  2e3,  5e3,  1e4,   2e4]
+freq_labels = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
+figHeight   = 1.5   # min 1.5 if font.size = 6
 
 def get_bf_eq():
+    """ Queries Brutefir TCP service to get the current EQ magnitudes
+    """
     cmd  = 'lmc eq "c.eq" info;'
     ans = ''
     with socket() as s:
@@ -59,20 +67,15 @@ def get_bf_eq():
 
 
 def do_graph(freqs, magdB):
-    """ dupms a graph to share/www/images/brutefir_eq.png
+    """ Dupms a graph to share/www/images/brutefir_eq.png
     """
-    plt.style.use('dark_background')
-    plt.rcParams.update({'font.size': 6})
-    freq_ticks  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
-    freq_labels = ['20', '50', '100', '200', '500', '1K', '2K',
-                   '5K', '10K', '20K']
-
     if verbose:
         print( f'(bfeq2png) working ... .. .' )
 
+    # Customize figure and axes
     fig, ax = plt.subplots()
-    fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
-    fig.set_figheight( 1.5 )
+    fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide (same as DRC graph)
+    fig.set_figheight( figHeight )
     fig.set_facecolor( RGBweb )
     ax.set_facecolor( RGBweb )
     ax.set_xscale('log')
@@ -80,12 +83,13 @@ def do_graph(freqs, magdB):
     ax.set_ylim( -6, +12 )
     ax.set_xticks( freq_ticks )
     ax.set_xticklabels( freq_labels )
-    ax.set_title( 'Brutefir EQ' )
+    # ax.set_title( 'Brutefir EQ' )
+    # Plot the EQ curve
     ax.plot(freqs, magdB,
             color=lineColor,
             linewidth=3
             )
-
+    # Save to file
     fpng = f'{UHOME}/pe.audio.sys/share/www/images/brutefir_eq.png'
     plt.savefig( fpng, facecolor=RGBweb )
     if verbose:
