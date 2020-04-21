@@ -141,9 +141,10 @@ if __name__ == '__main__':
         ax.set_xscale('log')
         ax.set_xlim( 20, 20000 )
         ax.set_ylim( -15, 5 )
+        ax.set_xticks( [] )
         ax.set_xticks( freq_ticks )
         ax.set_xticklabels( freq_labels )
-        ax.set_title( f'DRC: {drc_set}' )
+        #ax.set_title( f'DRC: {drc_set}' )
 
         if drc_set != 'none':
             IRs = read_pcms( drc_set )
