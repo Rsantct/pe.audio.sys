@@ -41,8 +41,9 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 
 // Some globals
 var state = {loudspeaker:"not connected"};
-var advanced_controls = false;          // Default for displaying advanced controls
-var metablank = {                       // A player's metadata blank dict
+var show_advanced = false;          // defaults for display advanced controls
+var show_graphs   = false;          // defaults for show graphs
+var metablank = {                   // A player's metadata blank dict
     'player':       '',
     'time_pos':     '',
     'time_tot':     '',
@@ -117,11 +118,6 @@ function page_initiate(){
     // Updates the title of the restart button as per config.yml
     document.getElementById("restart_switch").title = 'RESTART: ' +
                                          web_config.restart_cmd_info;
-    // Enable displaying the drc graph
-    if ( web_config.show_graphs == true ){
-        document.getElementById("drc_graph").style.display = 'block';
-        document.getElementById("bfeq_graph").style.display = 'block';
-    }
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -247,7 +243,7 @@ function page_update() {
 
     // Displays or hides the advanced controls section
     // (i) This allows access to the RESTART button
-    if ( advanced_controls == true ) {
+    if ( show_advanced == true ) {
         document.getElementById( "advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
@@ -303,15 +299,25 @@ function page_update() {
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
     document.getElementById("targetSelector").value = state.target;
-    if ( web_config.show_graphs == true ){
+
+    // Enable displaying eq graphs
+    if ( show_graphs == true ){
+        document.getElementById("drc_graph").style.display = 'block';
+        document.getElementById("bfeq_graph").style.display = 'block';
+        // Points to the current DRC png
         document.getElementById("drc_img").src = 'images/drc_' + state.drc_set + '.png';
+        // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
         var now = performance.now()
-        now = Math.floor(now/3000);  // artifice to wait 3000 milliseconds to download
+        now = Math.floor(now/3000);
         document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'+ now;
     }else{
+        document.getElementById("drc_graph").style.display = 'none';
+        document.getElementById("bfeq_graph").style.display = 'none';
+        // Disable loading graph images to save bandwidth on page updates
         document.getElementById("drc_img").src = '';
         document.getElementById("bfeq_img").src = '';
     }
+
     // Highlights activated buttons and related indicators accordingly
     buttonMuteHighlight()
     buttonMonoHighlight()
@@ -455,7 +461,7 @@ function play_url() {
 // Restart procedure
 function peaudiosys_restart() {
     control_cmd('aux restart');
-    advanced_controls = false;
+    show_advanced = false;
     page_update();
 }
 // Switch the amplifier
@@ -612,11 +618,24 @@ function macros_toggle() {
 }
 // Toggle advanced controls
 function advanced_toggle() {
-    if ( advanced_controls !== true ) {
-        advanced_controls = true;
+    if ( show_advanced !== true ) {
+        show_advanced = true;
     }
     else {
-        advanced_controls = false;
+        show_advanced = false;
+    }
+    page_update();
+}
+// Toggle displaying graphs
+function graphs_toggle() {
+    if ( web_config.show_graphs == false ){
+        return;
+    }
+    if ( show_graphs !== true ) {
+        show_graphs = true;
+    }
+    else {
+        show_graphs = false;
     }
     page_update();
 }
