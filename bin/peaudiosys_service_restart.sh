@@ -49,7 +49,7 @@ function main {
 svc=$1
 opc=$2
 
-if [[ -z $svc ]]; then
+if [[ -z $svc || $svc == *"-h"* ]]; then
     echo "usage:    peaudiosys_service_restart.sh   <service>  [stop | --verbose]"
     echo ""
     echo "          <service>   peaudiosys | preamp | players | all"
