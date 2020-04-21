@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 # Copyright (c) 2019 Rafael Sánchez
@@ -26,18 +25,18 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import os
 import sys
 from socket import socket
 import subprocess as sp
-import threading
 import yaml
 import jack
 import numpy as np
 from time import sleep
-from .bfeq2png import do_graph as bfEQgraph
+import multiprocessing as mp
 
+sys.path.append (os.path.dirname(__file__) )
+import bfeq2png
 
 # AUX and FILES MANAGEMENT: ============================================
 def find_target_sets():
@@ -296,9 +295,16 @@ def bf_set_eq( eq_mag, eq_pha ):
     pha_str = ', '.join(pha_pairs)
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
-    dump_graph = threading.Thread( target=bfEQgraph,
-                                   args=(freqs, eq_mag) )
-    dump_graph.start()
+
+    # Dumping the EQ graph to a png file.
+    bfeq2png.do_graph(freqs, eq_mag)
+    # (i) Pending threading this, although it is fast to complete.
+    #     Notice: threading is not suitable with matplotlib,
+    #             tried  multiprocessing but cannot fix OSError.
+    #dump_graph = mp.Process( target=bfeq2png.do_graph,
+    #                         args=(freqs, eq_mag) )
+    #dump_graph.start()
+
 
 def bf_read_eq():
     """ Returns the current freqs, magnitude and phase
@@ -316,6 +322,7 @@ def bf_read_eq():
     return  np.array(freq).astype(np.float), \
             np.array(mag).astype(np.float),  \
             np.array(pha).astype(np.float)
+
 
 def bf_set_drc( drcID ):
     """ Changes the FIR for DRC at runtime
@@ -458,7 +465,7 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
     i = 0
     for cap_port in cap_ports:
         pbk_port = pbk_ports[i]
-        job_jc = threading.Thread( target=jack_connect,
+        job_jc = mp.Process( target=jack_connect,
                                    args=(cap_port,
                                          pbk_port,
                                          mode, wait) )

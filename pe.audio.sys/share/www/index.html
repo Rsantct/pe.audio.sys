@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
 
     <!--
-
     Copyright (c) 2019 Rafael Sánchez
     This file is part of 'pe.audio.sys', a PC based personal audio system.
 
@@ -27,10 +30,7 @@
 
     You should have received a copy of the GNU General Public License
     along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
-
     -->
-
-<head>
 
     <title>pe.audio.sys</title>
 
@@ -42,8 +42,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-
-    <meta charset="utf-8">
 
     <!-- The javascript functions used when an event occurs on this page body's -->
     <script src="clientside.js"></script>
@@ -89,12 +87,11 @@
                     background-color:   rgb(25, 25, 25);
                 }
 
-        /* 1st SECTION: lside: shows the loudspeaker, rside: advanced toggler */
+
         td#main_lside       { width:   5%; text-align: center; border: none; }
         td#main_cside       { width:  90%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
         td#main_rside       { width:   5%; text-align: center; border: none; }
 
-        /* 2nd SECTION */
         td#OnOff            { width:   5%; text-align: center; border: none; }
 
         td#levelInfo        { width:   5%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
@@ -104,30 +101,31 @@
 
         td#input            { width:  85%; text-align: right; border: none;}
 
-        /* 3th SECTION */
+
         td#treble           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
         td#bass             { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
         td#balance          { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
         td#target           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
 
-        /* 4th SECTION*/
+
         table#eq_table      { border: 1px solid grey; border-radius: 10px/10px; }
         td#xo               { border: none; width: 33%; }
         td#drc              { border: none; width: 33%; }
         td#peq              { border: none; width: 33%; color:grey; }
 
-        /* 5th SECTION */
-        table#level_buttons_table  { table-layout: fixed; }
-        td#level_buttons11   { border-style: none; width:15%; }
-        td#level_buttons12   { border-style: none; width:70%; }
-        td#level_buttons13   { border-style: none; width:15%; font-size:0.50em; vertical-align: bottom;}
-        td#level_buttons21   { border-style: none; width:15%; }
-        td#level_buttons22   { border-style: none; width:70%; }
-        td#level_buttons23   { border-style: none; width:15%; font-size:0.50em; }
-        td#LU_slider_label   { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: mid;}
-        td#LU_meter_label    { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: mid;}
 
-        /* 6th SECTION */
+        table#level_buttons_table  { table-layout: fixed; }
+        td#level_buttons11   { border-style: none; width:5%; }
+        td#level_buttons12   { border-style: none; width:90%; }
+        td#level_buttons13   { border-style: none; width:5%; }
+        td#level_buttons21   { border-style: none; width:5%; }
+        td#level_buttons22   { border-style: none; width:90%; }
+        td#level_buttons23   { border-style: none; width:5%; }
+
+        td#LU_slider_label   { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
+        td#LU_meter_label    { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
+
+
         table#player_info   { text-align: left; }
         td#bitrate          { border: 1px solid grey; border-radius: 10px/10px; width: 5%; font-size:0.6em;}
         td#artist           { border: 1px solid grey; border-radius: 10px/10px; }
@@ -136,7 +134,7 @@
         td#album            { border: 1px solid grey; border-radius: 10px/10px; }
         td#title            { border: 1px solid grey; border-radius: 10px/10px; }
 
-        /* 7th SECTION */
+
         td#playback_control_11  { border-style: none; width:10%; }
         td#playback_control_12  { border-style: none; width:75%; }
         td#playback_control_13  { border-style: none; width:15%; text-align:left; }
@@ -145,17 +143,27 @@
         td#playback_control_23  { border-style: none; width:15%; text-align:center;}
 
 
-        /* 8th SECTION */
-        .macro_buttons  {   width: 100%;
-                            min-height: 2.7em;
-                            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
-                            border:2px solid rgb(120,120,120);
-                            border-radius: 10px/10px;
-                            /* below is for text inside button: */
-                            font-size:0.80em;
-                            display: inline;
-                        }
-        td#mCell        {   border-style: none; width:30%; }
+        table#macro_buttons{ border-style: none; }
+        td#mb1 { border-style: none; width:30%; }
+        td#mb2 { border-style: none; width:30%; }
+        td#mb3 { border-style: none; width:30%; }
+        td#mb4 { border-style: none; width:30%; }
+        td#mb5 { border-style: none; width:30%; }
+        td#mb6 { border-style: none; width:30%; }
+        td#mb7 { border-style: none; width:30%; }
+        td#mb8 { border-style: none; width:30%; }
+        td#mb9 { border-style: none; width:30%; }
+        .macro_button  {
+            width: 100%;
+            min-height: 2.7em;
+            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
+            border:2px solid rgb(120,120,120);
+            border-radius: 10px/10px;
+            /* below is for text inside button: */
+            font-size:0.80em;
+            display: inline;
+        }
+
 
         /* LU LOUDNESS UNITS METER CONTAINER (type CELL) */
         .LU_meter_container {
@@ -252,7 +260,7 @@
 
             <!-- INPUTS selector, will be filled by javascript -->
             <td id="input"     rowspan="2">
-                <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901</button>
+                <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901;</button>
                 <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
                 <select id="inputsSelector"
                         title="Source Selector" onchange="control_cmd('input ' + this.value, update=false)" ></select>
@@ -268,65 +276,57 @@
     </table>
     </div>
 
-
     <!-- LEVEL butttons -->
-    <div class="level_buttons" id="level_buttons" align="center" >
+    <div class="level_buttons" id="level_buttons" >
         <table id="level_buttons_table">
-        <tr>
+          <tr>
             <td id="level_buttons11">
             </td>
             <td id="level_buttons12">
-                <!-- 1 dB MAIN VOLUME and MUTE buttons -->
                 <button type="button" onmousedown="audio_change('level', -1)" >
                         &nbsp;-1&nbsp;</button>
                 <button type="button" onmousedown="mute_toggle()" id="buttonMute" >
-                        &nbsp;&nbsp;0&nbsp;&nbsp;</button>
+                        &nbsp;0&nbsp;</button>
                 <button type="button" onmousedown="audio_change('level', +1)" >
                         &nbsp;+1&nbsp;</button>
             </td>
             <td id="level_buttons13">
-                <!-- 2 dB MONITOR VOLUME buttons header -->
-                <!--&nbsp;&nbsp;mon:&nbsp;&nbsp;-->
             </td>
-        <tr>
-        </tr>
+          </tr>
+          <tr>
             <td id="level_buttons21">
             </td>
             <td id="level_buttons22">
-                <!-- 3 dB MAIN VOLUME buttons -->
                 <button type="button" onmousedown="audio_change('level', -3)" >
                         &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
                 <button type="button" onmousedown="audio_change('level', +3)" >
                         &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
             </td>
             <td id="level_buttons23">
-                <!-- 2 dB MONITOR VOLUME buttons -->
-                <!--
-                <button type="button" id="MON_vol_down"  onmousedown="MON_vol('-2dB')">-</button>
-                <button type="button" id="MON_vol_up"    onmousedown="MON_vol('+2dB')">+</button>
-                -->
             </td>
-        </tr>
+          </tr>
         </table>
     </div>
+
     <div id="LU_offset" style="display:block" >
     <table>
         <!-- LU REFERENCE OFFSET ADJUST -->
         <tr>
             <!-- JS will update the Loud. Ref-->
-            <td id="LU_slider_label">LU offset: --</td>
+            <td id="LU_slider_label">LU offset: --
+            </td>
             <td class="LU_slider_container">
-            <input  id="LU_slider" class="LU_slider" type="range"
-                    min="0" step="3" max="12.0"
-                    title="Adjust as estimated 'loudness war' music program"
-                    oninput="control_cmd('loudness_ref ' + this.value)">
+                <input  id="LU_slider" class="LU_slider" type="range"
+                        min="0" step="3" max="12.0"
+                        title="Adjust as estimated 'loudness war' music program"
+                        oninput="control_cmd('loudness_ref ' + this.value)">
             </td>
         </tr>
     </table>
     </div>
 
     <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button) -->
-    <div id="advanced_controls" align="center" style="display:none; font-size:0.75em;">
+    <div id="advanced_controls" style="display:none; font-size:0.75em;">
 
     <!-- LU MONITOR -->
     <div id="LU_monitor" style="display:block" >
@@ -454,19 +454,19 @@
     <div>
     <table id="macro_buttons" style="display:none">
     <tr>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_1" onmousedown="user_macro('1', this.innerText)" >-</button></td>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_2" onmousedown="user_macro('2', this.innerText)" >-</button></td>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_3" onmousedown="user_macro('3', this.innerText)" >-</button></td>
+    <td id="mb1"><button type="button" class="macro_button" id="macro_button_1" onmousedown="user_macro('1', this.innerText)" >-</button></td>
+    <td id="mb2"><button type="button" class="macro_button" id="macro_button_2" onmousedown="user_macro('2', this.innerText)" >-</button></td>
+    <td id="mb3"><button type="button" class="macro_button" id="macro_button_3" onmousedown="user_macro('3', this.innerText)" >-</button></td>
     </tr>
     <tr>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_4" onmousedown="user_macro('4', this.innerText)" >-</button></td>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_5" onmousedown="user_macro('5', this.innerText)" >-</button></td>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_6" onmousedown="user_macro('6', this.innerText)" >-</button></td>
+    <td id="mb4"><button type="button" class="macro_button" id="macro_button_4" onmousedown="user_macro('4', this.innerText)" >-</button></td>
+    <td id="mb5"><button type="button" class="macro_button" id="macro_button_5" onmousedown="user_macro('5', this.innerText)" >-</button></td>
+    <td id="mb6"><button type="button" class="macro_button" id="macro_button_6" onmousedown="user_macro('6', this.innerText)" >-</button></td>
     </tr>
     <tr>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_7" onmousedown="user_macro('7', this.innerText)" >-</button></td>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_8" onmousedown="user_macro('8', this.innerText)" >-</button></td>
-    <td id="mCell"><button type="button" class="macro_buttons" id="macro_button_9" onmousedown="user_macro('9', this.innerText)" >-</button></td>
+    <td id="mb7"><button type="button" class="macro_button" id="macro_button_7" onmousedown="user_macro('7', this.innerText)" >-</button></td>
+    <td id="mb8"><button type="button" class="macro_button" id="macro_button_8" onmousedown="user_macro('8', this.innerText)" >-</button></td>
+    <td id="mb9"><button type="button" class="macro_button" id="macro_button_9" onmousedown="user_macro('9', this.innerText)" >-</button></td>
     </tr>
     </table>
     </div>
