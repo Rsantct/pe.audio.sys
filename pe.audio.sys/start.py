@@ -297,6 +297,10 @@ def prepare_drc_graphs():
         print( f'({ME}) processing drc sets to web/images in background' )
         sp.Popen( [ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
 
+def update_bfeq_graph():
+    print( f'({ME}) processing Brutefir EQ graph to web/images in background' )
+    sp.Popen( ['python3', f'{BDIR}/share/services/preamp_mod/bfeq2png.py'] )
+
 if __name__ == "__main__":
 
     run_level = ''
@@ -375,6 +379,10 @@ if __name__ == "__main__":
         # RESTORE settings
         core.init_audio_settings()
         core.init_source()
+
+        # Will update Brutefir EQ graph for the web page
+        if CONFIG["web_config"]["show_graphs"]:
+            update_bfeq_graph()
 
         # SERVICES (TCP SERVERS):
         # (i) the 'preamp' service needs jack to be running.
