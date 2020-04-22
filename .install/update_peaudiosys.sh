@@ -159,42 +159,44 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 # clientside.js needs to be adapted depending on you using
 # Apache or Node.js as your pe.audio.sys http server
 ################################################################################
-nodeServer=$(pgrep -f peasys_node.js)
-if [ "$nodeServer" ]; then
+a2ensites=$(ls /etc/apache2/sites-enabled/)
+
+# Using Apache
+if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
+    echo "(i) Will configure www/clientside.js for Apache server"
+    echo
+    echo "(i) Checking the website 'pe.audio.sys'"
+    echo "    /etc/apache2/sites-available/pe.audio.sys.conf"
+    echo
+    forig=$ORIG"/.install/apache-site/pe.audio.sys.conf"
+    fdest="/etc/apache2/sites-available/pe.audio.sys.conf"
+    # updating your HOME path inside pe.audio.sys.conf
+    sed -i s/peaudiosys/$(basename $HOME)/g  $forig
+    updateWeb=1
+    if [ -f $fdest ]; then
+        if ! cmp --quiet $forig $fdest; then
+            echo "(i) A new version is available "
+            echo "    "$forig"\n"
+        else
+            echo "(i) No changes on the website\n"
+            updateWeb=""
+        fi
+    fi
+    if [ "$updateWeb" ]; then
+        echo "(!) You need admin privilegies (sudo)"
+        echo "( ^C to cancel the website update )\n"
+        sudo cp $forig $fdest
+        sudo a2dissite 000-default.conf
+        # a helper when migrating from pre.di.c
+        sudo a2dissite pre.di.c.conf
+        sudo a2ensite pe.audio.sys.conf
+        sudo service apache2 reload
+    fi
+
+# Using Node.js
+else
+    echo "(i) Will configure www/clientside.js for Node.js server"
     sed -i -e "/const\ URL_PREFIX/c\const\ URL_PREFIX\ =\ \'\/\';" \
            "${HOME}"/pe.audio.sys/share/www/clientside.js
 fi
 
-################################################################################
-# Apache site
-################################################################################
-forig=$ORIG"/.install/apache-site/pe.audio.sys.conf"
-fdest="/etc/apache2/sites-available/pe.audio.sys.conf"
-# updating your HOME path inside pe.audio.sys.conf
-sed -i s/peaudiosys/$(basename $HOME)/g  $forig
-
-updateWeb=1
-echo ""
-echo "(i) Checking the website 'pe.audio.sys'"
-echo "    /etc/apache2/sites-available/pe.audio.sys.conf"
-echo ""
-
-if [ -f $fdest ]; then
-    if ! cmp --quiet $forig $fdest; then
-        echo "(i) A new version is available "
-        echo "    "$forig"\n"
-    else
-        echo "(i) No changes on the website\n"
-        updateWeb=""
-    fi
-fi
-if [ "$updateWeb" ]; then
-    echo "(!) You need admin privilegies (sudo)"
-    echo "( ^C to cancel the website update )\n"
-    sudo cp $forig $fdest
-    sudo a2dissite 000-default.conf
-    # a helper when migrating from pre.di.c
-    sudo a2dissite pre.di.c.conf
-    sudo a2ensite pe.audio.sys.conf
-    sudo service apache2 reload
-fi
