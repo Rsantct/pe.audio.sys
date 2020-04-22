@@ -174,9 +174,9 @@ def process_aux( cmd, arg='' ):
     elif cmd == 'get_loudness_monitor' or cmd.lower() == 'get_lu_monitor':
         try:
             with open(LOUD_MON_VAL_FILE, 'r') as f:
-                result = round( float(f.read().strip()), 1)
+                result = json.loads( f.read() )
         except:
-            result = ''
+            result = {"LU_I": 0, "scope": CONFIG["LU_reset_md_field"]}
 
     # RESTART
     elif cmd == 'restart':
