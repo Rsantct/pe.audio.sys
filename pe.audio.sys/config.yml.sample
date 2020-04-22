@@ -251,7 +251,7 @@ web_config:
     # display EQ and DRC graphs
     show_graphs: true
 
-# The metadata field ('album', 'title') to trigger to reset the measured LU.
-# (leave blank to reset only when selected input changes)
+# The metadata field ('album' or 'title'=='track') to trigger to reset
+# the measured LU. Leave blank to reset only when selected input changes.
 LU_reset_md_field: album
 

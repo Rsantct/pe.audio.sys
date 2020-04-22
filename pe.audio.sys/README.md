@@ -142,7 +142,7 @@ The monitored value will be available in several flavours:
 
 A **reset** function is also provided for the monitored LU value, by a web button or by command line.
 
-An auto reset will occur when **changing the preamp input**. In addition, the LU value could be reset also when **the played album or title changes** (option inside `config.yml`).
+An auto reset will occur when **changing the preamp input**. In addition, the LU value could be reset also when **the played album or title (track) changes** (option inside `config.yml`).
 
 To compensate for high LU-Integrated values on your listening audio program, we provide some options:
 
