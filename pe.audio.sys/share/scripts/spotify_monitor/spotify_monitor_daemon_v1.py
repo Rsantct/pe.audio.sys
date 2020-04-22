@@ -56,6 +56,7 @@ from gi.repository import Playerctl, GLib
 import sys
 import os
 import json
+from time import sleep
 
 UHOME = os.path.expanduser("~")
 
@@ -112,9 +113,16 @@ def main_loop():
 
     # Try to connect Spotify through by a Playerctl instance, which
     # is a dbus mpris interface to query some desktop player.
-    player = Playerctl.Player(player_name='spotify')
-    if not player.props.status:
-        print( "(spotify_monitor) Error connecting to Spotify Desktop" )
+    tries = 10
+    while tries:
+        player = Playerctl.Player(player_name='spotify')
+        if player.props.status:
+            break
+        tries -= 1
+        sleep(1)
+
+    if not tries:
+        print( "(spotify_monitor_daemon_v1) Error connecting to Spotify Desktop" )
         sys.exit()
 
     # Events an handlers: player.on( eventID, handlerFunction )
