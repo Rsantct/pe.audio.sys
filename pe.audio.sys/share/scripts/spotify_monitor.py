@@ -57,12 +57,12 @@ def check_Spotify_Desktop_process():
             return True
         wait_sec -= 1
         sleep(1)
-    print('(spotify_monitor) Unable to detect Spotify Desktop running')
     return False
 
 
 def start():
     if not check_Spotify_Desktop_process():
+        print('(spotify_monitor) Unable to detect Spotify Desktop running')
         exit()
     v = get_playerctl_version()
     if v != '-1':
