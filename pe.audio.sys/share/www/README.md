@@ -5,8 +5,12 @@ This folder hosts the web page that manages your pe.audio.sys, for instance from
 ## Web page behavior
 
 Some options can be configured inside **`~/pe.audio.sys/config.yml`**:
-- command to run when the reboot button is pressed
-- show or hide the macro buttons array at startup
+
+- Command to run when the reboot button is pressed
+- Show or hide the macro buttons array at startup
+- Enable download EQ graph images from the server.
+
+Downloading the Brutefir EQ graph on runtime increases the refreshing bandwidth only when the `[G]` button toggles to display it.
 
 ## HTTP Server configuration: Apache+PHP or Node.js
 
