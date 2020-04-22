@@ -415,7 +415,8 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     # Will retry during <wait> seconds, this is useful when a
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
-    c = wait
+    c = wait * 2  # will retry every .5 seconds
+    #print('(core.jack_connect)', mode, f'wait={wait}', p1, p2)  # DEBUG
     while c:
         try:
             if 'dis' in mode or 'off' in mode:
@@ -424,12 +425,16 @@ def jack_connect(p1, p2, mode='connect', wait=1):
                 if p2 not in JCLI.get_all_connections(p1):
                     JCLI.connect(p1, p2)
                 else:
-                    print (f'(core) {p1.name} already connected to {p2.name}')
+                    print (f'(core.jack_connect) \'{p1.name}\' already ' \
+                                           f'connected to \'{p2.name}\'')
             return True
         except:
+            #print('(core.jack_connect)', 'FAILED', mode, p1, p2)  # DEBUG
             c -= 1
-            sleep(1)
-    print ( f'(core) failed to connect \'{p1.name}\' to \'{p2.name}\'')
+            sleep(0.5)
+
+    print ( f'(core.jack_connect) FAILED to connect \'{p1.name}\' ' \
+                                                f'to \'{p2.name}\'')
     return False
 
 
@@ -440,8 +445,9 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
     # Try to get ports by a port name pattern
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input=True )
-    # If not found, it can be an alias pattern (loopback ports
-    # have alias as expected from some source names)
+
+    # If not found, it can be an ALIAS pattern
+    # (if used, jackd -Ln loopback ports will be aliased with the source name)
     if not cap_ports:
         loopback_cap_ports = JCLI.get_ports( 'loopback', is_output=True )
         for p in loopback_cap_ports:
@@ -453,8 +459,9 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
         for p in loopback_pbk_ports:
             if pbk_pattern in p.aliases[1]:
                 pbk_ports.append(p)
-    #print('CAPTURE  ====> ', cap_ports) # debug
-    #print('PLAYBACK ====> ', pbk_ports) # debug
+
+    #print('CAPTURE  ====> ', cap_ports)  # DEBUG
+    #print('PLAYBACK ====> ', pbk_ports)
     if not cap_ports:
         print( f'(core) cannot find jack port "{cap_pattern}"' )
         return
@@ -462,15 +469,13 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
         print( f'(core) cannot find jack port "{pbk_pattern}"' )
         return
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
-    i = 0
-    for cap_port in cap_ports:
+    for i, cap_port in enumerate(cap_ports):
         pbk_port = pbk_ports[i]
         job_jc = mp.Process( target=jack_connect,
                                    args=(cap_port,
                                          pbk_port,
                                          mode, wait) )
         job_jc.start()
-        i += 1
 
 
 def jack_clear_preamp():
