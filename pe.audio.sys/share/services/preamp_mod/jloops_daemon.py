@@ -35,7 +35,7 @@
 import os
 import yaml
 import jack
-import threading
+import multiprocessing as mp
 
 UHOME = os.path.expanduser("~")
 
@@ -55,8 +55,8 @@ def jack_loop(clientname, nports=2):
         print( f'(jack_loop) \'{clientname}\' already exists in JACK, nothing done.' )
         return
 
-    # Will use the threading.Event mechanism to keep this alive
-    event = threading.Event()
+    # Will use the multiprocessing.Event mechanism to keep this alive
+    event = mp.Event()
 
     # This sets the actual loop that copies frames from our capture to our playback ports
     @client.set_process_callback
@@ -99,17 +99,16 @@ def jack_loop(clientname, nports=2):
 def main():
     """ Preparing the loops:
         - a preamp loop
-        - as needed from the config.yml sources.
+        - as loops as needed from the config.yml sources.
     """
-    # 1st loop to prepare: auto spawn the preamp ports
-    jloop = threading.Thread( target=jack_loop,
-                              args=['pre_in_loop', 2] )
+    # 1st: auto spawn the PREAMP loop ports
+    jloop = mp.Process( target=jack_loop, args=['pre_in_loop', 2] )
     jloop.start()
-    # 2nd: the source's connection loops:
+    # 2nd: the SOURCE's connection loop ports:
     for source in CONFIG['sources']:
         pname = CONFIG['sources'][source]['capture_port']
         if 'loop' in pname:
-            jloop = threading.Thread( target=jack_loop, args=(pname,) )
+            jloop = mp.Process( target=jack_loop, args=(pname,) )
             jloop.start()
 
 
