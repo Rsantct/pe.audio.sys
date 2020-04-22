@@ -356,8 +356,8 @@ if __name__ == "__main__":
 
     if jack_is_running():
 
-        # (i) Importing core.py needs JACK to be running
-        import share.services.preamp_mod.core as core
+        # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK ('external_cards:')
+        prepare_extra_cards()
 
         # JACK LOOPS
         sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
@@ -369,8 +369,8 @@ if __name__ == "__main__":
         # BRUTEFIR
         start_brutefir()
 
-        # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK
-        prepare_extra_cards()
+        # (i) Importing core.py needs JACK to be running
+        import share.services.preamp_mod.core as core
 
         # PREAMP  -->   BRUTEFIR  (be careful that both pre_in_loops are alive)
         # Wait 60 sec because Brutefir ports can take some time to be activated.
