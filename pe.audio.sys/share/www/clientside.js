@@ -294,7 +294,8 @@ function page_update() {
         if ( LU_mon_dict.scope == 'title' ) {
             LU_mon_dict.scope = 'track';
         }
-        document.getElementById("LU_meter_label").innerHTML = ' LU monitor (' + LU_mon_dict.scope + ') :';
+        document.getElementById("LU_meter_label").innerHTML =
+            ' LU mon: ' + LU_mon_dict.LU_I + '  (' + LU_mon_dict.scope + ')';
     }catch{
         console.log('Error getting loudness monitor from server')
     }
@@ -671,5 +672,3 @@ function TESTING1(){
 function TESTING2(){
     //do something
 }
-
-
