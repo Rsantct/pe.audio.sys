@@ -124,7 +124,8 @@
         td#level_buttons23   { border-style: none; width:5%; }
 
         td#LU_slider_label   { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
-        td#LU_meter_label    { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
+        td#LU_meter_reset    { width:15%; border-style: none ; font-size:1.0em; vertical-align: middle;}
+        td#LU_meter_label    { width:35%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
 
 
         table#player_info   { text-align: left; }
@@ -333,9 +334,13 @@
       <div id="LU_monitor" style="display:block" >
       <table>
         <tr>
-            <td id="LU_meter_label">
+            <td id="LU_meter_reset">
                 <button type="button" id="buttonLoudMonReset"
-                        onmousedown="control_cmd('aux loudness_monitor_reset')" >reset</button>
+                        onmousedown="control_cmd('aux loudness_monitor_reset')">
+                        LU reset
+                </button>
+            </td>
+            <td id="LU_meter_label">
                 &nbsp;LU monitor:
             </td>
             <td class="LU_meter_container">
