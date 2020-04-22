@@ -32,6 +32,7 @@ import numpy as np
 from scipy import signal
 import queue
 import yaml
+import json
 # Thanks to https://python-sounddevice.readthedocs.io
 import sounddevice as sd
 # Will reset the (I) measurement when input changes
@@ -201,8 +202,11 @@ if __name__ == '__main__':
     except:
         # Defaults to album if not configured
         md_key = 'album'
-    if not ( md_key in ('album', 'title', '') ):
+    if not ( md_key in ('album', 'title', 'track') ):
         raise Exception(f'(loudness_monitor) metadata field \'{md_key}\' not valid')
+    # We accept 'track' to mean 'title'
+    if md_key == 'track':
+        md_key = 'title'
 
     # Initialize a 'last metatada' value to trigger resetting measured LU
     last_md = ''
@@ -303,8 +307,8 @@ if __name__ == '__main__':
             # >>> ROUNDED TO 1 dB to save disk writing <<<
             if abs(Iprev - I) > 1.0:
                 with open( args.output_file, 'w') as fout:
-                    fout.write( str( round(I_LU,0) ) )
-                    fout.close()
+                    d = {"LU_I": round(I_LU,0), "scope": md_key}
+                    fout.write( json.dumps( d ) )
                 Iprev = I
 
             # Reseting the (I) measurement. <reset> is a global that can
@@ -319,8 +323,8 @@ if __name__ == '__main__':
                 G2 = 0
                 # and zeroes the output file
                 with open( args.output_file, 'w') as fout:
-                    fout.write( '0.0' )
-                    fout.close()
+                    d = {"LU_I": 0, "scope": md_key}
+                    fout.write( json.dumps( d ) )
                 reset = False
 
             # Optionally prints to console
