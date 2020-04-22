@@ -391,7 +391,7 @@ if __name__ == "__main__":
             restart_service( svc, port=port )
 
         # PREAMP  --> MONITORS
-        # Needs to check if monitors ports are created, or simply wait a bit.
+        # Needs to check if monitors ports are created, or simply wait a while.
         if CONFIG["source_monitors"]:
             for monitor in CONFIG["source_monitors"]:
                 core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=10 )
