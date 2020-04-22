@@ -267,8 +267,9 @@ def update_lcd_loudness_monitor(scr='scr_1'):
 
     try:
         with open(LOUDNESSMON_file, 'r') as f:
-            lu = f.read().strip()
-            lu = str( int( round( float(lu), 0) ) )
+            # e.g. {'LU_I': -6.0, 'scope': 'album'}
+            lu_dict = json.loads( f.read() )
+            lu = str( int( round( float( lu_dict["LU_I"] ), 0) ) )
     except:
         lu = '0'
 
