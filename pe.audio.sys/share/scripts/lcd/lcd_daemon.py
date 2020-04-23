@@ -269,11 +269,12 @@ def update_lcd_loudness_monitor(scr='scr_1'):
         with open(LOUDNESSMON_file, 'r') as f:
             # e.g. {'LU_I': -6.0, 'scope': 'album'}
             lu_dict = json.loads( f.read() )
-            lu = str( int( round( float( lu_dict["LU_I"] ), 0) ) )
+            lu_I = lu_dict["LU_I"]
+            # Will display integers values of LU-Integrated
+            lbl += str( int( round( lu_I , 0) ) ).rjust(3)
     except:
-        lu = '0'
+        lbl += ' - '
 
-    lbl += lu.rjust(3)
     cmd = f'widget_set {scr} {wdg} {pos} "{lbl}"'
     LCD.send( cmd )
 
