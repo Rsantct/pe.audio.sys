@@ -19,13 +19,6 @@
 /*
    (i) debug trick: console.log(something);
        NOTICE: remember do not leaving any console.log active
-
-   (i) Cannot reference document.getElementbyxxxx until started page_initiate()
-*/
-
-/* PENDING:
-    We use http request GET with async=false, this is deprecated and
-    not recommended but this way we get the answer from the server side.
 */
 
 // -----------------------------------------------------------------------------
@@ -67,26 +60,29 @@ try{
                      };
 }
 
-// Talks to the pe.audio.sys HTTP SERVER
+// Queries pe.audio.sys SERVER SIDE
 function control_cmd( cmd ) {
+    /*
+    We need synchronous mode (async=false), althougt it is deprecated
+    and not recommended in the main JS thread.
+    https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest
+    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
+    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Synchronous_and_Asynchronous_Requests
+    */
 
     // avoids http socket lossing some symbols
     cmd = http_prepare(cmd);
 
     const myREQ = new XMLHttpRequest();
 
-    // a handler that waits for HttpRequest has completed.
-    myREQ.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            return;
-        }
-    };
-
-    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd, async=false);
+    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd,
+               async=false);
+    // (i) send() is blocking because async=false, so no handlers
+    //     on myREQ status changes are needed because of this.
     myREQ.send();
-    //console.log('httpTX: ' + cmd);
-
     ans = myREQ.responseText;
+
+    //console.log('httpTX: ' + cmd);
     //console.log('httpRX: ' + ans);
 
     if ( ans.includes('socket_connect\(\) failed' ) ){
