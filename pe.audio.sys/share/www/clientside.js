@@ -290,12 +290,15 @@ function page_update() {
     document.getElementById("LU_slider").value    = state.loudness_ref;
     try{
         const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
-        document.getElementById("LU_meter").value = LU_mon_dict.LU_I;
-        if ( LU_mon_dict.scope == 'title' ) {
-            LU_mon_dict.scope = 'track';
+        const LU_I = LU_mon_dict.LU_I
+        let scope  = LU_mon_dict.scope
+        // Preferred displaying 'track' instead of 'title'
+        if ( scope == 'title' ) {
+            scope = 'track';
         }
+        document.getElementById("LU_meter").value           = LU_I;
         document.getElementById("LU_meter_label").innerHTML =
-            ' LU mon: ' + LU_mon_dict.LU_I + '  (' + LU_mon_dict.scope + ')';
+                                       ' LU mon: ' + LU_I + '  (' + scope + ')';
     }catch{
         console.log('Error getting loudness monitor from server')
     }
