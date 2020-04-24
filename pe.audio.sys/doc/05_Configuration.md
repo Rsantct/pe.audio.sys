@@ -61,14 +61,8 @@ You can begin from one of the provided loudspeaker examples as a template for cu
     
         [  ] Check carefully 'to_outputs': the polarity and attenuation you need on each way.
 
-    [  ] WARNING: set a 50 dB atten for a SAFE STARTUP LEVEL:
-           
-            filter "f.drc.L" {
-                from_filters: "f.eq.L"/50.0;
-            ... ...
-            filter "f.drc.R" {
-                from_filters: "f.eq.R"/50.0;
 
+For safety purposes, keep the initial 50.0 dB attenuation on filter "f.lev.L" and filter "f.lev.R" stages.
 
 Once your `brutefir_config` file is ready, you can test it:
 
