@@ -415,27 +415,31 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     # Will retry during <wait> seconds, this is useful when a
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
-    c = wait * 2  # will retry every .5 seconds
-    #print('(core.jack_connect)', mode, f'wait={wait}', p1, p2)  # DEBUG
-    while c:
+
+    # will retry every .5 seconds
+    while wait:
         try:
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
                 if p2 not in JCLI.get_all_connections(p1):
                     JCLI.connect(p1, p2)
+                    print(f'(core.jack_connect)', f'wait={wait} {mode}',
+                                                               p1.name, p2.name)
                 else:
-                    print (f'(core.jack_connect) \'{p1.name}\' already ' \
-                                           f'connected to \'{p2.name}\'')
-            return True
+                    print(f'(core.jack_connect)', f'wait={wait} ALREADY {mode}',
+                                                               p1.name, p2.name)
+            break
         except:
-            #print('(core.jack_connect)', 'FAILED', mode, p1, p2)  # DEBUG
-            c -= 1
+            print('(core.jack_connect)', f'wait={wait} FAILED {mode}',
+                                                               p1.name, p2.name)
+            wait -= 0.5
             sleep(0.5)
 
-    print ( f'(core.jack_connect) FAILED to connect \'{p1.name}\' ' \
-                                                f'to \'{p2.name}\'')
-    return False
+    if wait:
+        return True
+    else:
+        return False
 
 
 def jack_connect_bypattern( cap_pattern, pbk_pattern,
