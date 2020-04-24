@@ -391,10 +391,11 @@ if __name__ == "__main__":
             restart_service( svc, port=port )
 
         # PREAMP  --> MONITORS
-        # Needs to check if monitors ports are created, or simply wait a while.
+        # Needs to check if monitors ports are ready, or simply wait a while,
+        # lets say about 30 sec to allow zita ports to be ready
         if CONFIG["source_monitors"]:
             for monitor in CONFIG["source_monitors"]:
-                core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=10 )
+                core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=30 )
 
     else:
         print( f'({ME}) JACK not detected')
