@@ -9,4 +9,4 @@
 # Cannot initialize driver
 export JACK_NO_AUDIO_RESERVATION=1
 
-$HOME/pe.audio.sys/start.py all &
+$HOME/pe.audio.sys/start.py all --log
