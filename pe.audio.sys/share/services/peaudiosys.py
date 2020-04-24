@@ -62,7 +62,7 @@ WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
 
 
 # Auxiliary client to talk to othes server.py instances (preamp and players)
-def send_cmd(service, cmd):
+def cli_cmd(service, cmd):
 
     # (i) start.py will assign 'preamp' port number this way:
     if service == 'preamp':
@@ -95,14 +95,14 @@ def send_cmd(service, cmd):
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    return send_cmd( service='preamp', cmd=cmd )
+    return cli_cmd( service='preamp', cmd=cmd )
 
 
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    return send_cmd( service='players', cmd=cmd )
+    return cli_cmd( service='players', cmd=cmd )
 
 
 # Main function for AUX commands processing
