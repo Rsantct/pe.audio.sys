@@ -9,7 +9,7 @@ See here:
 
 https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-de-SW
 
-Usually it is enough:
+### Usually it is enough:
 
 - add the **`peaudiosys`** user to your system, this is optional because you can run the **pe.audio.sys** system under **ANY USER ACCOUNT** if you want so.
 
