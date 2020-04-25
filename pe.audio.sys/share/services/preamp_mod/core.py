@@ -416,7 +416,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
 
-    # will retry every .5 seconds
+    # will retry every second
     while wait:
         try:
             if 'dis' in mode or 'off' in mode:
@@ -433,8 +433,8 @@ def jack_connect(p1, p2, mode='connect', wait=1):
         except:
             print('(core.jack_connect)', f'wait={wait} FAILED {mode}',
                                                                p1.name, p2.name)
-            wait -= 0.5
-            sleep(0.5)
+            wait -= 1
+            sleep(1)
 
     if wait:
         return True
@@ -476,9 +476,9 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
     for i, cap_port in enumerate(cap_ports):
         pbk_port = pbk_ports[i]
         job_jc = mp.Process( target=jack_connect,
-                                   args=(cap_port,
-                                         pbk_port,
-                                         mode, wait) )
+                             args=(cap_port,
+                                   pbk_port,
+                                   mode, wait) )
         job_jc.start()
 
 
