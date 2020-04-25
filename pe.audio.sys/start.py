@@ -30,8 +30,10 @@
     usage:  start.py <mode> [ --log ]
 
     mode:
-        'all '               :   restart all
-        'stop' or 'shutdown' :   stop all
+        'all'      :    restart all
+        'stop'     :    stop all
+        'services' :    restart tcp services
+        'scripts'  :    restart user scripts
 
     --log   messages redirected to 'pe.audio.sys/start.log'
 
@@ -47,7 +49,7 @@ ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 BDIR  = f'{UHOME}/pe.audio.sys'
 
-with open( f'{BDIR}/config.yml', 'r' ) as f:
+with open(f'{BDIR}/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
 LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
@@ -66,8 +68,8 @@ def get_Bfir_sample_rate():
         for l in lines:
             if 'sampling_rate:' in l and l.strip()[0] != '#':
                 try:
-                    FS = int( [x for x in l.replace(';', '').split()
-                                         if x.isdigit() ][0] )
+                    FS = int([x for x in l.replace(';', '').split()
+                                         if x.isdigit() ][0])
                 except:
                     pass
         if FS:
@@ -77,14 +79,14 @@ def get_Bfir_sample_rate():
         raise ValueError('unable to find Brutefir sample_rate')
 
     if 'defaults' in fname:
-        print( f'({ME}) *** using .brutefir_defaults SAMPLE RATE ***' )
+        print(f'({ME}) *** using .brutefir_defaults SAMPLE RATE ***')
 
     return FS
 
 
 def jack_is_running():
     try:
-        sp.check_output( 'jack_lsp >/dev/null 2>&1'.split() )
+        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
         return True
     except sp.CalledProcessError:
         return False
@@ -99,22 +101,22 @@ def start_jackd():
     cmdlist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
               f'{jack_backend_options}'.split()
 
-    #print( ' '.join(cmdlist) ) ; sys.exit() # DEBUG
+    #print(' '.join(cmdlist)) ; sys.exit() # DEBUG
 
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
         cmdlist = ['pasuspender', '--'] + cmdlist
 
-    sp.Popen( cmdlist, stdout=sys.stdout, stderr=sys.stderr )
+    sp.Popen(cmdlist, stdout=sys.stdout, stderr=sys.stderr)
     sleep(1)
 
     # Will check if JACK ports are available
     c = 10
     while c:
         if jack_is_running():
-            print( f'({ME}) JACKD STARTED' )
+            print(f'({ME}) JACKD STARTED')
             break
-        print( f'({ME}) waiting for jackd ' + '.' * c )
+        print(f'({ME}) waiting for jackd ' + '.' * c)
         sleep(.5)
         c -= 1
 
@@ -122,7 +124,7 @@ def start_jackd():
         # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK ('external_cards:')
         prepare_extra_cards()
         # JACK LOOPS
-        sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
+        sp.Popen(f'{BDIR}/share/services/preamp_mod/jloops_daemon.py')
         sleep(1)  # this is necessary, or checking for ports to be activated
         return True
 
@@ -131,67 +133,74 @@ def start_jackd():
 
 
 def start_brutefir():
-    os.chdir( LSPK_FOLDER )
-    sp.Popen( 'brutefir brutefir_config'.split(), stdout=sys.stdout,
-                                                  stderr=sys.stderr )
-    os.chdir( UHOME )
-    print( f'({ME}) STARTING BRUTEFIR' )
+    os.chdir(LSPK_FOLDER)
+    sp.Popen('brutefir brutefir_config'.split(), stdout=sys.stdout,
+                                                  stderr=sys.stderr)
+    os.chdir(UHOME)
+    print(f'({ME}) STARTING BRUTEFIR')
     sleep(1)    # wait a second for brutefir ports to be available
 
     # core will thread this in background
     core.jack_connect_bypattern('pre_in_loop', 'brutefir', wait=60)
 
 
-def restart_service( service, address='localhost', port=TCP_BASE_PORT,
-                     onlystop=False, todevnull=False ):
-    # Stop
-    print( f'({ME}) stopping SERVICE: \'{service}\'' )
-    sp.Popen( f'pkill -KILL -f "server.py {service}" \
-               >/dev/null 2>&1', shell=True, stdout=sys.stdout,
-                                             stderr=sys.stderr )
-    if onlystop:
-        return
+def manage_service(service, address='localhost', port=TCP_BASE_PORT,
+                    mode='restart', todevnull=False):
+
+    if mode in ('stop', 'restart'):
+        # Stop
+        print(f'({ME}) stopping SERVICE: \'{service}\'')
+        sp.Popen(f'pkill -KILL -f "server.py {service}" \
+                   >/dev/null 2>&1', shell=True, stdout=sys.stdout,
+                                                 stderr=sys.stderr)
+
     sleep(.25)  # this is necessary because of asyncronous stopping
 
-    # Start
-    print( f'({ME}) starting SERVICE: \'{service}\'' )
-    cmd = f'python3 {BDIR}/share/services/server.py {service} {address} {port}'
-    if todevnull:
-        with open('/dev/null', 'w') as fnull:
-            sp.Popen( cmd, shell=True, stdout=fnull, stderr=fnull)
-    else:
-        sp.Popen( cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    if mode in ('stop'):
+        return
+
+    if mode in ('start', 'restart'):
+        # Start
+        print(f'({ME}) starting SERVICE: \'{service}\'')
+        cmd = f'python3 {BDIR}/share/services/server.py {service} {address} {port}'
+        if todevnull:
+            with open('/dev/null', 'w') as fnull:
+                sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
+        else:
+            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
-def stop_processes():
+def stop_processes(mode):
 
     # Killing any previous instance of start.py
     kill_bill()
 
     # Stop scripts
-    run_scripts( mode='stop' )
+    if mode in ('all', 'stop', 'scripts'):
+        run_scripts(mode='stop')
 
     # Stop services:
-    for idx, svc in enumerate( ('preamp', 'players') ):
-        port = TCP_BASE_PORT + idx + 1
-        restart_service( svc, port=port, onlystop=True )
+    if mode in ('all', 'stop', 'services'):
+        manage_service('preamp',  TCP_BASE_PORT+1, mode='stop')
+        manage_service('players', TCP_BASE_PORT+2, mode='stop')
 
-    # Stop Brutefir
-    print( f'({ME}) STOPPING BRUTEFIR' )
-    sp.Popen( 'pkill -KILL -f brutefir >/dev/null 2>&1', shell=True )
+    if mode in ('all', 'stop'):
+        # Stop Brutefir
+        print(f'({ME}) STOPPING BRUTEFIR')
+        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
 
-    # Stop Jack Loops Daemon
-    print( f'({ME}) STOPPING JACK LOOPS' )
-    sp.Popen( 'pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True )
+        # Stop Jack Loops Daemon
+        print(f'({ME}) STOPPING JACK LOOPS')
+        sp.Popen('pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True)
 
-    # Stop Jack
-    print( f'({ME}) STOPPING JACKD' )
-    sp.Popen( 'pkill -KILL -f jackd >/dev/null 2>&1', shell=True )
+        # Stop Jack
+        print(f'({ME}) STOPPING JACKD')
+        sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
 
     sleep(1)
 
 
-def prepare_extra_cards( channels=2 ):
+def prepare_extra_cards(channels=2):
     """ This launch resamplers to connect extra sound cards into Jacks
     """
 
@@ -202,7 +211,7 @@ def prepare_extra_cards( channels=2 ):
         jack_name = card
         alsacard  = params['alsacard']
         resampler = params['resampler']
-        quality   = str( params['resamplingQ'] )
+        quality   = str(params['resamplingQ'])
         try:
             misc = params['misc_params']
         except KeyError:
@@ -213,9 +222,9 @@ def prepare_extra_cards( channels=2 ):
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
-        print( f'({ME}) loading resampled extra card: {card}' )
+        print(f'({ME}) loading resampled extra card: {card}')
         #print(cmd) # DEBUG
-        sp.Popen( cmd.split(), stdout=sys.stdout, stderr=sys.stderr )
+        sp.Popen(cmd.split(), stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_scripts(mode='start'):
@@ -224,9 +233,9 @@ def run_scripts(mode='start'):
         #    e.g the ecasound_peq, so we need to extract the script name.
         if type(script) == dict:
             script = list(script.keys())[0]
-        print( f'({ME}) will {mode} the script \'{script}\' ...' )
-        sp.Popen( f'{BDIR}/share/scripts/{script} {mode}', shell=True,
-                                  stdout=sys.stdout, stderr=sys.stderr )
+        print(f'({ME}) will {mode} the script \'{script}\' ...')
+        sp.Popen(f'{BDIR}/share/scripts/{script} {mode}', shell=True,
+                                  stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
 
@@ -243,7 +252,7 @@ def kill_bill():
             f' | grep "{processString}"' + \
             f' | grep -v grep'
     try:
-        rawpids = sp.check_output( cmd, shell=True ).decode().split('\n')
+        rawpids = sp.check_output(cmd, shell=True).decode().split('\n')
     except sp.CalledProcessError:
         pass
     # Discard blanks and strip spaces:
@@ -257,10 +266,10 @@ def kill_bill():
             rawpids.remove(rawpid)
 
     # Just display the processes to be killed, if any.
-    print( '-' * 21 + f' ({ME}) killing running before me ' + '-' * 21 )
+    print('-' * 21 + f' ({ME}) killing running before me ' + '-' * 21)
     for rawpid in rawpids:
         print(rawpid)
-    print( '-' * 80 )
+    print('-' * 80)
 
     if not rawpids:
         return
@@ -271,23 +280,23 @@ def kill_bill():
     # Killing the remaining pids, if any:
     for pid in pids:
         print(f'({ME}) killing old \'start.py\' processes:', pid)
-        sp.Popen( f'kill -KILL {pid}'.split() )
+        sp.Popen(f'kill -KILL {pid}'.split())
         sleep(.1)
     sleep(.5)
 
 
 def check_state_file():
     state_file = f'{BDIR}/.state.yml'
-    with open( state_file, 'r') as f:
+    with open(state_file, 'r') as f:
         state = f.read()
         # if the file is ok, lets backup it
         if 'xo_set:' in state:
-            sp.Popen( f'cp {state_file} {state_file}.BAK'.split() )
-            print( f'({ME}) (i) .state.yml copied to .state.yml.BAK' )
+            sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
+            print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
         # if it is damaged:
         else:
-            print( f'({ME}) ERROR \'state.yml\' is damaged, ' +
-                    'you can restore it from \'.state.yml.BAK\'' )
+            print(f'({ME}) ERROR \'state.yml\' is damaged, ' +
+                    'you can restore it from \'.state.yml.BAK\'')
             sys.exit()
 
 
@@ -301,7 +310,7 @@ def prepare_drc_graphs():
     for drc_coeff in drc_coeffs:
         drcSetName = drc_coeff[6:]
         if drcSetName not in drc_sets:
-            drc_sets.append( drcSetName )
+            drc_sets.append(drcSetName)
     drc_sets += ['none']
 
     # find existing drc graph images
@@ -311,15 +320,15 @@ def prepare_drc_graphs():
 
     # If graphs exist, skip generate them
     if sorted(drc_sets) == sorted(png_sets):
-        print( f'({ME}) found drc graphs in web/images folders' )
+        print(f'({ME}) found drc graphs in web/images folders')
     else:
-        print( f'({ME}) processing drc sets to web/images in background' )
-        sp.Popen( [ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
+        print(f'({ME}) processing drc sets to web/images in background')
+        sp.Popen([ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ])
 
 
 def update_bfeq_graph():
-    print( f'({ME}) processing Brutefir EQ graph to web/images in background' )
-    sp.Popen( ['python3', f'{BDIR}/share/services/preamp_mod/bfeq2png.py'] )
+    print(f'({ME}) processing Brutefir EQ graph to web/images in background')
+    sp.Popen(['python3', f'{BDIR}/share/services/preamp_mod/bfeq2png.py'])
 
 
 if __name__ == "__main__":
@@ -333,14 +342,14 @@ if __name__ == "__main__":
         sys.exit()
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
-    if mode not in ['all', 'stop', 'shutdown']:
+    if mode not in ['all', 'stop', 'services', 'scripts']:
         if logFlag:
             sys.stdout = original_stdout
             sys.stderr = original_stderr
         print(__doc__)
         sys.exit()
     if logFlag:
-        flog = open( f'{BDIR}/start.log', 'w')
+        flog = open(f'{BDIR}/start.log', 'w')
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         sys.stdout = flog
@@ -350,52 +359,56 @@ if __name__ == "__main__":
     check_state_file()
 
     # STOPPING
-    stop_processes()
+    stop_processes(mode)
 
     # The 'peaudiosys' service always runs, so that we can do basic operation
-    restart_service( 'peaudiosys', address=CONFIG['peaudiosys_address'],
-                      todevnull=True )
+    manage_service('peaudiosys', address=CONFIG['peaudiosys_address'],
+                    mode='restart', todevnull=True)
 
-    if mode in ['stop', 'shutdown']:
+    if mode in ('stop', 'shutdown'):
         sys.exit()
 
-    # If necessary will prepare drc graphs for the web page
-    if CONFIG["web_config"]["show_graphs"]:
-        prepare_drc_graphs()
+    if mode in ('all'):
+        # If necessary will prepare drc graphs for the web page
+        if CONFIG["web_config"]["show_graphs"]:
+            prepare_drc_graphs()
 
-    # START JACK
-    if not start_jackd():
-        print(f'({ME}) Problems starting JACK ')
-        sys.exit()
+        # START JACK
+        if not start_jackd():
+            print(f'({ME}) Problems starting JACK ')
+            sys.exit()
 
-    # (i) Importing core.py needs JACK to be running
-    import share.services.preamp_mod.core as core
+        # (i) Importing core.py needs JACK to be running
+        import share.services.preamp_mod.core as core
 
-    # Running USER SCRIPTS
-    run_scripts()
+    if mode in ('all', 'scripts'):
+        # Running USER SCRIPTS
+        run_scripts()
 
-    # BRUTEFIR
-    start_brutefir()
+    if mode in ('all'):
+        # BRUTEFIR
+        start_brutefir()
 
-    # RESTORE settings
-    core.init_audio_settings()
-    core.init_source()
+        # RESTORE settings
+        core.init_audio_settings()
+        core.init_source()
 
-    # Will update Brutefir EQ graph for the web page
-    if CONFIG["web_config"]["show_graphs"]:
-        update_bfeq_graph()
+    if mode in ('all', 'services'):
+        # Will update Brutefir EQ graph for the web page
+        if CONFIG["web_config"]["show_graphs"]:
+            update_bfeq_graph()
 
-    # SERVICES (TCP SERVERS):
-    restart_service( 'preamp',  port=(TCP_BASE_PORT + 1) )
-    restart_service( 'players', port=(TCP_BASE_PORT + 2) )
+        # SERVICES (TCP SERVERS):
+        manage_service('preamp',  port=(TCP_BASE_PORT + 1), mode='start')
+        manage_service('players', port=(TCP_BASE_PORT + 2), mode='start')
 
-    # PREAMP  --> MONITORS
-    if CONFIG["source_monitors"]:
+    if mode in ('all') and CONFIG["source_monitors"]:
+        # PREAMP  --> MONITORS
         for monitor in CONFIG["source_monitors"]:
-            core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=30 )
+            core.jack_connect_bypattern('pre_in_loop', monitor, wait=30)
 
     # END
     if logFlag:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
-        print( f'start process logged at \'{BDIR}/start.log\'' )
+        print(f'start process logged at \'{BDIR}/start.log\'')
