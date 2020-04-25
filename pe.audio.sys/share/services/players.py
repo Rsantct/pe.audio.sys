@@ -120,7 +120,7 @@ def player_control(action):
         returns: 'stop' | 'play' | 'pause'
         I/O:     .player_state
     """
-    nstate = ''
+    nstate = 'play'  # default answer
 
     source = get_source()
 
