@@ -30,9 +30,8 @@
     usage:  start.py <mode> [ --log ]
 
     mode:
-        'all '              :   restart all
-        'stop' or 'shutdown':   stop all
-        'core'              :   restart core except Jackd
+        'all '               :   restart all
+        'stop' or 'shutdown' :   stop all
 
     --log   messages redirected to 'pe.audio.sys/start.log'
 
@@ -114,21 +113,33 @@ def start_jackd():
     while c:
         if jack_is_running():
             print( f'({ME}) JACKD STARTED' )
-            return True
+            break
         print( f'({ME}) waiting for jackd ' + '.' * c )
         sleep(.5)
         c -= 1
-    return False
+
+    if c:
+        # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK ('external_cards:')
+        prepare_extra_cards()
+        # JACK LOOPS
+        sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
+        sleep(1)  # this is necessary, or checking for ports to be activated
+        return True
+
+    else:
+        return False
 
 
 def start_brutefir():
     os.chdir( LSPK_FOLDER )
-    #os.system('pwd') # debug
     sp.Popen( 'brutefir brutefir_config'.split(), stdout=sys.stdout,
                                                   stderr=sys.stderr )
     os.chdir( UHOME )
     print( f'({ME}) STARTING BRUTEFIR' )
-    sleep(1)  # wait a while for Brutefir to start ...
+    sleep(1)    # wait a second for brutefir ports to be available
+
+    # core will thread this in background
+    core.jack_connect_bypattern('pre_in_loop', 'brutefir', wait=60)
 
 
 def restart_service( service, address='localhost', port=TCP_BASE_PORT,
@@ -152,11 +163,13 @@ def restart_service( service, address='localhost', port=TCP_BASE_PORT,
         sp.Popen( cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
-def stop_processes(jackd=False):
+def stop_processes():
+
+    # Killing any previous instance of start.py
+    kill_bill()
 
     # Stop scripts
-    if run_level == 'all':
-        run_scripts( mode='stop' )
+    run_scripts( mode='stop' )
 
     # Stop services:
     for idx, svc in enumerate( ('preamp', 'players') ):
@@ -164,17 +177,23 @@ def stop_processes(jackd=False):
         restart_service( svc, port=port, onlystop=True )
 
     # Stop Brutefir
+    print( f'({ME}) STOPPING BRUTEFIR' )
     sp.Popen( 'pkill -KILL -f brutefir >/dev/null 2>&1', shell=True )
 
+    # Stop Jack Loops Daemon
+    print( f'({ME}) STOPPING JACK LOOPS' )
+    sp.Popen( 'pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True )
+
     # Stop Jack
-    if jackd:
-        print( f'({ME}) STOPPING JACKD' )
-        sp.Popen( 'pkill -KILL -f jackd >/dev/null 2>&1', shell=True )
+    print( f'({ME}) STOPPING JACKD' )
+    sp.Popen( 'pkill -KILL -f jackd >/dev/null 2>&1', shell=True )
 
     sleep(1)
 
 
 def prepare_extra_cards( channels=2 ):
+    """ This launch resamplers to connect extra sound cards into Jacks
+    """
 
     if not CONFIG['external_cards']:
         return
@@ -297,16 +316,16 @@ def prepare_drc_graphs():
         print( f'({ME}) processing drc sets to web/images in background' )
         sp.Popen( [ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ] )
 
+
 def update_bfeq_graph():
     print( f'({ME}) processing Brutefir EQ graph to web/images in background' )
     sp.Popen( ['python3', f'{BDIR}/share/services/preamp_mod/bfeq2png.py'] )
 
+
 if __name__ == "__main__":
 
-    run_level = ''
-    logFlag = False
-
     # READING OPTIONS FROM COMMAND LINE
+    logFlag = False
     if sys.argv[1:]:
         mode = sys.argv[1]
     else:
@@ -314,7 +333,12 @@ if __name__ == "__main__":
         sys.exit()
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
-
+    if mode not in ['all', 'stop', 'shutdown']:
+        if logFlag:
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+        print(__doc__)
+        sys.exit()
     if logFlag:
         flog = open( f'{BDIR}/start.log', 'w')
         original_stdout = sys.stdout
@@ -322,88 +346,55 @@ if __name__ == "__main__":
         sys.stdout = flog
         sys.stderr = flog
 
-    # If necessary will prepare drc graphs for the web page
-    if CONFIG["web_config"]["show_graphs"]:
-        prepare_drc_graphs()
-
     # Lets backup .state.yml to help us if it get damaged.
     check_state_file()
 
-    # KILLING ANY PREVIOUS INSTANCE OF THIS
-    kill_bill()
-
-    if mode in ['stop', 'shutdown']:
-        run_level = 'all'
-        stop_processes(jackd=True)
-
-    elif mode == 'core':
-        run_level = 'core'
-        stop_processes(jackd=False)
-
-    elif mode == 'all':
-        run_level = 'all'
-        stop_processes(jackd=True)
-        # Trying to start JACKD
-        if not start_jackd():
-            print('({ME}) Problems starting JACK ')
-
-    else:
-        if logFlag:
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
-        print(__doc__)
-        sys.exit()
-
-    if jack_is_running():
-
-        # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK ('external_cards:')
-        prepare_extra_cards()
-
-        # JACK LOOPS
-        sp.Popen( f'{BDIR}/share/services/preamp_mod/jloops_daemon.py' )
-        sleep(1)  # this is necessary, or checking for ports to be activated
-
-        # Running USER SCRIPTS
-        run_scripts()
-
-        # BRUTEFIR
-        start_brutefir()
-
-        # (i) Importing core.py needs JACK to be running
-        import share.services.preamp_mod.core as core
-
-        # PREAMP  -->   BRUTEFIR  (be careful that both pre_in_loops are alive)
-        # Wait 60 sec because Brutefir ports can take some time to be activated.
-        core.jack_connect_bypattern('pre_in_loop', 'brutefir', wait=60)
-
-        # RESTORE settings
-        core.init_audio_settings()
-        core.init_source()
-
-        # Will update Brutefir EQ graph for the web page
-        if CONFIG["web_config"]["show_graphs"]:
-            update_bfeq_graph()
-
-        # SERVICES (TCP SERVERS):
-        # (i) the 'preamp' service needs jack to be running.
-        for idx, svc in enumerate( ('preamp', 'players') ):
-            port = TCP_BASE_PORT + idx + 1
-            restart_service( svc, port=port )
-
-        # PREAMP  --> MONITORS
-        # Needs to check if monitors ports are ready, or simply wait a while,
-        # lets say about 30 sec to allow zita ports to be ready
-        if CONFIG["source_monitors"]:
-            for monitor in CONFIG["source_monitors"]:
-                core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=30 )
-
-    else:
-        print( f'({ME}) JACK not detected')
+    # STOPPING
+    stop_processes()
 
     # The 'peaudiosys' service always runs, so that we can do basic operation
     restart_service( 'peaudiosys', address=CONFIG['peaudiosys_address'],
                       todevnull=True )
 
+    if mode in ['stop', 'shutdown']:
+        sys.exit()
+
+    # If necessary will prepare drc graphs for the web page
+    if CONFIG["web_config"]["show_graphs"]:
+        prepare_drc_graphs()
+
+    # START JACK
+    if not start_jackd():
+        print(f'({ME}) Problems starting JACK ')
+        sys.exit()
+
+    # (i) Importing core.py needs JACK to be running
+    import share.services.preamp_mod.core as core
+
+    # Running USER SCRIPTS
+    run_scripts()
+
+    # BRUTEFIR
+    start_brutefir()
+
+    # RESTORE settings
+    core.init_audio_settings()
+    core.init_source()
+
+    # Will update Brutefir EQ graph for the web page
+    if CONFIG["web_config"]["show_graphs"]:
+        update_bfeq_graph()
+
+    # SERVICES (TCP SERVERS):
+    restart_service( 'preamp',  port=(TCP_BASE_PORT + 1) )
+    restart_service( 'players', port=(TCP_BASE_PORT + 2) )
+
+    # PREAMP  --> MONITORS
+    if CONFIG["source_monitors"]:
+        for monitor in CONFIG["source_monitors"]:
+            core.jack_connect_bypattern( 'pre_in_loop', monitor, wait=30 )
+
+    # END
     if logFlag:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
