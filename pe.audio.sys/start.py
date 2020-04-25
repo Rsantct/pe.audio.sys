@@ -343,9 +343,6 @@ if __name__ == "__main__":
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
     if mode not in ['all', 'stop', 'services', 'scripts']:
-        if logFlag:
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
         print(__doc__)
         sys.exit()
     if logFlag:
