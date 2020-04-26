@@ -402,7 +402,7 @@ if __name__ == "__main__":
     if mode in ('all') and CONFIG["source_monitors"]:
         # PREAMP  --> MONITORS
         for monitor in CONFIG["source_monitors"]:
-            core.jack_connect_bypattern('pre_in_loop', monitor, wait=30)
+            core.jack_connect_bypattern('pre_in_loop', monitor, wait=60)
 
     # END
     if logFlag:
