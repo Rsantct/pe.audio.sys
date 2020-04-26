@@ -31,7 +31,7 @@
 
 import os
 import subprocess as sp
-import threading
+import multiprocessing
 import yaml
 from time import sleep
 import json
@@ -164,7 +164,7 @@ def init():
             sleep(timer)
     # Loop storing metadata
     meta_timer = 2
-    meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
+    meta_loop = multiprocessing.Process( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
     # Flush state file:
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:

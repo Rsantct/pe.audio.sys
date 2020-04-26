@@ -38,7 +38,7 @@ import sounddevice as sd
 # Will reset the (I) measurement when input changes
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-import threading
+import multiprocessing
 
 UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
@@ -217,8 +217,8 @@ if __name__ == '__main__':
 
     # Threading to control this script (currently only the 'reset' flag)
     control_fifo_prepare(args.control_fifo)
-    control = threading.Thread( target=control_fifo_read_loop,
-                                args=(args.control_fifo,) )
+    control = multiprocessing.Process( target=control_fifo_read_loop,
+                                       args=(args.control_fifo,) )
     control.start()
 
     # Starts an Observer watchdog for file changes
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     observer = Observer()
     observer.schedule( event_handler=My_files_event_handler(),
                        path=MAINFOLDER, recursive=False )
-    obsthread = threading.Thread( target=observer.start() )
+    obsthread = multiprocessing.Process( target=observer.start() )
     obsthread.start()
 
     # Internal FIFO queue

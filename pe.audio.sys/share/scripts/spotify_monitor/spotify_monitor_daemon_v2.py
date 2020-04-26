@@ -39,7 +39,7 @@ import os
 import subprocess as sp
 import json
 import time
-import threading
+import multiprocessing
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -124,5 +124,5 @@ if __name__ == "__main__":
     observer.schedule(event_handler=Changed_files_handler(),
                       path=MAINFOLDER, recursive=False)
     observer.start()
-    obsloop = threading.Thread( target=observer.join() )
+    obsloop = multiprocessing.Process( target=observer.join() )
     obsloop.start()
