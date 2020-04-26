@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -z $1 ] ; then
-    echo usage:
-    echo "    download_peaudiosys.sh  branch_name <git_repo>"
+    echo "usage:"
+    echo "    download_peaudiosys.sh  branch_name [git_repo]"
+    echo
+    echo "    (i) optional git_repo defaults to 'AudioHumLab'"
     echo
     exit 0
 fi
