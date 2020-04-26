@@ -2,7 +2,7 @@
 
 # Copyright (c) 2019 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
-
+#
 # This is based on 'pre.di.c,' a preamp and digital crossover
 # https://github.com/rripio/pre.di.c
 # Copyright (C) 2018 Roberto Ripio
