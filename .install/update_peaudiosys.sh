@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -z $1 ] ; then
     echo usage by indicating a previously downloaded branch in tmp/
