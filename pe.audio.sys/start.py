@@ -44,15 +44,16 @@ import sys
 import subprocess as sp
 from time import sleep
 import yaml
+import jack
 
 ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
-BDIR  = f'{UHOME}/pe.audio.sys'
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
-with open(f'{BDIR}/config.yml', 'r') as f:
+with open(f'{MAINFOLDER}/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
-LSPK_FOLDER     = f'{BDIR}/loudspeakers/{LOUDSPEAKER}'
+LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
 TCP_BASE_PORT   = CONFIG['peaudiosys_port']
 
 
@@ -92,8 +93,80 @@ def jack_is_running():
         return False
 
 
-def start_jackd():
+def prepare_extra_cards(channels=2):
+    """ This launch resamplers that connects extra sound cards into Jack
+    """
+    if not CONFIG['external_cards']:
+        return
 
+    for card, params in CONFIG['external_cards'].items():
+        jack_name = card
+        alsacard  = params['alsacard']
+        resampler = params['resampler']
+        quality   = str(params['resamplingQ'])
+        try:
+            misc = params['misc_params']
+        except KeyError:
+            misc = ''
+
+        cmd = f'{resampler} -d {alsacard} -j {jack_name} ' + \
+              f'-c {channels} -q {quality} {misc}'
+        if 'zita' in resampler:
+            cmd = cmd.replace("-q", "-Q")
+
+        print(f'({ME}) loading resampled extra card: {card}')
+        #print(cmd) # DEBUG
+        sp.Popen(cmd.split(), stdout=sys.stdout, stderr=sys.stderr)
+
+
+def run_jloops():
+    """ Jack loops launcher
+    """
+    # Jack loops launcher external daemon
+    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py')
+
+
+def check_jloops():
+    """ Jack loops checking
+        returns False if checking fails, otherwise returns True
+    """
+    # The configured loops
+    cfg_loops = []
+    loop_names = ['pre_in_loop']
+    for source in CONFIG['sources']:
+        pname = CONFIG['sources'][source]['capture_port']
+        if 'loop' in pname:
+            loop_names.append( pname )
+    for loop_name in loop_names:
+            cfg_loops.append( f'{loop_name}:input_1' )
+            cfg_loops.append( f'{loop_name}:input_2' )
+            cfg_loops.append( f'{loop_name}:output_1' )
+            cfg_loops.append( f'{loop_name}:output_2' )
+
+    if not cfg_loops:
+        return True
+
+    # Waiting for all loops to be spawned
+    jcli = jack.Client(name='loop_check', no_start_server=True)
+    tries = 10
+    while tries:
+        # The running ones
+        run_loops = [p.name for p in jcli.get_ports('loop')]
+        if sorted(cfg_loops) == sorted(run_loops):
+            break
+        sleep(1)
+        tries -= 1
+    jcli.close()
+    if tries:
+        print(f'({ME}) JACK LOOPS STARTED')
+        return True
+    else:
+        print(f'({ME}) JACK LOOPS FAILED')
+        return False
+
+def start_jackd():
+    """ runs jack with configured options
+    """
     jack_backend_options = CONFIG["jack_backend_options"] \
                     .replace('$autoCard', CONFIG["system_card"]) \
                     .replace('$autoFS', str(get_Bfir_sample_rate()))
@@ -111,24 +184,28 @@ def start_jackd():
     sleep(1)
 
     # Will check if JACK ports are available
-    c = 10
-    while c:
+    tries = 10
+    while tries:
         if jack_is_running():
             print(f'({ME}) JACKD STARTED')
             break
-        print(f'({ME}) waiting for jackd ' + '.' * c)
+        print(f'({ME}) waiting for jackd ' + '.' * tries)
         sleep(.5)
-        c -= 1
+        tries -= 1
 
-    if c:
+    if tries:
+
         # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK ('external_cards:')
         prepare_extra_cards()
-        # JACK LOOPS
-        sp.Popen(f'{BDIR}/share/services/preamp_mod/jloops_daemon.py')
-        sleep(1)  # this is necessary, or checking for ports to be activated
-        return True
 
+        # Emerging jack_loops (external daemon)
+        run_jloops()
+        if check_jloops():
+            return True
+        else:
+            return False
     else:
+        # JACK FAILED
         return False
 
 
@@ -162,7 +239,8 @@ def manage_service(service, address='localhost', port=TCP_BASE_PORT,
     if mode in ('start', 'restart'):
         # Start
         print(f'({ME}) starting SERVICE: \'{service}\'')
-        cmd = f'python3 {BDIR}/share/services/server.py {service} {address} {port}'
+        cmd = f'python3 {MAINFOLDER}/share/services/server.py {service}' \
+                                                    f' {address} {port}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
                 sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
@@ -200,33 +278,6 @@ def stop_processes(mode):
     sleep(1)
 
 
-def prepare_extra_cards(channels=2):
-    """ This launch resamplers to connect extra sound cards into Jacks
-    """
-
-    if not CONFIG['external_cards']:
-        return
-
-    for card, params in CONFIG['external_cards'].items():
-        jack_name = card
-        alsacard  = params['alsacard']
-        resampler = params['resampler']
-        quality   = str(params['resamplingQ'])
-        try:
-            misc = params['misc_params']
-        except KeyError:
-            misc = ''
-
-        cmd = f'{resampler} -d{alsacard} -j{jack_name} ' + \
-              f'-c{channels} -q{quality} {misc}'
-        if 'zita' in resampler:
-            cmd = cmd.replace("-q", "-Q")
-
-        print(f'({ME}) loading resampled extra card: {card}')
-        #print(cmd) # DEBUG
-        sp.Popen(cmd.split(), stdout=sys.stdout, stderr=sys.stderr)
-
-
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
         #(i) Some elements on the scripts list from config.yml can be a dict,
@@ -234,7 +285,7 @@ def run_scripts(mode='start'):
         if type(script) == dict:
             script = list(script.keys())[0]
         print(f'({ME}) will {mode} the script \'{script}\' ...')
-        sp.Popen(f'{BDIR}/share/scripts/{script} {mode}', shell=True,
+        sp.Popen(f'{MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
                                   stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
@@ -286,7 +337,7 @@ def kill_bill():
 
 
 def check_state_file():
-    state_file = f'{BDIR}/.state.yml'
+    state_file = f'{MAINFOLDER}/.state.yml'
     with open(state_file, 'r') as f:
         state = f.read()
         # if the file is ok, lets backup it
@@ -314,7 +365,7 @@ def prepare_drc_graphs():
     drc_sets += ['none']
 
     # find existing drc graph images
-    img_folder = f'{BDIR}/share/www/images'
+    img_folder = f'{MAINFOLDER}/share/www/images'
     png_files = [ x for x in os.listdir(img_folder) if x[:4] == 'drc_' ]
     png_sets =  [ x[4:-4] for x in png_files ]
 
@@ -323,12 +374,12 @@ def prepare_drc_graphs():
         print(f'({ME}) found drc graphs in web/images folders')
     else:
         print(f'({ME}) processing drc sets to web/images in background')
-        sp.Popen([ 'python3', f'{BDIR}/share/www/scripts/drc2png.py', '-q' ])
+        sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
 
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
-    sp.Popen(['python3', f'{BDIR}/share/services/preamp_mod/bfeq2png.py'])
+    sp.Popen(['python3', f'{MAINFOLDER}/share/services/preamp_mod/bfeq2png.py'])
 
 
 if __name__ == "__main__":
@@ -346,7 +397,7 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit()
     if logFlag:
-        flog = open(f'{BDIR}/start.log', 'w')
+        flog = open(f'{MAINFOLDER}/start.log', 'w')
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         sys.stdout = flog
@@ -408,4 +459,4 @@ if __name__ == "__main__":
     if logFlag:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
-        print(f'start process logged at \'{BDIR}/start.log\'')
+        print(f'start process logged at \'{MAINFOLDER}/start.log\'')
