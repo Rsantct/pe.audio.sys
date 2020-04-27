@@ -233,6 +233,11 @@ function page_update() {
     // Getting the current STATUS
     try{
         state = JSON.parse( control_cmd('get_state') );
+        if (state == null){
+            document.getElementById("main_cside").innerText =
+                    ':: pe.audio.sys :: preamp OFFLINE';
+            return;
+        }
     }catch{
         state = {loudspeaker:'not connected'};
     }
