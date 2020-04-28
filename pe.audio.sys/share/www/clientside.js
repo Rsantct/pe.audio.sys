@@ -224,7 +224,7 @@ function fill_in_page_statics(){
     show_peq_info();
 }
 
-// Update page RUNTIME VARIABLE ITEMS:
+// Page UPDATE (RUNTIME VARIABLE ITEMS):
 function page_update() {
 
     // Amplifier switching (aux service always runs)
@@ -233,6 +233,11 @@ function page_update() {
     // Getting the current STATUS
     try{
         state = JSON.parse( control_cmd('get_state') );
+        if (state == null){
+            document.getElementById("main_cside").innerText =
+                    ':: pe.audio.sys :: preamp OFFLINE';
+            return;
+        }
     }catch{
         state = {loudspeaker:'not connected'};
     }
@@ -362,6 +367,11 @@ function playerCtrl(action) {
 function update_player_controls() {
     try{
         var playerState = control_cmd( 'player state' );
+        if (playerState == "null"){
+            document.getElementById("main_cside").innerText =
+                    ':: pe.audio.sys :: players OFFLINE';
+            return;
+        }
     }catch{
         return;
     }
@@ -392,6 +402,11 @@ function update_player_controls() {
 function update_player_info() {
     try{
         var tmp = control_cmd( 'player get_meta' );
+        if (tmp == "null"){
+            document.getElementById("main_cside").innerText =
+                    ':: pe.audio.sys :: players OFFLINE';
+            return;
+        }
     }catch{
         return;
     }

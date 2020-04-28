@@ -23,7 +23,7 @@ https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-
 
     `sudo usermod -a -G dialout YourUserHere`
 
-Unlike `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories.
+Unlike `FIRtro` or `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories. So, no special user profile is needed here.
 
 
 ## Headless machine:

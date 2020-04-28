@@ -72,7 +72,7 @@ def cli_cmd(service, cmd):
     else:
         raise Exception(f'({ME}) wrong service \'{service}\'')
 
-    ans = ''
+    ans = None
     with socket() as s:
         try:
             s.connect( ('localhost', port) )

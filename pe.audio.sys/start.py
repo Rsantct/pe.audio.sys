@@ -164,6 +164,7 @@ def check_jloops():
         print(f'({ME}) JACK LOOPS FAILED')
         return False
 
+
 def start_jackd():
     """ runs jack with configured options
     """
@@ -180,6 +181,7 @@ def start_jackd():
                                        shell=True).decode():
         cmdlist = ['pasuspender', '--'] + cmdlist
 
+    # Launch jackd process
     sp.Popen(cmdlist, stdout=sys.stdout, stderr=sys.stderr)
     sleep(1)
 
@@ -215,7 +217,7 @@ def start_brutefir():
                                                   stderr=sys.stderr)
     os.chdir(UHOME)
     print(f'({ME}) STARTING BRUTEFIR')
-    sleep(1)    # wait a second for brutefir ports to be available
+    sleep(1)    # wait a second for brutefir process to be running
 
     # core will thread this in background
     core.jack_connect_bypattern('pre_in_loop', 'brutefir', wait=60)
@@ -440,6 +442,9 @@ if __name__ == "__main__":
         # RESTORE settings
         core.init_audio_settings()
         core.init_source()
+        # PREAMP  --> MONITORS
+        if mode in ('all') and CONFIG["source_monitors"]:
+            core.connect_monitors()
 
     if mode in ('all', 'services'):
         # Will update Brutefir EQ graph for the web page
@@ -450,10 +455,6 @@ if __name__ == "__main__":
         manage_service('preamp',  port=(TCP_BASE_PORT + 1), mode='start')
         manage_service('players', port=(TCP_BASE_PORT + 2), mode='start')
 
-    if mode in ('all') and CONFIG["source_monitors"]:
-        # PREAMP  --> MONITORS
-        for monitor in CONFIG["source_monitors"]:
-            core.jack_connect_bypattern('pre_in_loop', monitor, wait=60)
 
     # END
     if logFlag:
