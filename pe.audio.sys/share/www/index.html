@@ -327,30 +327,31 @@
     </table>
     </div>
 
+    <!-- LU MONITOR -->
+    <div id="LU_monitor" style="display:none; font-size:0.75em;" > <!-- JS will enable this -->
+    <table>
+      <tr>
+          <td id="LU_meter_reset">
+              <button type="button" id="buttonLoudMonReset"
+                      onmousedown="control_cmd('aux loudness_monitor_reset')">
+                      LU reset
+              </button>
+          </td>
+          <td id="LU_meter_label">
+              &nbsp;LU monitor:
+          </td>
+          <td class="LU_meter_container">
+          <!-- JS will set this value: -->
+          <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
+                  min="0" optimum="0" low="5" high="8" max="12" ></meter>
+          </td>
+      </tr>
+    </table>
+    </div>
+
+
     <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button) -->
     <div id="advanced_controls" style="display:none; font-size:0.75em;">
-
-      <!-- LU MONITOR -->
-      <div id="LU_monitor" style="display:block" >
-      <table>
-        <tr>
-            <td id="LU_meter_reset">
-                <button type="button" id="buttonLoudMonReset"
-                        onmousedown="control_cmd('aux loudness_monitor_reset')">
-                        LU reset
-                </button>
-            </td>
-            <td id="LU_meter_label">
-                &nbsp;LU monitor:
-            </td>
-            <td class="LU_meter_container">
-            <!-- JS will set this value: -->
-            <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
-                    min="0" optimum="0" low="5" high="8" max="12" ></meter>
-            </td>
-        </tr>
-      </table>
-      </div>
 
       <table>
         <tr>
