@@ -17,7 +17,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    A module intended to read the Brutefir convolver
+    A script to read the Brutefir convolver structure on pe.audio.sys
 
     Four objects are provided:
 
@@ -30,7 +30,7 @@
 
 import sys, os
 import subprocess as sp
-import socket
+from socket import socket
 
 UHOME = os.path.expanduser("~")
 
@@ -47,31 +47,31 @@ class color:
    END = '\033[0m'
 
 
-def bfcli(cmds=''):
-    """ send commands to brutefir CLI and receive its responses
+def bfcli(cmd):
+    """ queries commands to Brutefir
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('localhost', 3000))
-
-    s.send( f'{cmds};quit\n'.encode() )
-
-    response = b''
-    while True:    
-        received = s.recv(4096)
-        if received:
-            response = response + received
-        else:
-            break
-    s.close()
-    #print(response) # debug
-    return response.decode()
+    # using 'with' will disconnect the socket when done
+    ans = ''
+    with socket() as s:
+        try:
+            s.connect( ('localhost', 3000) )
+            s.send( f'{cmd}; quit;\n'.encode() )
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
+            s.close()
+        except:
+            print( f'(core) unable to connect to Brutefir:3000' )
+    return ans
 
 
 def read_config():
     """ reads outputsMap, coeffs, filters_at_start
     """
     global outputsMap, coeffs, filters_at_start
-    global sampling_rate, filter_length, float_bits, dither, init_delays        
+    global sampling_rate, filter_length, float_bits, dither, init_delays
 
     with open(BRUTEFIR_CONFIG_PATH, 'r') as f:
         lineas = f.readlines()
@@ -107,10 +107,10 @@ def read_config():
         if 'float_bits' in linea:
             float_bits = linea.strip().split(':')[-1].strip()
 
-        if 'dither' in linea:       
+        if 'dither' in linea:
             dither = linea.strip().split(':')[-1].strip()
 
-        if 'delay' in linea:        
+        if 'delay' in linea:
             init_delays = linea.strip().split(':')[-1].strip()
 
 
@@ -124,7 +124,7 @@ def read_config():
         if outputIniciado:
             if 'device:' in linea and '"jack"' in linea:
                 outputJackIniciado = True
-        
+
         if outputJackIniciado:
             tmp = linea.split('ports:')[-1].strip()
             if tmp:
@@ -135,7 +135,7 @@ def read_config():
                     outputsMap.append( pmap ); tmp = ''
             if "}" in linea: # fin de la lectura de las outputs
                 outputJackIniciado = False
-                
+
         #######################
         # COEFFs
         #######################
@@ -178,7 +178,7 @@ def read_config():
 
     with open( f'{UHOME}/.brutefir_defaults', 'r') as f:
         lines = f.read().split('\n')
-        
+
     for line in lines:
 
         if not sampling_rate:
@@ -196,11 +196,12 @@ def read_config():
                 float_bits = line.strip().split(':')[-1].strip() \
                                 + color.BOLD + ' (DEFAULT)' + color.END
 
+
 def add_atten_pol(f):
-    
+
     at = 0.0 # atten total
     pol = 1
-    
+
     for key in ['from inputs', 'to outputs', 'from filters', 'to filters']:
         tmp = f[key].split()
         # index/atten/multiplier, for instance:
@@ -220,27 +221,28 @@ def add_atten_pol(f):
                 pol *= (int( tmp ) )
             except:
                 pass
-    
+
     f["atten tot"]  = at
     f["pol"]        = pol
-    
+
     return f
 
+
 def get_running_filters():
-    
+
     filters = []
     f_blank = { 'f_num':    None,
                 'f_name':   None,
                 }
-    
+
     # query list of filter in Brutefir
     lines = bfcli('lf').split('\n')
-    
+
     # scanning filters
     f = {}
     for line in lines:
 
-        if line and line[3] == ':':
+        if line and ':' in line[ :5]:   # ':' pos can vary
 
             if f:
                 f = add_atten_pol(f)
@@ -249,7 +251,7 @@ def get_running_filters():
             f = f_blank.copy()
             f["f_num"]  = line.split(':')[0].strip()
             f["f_name"] = line.split(':')[1].strip().replace('"','')
-        
+
         if 'coeff set:' in line:
             f["coeff set"] = line.split(':')[1].strip()
         if 'delay blocks:' in line:
@@ -269,10 +271,10 @@ def get_running_filters():
         filters.append( f )
 
     return filters
-    
+
 
 def get_running_delays():
-    
+
     delays = []
     # query list of filter in Brutefir
     lines = bfcli('lo').split('\n')
@@ -297,7 +299,7 @@ if __name__ == "__main__" :
         BRUTEFIR_CONFIG_PATH = f'{LSPK_FOLDER}/brutefir_config'
     except:
         print( 'ERROR reading brutefir process' )
-        sys.exit() 
+        sys.exit()
 
     outputsMap          = []
     coeffs              = []
@@ -311,7 +313,7 @@ if __name__ == "__main__" :
 
     # reading current delays
     curr_delays = get_running_delays()
-    
+
     print()
     print( f'--- Brutefir process runs:' )
     print( f'{BRUTEFIR_CONFIG_PATH}')
@@ -333,7 +335,7 @@ if __name__ == "__main__" :
     print( "                       c# coeff                    cAtten pcm_name" )
     print( "                       -- -----                    ------ --------" )
     for c in coeffs:
-        
+
         cidx    = c['index'].rjust(2)
         cname   = c['name'].ljust(24)
         catt    = '{:+6.2f}'.format( float(c['atten']) )
@@ -347,9 +349,9 @@ if __name__ == "__main__" :
     print( "-- ------  ------- --- -- -----                    ------ --------" )
     for f in filters_running:
 
-        # 'f_num': '8', 'f_name': 'f.sw', 'coeff set': '8', 
-        # 'delay blocks': '0 (0 samples)', 
-        # 'from inputs': '', 'to outputs': '7/0.0', 
+        # 'f_num': '8', 'f_name': 'f.sw', 'coeff set': '8',
+        # 'delay blocks': '0 (0 samples)',
+        # 'from inputs': '', 'to outputs': '7/0.0',
         # 'from filters': '2/3.0 3/3.0', 'to filters': '', 'atten tot': 6.0
 
         fidx    = f['f_num'].rjust(2)
@@ -367,13 +369,13 @@ if __name__ == "__main__" :
         fline_chunk = fidx + ' ' + fname + ' ' + fatt + '  ' + fpol + ' '
 
         cset    = f['coeff set'].rjust(2)
-        
+
         try:
             cname = [ c["name"] for c in coeffs if c['index'] == f['coeff set'] ][0]
         except:
             cname = ''
         cname   = cname.ljust(24)
-    
+
         # The filter can be set to coeff: -1 (no filter), so no matches with coeffs.
         try:
             catt  = [ c["atten"] for c in coeffs if c['index'] == f['coeff set'] ][0]
@@ -391,6 +393,6 @@ if __name__ == "__main__" :
         cline_chunk = cset + ' ' + cname + ' ' + catt + ' ' + pcm
 
         print( fline_chunk + cline_chunk )
-         
-            
+
+
     print()
