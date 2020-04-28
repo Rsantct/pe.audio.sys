@@ -588,6 +588,13 @@ def init_audio_settings():
     del(preamp)
 
 
+def connect_monitors():
+    """ Connect source monitors to preamp-loop
+    """
+    for monitor in CONFIG["source_monitors"]:
+        jack_connect_bypattern('pre_in_loop', monitor, wait=60)
+
+
 class Preamp(object):
     """ attributes:
 
@@ -619,6 +626,7 @@ class Preamp(object):
             get_inputs
             get_target_sets
             get_eq
+
     """
 
     def __init__(self):
