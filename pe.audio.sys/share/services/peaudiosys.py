@@ -58,7 +58,9 @@ try:
 except:
     AMP_MANAGER =  'For amp switching please configure config.yml'
 WEBCONFIG = CONFIG['web_config']
-WEBCONFIG['restart_cmd_info'] = CONFIG['restart_cmd']
+WEBCONFIG['restart_cmd_info']   = CONFIG['restart_cmd']
+WEBCONFIG['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
+                                          in CONFIG['scripts'] else False
 
 
 # Auxiliary client to talk to othes server.py instances (preamp and players)

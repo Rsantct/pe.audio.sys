@@ -55,6 +55,7 @@ try{
     console.log('problems with aux get_web_config');
     var web_config = { 'hide_macro_buttons': false,
                        'hide_LU':            false,
+                       'LU_monitor_enabled': false,
                        'restart_cmd_info':   '',
                        'show_graphs':        false,
                      };
@@ -109,7 +110,9 @@ function page_initiate(){
         document.getElementById("LU_monitor").style.display = 'none';
     }else{
         document.getElementById("LU_offset").style.display = 'block';
-        document.getElementById("LU_monitor").style.display = 'block';
+        if ( web_config.LU_monitor_enabled == true ){
+            document.getElementById("LU_monitor").style.display = 'block';
+        }
     }
     // Updates the title of the restart button as per config.yml
     document.getElementById("restart_switch").title = 'RESTART: ' +
