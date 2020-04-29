@@ -24,7 +24,14 @@ import sys
 import os
 from socket import socket
 import numpy as np
-from matplotlib import pyplot as plt
+import matplotlib
+# (i) Agg is a SAFE backend to avoid "tkinter.TclError: couldn't connect to display"
+#     under certain circumstances.
+#     https://matplotlib.org/faq/usage_faq.html#what-is-a-backend
+#     Comment out this line if you want to test plotting under your standard backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 UHOME       = os.path.expanduser("~")
 RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
@@ -94,7 +101,7 @@ def do_graph(freqs, magdB):
     plt.savefig( fpng, facecolor=RGBweb )
     if verbose:
         print( f'(bfeq2png) saved: \'{fpng}\' ' )
-    #plt.show()
+    #plt.show()  # (!) PLEASE comment out the safe backend Agg before using this
 
 
 if __name__ == '__main__':

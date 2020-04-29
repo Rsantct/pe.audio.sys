@@ -28,7 +28,7 @@ import lcd_client
 import os
 import yaml
 import json
-import multiprocessing
+import threading
 
 UHOME = os.path.expanduser("~")
 
@@ -360,5 +360,5 @@ if __name__ == "__main__":
                       path=WATCHED_DIR,
                       recursive=False)
     observer.start()
-    obsloop = multiprocessing.Process( target=observer.join() )
+    obsloop = threading.Thread( target=observer.join() )
     obsloop.start()
