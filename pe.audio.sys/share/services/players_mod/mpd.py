@@ -129,51 +129,35 @@ def mpd_meta( md, port=6600 ):
     # artist, title, album, track, etc fields may NOT be provided
     # file, time, duration, pos, id           are ALWAYS provided
 
-    try:
-        md['title']         = c.currentsong()['title']
-    except:
-        md['title']         = c.currentsong()['file'] \
-                                             .split('/')[-1]
-    try:
-        md['artist']        = c.currentsong()['artist']
-    except:
-        pass
+    # Skip if no currentsong is loaded
+    if c.currentsong():
+        if 'artist' in c.currentsong():
+            md['artist']    = c.currentsong()['artist']
 
-    try:
-        md['album']         = c.currentsong()['album']
-    except:
-        pass
+        if 'album' in c.currentsong():
+            md['album']     = c.currentsong()['album']
 
-    try:
-        md['track_num']     = c.currentsong()['track']
-    except:
-        pass
+        if 'track' in c.currentsong():
+            md['track_num'] = c.currentsong()['track']
 
-    try:
+        if 'time' in c.currentsong():
+            md['time_tot']  = timeFmt( float( c.currentsong()['time'] ) )
+
+        if 'title' in c.currentsong():
+            md['title']     = c.currentsong()['title']
+        elif 'file' in c.currentsong():
+            md['title']     = c.currentsong()['file'].split('/')[-1]
+
+    if 'playlistlength' in c.status():
         md['tracks_tot']    = c.status()['playlistlength']
-    except:
-        pass
 
-    try:
+    if 'bitrate' in c.status():
         md['bitrate']       = c.status()['bitrate']  # kbps
-    except:
-        pass
 
-    try:
-        md['time_pos']      = timeFmt( float(
-                                           c.status()['elapsed'] ) )
-    except:
-        pass
+    if 'elapsed' in c.status():
+        md['time_pos']      = timeFmt( float( c.status()['elapsed'] ) )
 
-    try:
-        md['time_tot']      = timeFmt( float(
-                                           c.currentsong()['time'] ) )
-    except:
-        pass
-
-    try:
+    if 'state' in c.status():
         md['state']         = c.status()['state']
-    except:
-        pass
 
     return md
