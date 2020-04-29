@@ -300,24 +300,6 @@ function page_update() {
     document.getElementById("drcSelector").value    = state.drc_set;
     document.getElementById("targetSelector").value = state.target;
 
-    // Enable displaying eq graphs
-    if ( show_graphs == true ){
-        document.getElementById("drc_graph").style.display = 'block';
-        document.getElementById("bfeq_graph").style.display = 'block';
-        // Points to the current DRC png
-        document.getElementById("drc_img").src = 'images/drc_' + state.drc_set + '.png';
-        // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
-        var now = performance.now()
-        now = Math.floor(now/3000);
-        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'+ now;
-    }else{
-        document.getElementById("drc_graph").style.display = 'none';
-        document.getElementById("bfeq_graph").style.display = 'none';
-        // Disable loading graph images to save bandwidth on page updates
-        document.getElementById("drc_img").src = '';
-        document.getElementById("bfeq_img").src = '';
-    }
-
     // Highlights activated buttons and related indicators accordingly
     buttonMuteHighlight()
     buttonMonoHighlight()
@@ -328,6 +310,13 @@ function page_update() {
 
     // Highlights player controls when activated
     update_player_controls()
+
+    // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
+    if ( show_graphs == true ) {
+        var now = performance.now()
+        now = Math.floor(now/3000);
+        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?' + now;
+    }
 
     // Displays the track selector if input == 'cd'
     if ( state.input == "cd") {
@@ -666,7 +655,21 @@ function graphs_toggle() {
     else {
         show_graphs = false;
     }
-    page_update();
+
+    if ( show_graphs == true ){
+        document.getElementById("drc_graph").style.display = 'block';
+        document.getElementById("bfeq_graph").style.display = 'block';
+        // Points to the current DRC png
+        document.getElementById("drc_img").src =  'images/drc_' + state.drc_set
+                                                               + '.png';
+        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?';
+    }else{
+        document.getElementById("drc_graph").style.display = 'none';
+        document.getElementById("bfeq_graph").style.display = 'none';
+        // Disable loading graph images to save bandwidth on page updates
+        document.getElementById("drc_img").src = '';
+        document.getElementById("bfeq_img").src = '';
+    }
 }
 // Avoid http socket lossing some symbols
 function http_prepare(x) {
