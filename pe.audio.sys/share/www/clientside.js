@@ -245,19 +245,6 @@ function page_update() {
         state = {loudspeaker:'not connected'};
     }
 
-    // Displays or hides the advanced controls section
-    // (i) This allows access to the RESTART button
-    if ( show_advanced == true ) {
-        document.getElementById( "advanced_controls").style.display = "block";
-        document.getElementById( "level_buttons13").style.display = "table-cell";
-        document.getElementById( "main_lside").style.display = "table-cell";
-    }
-    else {
-        document.getElementById( "advanced_controls").style.display = "none";
-        document.getElementById( "level_buttons13").style.display = "none";
-        document.getElementById( "main_lside").style.display = "none";
-    }
-
     // Refresh static stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
         fill_in_page_statics();
@@ -484,7 +471,7 @@ function play_url() {
 // Restart procedure
 function peaudiosys_restart() {
     control_cmd('aux restart');
-    show_advanced = false;
+    advanced('off');
     page_update();
 }
 // Switch the amplifier
@@ -639,15 +626,34 @@ function macros_toggle() {
         document.getElementById( "macro_buttons").style.display = 'none'
     }
 }
-// Toggle advanced controls
-function advanced_toggle() {
-    if ( show_advanced !== true ) {
-        show_advanced = true;
+// Displays or hides the advanced controls section
+// (i) This also allows access to the RESTART button
+function advanced(mode) {
+    if ( mode == 'toggle' ){
+        if ( show_advanced !== true ) {
+            show_advanced = true;
+        }
+        else {
+            show_advanced = false;
+        }
     }
-    else {
+    else if ( mode == 'off' ){
         show_advanced = false;
     }
-    page_update();
+    else if ( mode == 'on' ){
+        show_advanced = true;
+    }
+
+    if ( show_advanced == true ) {
+        document.getElementById( "advanced_controls").style.display = "block";
+        document.getElementById( "level_buttons13").style.display = "table-cell";
+        document.getElementById( "main_lside").style.display = "table-cell";
+    }
+    else {
+        document.getElementById( "advanced_controls").style.display = "none";
+        document.getElementById( "level_buttons13").style.display = "none";
+        document.getElementById( "main_lside").style.display = "none";
+    }
 }
 // Toggle displaying graphs
 function graphs_toggle() {
