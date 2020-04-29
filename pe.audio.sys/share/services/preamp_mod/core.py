@@ -33,7 +33,7 @@ import yaml
 import jack
 import numpy as np
 from time import sleep
-import multiprocessing as mp
+import threading
 
 sys.path.append (os.path.dirname(__file__) )
 import bfeq2png
@@ -301,8 +301,8 @@ def bf_set_eq( eq_mag, eq_pha ):
     # (i) Pending threading this, although it is fast to complete.
     #     Notice: threading is not suitable with matplotlib,
     #             tried  multiprocessing but cannot fix OSError.
-    #dump_graph = mp.Process( target=bfeq2png.do_graph,
-    #                         args=(freqs, eq_mag) )
+    #dump_graph = multiprocessing.Process( target=bfeq2png.do_graph,
+    #                                      args=(freqs, eq_mag) )
     #dump_graph.start()
 
 
@@ -475,10 +475,8 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     for i, cap_port in enumerate(cap_ports):
         pbk_port = pbk_ports[i]
-        job_jc = mp.Process( target=jack_connect,
-                             args=(cap_port,
-                                   pbk_port,
-                                   mode, wait) )
+        job_jc = threading.Thread( target=jack_connect,
+                                   args=(cap_port, pbk_port, mode, wait) )
         job_jc.start()
 
 
