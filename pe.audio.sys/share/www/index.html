@@ -123,9 +123,49 @@
         td#level_buttons22   { border-style: none; width:90%; }
         td#level_buttons23   { border-style: none; width:5%; }
 
-        td#LU_slider_label   { width:50%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
-        td#LU_meter_reset    { width:17%; border-style: none ; font-size:1.0em; vertical-align: middle;}
-        td#LU_meter_label    { width:33%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.0em; vertical-align: middle;}
+        /* --- LU OFFSET --- */
+        /* [       41%         ][    25%    ][      34%      ]  */
+        td#LU_label          { width:41%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.1em; vertical-align: middle;}
+        td#LU_offset_value   { width:25%; border: 1px solid grey; border-radius: 10px/10px; font-size:0.8em; vertical-align: middle;}
+        td#LU_offset_slider  { width:34%; border-style:none; vertical-align: middle;}
+        /* The LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
+        .LU_slider {
+          -webkit-appearance:   none;
+          width:                100%;
+          height:               1.0em;
+          border-radius:        5px;
+          background:           rgb(120,120,120);
+          outline:              none;
+          opacity:              0.7;
+          -webkit-transition:   .2s;
+          transition:           opacity .2s;
+        }
+        /* The slider handler */
+        .LU_slider::-webkit-slider-thumb {
+          -webkit-appearance:   none;
+          appearance:           none;
+          width:                1.5em;
+          height:               1.5em;
+          border-radius:        50%;
+          background:           rgb(240,240,240);
+          cursor:               pointer;
+        }
+        .LU_slider::-moz-range-thumb {
+          width:                25px;
+          height:               25px;
+          border-radius:        50%;
+          background:           rgb(240,240,240);
+          cursor:               pointer;
+        }
+
+        /* --- LU MONITOR --- */
+        /* [ 10% ][     31%    ][    25%    ][      34%      ]  */
+        td#LU_meter_reset    { width:10%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_scope    { width:31%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_value    { width:25%; border: 1px solid grey; border-radius: 10px/10px; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_bar      { width:34%; border-style:none; vertical-align: middle;}
+        /* The LU METER class (type METER) */
+        .LU_meter { width: 100%; height: 0.8em; border: 1px solid; }
 
 
         table#player_info   { text-align: left; }
@@ -164,58 +204,6 @@
             /* below is for text inside button: */
             font-size:0.80em;
             display: inline;
-        }
-
-
-        /* LU LOUDNESS UNITS METER CONTAINER (type CELL) */
-        .LU_meter_container {
-            border-style: none;
-            width: 50%;
-            text-align: right;
-            vertical-align: top;
-        }
-        /* The LU METER itself (type METER) */
-        .LU_meter {
-                    width:      100%;
-                    height:     0.8em;
-                    border:     1px solid;
-                    }
-
-        /* LU REFERENCE SLIDER CONTAINER (type CELL) */
-        .LU_slider_container {
-            border-style: none;
-            width: 50%;
-            text-align: right;
-        }
-
-        /* The SLIDER itself (type INPUT RANGE) */
-        .LU_slider {
-          -webkit-appearance:   none;
-          width:                100%;
-          height:               1.0em;
-          border-radius:        5px;
-          background:           rgb(120,120,120);
-          outline:              none;
-          opacity:              0.7;
-          -webkit-transition:   .2s;
-          transition:           opacity .2s;
-        }
-        /* The SLIDER HANDLER */
-        .LU_slider::-webkit-slider-thumb {
-          -webkit-appearance:   none;
-          appearance:           none;
-          width:                1.5em;
-          height:               1.5em;
-          border-radius:        50%;
-          background:           rgb(240,240,240);
-          cursor:               pointer;
-        }
-        .LU_slider::-moz-range-thumb {
-          width:                25px;
-          height:               25px;
-          border-radius:        50%;
-          background:           rgb(240,240,240);
-          cursor:               pointer;
         }
 
     </style>
@@ -310,41 +298,46 @@
         </table>
     </div>
 
-    <!-- LU OFFSET CONTROL -->
+    <!-- LU OFFSET CONTROL - JS will manage this-->
     <div id="LU_offset" style="display:block" >
     <table>
-        <tr>
-            <!-- JS will update the Loud. Ref-->
-            <td id="LU_slider_label">LU offset: --
-            </td>
-            <td class="LU_slider_container">
-                <input  id="LU_slider" class="LU_slider" type="range"
-                        min="0" step="3" max="12.0"
-                        title="Adjust as estimated 'loudness war' music program"
-                        oninput="control_cmd('loudness_ref ' + this.value)">
-            </td>
-        </tr>
+      <tr>
+        <td id="LU_label">LU-I
+        </td>
+        <td id="LU_offset_value">offset: --
+        </td>
+        <td id="LU_offset_slider" >
+            <input  id="LU_slider" class="LU_slider" type="range"
+                    min="0" step="3" max="12.0"
+                    title="Adjust as estimated 'loudness war' music program"
+                    oninput="control_cmd('loudness_ref ' + this.value)">
+        </td>
+      </tr>
     </table>
     </div>
 
-    <!-- LU MONITOR -->
-    <div id="LU_monitor" style="display:none; font-size:0.75em;" > <!-- JS will enable this -->
+    <!-- LU MONITOR - JS will manage this -->
+    <div id="LU_monitor" style="display:none;" >
     <table>
       <tr>
-          <td id="LU_meter_reset">
-              <button type="button" id="buttonLoudMonReset"
-                      onmousedown="control_cmd('aux loudness_monitor_reset')">
-                      LU reset
-              </button>
-          </td>
-          <td id="LU_meter_label">
-              &nbsp;LU monitor:
-          </td>
-          <td class="LU_meter_container">
-          <!-- JS will set this value: -->
-          <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
-                  min="0" optimum="0" low="5" high="8" max="12" ></meter>
-          </td>
+        <td id="LU_meter_reset">
+            <button type="button" id="buttonLoudMonReset"
+                    onmousedown="control_cmd('aux loudness_monitor_reset')">
+                    reset
+            </button>
+        </td>
+        <td id="LU_meter_scope">scope:&nbsp;
+          <select id="LUscopeSelector" title="LU scope selector"
+                  onchange="set_LU_scope(this.value)">
+          </select>
+        </td>
+        <td id="LU_meter_value">
+            monit: --
+        </td>
+        <td id="LU_meter_bar">
+        <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
+                min="0" optimum="0" low="5" high="8" max="12" ></meter>
+        </td>
       </tr>
     </table>
     </div>
