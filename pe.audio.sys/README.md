@@ -111,9 +111,11 @@ All commands prefixed with `aux`:
 
     amp_switch   on | off                   Switch an amplifier
     
-    LU_monitor_reset                        Force to reset the LU_monitor daemon
+    LU_monitor_reset                        Force to reset the LU-I measure
 
-    get_LU_monitor                          Gets the monitored LU value
+    get_LU_monitor                          Gets the monitored LU-I value ans scope
+    
+    set_LU_monitor_scope  album | track     Choose the LU-I measured scope
 
     restart                                 Restarts pe.audio.sys
 
