@@ -149,7 +149,9 @@ def control_fifo_read_loop(fname):
                 # runtime change the scope (metadata key observed to reset LU-I)
                 elif f_data[:6] == 'scope=':
                     new_md_key = f_data[6:]
-                    if new_md_key in ('album','title'):
+                    if new_md_key in ('album','title', 'track'):
+                        if new_md_key == 'track':
+                            new_md_key = 'title'
                         md_key = new_md_key
 
 
