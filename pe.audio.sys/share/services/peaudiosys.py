@@ -171,6 +171,15 @@ def process_aux( cmd, arg='' ):
         except:
             result = 'error'
 
+    # Set the LOUDNESS MONITOR SCOPE:
+    elif cmd == 'set_loudness_monitor_scope':
+        try:
+            with open(LOUD_MON_CTRL_FILE, 'w') as f:
+                f.write(f'scope={arg}')
+            result = 'done'
+        except:
+            result = 'error'
+
     # Get the LOUDNESS MONITOR VALUE from the
     # loudness monitor daemon's output file:
     elif cmd == 'get_loudness_monitor' or cmd.lower() == 'get_lu_monitor':
