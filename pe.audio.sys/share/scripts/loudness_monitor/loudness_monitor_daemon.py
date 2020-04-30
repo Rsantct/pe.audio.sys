@@ -135,7 +135,7 @@ def control_fifo_prepare(fname):
 
 
 def control_fifo_read_loop(fname):
-    global reset
+    global reset, md_key
     while True:
         # opening fifo...
         with open(fname) as f:
@@ -143,9 +143,16 @@ def control_fifo_read_loop(fname):
                 f_data = f.read().strip()
                 if len(f_data) == 0:
                     break
-                # Will flag reset=True
+                # set the flag reset=True
                 if f_data == 'reset':
                     reset = True
+                # runtime change the scope (metadata key observed to reset LU-I)
+                elif f_data[:6] == 'scope=':
+                    new_md_key = f_data[6:]
+                    if new_md_key in ('album','title', 'track'):
+                        if new_md_key == 'track':
+                            new_md_key = 'title'
+                        md_key = new_md_key
 
 
 # Handler class to do actions when a file change occurs
@@ -156,7 +163,7 @@ class My_files_event_handler(FileSystemEventHandler):
     """
     def on_modified(self, event):
 
-        global reset, last_input, last_md
+        global reset, last_input, last_md_key
         path = event.src_path
 
         # If preamp input has changed will flag reset=True
@@ -176,8 +183,8 @@ class My_files_event_handler(FileSystemEventHandler):
                 md = yaml.safe_load(f)
                 if not md:
                     return
-                if last_md != md[md_key]:
-                    last_md = md[md_key]
+                if last_md_key != md[md_key]:
+                    last_md_key = md[md_key]
                     reset = True
                     sleep(.25)      # anti bouncing
 
@@ -208,8 +215,8 @@ if __name__ == '__main__':
     if md_key == 'track':
         md_key = 'title'
 
-    # Initialize a 'last metatada' value to trigger resetting measured LU
-    last_md = ''
+    # Initialize a last metadata key value
+    last_md_key = ''
 
     # Reading current input source
     with open( STATEPATH, 'r' ) as state_file:
