@@ -62,14 +62,14 @@ Also install the following packages on your linux installation:
 
 Disable default MPD setup:
 
-    sudo systemctl stop mpd.service
-    sudo systemctl disable mpd.service
     sudo systemctl stop mpd.socket
     sudo systemctl disable mpd.socket
-    systemctl --user stop mpd.service
-    systemctl --user disable mpd.service
-    systemctl --user stop mpd.socket
-    systemctl --user disable mpd.socket
+    sudo systemctl stop mpd.service
+    sudo systemctl disable mpd.service
+    sudo systemctl --global stop mpd.socket
+    sudo systemctl --global disable mpd.socket
+    sudo systemctl --global stop mpd.service
+    sudo systemctl --global disable mpd.service
 
 
 ## Python3 packages
