@@ -204,6 +204,22 @@ function fill_in_page_statics(){
             mySel.add(option);
         }
     }
+    // Fills in the LU scope selector
+    function fill_in_LUscope_selector() {
+        try{
+            const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
+        }catch{
+            return;
+        }
+        select_clear_options(ElementId="LUscopeSelector");
+        const mySel = document.getElementById("LUscopeSelector");
+        scopes = ['album', 'track'];
+        for ( i in scopes ) {
+            var option = document.createElement("option");
+            option.text = scopes[i];
+            mySel.add(option);
+        }
+    }
     // Shows the PEQ info
     function show_peq_info() {
         if ( state.peq_set != 'none'){
@@ -224,6 +240,7 @@ function fill_in_page_statics(){
     fill_in_target_selector();
     fill_in_xo_selector();
     fill_in_drc_selector();
+    fill_in_LUscope_selector();
     show_peq_info();
 }
 
@@ -276,9 +293,9 @@ function page_update() {
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
     // Updates the Integrated LU monitor and the LU offset slider
-    document.getElementById("LU_slider_label").innerText =
-                    'LU offset: ' + -1 * state.loudness_ref;
-    document.getElementById("LU_slider").value    = state.loudness_ref;
+    document.getElementById("LU_offset_value").innerText =
+                                         'offset: ' + -1 * state.loudness_ref;
+    document.getElementById("LU_slider").value           = state.loudness_ref;
     try{
         const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
         const LU_I = LU_mon_dict.LU_I
@@ -288,8 +305,8 @@ function page_update() {
             scope = 'track';
         }
         document.getElementById("LU_meter").value           = LU_I;
-        document.getElementById("LU_meter_label").innerHTML =
-                                       ' LU mon: ' + LU_I + '  (' + scope + ')';
+        document.getElementById("LUscopeSelector").value    = scope;
+        document.getElementById("LU_meter_value").innerHTML ='monit: ' + LU_I;
     }catch{
         console.log('Error getting loudness monitor from server')
     }
@@ -480,6 +497,13 @@ function update_ampli_switch() {
         var amp_state = '-';
     }
     document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
+}
+// Changes the LU_monitor scope
+function set_LU_scope(scope){
+    if (scope == 'track'){
+        scope = 'title'
+    }
+    control_cmd('aux set_loudness_monitor_scope ' + scope);
 }
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
