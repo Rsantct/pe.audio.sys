@@ -172,7 +172,8 @@ def process_aux( cmd, arg='' ):
             result = 'error'
 
     # Set the LOUDNESS MONITOR SCOPE:
-    elif cmd == 'set_loudness_monitor_scope':
+    elif cmd == 'set_loudness_monitor_scope' or \
+         cmd.lower() == 'set_lu_monitor_scope':
         try:
             with open(LOUD_MON_CTRL_FILE, 'w') as f:
                 f.write(f'scope={arg}')
