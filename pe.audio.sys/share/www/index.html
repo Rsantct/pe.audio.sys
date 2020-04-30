@@ -124,10 +124,9 @@
         td#level_buttons23   { border-style: none; width:5%; }
 
         /* --- LU OFFSET --- */
-        /* [       41%         ][    25%    ][      34%      ]  */
-        td#LU_label          { width:41%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.1em; vertical-align: middle;}
-        td#LU_offset_value   { width:25%; border: 1px solid grey; border-radius: 10px/10px; font-size:0.8em; vertical-align: middle;}
-        td#LU_offset_slider  { width:34%; border-style:none; vertical-align: middle;}
+        td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        td#LU_offset_value   { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:0.8em; vertical-align: middle;}
+        td#LU_offset_slider  { width:50%; border-style:none; vertical-align: middle;}
         /* The LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
         .LU_slider {
           -webkit-appearance:   none;
@@ -159,11 +158,9 @@
         }
 
         /* --- LU MONITOR --- */
-        /* [ 10% ][     31%    ][    25%    ][      34%      ]  */
-        td#LU_meter_reset    { width:10%; border-style:none ; font-size:.8em; vertical-align: middle;}
-        td#LU_meter_scope    { width:31%; border-style:none ; font-size:.8em; vertical-align: middle;}
-        td#LU_meter_value    { width:25%; border: 1px solid grey; border-radius: 10px/10px; font-size:.8em; vertical-align: middle;}
-        td#LU_meter_bar      { width:34%; border-style:none; vertical-align: middle;}
+        td#LU_meter_reset    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_value    { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_bar      { width:50%; border-style:none; vertical-align: middle;}
         /* The LU METER class (type METER) */
         .LU_meter { width: 100%; height: 0.8em; border: 1px solid; }
 
@@ -302,9 +299,12 @@
     <div id="LU_offset" style="display:block" >
     <table>
       <tr>
-        <td id="LU_label">LU-I
+        <td id="LU_meter_scope">
+          <select id="LUscopeSelector" title="LU scope selector"
+                  onchange="set_LU_scope(this.value)">
+          </select>
         </td>
-        <td id="LU_offset_value">offset: --
+        <td id="LU_offset_value">LU offset: --
         </td>
         <td id="LU_offset_slider" >
             <input  id="LU_slider" class="LU_slider" type="range"
@@ -326,13 +326,8 @@
                     reset
             </button>
         </td>
-        <td id="LU_meter_scope">scope:&nbsp;
-          <select id="LUscopeSelector" title="LU scope selector"
-                  onchange="set_LU_scope(this.value)">
-          </select>
-        </td>
         <td id="LU_meter_value">
-            monit: --
+            LU monit: --
         </td>
         <td id="LU_meter_bar">
         <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
