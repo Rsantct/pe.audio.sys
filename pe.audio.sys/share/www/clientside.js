@@ -294,7 +294,7 @@ function page_update() {
 
     // Updates the Integrated LU monitor and the LU offset slider
     document.getElementById("LU_offset_value").innerText =
-                                         'offset: ' + -1 * state.loudness_ref;
+                                      'LU offset: ' + -1 * state.loudness_ref;
     document.getElementById("LU_slider").value           = state.loudness_ref;
     try{
         const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
@@ -306,7 +306,7 @@ function page_update() {
         }
         document.getElementById("LU_meter").value           = LU_I;
         document.getElementById("LUscopeSelector").value    = scope;
-        document.getElementById("LU_meter_value").innerHTML ='monit: ' + LU_I;
+        document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
     }catch{
         console.log('Error getting loudness monitor from server')
     }
