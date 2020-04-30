@@ -56,7 +56,7 @@ IIR DRC can be used through by the provided Ecasound add-on script, then bypassi
 
 The most popular software for room Eq is REW https://www.roomeqwizard.com
 
-As experimental FIR DRC correction software you can consider:
+As experimental FIR DRC correction software you could also consider:
 
 **https://github.com/rripio/DSC**
 
