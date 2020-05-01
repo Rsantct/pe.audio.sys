@@ -123,6 +123,10 @@ on_change_input:
 #     - xo, drc fields are optional, you may want minimum phase FIRs for video.
 #
 #     - loudness_ref field is optional and overrides the on_change_input behavior.
+#
+#     - If a source is named "remotexxx", will try to get metada from its
+#       address field, a port field can also be specified (defaults to 9990)
+
 
 sources:
 
@@ -130,23 +134,28 @@ sources:
         capture_port:   alsa_loop
         gain:           0.0
         xo:             lp
+
     mpd:
         capture_port:   mpd
         gain:           0.0
         xo:             lp
+
     istreams:
         capture_port:   mplayer_istreams
         gain:           0.0
         xo:             lp
-    room1:
-        capture_port:   zita-n2j
-        gain:           0.0
-        xo:             lp
+    
     tv:
         capture_port:   system
         gain:           +6.0                # low level source
         xo:             mp                  # low latency filtering
         target:         +0.0-0.0_target     # preferred for movie dialogue
+
+    remote:
+        capture_port:   zita-n2j
+        gain:           0.0
+        xo:             lp
+        address:        192.168.1.234
 
 
 # ========================== SOURCE MONITOR PORTS ==============================
@@ -224,7 +233,7 @@ scripts:
 
 # ========================= MISCEL CONFIGURATIONS ==============================
 
-# set _address to 'localhost', or set your IP if you want to listen outside
+# set _address to 'localhost', or set '0.0.0.0' if you want to listen outside
 peaudiosys_address:     localhost
 peaudiosys_port:        9990
 

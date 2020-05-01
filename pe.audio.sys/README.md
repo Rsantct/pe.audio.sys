@@ -308,16 +308,16 @@ Here you are an uncommented bare example of `config.yml`:
             capture_port:   mplayer_istreams
             gain:           0.0
             xo:             lp
-        room1:
-            capture_port:   zita-n2j
-            gain:           0.0
-            xo:             lp
         tv:
             capture_port:   system
             gain:           +6.0                # low level source
             xo:             mp                  # low latency filtering
             target:         +0.0-0.0_target     # preferred for movie dialogue
-
+        remote:
+            capture_port:   zita-n2j
+            gain:           0.0
+            xo:             lp
+            address:        192.168.1.234
 
     source_monitors:
 

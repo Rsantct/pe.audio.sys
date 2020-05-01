@@ -35,6 +35,7 @@ import threading
 import yaml
 from time import sleep
 import json
+from socket import socket
 from  players_mod.mpd               import  mpd_control,                \
                                             mpd_meta
 from  players_mod.mplayer           import  mplayer_control,            \
@@ -47,6 +48,9 @@ from  players_mod.spotify_desktop   import  spotify_control,            \
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+    SOURCES = yaml.safe_load( f )["sources"]
+
 
 ## Spotify client detection
 SPOTIFY_CLIENT = detect_spotify_client()
@@ -62,6 +66,28 @@ METATEMPLATE = {
                 'title':        '-',
                 'track_num':    '-',
                 'tracks_tot':   '-' }
+
+
+# Gets metadata from a remote pe.audio.sys system
+def remote_get_meta(host, port=9990):
+    ans = None
+    md = METATEMPLATE.copy()
+    with socket() as s:
+        try:
+            s.connect( (host, port) )
+            s.send( 'player get_meta'.encode() )
+            ans = ''
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
+            s.close()
+        except:
+            pass
+    if ans:
+        md = json.loads(ans)
+    return md
 
 
 # Aux to get the current preamp input source
@@ -110,6 +136,17 @@ def player_get_meta():
 
     elif 'cd' in source:
         md = mplayer_meta(md, service='cdda')
+
+    elif source.startswith('remote'):
+        if 'address' in SOURCES[source]:
+            host = SOURCES[source]["address"]
+            port = 9990
+            if 'port' in SOURCES[source]:
+                port = SOURCES[source]["port"]
+            try:
+                md = remote_get_meta( host, port )
+            except:
+                pass
 
     return md
 
