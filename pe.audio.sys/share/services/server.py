@@ -16,9 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-
 """
-    A general purpose TCP server to run processing modules
+    A general purpose TCP server to run a processing module
 
     Usage:   server.py  <processing_module>  <address>  <port> [-v]
 
@@ -34,9 +33,8 @@ import os
 
 
 def run_server(host, port, verbose=False):
-    """ This is the server itself.
-        Inside, it is called the desired processing module
-        to perform actions and giving results.
+    """ Inside this simple server, it is called the desired PROCESSING MODULE to
+        request the actual service action then will return back the action result.
     """
     # https://realpython.com/python-sockets/#echo-client-and-server
     # One thing that’s imperative to understand is that we now have
@@ -45,26 +43,30 @@ def run_server(host, port, verbose=False):
     # It’s distinct from the listening socket that the server is using
     # to accept new connections
 
+    # Prepare the server (the 1st listening socket)
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    srv.bind((host, port))
+    # The backlog option allows to limit the number of future connections
+    srv.listen(10)
+
+    # Main loop to accept, process and close connections.
     # This loop has a blocking stage when calling accept() below
     while True:
-        # The server (the 1st listening socket)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as srv:
-            srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            srv.bind((host, port))
-            srv.listen()
-            # The connection (the 2nd socket)
-            con, address = srv.accept()  # calling accept() is blocking
-            with con:
-                # Receiving a command phrase
-                cmd = con.recv(1024).decode()
-                if verbose:
-                    print( f'(server.py-{service}) Rx: {cmd.strip()}' )
-                # PROCESSING the command through by the plugged MODULE:
-                result = MODULE.do( cmd.strip() )
-                # Sending back the command processing result:
-                con.sendall( result.encode() )
-                if verbose:
-                    print( f'(server.py-{service}) Tx: {result}' )
+        # The connection (the 2nd socket)
+        con, address = srv.accept()  # calling accept() is blocking
+        # The 'with' context will close 'con' on exiting from 'with'
+        with con:
+            # Receiving a command phrase
+            cmd = con.recv(1024).decode()
+            if verbose:
+                print( f'(server.py-{service}) Rx: {cmd.strip()}' )
+            # PROCESSING the command through by the plugged MODULE:
+            result = MODULE.do( cmd.strip() )
+            # Sending back the command processing result:
+            con.sendall( result.encode() )
+            if verbose:
+                print( f'(server.py-{service}) Tx: {result}' )
 
 
 if __name__ == "__main__":
