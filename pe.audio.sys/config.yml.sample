@@ -124,7 +124,8 @@ on_change_input:
 #
 #     - loudness_ref field is optional and overrides the on_change_input behavior.
 #
-#     - If a source is named "remotexxx", will try to get metada from it address
+#     - If a source is named "remotexxx", will try to get metada from its
+#       address field, a port field can also be specified (defaults to 9990)
 
 
 sources:
