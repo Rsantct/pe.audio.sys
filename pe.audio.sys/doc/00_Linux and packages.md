@@ -74,7 +74,7 @@ Disable default MPD setup:
 
 ## Python3 packages
 
-Please refer to the doc files here
+Please refer to the doc file here: [02_Python 3.md](https://github.com/AudioHumLab/pe.audio.sys/blob/master/pe.audio.sys/doc/02_Python%203.md)
 
 
 ## Special permission for your user to reboot the machine
