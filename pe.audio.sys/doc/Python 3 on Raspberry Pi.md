@@ -103,7 +103,7 @@ This provides Python 3.7 :-)
 - Check your PYTHONPATH under `~.profile` to point to the standard place `/usr/bin/python3`
 - (re)Install the needed Python3.7 packages:
     ```
-    sudo apt install python3-pip python3-yaml python3-ruamel.yaml python3-numpy python3-jack-client python3-mpd
+    sudo apt install python3-pip python3-yaml python3-numpy python3-jack-client python3-mpd
     sudo pip3 install sounddevice watchdog
     ```
 - Have a look if some audio service is using your sound card:
