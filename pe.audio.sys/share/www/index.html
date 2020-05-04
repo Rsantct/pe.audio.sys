@@ -183,15 +183,7 @@
 
 
         table#macro_buttons{ border-style: none; }
-        td#mb1 { border-style: none; width:30%; }
-        td#mb2 { border-style: none; width:30%; }
-        td#mb3 { border-style: none; width:30%; }
-        td#mb4 { border-style: none; width:30%; }
-        td#mb5 { border-style: none; width:30%; }
-        td#mb6 { border-style: none; width:30%; }
-        td#mb7 { border-style: none; width:30%; }
-        td#mb8 { border-style: none; width:30%; }
-        td#mb9 { border-style: none; width:30%; }
+        .macro_cell { border-style: none; width:30%; }
         .macro_button  {
             width: 100%;
             min-height: 2.7em;
@@ -450,24 +442,9 @@
     </div>
 
     <!-- MACRO BUTTONS can be toggled -->
-    <!-- 9 buttons keypad for customizable user macros (if any found) -->
+    <!-- Nx3 buttons keypad for customizable user macros -->
     <div>
       <table id="macro_buttons" style="display:none">
-        <tr>
-        <td id="mb1"><button type="button" class="macro_button" id="macro_button_1" onmousedown="user_macro('1', this.innerText)" >-</button></td>
-        <td id="mb2"><button type="button" class="macro_button" id="macro_button_2" onmousedown="user_macro('2', this.innerText)" >-</button></td>
-        <td id="mb3"><button type="button" class="macro_button" id="macro_button_3" onmousedown="user_macro('3', this.innerText)" >-</button></td>
-        </tr>
-        <tr>
-        <td id="mb4"><button type="button" class="macro_button" id="macro_button_4" onmousedown="user_macro('4', this.innerText)" >-</button></td>
-        <td id="mb5"><button type="button" class="macro_button" id="macro_button_5" onmousedown="user_macro('5', this.innerText)" >-</button></td>
-        <td id="mb6"><button type="button" class="macro_button" id="macro_button_6" onmousedown="user_macro('6', this.innerText)" >-</button></td>
-        </tr>
-        <tr>
-        <td id="mb7"><button type="button" class="macro_button" id="macro_button_7" onmousedown="user_macro('7', this.innerText)" >-</button></td>
-        <td id="mb8"><button type="button" class="macro_button" id="macro_button_8" onmousedown="user_macro('8', this.innerText)" >-</button></td>
-        <td id="mb9"><button type="button" class="macro_button" id="macro_button_9" onmousedown="user_macro('9', this.innerText)" >-</button></td>
-        </tr>
       </table>
     </div>
 
