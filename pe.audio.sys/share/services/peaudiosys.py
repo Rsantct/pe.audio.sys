@@ -151,10 +151,10 @@ def process_aux( cmd, arg='' ):
         with os.scandir( f'{MACROS_FOLDER}' ) as entries:
             for entrie in entries:
                 fname = entrie.name
-                if ( fname[0] in [str(x) for x in range(1, 10)] ) and \
-                                                        fname[1] == '_':
+                if fname.split('_')[0].isdigit():
                     macro_files.append(fname)
-        result = macro_files
+        # (i) The web page needs a sorted list
+        result = sorted(macro_files, key=lambda x: int(x.split('_')[0]))
 
     # RUN MACRO
     elif cmd == 'run_macro':

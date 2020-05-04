@@ -508,26 +508,67 @@ function set_LU_scope(scope){
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
     try{
-        var macros = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
+        var mFnames = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
     }catch{
     // If no macros list, do nothing, so leaving "display:none" on the buttons keypad div
         return
     }
-    // If any macro found, lets show the macros toggle switch
+    // If any macro found, lets show the corresponding cell playback_control_23
+    // also call xx_21 just for symmetry reasons
     document.getElementById( "playback_control_23").style.display = 'block';
-    document.getElementById( "playback_control_21").style.display = 'block'; // just for symmetry reasons
-    var macro = ''
-    for (i in macros) {
-        macro = macros[i];
-        // Macro files are named this way: 'N_macro_name', so N will serve as button position
-        macro_name = macro.slice(2, );
-        macro_pos = macro.split('_')[0];
-        document.getElementById( "macro_button_" + macro_pos ).innerText = macro_name;
+    document.getElementById( "playback_control_21").style.display = 'block';
+
+
+    // Expands number of buttons to a multiple of 3 (arrange of Nx3 buttons)
+    // (i) mFnames is supposed to be properly sorted.
+    let bTotal = parseInt(mFnames[mFnames.length - 1].split('_')[0])
+    bTotal = 3 * ( Math.floor( (bTotal - 1) / 3) + 1 )
+
+    let mtable = document.getElementById("macro_buttons");
+    let row  = mtable.insertRow();
+
+    // Iterate over button available cells
+    for (bPos = 1; bPos <= bTotal; bPos++) {
+
+        // Iterate over macro filenames
+        found = false;
+        for ( i in mFnames ){
+            // Macro file names: 'N_macro_name' where N is the button position
+            var mFname = mFnames[i];
+            var mPos  = mFname.split('_')[0];
+            var mName = mFname.split('_').slice(1,).join('_');
+            if ( mPos == bPos ){
+                found = true;
+                break;
+            }
+        }
+
+        // Insert a cell
+        let cell = row.insertCell();
+        cell.className = 'macro_cell';
+        // Make the actual button into the cell
+        var btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = "macro_button";
+        if ( found == true ){
+            btn.innerText = mName;
+            // this x is weird but needed to onclick function to work
+            const x = mFname;
+            // https://www.w3schools.com/jsref/event_onclick.asp
+            btn.onclick = function(){ run_user_macro(x) };
+        }else{
+            btn.innerText = '-';
+        }
+        cell.appendChild(btn);
+
+        // Arrange 3 buttons per row
+        if ( bPos % 3 == 0 ) {
+            row  = mtable.insertRow();
+        }
     }
 }
-// Executes user defined macros
-function user_macro(prefix, name) {
-    control_cmd( 'aux run_macro ' + prefix + '_' + name );
+function run_user_macro(x){
+    control_cmd( 'aux run_macro ' + x )
 }
 
 ///////////////  MISCEL INTERNAL ////////////
