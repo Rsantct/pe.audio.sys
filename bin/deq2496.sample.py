@@ -4,7 +4,7 @@
 
     commands available:
 
-            show        rta | vu | peak
+            screen      rta | vu | peak | rotate
             contrast    0...15
             request     device_id
 
@@ -12,9 +12,12 @@
 import sys
 import rtmidi
 import mido
+import yaml
+from os.path import expanduser
+UHOME = expanduser("~")
 
-### (i) USER CONFIG, provide a string to identify your midi interface,
-#       see an example:
+# (i) Set 'myMIDIstr' with a string to identify your midi interface,
+#     for example:
 #   $ python3
 #   Python 3.6.9 (default, Apr 18 2020, 01:56:04)
 #   [GCC 8.4.0] on linux
@@ -22,7 +25,10 @@ import mido
 #   >>> import mido
 #   >>> mido.get_output_names()
 #   ['ESI-ROMIO:ESI-ROMIO MIDI 1 28:0', ...]
-myMIDIstr = 'ESI-ROMIO'
+myMIDIstr       = 'ESI-ROMIO'
+
+# default
+cfg = {'screen': 'rta' }
 
 #   See write single value table at
 #   DEQ2496_MIDI_Implementation_V1_4.pdf
@@ -96,11 +102,19 @@ def get_identity_device():
     return result
 
 
-def show_screen(scr_name):
+def show_screen(scr):
+    global cfg
+
+    if scr == 'rotate':
+        # lets iterate
+        curr_scr = cfg["screen"]
+        scrs = ['rta', 'peak', 'vu']
+        scr = scrs[ (scrs.index(curr_scr) + 1) % len(scrs) ]
+
     # a short name alias
     wsv = write_single_value
 
-    if scr_name == 'rta':
+    if scr == 'rta':
         wsv( wsv_table['rta'] )
         wsv( wsv_table['rta_channel_l+r'] )
         wsv( wsv_table['rta_max-5dB'] )
@@ -109,15 +123,20 @@ def show_screen(scr_name):
         wsv( wsv_table['rta_peak_mid'] )
         wsv( wsv_table['rta_page3_fullscreen'] )
 
-    elif scr_name == 'vu':
+    elif scr == 'vu':
         wsv( wsv_table['meter'] )
         wsv( wsv_table['meter_page3_vumeter'] )
 
-    elif scr_name == 'peak':
+    elif scr == 'peak':
         wsv( wsv_table['meter'] )
         wsv( wsv_table['meter_page1_peak_rms'] )
 
+    cfg["screen"] = scr
+
+
 def contrast(c):
+    global cfg
+
     # a short name alias
     wsv = write_single_value
 
@@ -125,10 +144,20 @@ def contrast(c):
     ncontrast[-1] = c
     wsv( ncontrast )
 
+    cfg["contrast"] = c
+
+
 if __name__ == '__main__':
 
     inport  = mido.open_input( get_midi_interface( myMIDIstr ) )
     outport = mido.open_output( get_midi_interface( myMIDIstr ) )
+
+    # Read current config from disk
+    try:
+        with open( f'{UHOME}/.deq2496', 'r') as f:
+            cfg = yaml.safe_load(f)
+    except:
+        pass
 
     # Read command line
     cmd = ''
@@ -140,7 +169,7 @@ if __name__ == '__main__':
     else:
         print(__doc__)
 
-    if cmd == 'show':
+    if cmd == 'screen':
         show_screen( args[0] )
 
     if cmd == 'contrast':
@@ -148,4 +177,11 @@ if __name__ == '__main__':
 
     if cmd == 'request':
         if args[0] == 'device_id':
-            print( get_identity_device() )
+            id_dev = get_identity_device()
+            cfg["identity_device"] = id_dev
+            print( id_dev )
+
+    # Save config to disk
+    with open( f'{UHOME}/.deq2496', 'w') as f:
+        yaml.safe_dump(cfg, f, default_flow_style=False)
+
