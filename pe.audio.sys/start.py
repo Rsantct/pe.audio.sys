@@ -438,13 +438,12 @@ if __name__ == "__main__":
     if mode in ('all'):
         # BRUTEFIR
         start_brutefir()
-
         # RESTORE settings
         core.init_audio_settings()
-        core.init_source()
         # PREAMP  --> MONITORS
-        if mode in ('all') and CONFIG["source_monitors"]:
-            core.connect_monitors()
+        core.connect_monitors()
+        # RESTORE source
+        core.init_source()
 
     if mode in ('all', 'services'):
         # Will update Brutefir EQ graph for the web page
