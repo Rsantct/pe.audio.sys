@@ -6,7 +6,9 @@
 
             screen      rta | vu | peak | rotate
             contrast    0...15 | rotate
-            get         state | screen_dump
+            get         state
+            print       screen
+            plot        screen
 
 """
 import sys
@@ -107,6 +109,8 @@ def get_identity_device():
 # Sample screen chunk to demonstrate how screendata[80*46]
 # is codified in 7 bits words:
 #
+# 320 x 80 dot-matrix LC display
+#
 #           /  w1  /  w2  /  w3  /  etc .....
 #           123456712345671234567
 #  w1: w2:
@@ -133,7 +137,7 @@ def get_identity_device():
 #   31  31    #####  #####
 #   15 126     ##########
 #    0   0
-def screen_dump():
+def get_screen_dump():
     # 320 x 80 dot-matrix LC display
     # 0x76: request screen dump
     # Format: 0xF0, 0x00, 0x20, 0x32, DeviceID, ModelID, 0x76, 0xF7
@@ -142,8 +146,10 @@ def screen_dump():
     send_SysEx([0x76])
 
     # Getting screendata[80*46]
-    scrdata = inport.receive().data[6:]  # data excludes 0xF0 head and 0xF7 tail
+    return inport.receive().data[6:]  # data excludes 0xF0 head and 0xF7 tail
 
+
+def print_screen(scrdata):
     # Print to console
     for i in range(len(scrdata)):
         print( bin(scrdata[i])[2:].zfill(7).replace('0',' ').replace('1','#'),
@@ -151,6 +157,20 @@ def screen_dump():
         if (i+1) % 46 == 0:
             print()
     print()
+
+
+def plot_screen(scrdata):
+    # 320 x 80 dot-matrix LC display
+
+    S = np.array([])
+    for i in range(len(scrdata)):
+        heptaPixString = bin(scrdata[i])[2:].zfill(7)
+        heptaPixArr    = np.fromiter(heptaPixString, dtype=int)
+        S = np.append( S, heptaPixArr )
+    S = S.reshape(80, 322)
+
+    plt.imshow(S)
+    plt.show()
 
 
 def show_screen(scr):
@@ -192,7 +212,7 @@ def contrast(c):
     if c == 'rotate':
         # lets iterate
         curr_c = cfg["contrast"]
-        values = [0, 2, 4, 6, 8, 10]
+        values = [3, 4, 5, 6, 7, 8, 9]
         c = values[ (values.index(curr_c) + 1) % len(values) ]
     else:
         if not c.isdigit():
@@ -242,8 +262,14 @@ if __name__ == '__main__':
             id_dev = get_identity_device()
             cfg["identity_device"] = id_dev
             print(cfg)
-        if args[0] == 'screen_dump':
-            screen_dump()
+
+    if cmd == 'print':
+        if args[0] == 'screen':
+            print_screen( get_screen_dump() )
+
+    if cmd == 'plot':
+        if args[0] == 'screen':
+            plot_screen( get_screen_dump() )
 
     # Save config to disk
     with open( f'{UHOME}/.deq2496', 'w') as f:
