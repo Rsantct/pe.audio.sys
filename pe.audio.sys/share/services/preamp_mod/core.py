@@ -589,8 +589,9 @@ def init_audio_settings():
 def connect_monitors():
     """ Connect source monitors to preamp-loop
     """
-    for monitor in CONFIG["source_monitors"]:
-        jack_connect_bypattern('pre_in_loop', monitor, wait=60)
+    if CONFIG["source_monitors"]:
+        for monitor in CONFIG["source_monitors"]:
+            jack_connect_bypattern('pre_in_loop', monitor, wait=60)
 
 
 class Preamp(object):
