@@ -5,14 +5,16 @@
     commands available:
 
             screen      rta | vu | peak | rotate
-            contrast    0...15
-            request     device_id
+            contrast    0...15 | rotate
+            get         state | screen_dump
 
 """
 import sys
 import rtmidi
 import mido
 import yaml
+import numpy as np
+from matplotlib import pyplot as plt
 from os.path import expanduser
 UHOME = expanduser("~")
 
@@ -102,6 +104,55 @@ def get_identity_device():
     return result
 
 
+# Sample screen chunck to demonstrate how screendata[80*46]
+# is codified in 7 bits words:
+#
+#           /  w1  /  w2  /  w3  /  etc .....
+#           123456712345671234567
+#  w1: w2:
+#   15 127     ########################
+#   31 127    #########################
+#   19  72    #  ###  #      #
+#   19  73    #  ###  #  #######
+#   17   9    #   #   #  #######
+#   17   9    #   #   #  #######
+#   16   8    #       #      ###
+#   16   9    #       #  #######
+#   18  73    #  # #  #  #######
+#   18  73    #  # #  #  #######
+#   19  73    #  ###  #  #######
+#   19  72    #  ###  #      ###
+#   31 127    #########################
+#   31 127    #########################
+#   31 127    #########################
+#   31  31    #####  #####
+#   30  31    ####   #####
+#   31  31    #####  #####
+#   31  31    #####  #####
+#   31  31    #####  #####
+#   31  31    #####  #####
+#   15 126     ##########
+#    0   0
+def screen_dump():
+    # 320 x 80 dot-matrix LC display
+    # 0x76: request screen dump
+    # Format: 0xF0, 0x00, 0x20, 0x32, DeviceID, ModelID, 0x76, 0xF7
+    # Response: 0xF0, 0x00, 0x20, 0x32, 0x00, 0x12, 0x36, screendata[80*46], 0xF7
+
+    send_SysEx([0x76])
+
+    # Getting screendata[80*46]
+    scrdata = inport.receive().data[6:]  # data excludes 0xF0 head and 0xF7 tail
+
+    # Print to console
+    for i in range(len(scrdata)):
+        print( bin(scrdata[i])[2:].zfill(7).replace('0',' ').replace('1','#'),
+               end='' )
+        if (i+1) % 46 == 0:
+            print()
+    print()
+
+
 def show_screen(scr):
     global cfg
 
@@ -132,10 +183,21 @@ def show_screen(scr):
         wsv( wsv_table['meter_page1_peak_rms'] )
 
     cfg["screen"] = scr
+    print(scr)
 
 
 def contrast(c):
     global cfg
+
+    if c == 'rotate':
+        # lets iterate
+        curr_c = cfg["contrast"]
+        values = [0, 2, 4, 6, 8, 10]
+        c = values[ (values.index(curr_c) + 1) % len(values) ]
+    else:
+        if not c.isdigit():
+            return
+        c = int(c)
 
     # a short name alias
     wsv = write_single_value
@@ -173,13 +235,15 @@ if __name__ == '__main__':
         show_screen( args[0] )
 
     if cmd == 'contrast':
-        contrast( int(args[0]) )
+        contrast( args[0] )
 
-    if cmd == 'request':
-        if args[0] == 'device_id':
+    if cmd == 'get':
+        if args[0] == 'state':
             id_dev = get_identity_device()
             cfg["identity_device"] = id_dev
-            print( id_dev )
+            print(cfg)
+        if args[0] == 'screen_dump':
+            screen_dump()
 
     # Save config to disk
     with open( f'{UHOME}/.deq2496', 'w') as f:
