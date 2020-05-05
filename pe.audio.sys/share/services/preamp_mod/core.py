@@ -422,17 +422,13 @@ def jack_connect(p1, p2, mode='connect', wait=1):
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
-                if p2 not in JCLI.get_all_connections(p1):
-                    JCLI.connect(p1, p2)
-                    print(f'(core.jack_connect)', f'wait={wait} {mode}',
-                                                               p1.name, p2.name)
+                if p2 in JCLI.get_all_connections(p1):
+                    print( '(core.jack_connect) ALREADY CONNECTED '
+                          f'{p1.name} {p2.name}' )
                 else:
-                    print(f'(core.jack_connect)', f'wait={wait} ALREADY {mode}',
-                                                               p1.name, p2.name)
-            break
-        except:
-            print('(core.jack_connect)', f'wait={wait} FAILED {mode}',
-                                                               p1.name, p2.name)
+                    JCLI.connect(p1, p2)
+                break
+        except jack.JackError as e:
             wait -= 1
             sleep(1)
 
@@ -442,8 +438,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
         return False
 
 
-def jack_connect_bypattern( cap_pattern, pbk_pattern,
-                            mode='connect', wait=1 ):
+def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
     """ High level tool to connect/disconnect a given port name patterns
     """
     # Try to get ports by a port name pattern
@@ -472,9 +467,9 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
     if not pbk_ports:
         print( f'(core) cannot find jack port "{pbk_pattern}"' )
         return
+
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
-    for i, cap_port in enumerate(cap_ports):
-        pbk_port = pbk_ports[i]
+    for cap_port, pbk_port in zip(cap_ports, pbk_ports):
         job_jc = threading.Thread( target=jack_connect,
                                    args=(cap_port, pbk_port, mode, wait) )
         job_jc.start()
