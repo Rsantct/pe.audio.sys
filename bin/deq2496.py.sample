@@ -104,7 +104,7 @@ def get_identity_device():
     return result
 
 
-# Sample screen chunck to demonstrate how screendata[80*46]
+# Sample screen chunk to demonstrate how screendata[80*46]
 # is codified in 7 bits words:
 #
 #           /  w1  /  w2  /  w3  /  etc .....
