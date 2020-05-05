@@ -168,7 +168,6 @@ source_monitors:
     # syntax
     # - <monitorName>
     # - DEQ2496
-    - PortAudio
 
 # ================ SCRIPTS YOU WANT TO RUN (players, etc...)  ==================
 # The scripts files are located under the share/scripts folder.
@@ -224,7 +223,6 @@ scripts:
     #- mouse_volume_daemon.py
     
     ## A daemon that monitorizes the EBU R128 Loudness Integrated
-    ## (please add 'PortAudio' to your source_monitors list above)
     #- loudness_monitor.py
 
     ## The LCDd server and lcd_daemon.py
