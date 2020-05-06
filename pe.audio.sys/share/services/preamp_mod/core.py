@@ -419,15 +419,14 @@ def jack_connect(p1, p2, mode='connect', wait=1):
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
-                if p2 in JCLI.get_all_connections(p1):
-                    print( '(core.jack_connect) ALREADY CONNECTED '
-                          f'{p1.name} {p2.name}' )
-                else:
-                    JCLI.connect(p1, p2)
+                JCLI.connect(p1, p2)
             break
         except jack.JackError as e:
-            wait -= 1
-            sleep(1)
+            print( f'(core.jack_connect) Exception: {e}' )
+        except Exception as e:
+            print( f'(core.jack_connect) Exception: {e}' )
+        wait -= 1
+        sleep(1)
 
     if wait:
         return True
