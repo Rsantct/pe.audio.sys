@@ -283,6 +283,7 @@ def bf_set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module,
         also will dump an EQ graph
     """
+    global last_eq_mag
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
     pha_pairs = []
@@ -296,14 +297,10 @@ def bf_set_eq( eq_mag, eq_pha ):
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
-    # Dumping the EQ graph to a png file.
-    bfeq2png.do_graph(freqs, eq_mag)
-    # (i) Pending threading this, although it is fast to complete.
-    #     Notice: threading is not suitable with matplotlib,
-    #             tried  multiprocessing but cannot fix OSError.
-    #dump_graph = multiprocessing.Process( target=bfeq2png.do_graph,
-    #                                      args=(freqs, eq_mag) )
-    #dump_graph.start()
+    # Dumping the EQ graph to a png file, only if eq_mag has changed
+    if not (last_eq_mag == eq_mag).all():
+        bfeq2png.do_graph(freqs, eq_mag)
+        last_eq_mag = eq_mag
 
 
 def bf_read_eq():
@@ -805,6 +802,7 @@ class Preamp(object):
         """ this is the source selector """
 
         def try_select(source):
+            w = '' # warnings
 
             if source == 'none':
                 jack_clear_preamp()
@@ -812,7 +810,7 @@ class Preamp(object):
 
             if source not in self.inputs:
                 # do nothing
-                return f'source \'{source}\' not defined'
+                return f'unknown source \'{source}\''
 
             # clearing 'preamp' connections
             jack_clear_preamp()
@@ -822,15 +820,13 @@ class Preamp(object):
                                     'pre_in' )
 
             # Trying to set the desired xo and drc for this source
-            tmp = ''
             c = Convolver()
             try:
                 xo = CONFIG["sources"][source]['xo']
                 if xo and c.set_xo( xo ) == 'done':
                     self.state['xo_set'] = xo
                 elif xo:
-                    tmp = f'\'xo:{xo}\' in \'{source}\' is not valid'
-                    print('(core)', tmp)
+                    w = f'\'xo:{xo}\' in \'{source}\' is not valid'
             except:
                 pass
             try:
@@ -838,17 +834,18 @@ class Preamp(object):
                 if drc and c.set_drc( drc ) == 'done':
                     self.state['drc_set'] = drc
                 elif drc:
-                    tmp += f'\'drc:{xo}\' in \'{source}\' is not valid'
-                    print('(core)', tmp)
+                    if w:
+                        w += ' '
+                    w += f'\'drc:{xo}\' in \'{source}\' is not valid'
             except:
                 pass
             del(c)
 
             # end of trying to select the source
-            if not tmp:
+            if not w:
                 return 'done'
             else:
-                return tmp
+                return w # warnings
 
         def on_change_input_behavior(candidate):
             try:
@@ -861,7 +858,7 @@ class Preamp(object):
 
         result = try_select(value)
 
-        if result:
+        if result == 'done':
             self.state['input'] = value
             candidate = self.state.copy()
             candidate = on_change_input_behavior(candidate)
@@ -878,9 +875,8 @@ class Preamp(object):
             except:
                 candidate["target"] = CONFIG["on_init"]['target']
             self._validate( candidate )
-            return result
-        else:
-            return f'something was wrong selecting \'{value}\''
+
+        return result
 
     def get_inputs(self, *dummy):
         return [ x for x in self.inputs.keys() ]
@@ -985,6 +981,8 @@ LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
 EQ_CURVES   = find_eq_curves()
+# Aux global to avoid dumping magnitude graph if no changed
+last_eq_mag = np.zeros(63)
 
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
