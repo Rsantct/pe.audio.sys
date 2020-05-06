@@ -427,7 +427,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
                           f'{p1.name} {p2.name}' )
                 else:
                     JCLI.connect(p1, p2)
-                break
+            break
         except jack.JackError as e:
             wait -= 1
             sleep(1)
