@@ -423,8 +423,6 @@ def jack_connect(p1, p2, mode='connect', wait=1):
             break
         except jack.JackError as e:
             print( f'(core.jack_connect) Exception: {e}' )
-        except Exception as e:
-            print( f'(core.jack_connect) Exception: {e}' )
         wait -= 1
         sleep(1)
 
