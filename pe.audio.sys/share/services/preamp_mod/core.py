@@ -284,6 +284,7 @@ def bf_set_eq( eq_mag, eq_pha ):
         also will dump an EQ graph
     """
     global last_eq_mag
+
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
     pha_pairs = []
@@ -297,10 +298,12 @@ def bf_set_eq( eq_mag, eq_pha ):
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
-    # Dumping the EQ graph to a png file, only if eq_mag has changed
+    # Keeping the global updated
     if not (last_eq_mag == eq_mag).all():
-        bfeq2png.do_graph(freqs, eq_mag)
         last_eq_mag = eq_mag
+        # Dumping the EQ graph to a png file
+        if CONFIG["web_config"]["show_graphs"]:
+            bfeq2png.do_graph(freqs, eq_mag)
 
 
 def bf_read_eq():
