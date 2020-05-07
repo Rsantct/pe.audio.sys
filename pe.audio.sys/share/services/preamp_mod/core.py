@@ -283,6 +283,7 @@ def bf_set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module,
         also will dump an EQ graph
     """
+    global last_eq_mag
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
     pha_pairs = []
@@ -296,14 +297,10 @@ def bf_set_eq( eq_mag, eq_pha ):
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
-    # Dumping the EQ graph to a png file.
-    bfeq2png.do_graph(freqs, eq_mag)
-    # (i) Pending threading this, although it is fast to complete.
-    #     Notice: threading is not suitable with matplotlib,
-    #             tried  multiprocessing but cannot fix OSError.
-    #dump_graph = multiprocessing.Process( target=bfeq2png.do_graph,
-    #                                      args=(freqs, eq_mag) )
-    #dump_graph.start()
+    # Dumping the EQ graph to a png file, only if eq_mag has changed
+    if not (last_eq_mag == eq_mag).all():
+        bfeq2png.do_graph(freqs, eq_mag)
+        last_eq_mag = eq_mag
 
 
 def bf_read_eq():
@@ -422,19 +419,12 @@ def jack_connect(p1, p2, mode='connect', wait=1):
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
-                if p2 not in JCLI.get_all_connections(p1):
-                    JCLI.connect(p1, p2)
-                    print(f'(core.jack_connect)', f'wait={wait} {mode}',
-                                                               p1.name, p2.name)
-                else:
-                    print(f'(core.jack_connect)', f'wait={wait} ALREADY {mode}',
-                                                               p1.name, p2.name)
+                JCLI.connect(p1, p2)
             break
-        except:
-            print('(core.jack_connect)', f'wait={wait} FAILED {mode}',
-                                                               p1.name, p2.name)
-            wait -= 1
-            sleep(1)
+        except jack.JackError as e:
+            print( f'(core.jack_connect) Exception: {e}' )
+        wait -= 1
+        sleep(1)
 
     if wait:
         return True
@@ -442,8 +432,7 @@ def jack_connect(p1, p2, mode='connect', wait=1):
         return False
 
 
-def jack_connect_bypattern( cap_pattern, pbk_pattern,
-                            mode='connect', wait=1 ):
+def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
     """ High level tool to connect/disconnect a given port name patterns
     """
     # Try to get ports by a port name pattern
@@ -472,9 +461,9 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern,
     if not pbk_ports:
         print( f'(core) cannot find jack port "{pbk_pattern}"' )
         return
+
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
-    for i, cap_port in enumerate(cap_ports):
-        pbk_port = pbk_ports[i]
+    for cap_port, pbk_port in zip(cap_ports, pbk_ports):
         job_jc = threading.Thread( target=jack_connect,
                                    args=(cap_port, pbk_port, mode, wait) )
         job_jc.start()
@@ -589,8 +578,9 @@ def init_audio_settings():
 def connect_monitors():
     """ Connect source monitors to preamp-loop
     """
-    for monitor in CONFIG["source_monitors"]:
-        jack_connect_bypattern('pre_in_loop', monitor, wait=60)
+    if CONFIG["source_monitors"]:
+        for monitor in CONFIG["source_monitors"]:
+            jack_connect_bypattern('pre_in_loop', monitor, wait=60)
 
 
 class Preamp(object):
@@ -809,6 +799,7 @@ class Preamp(object):
         """ this is the source selector """
 
         def try_select(source):
+            w = '' # warnings
 
             if source == 'none':
                 jack_clear_preamp()
@@ -816,7 +807,7 @@ class Preamp(object):
 
             if source not in self.inputs:
                 # do nothing
-                return f'source \'{source}\' not defined'
+                return f'unknown source \'{source}\''
 
             # clearing 'preamp' connections
             jack_clear_preamp()
@@ -826,15 +817,13 @@ class Preamp(object):
                                     'pre_in' )
 
             # Trying to set the desired xo and drc for this source
-            tmp = ''
             c = Convolver()
             try:
                 xo = CONFIG["sources"][source]['xo']
                 if xo and c.set_xo( xo ) == 'done':
                     self.state['xo_set'] = xo
                 elif xo:
-                    tmp = f'\'xo:{xo}\' in \'{source}\' is not valid'
-                    print('(core)', tmp)
+                    w = f'\'xo:{xo}\' in \'{source}\' is not valid'
             except:
                 pass
             try:
@@ -842,17 +831,18 @@ class Preamp(object):
                 if drc and c.set_drc( drc ) == 'done':
                     self.state['drc_set'] = drc
                 elif drc:
-                    tmp += f'\'drc:{xo}\' in \'{source}\' is not valid'
-                    print('(core)', tmp)
+                    if w:
+                        w += ' '
+                    w += f'\'drc:{xo}\' in \'{source}\' is not valid'
             except:
                 pass
             del(c)
 
             # end of trying to select the source
-            if not tmp:
+            if not w:
                 return 'done'
             else:
-                return tmp
+                return w # warnings
 
         def on_change_input_behavior(candidate):
             try:
@@ -865,7 +855,7 @@ class Preamp(object):
 
         result = try_select(value)
 
-        if result:
+        if result == 'done':
             self.state['input'] = value
             candidate = self.state.copy()
             candidate = on_change_input_behavior(candidate)
@@ -882,9 +872,8 @@ class Preamp(object):
             except:
                 candidate["target"] = CONFIG["on_init"]['target']
             self._validate( candidate )
-            return result
-        else:
-            return f'something was wrong selecting \'{value}\''
+
+        return result
 
     def get_inputs(self, *dummy):
         return [ x for x in self.inputs.keys() ]
@@ -989,6 +978,8 @@ LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
 EQ_CURVES   = find_eq_curves()
+# Aux global to avoid dumping magnitude graph if no changed
+last_eq_mag = np.zeros(63)
 
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
