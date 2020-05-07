@@ -5,7 +5,7 @@
     commands available:
 
             screen      rta | vu | peak | rotate
-            contrast    0...15 | rotate
+            contrast    3...9 | rotate
             get         state
             print       screen
             plot        screen
