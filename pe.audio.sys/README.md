@@ -177,9 +177,9 @@ Some nice tools are provided under your `~/bin` folder, below a brief descriptio
     |-- peaudiosys_plot_brutefir_eq.py      Plot the runtime EQ module in Brutefir
     |
     |-- peaudiosys_plot_eq_curves.py        A tool to plot the curves under the share/eq folder
-    |
-    |-- peaudiosys_do_target.py             Make target curves
 
+
+Advanced tools to prepare preamp eq stuff can be found in `AudioHumLab/audiotools/brutefir_eq`.
 
 
 # Filesystem tree
