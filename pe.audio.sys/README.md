@@ -179,7 +179,7 @@ Some nice tools are provided under your `~/bin` folder, below a brief descriptio
     |-- peaudiosys_plot_eq_curves.py        A tool to plot the curves under the share/eq folder
 
 
-Advanced tools to prepare preamp eq stuff can be found in `AudioHumLab/audiotools/brutefir_eq`.
+Advanced tools to prepare preamp eq stuff can be found in `http://AudioHumLab/audiotools/brutefir_eq`.
 
 
 # Filesystem tree
