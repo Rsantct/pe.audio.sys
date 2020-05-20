@@ -982,7 +982,7 @@ STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
 EQ_CURVES   = find_eq_curves()
 # Aux global to avoid dumping magnitude graph if no changed
-last_eq_mag = np.zeros(63)
+last_eq_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
 
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
