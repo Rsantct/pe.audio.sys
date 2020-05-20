@@ -68,12 +68,14 @@ def get_eq_curve(curv, state):
         Tone curves depens on state bass & treble.
         Loudness compensation curve depens on the target level dBrefSPL.
     """
-    # Tone eq curves are provided in [-6...0...+6]
+    # Tone eq curves are provided in reverse order [+6...0...-6]
     if curv == 'bass':
-        index = 6 - int(round(state['bass']))
+        bass_center_index = EQ_CURVES['bass_mag'].shape[1] // 2
+        index =  bass_center_index - int(round(state['bass']))
 
     elif curv == 'treb':
-        index = 6 - int(round(state['treble']))
+        treble_center_index = EQ_CURVES['treb_mag'].shape[1] // 2
+        index = treble_center_index - int(round(state['treble']))
 
     # Using the previously detected flat curve index and
     # also limiting as per the loud_ceil value inside config.yml
