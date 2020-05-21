@@ -70,27 +70,32 @@ def get_eq_curve(curv, state):
     """
     # Tone eq curves are provided in reverse order [+6...0...-6]
     if curv == 'bass':
+
         bass_center_index = EQ_CURVES['bass_mag'].shape[1] // 2
         index =  bass_center_index - int(round(state['bass']))
 
     elif curv == 'treb':
+
         treble_center_index = EQ_CURVES['treb_mag'].shape[1] // 2
         index = treble_center_index - int(round(state['treble']))
 
     # Using the previously detected flat curve index and
-    # also limiting as per the loud_ceil value inside config.yml
+    # also limiting as per the loud_ceil boolean inside config.yml
     elif curv == 'loud':
 
-        index_min   = 0
+        # (i)
+        #  Former FIRtro curves indexes have a reverse order, that is:
+        #  Curves at index above the flat one are applied to compensate
+        #  when level is below ref SPL (level 0.0), and vice versa,
+        #  curves at index below the flat one are for levels above reference.
         index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
         index_flat  = LOUD_FLAT_CURVE_INDEX
+        if CONFIG['loud_ceil']:
+            index_min = index_flat
+        else:
+            index_min   = 0
 
-        try:
-            loud_ceil = float(CONFIG['loud_ceil'])
-        except KeyError:
-            loud_ceil = 0.0
-
-        if state['loudness_track'] and ( state['level'] <= loud_ceil ):
+        if state['loudness_track']:
             index = index_flat - state['level']
         else:
             index = index_flat
