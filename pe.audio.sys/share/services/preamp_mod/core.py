@@ -292,6 +292,9 @@ def bf_set_eq( eq_mag, eq_pha ):
     """
     global last_eq_mag
 
+    if CONFIG['bfeq_linear_phase']:
+        eq_pha = np.zeros( len(eq_pha) )
+
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
     pha_pairs = []
