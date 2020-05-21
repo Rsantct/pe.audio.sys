@@ -98,7 +98,6 @@ def do_graph(freqs, magdB):
     else:
         ymax = +15
     ax.set_ylim( ymin, ymax)
-    ax.set_ylim( ymin, ymax)
     ax.set_xticks( freq_ticks )
     ax.set_xticklabels( freq_labels )
     # ax.set_title( 'Brutefir EQ' )
