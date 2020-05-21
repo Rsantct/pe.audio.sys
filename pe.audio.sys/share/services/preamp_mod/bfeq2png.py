@@ -44,6 +44,8 @@ plt.rcParams.update({'font.size': 6})
 freq_ticks  = [ 20,   50,   100,   200,   500,   1e3,  2e3,  5e3,  1e4,   2e4]
 freq_labels = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
 figHeight   = 1.5   # min 1.5 if font.size = 6
+ypos_step   = 0     # try 15 dB, or 0 to disable
+yneg_step   = 0     # try 10 dB, or 0 to disable
 
 def get_bf_eq():
     """ Queries Brutefir TCP service to get the current EQ magnitudes
@@ -87,7 +89,16 @@ def do_graph(freqs, magdB):
     ax.set_facecolor( RGBweb )
     ax.set_xscale('log')
     ax.set_xlim( 20, 20000 )
-    ax.set_ylim( -6, +12 )
+    if yneg_step:
+        ymin = -yneg_step - yneg_step * (np.min(magdB) // -yneg_step)
+    else:
+        ymin = -10
+    if ypos_step:
+        ymax =  ypos_step + ypos_step * (np.max(magdB) //  ypos_step)
+    else:
+        ymax = +15
+    ax.set_ylim( ymin, ymax)
+    ax.set_ylim( ymin, ymax)
     ax.set_xticks( freq_ticks )
     ax.set_xticklabels( freq_labels )
     # ax.set_title( 'Brutefir EQ' )
