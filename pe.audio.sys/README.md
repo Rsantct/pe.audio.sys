@@ -266,6 +266,7 @@ Here you are an uncommented bare example of `config.yml`:
 
     balance_max:    6.0
     gain_max:       0.0
+    loud_ceil:      false
 
     loudspeaker: SeasFlat
     ref_level_gain: -10.0
