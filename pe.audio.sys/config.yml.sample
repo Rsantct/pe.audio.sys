@@ -57,6 +57,9 @@ gain_max:    0.0
 # Loudness EQ compensation ceiled at your reference SPL
 loud_ceil: false
 
+# Should Brutefir EQ stage to be linear phase?
+bfeq_linear_phase: false
+
 # ========================== THE LOUDSPEAKER  ==================================
 
 # Put here your loudspeaker folder name
