@@ -22,6 +22,7 @@
 """
 import sys
 import os
+import yaml
 from socket import socket
 import numpy as np
 import matplotlib
@@ -75,7 +76,7 @@ def get_bf_eq():
            np.array(mags).astype(np.float)
 
 
-def do_graph(freqs, magdB):
+def do_graph(freqs, magdB, is_lin_phase=False):
     """ Dupms a graph to share/www/images/brutefir_eq.png
     """
     if verbose:
@@ -87,6 +88,8 @@ def do_graph(freqs, magdB):
     fig.set_figheight( figHeight )
     fig.set_facecolor( RGBweb )
     ax.set_facecolor( RGBweb )
+    if is_lin_phase:
+        ax.annotate('lin-pha EQ', xy=(.46,.1), xycoords='axes fraction')
     ax.set_xscale('log')
     ax.set_xlim( 20, 20000 )
     if yneg_step:
@@ -123,5 +126,15 @@ if __name__ == '__main__':
             print(__doc__)
             exit()
 
+    # Check bfeq_linear_phase config
+    CONFIG = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
+    try:
+        if CONFIG['bfeq_linear_phase']:
+            is_lin_phase = True
+        else:
+            is_lin_phase = False
+    except:
+        is_lin_phase = False
+
     freqs, magdB = get_bf_eq()
-    do_graph(freqs, magdB)
+    do_graph(freqs, magdB, is_lin_phase=is_lin_phase)
