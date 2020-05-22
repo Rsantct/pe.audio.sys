@@ -40,6 +40,10 @@ while [[ $times -ne "0" ]]; do
     ((times--))
 done
 
+if [[ $times -eq "0" ]]; then
+    echo "(!) preamp service broken :-/"
+fi
+
 # Recalculate curves
 echo "level 0 add" | nc -N localhost $PORT
 echo
