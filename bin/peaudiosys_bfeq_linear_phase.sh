@@ -26,6 +26,23 @@ sed -i -e '/bfeq_linear_phase/c\bfeq_linear_phase: '$new \
     "$HOME"/pe.audio.sys/config.yml
 
 # Restarting
-peaudiosys_service_restart.sh preamp \
-    && sleep 2 && control level 0 add \
-    && control get_eq
+peaudiosys_service_restart.sh preamp
+
+# Awaiting preamp service
+PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+times=10
+while [[ $times -ne "0" ]]; do
+    ans=$(echo state | nc -N localhost $PORT)
+    if [[ $ans == *"level"* ]]; then
+        break
+    fi
+    sleep .1
+    ((times--))
+done
+
+# Recalculate curves
+echo "level 0 add" | nc -N localhost $PORT
+echo
+# Check
+echo "get_eq" | nc -N localhost $PORT
+echo
