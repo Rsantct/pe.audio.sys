@@ -996,16 +996,16 @@ CONFIG      = yaml.safe_load(open(CONFIG_PATH, 'r'))
 LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
-EQ_CURVES   = find_eq_curves()
-# Aux global to avoid dumping magnitude graph if no changed
-last_eq_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
 
+EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
     sys.exit()
 
 LOUD_FLAT_CURVE_INDEX = find_loudness_flat_curve_index()
-
 if LOUD_FLAT_CURVE_INDEX < 0:
     print( f'(core) MISSING FLAT LOUDNESS CURVE. BYE :-/' )
     sys.exit()
+
+# Aux global to avoid dumping magnitude graph if no changed
+last_eq_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
