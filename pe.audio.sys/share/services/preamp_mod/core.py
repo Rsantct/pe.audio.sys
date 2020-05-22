@@ -167,22 +167,31 @@ def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
         as per the provided dictionary of state values.
     """
+    zeros = np.zeros( EQ_CURVES['freqs'].shape[0] )
+
+    # getting loudness and tones curves
     loud_mag, loud_pha = get_eq_curve( 'loud', state )
     bass_mag, bass_pha = get_eq_curve( 'bass', state )
     treb_mag, treb_pha = get_eq_curve( 'treb', state )
 
+    # getting target curve
     target_name = state['target']
     if target_name == 'none':
-        targ_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
-        targ_pha = np.zeros( EQ_CURVES['freqs'].shape[0] )
+        targ_mag = zeros
+        targ_pha = zeros
     else:
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
+    # Compose
     eq_mag = targ_mag + loud_mag * state['loudness_track'] \
                                                 + bass_mag + treb_mag
-    eq_pha = targ_pha + loud_pha * state['loudness_track'] \
-                                                + bass_pha + treb_pha
+
+    if CONFIG['bfeq_linear_phase']:
+        eq_pha = zeros
+    else:
+        eq_pha = targ_pha + loud_pha * state['loudness_track'] \
+                 + bass_pha + treb_pha
 
     return eq_mag, eq_pha
 
@@ -291,9 +300,6 @@ def bf_set_eq( eq_mag, eq_pha ):
         also will dump an EQ graph
     """
     global last_eq_mag
-
-    if CONFIG['bfeq_linear_phase']:
-        eq_pha = np.zeros( len(eq_pha) )
 
     freqs = EQ_CURVES['freqs']
     mag_pairs = []
