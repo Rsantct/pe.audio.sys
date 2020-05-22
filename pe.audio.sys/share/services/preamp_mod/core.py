@@ -319,7 +319,8 @@ def bf_set_eq( eq_mag, eq_pha ):
         last_eq_mag = eq_mag
         # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            bfeq2png.do_graph(freqs, eq_mag)
+            bfeq2png.do_graph( freqs, eq_mag,
+                               is_lin_phase=CONFIG["bfeq_linear_phase"] )
 
 
 def bf_read_eq():
