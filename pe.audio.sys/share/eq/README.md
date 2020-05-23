@@ -13,3 +13,7 @@ https://github.com/AudioHumLab/audiotools/tree/master/brutefir_eq
 Just remember to adapt the **`eq:`** section of your speaker's **`brutefir_config`** file accordingly. 
 
 The `bands:` center frequencies list under that section must match the ones from the file **`share/eq/xxxxfreq.dat`**
+
+A simple tool is available here:
+
+https://github.com/Rsantct/audiotools/tree/master/brutefir_eq#bf_config_logicpy
