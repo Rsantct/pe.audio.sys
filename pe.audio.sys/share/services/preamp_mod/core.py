@@ -70,27 +70,32 @@ def get_eq_curve(curv, state):
     """
     # Tone eq curves are provided in reverse order [+6...0...-6]
     if curv == 'bass':
+
         bass_center_index = EQ_CURVES['bass_mag'].shape[1] // 2
         index =  bass_center_index - int(round(state['bass']))
 
     elif curv == 'treb':
+
         treble_center_index = EQ_CURVES['treb_mag'].shape[1] // 2
         index = treble_center_index - int(round(state['treble']))
 
     # Using the previously detected flat curve index and
-    # also limiting as per the loud_ceil value inside config.yml
+    # also limiting as per the loud_ceil boolean inside config.yml
     elif curv == 'loud':
 
-        index_min   = 0
+        # (i)
+        #  Former FIRtro curves indexes have a reverse order, that is:
+        #  Curves at index above the flat one are applied to compensate
+        #  when level is below ref SPL (level 0.0), and vice versa,
+        #  curves at index below the flat one are for levels above reference.
         index_max   = EQ_CURVES['loud_mag'].shape[1] - 1
         index_flat  = LOUD_FLAT_CURVE_INDEX
+        if CONFIG['loud_ceil']:
+            index_min = index_flat
+        else:
+            index_min   = 0
 
-        try:
-            loud_ceil = float(CONFIG['loud_ceil'])
-        except KeyError:
-            loud_ceil = 0.0
-
-        if state['loudness_track'] and ( state['level'] <= loud_ceil ):
+        if state['loudness_track']:
             index = index_flat - state['level']
         else:
             index = index_flat
@@ -162,22 +167,31 @@ def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
         as per the provided dictionary of state values.
     """
+    zeros = np.zeros( EQ_CURVES['freqs'].shape[0] )
+
+    # getting loudness and tones curves
     loud_mag, loud_pha = get_eq_curve( 'loud', state )
     bass_mag, bass_pha = get_eq_curve( 'bass', state )
     treb_mag, treb_pha = get_eq_curve( 'treb', state )
 
+    # getting target curve
     target_name = state['target']
     if target_name == 'none':
-        targ_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
-        targ_pha = np.zeros( EQ_CURVES['freqs'].shape[0] )
+        targ_mag = zeros
+        targ_pha = zeros
     else:
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
+    # Compose
     eq_mag = targ_mag + loud_mag * state['loudness_track'] \
                                                 + bass_mag + treb_mag
-    eq_pha = targ_pha + loud_pha * state['loudness_track'] \
-                                                + bass_pha + treb_pha
+
+    if CONFIG['bfeq_linear_phase']:
+        eq_pha = zeros
+    else:
+        eq_pha = targ_pha + loud_pha * state['loudness_track'] \
+                 + bass_pha + treb_pha
 
     return eq_mag, eq_pha
 
@@ -305,7 +319,8 @@ def bf_set_eq( eq_mag, eq_pha ):
         last_eq_mag = eq_mag
         # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            bfeq2png.do_graph(freqs, eq_mag)
+            bfeq2png.do_graph( freqs, eq_mag,
+                               is_lin_phase=CONFIG["bfeq_linear_phase"] )
 
 
 def bf_read_eq():
@@ -982,16 +997,16 @@ CONFIG      = yaml.safe_load(open(CONFIG_PATH, 'r'))
 LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH  = f'{UHOME}/pe.audio.sys/.state.yml'
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
-EQ_CURVES   = find_eq_curves()
-# Aux global to avoid dumping magnitude graph if no changed
-last_eq_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )
 
+EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
     sys.exit()
 
 LOUD_FLAT_CURVE_INDEX = find_loudness_flat_curve_index()
-
 if LOUD_FLAT_CURVE_INDEX < 0:
     print( f'(core) MISSING FLAT LOUDNESS CURVE. BYE :-/' )
     sys.exit()
+
+# Aux global to avoid dumping magnitude graph if no changed
+last_eq_mag = np.zeros( EQ_CURVES['freqs'].shape[0] )

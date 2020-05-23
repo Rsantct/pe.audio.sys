@@ -19,10 +19,14 @@
 """
     Plot the run-time EQ in a Brutefir running process
 """
-
 import socket
 import numpy as np
 from matplotlib import pyplot as plt
+
+############ Y AXIS AUTO ADJUST #################
+ypos_step   = 15     # try 15 dB, or 0 to disable
+yneg_step   = 10     # try 10 dB, or 0 to disable
+
 
 def bfcli(cmds=''):
     """ send commands to brutefir CLI and receive its responses
@@ -33,7 +37,7 @@ def bfcli(cmds=''):
     s.send( f'{cmds};quit\n'.encode() )
 
     response = b''
-    while True:    
+    while True:
         received = s.recv(4096)
         if received:
             response = response + received
@@ -57,7 +61,7 @@ def read_eq():
     bands = np.array( [float(x) for x in bands] )
     mag   = np.array( [float(x) for x in mag]   )
     pha   = np.array( [float(x) for x in pha]   )
-    
+
     return bands, mag, pha
 
 if __name__ == '__main__':
@@ -74,11 +78,20 @@ if __name__ == '__main__':
     ax2 = fig.add_subplot(2, 1, 2)
     fig.subplots_adjust(hspace=.4)
 
+    if yneg_step:
+        ymin = -yneg_step - yneg_step * (np.min(mag) // -yneg_step)
+    else:
+        ymin = -6
+    if ypos_step:
+        ymax =  ypos_step + ypos_step * (np.max(mag) //  ypos_step)
+    else:
+        ymax = +12
+    ax1.set_ylim( ymin, ymax)
+
     ax1.semilogx ( bands, mag )
-    ax1.set_ylim(-6,12)
-    ax1.set_title( 'magnitude' )    
+    ax1.set_title( 'magnitude' )
 
     ax2.semilogx ( bands, pha )
-    ax2.set_title( 'phase' )    
-    
+    ax2.set_title( 'phase' )
+
     plt.show()

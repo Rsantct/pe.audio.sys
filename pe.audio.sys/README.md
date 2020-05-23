@@ -2,9 +2,15 @@
 
 This is based on the former **FIRtro** and the current **pre.di.c** projects, as PC based digital preamplifier and crossover projects, designed by the pioneer **@rripio** and later alongside others contributors.
 
-### https://github.com/rripio/pre.di.c
 
-### https://github.com/AudioHumLab/FIRtro/wiki
+**https://github.com/rripio/pre.di.c**
+
+**https://github.com/AudioHumLab/FIRtro/wiki**
+
+
+The main software on which this project is based is **Brutefir** and its real-time equalizer module.
+
+**https://torger.se/anders/brutefir.html**
 
 
 # Overview
@@ -266,6 +272,8 @@ Here you are an uncommented bare example of `config.yml`:
 
     balance_max:    6.0
     gain_max:       0.0
+    loud_ceil:      false
+    bfeq_linear_phase: false
 
     loudspeaker: SeasFlat
     ref_level_gain: -10.0
@@ -365,9 +373,13 @@ On target files yyyyyyy is also optional but neccessary if more than one target 
 
 You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`** to manage the target eq.
 
-The set of tone and loudness curves provided on this distro are the ones from the original **FIRtro** project from the pioneer **@rripio**
+A set of tone and loudness curves provided on this distro under `share/eq.sample.R20_ext` are the ones from the original **FIRtro** project from the pioneer **@rripio**
 
-You can easily visualize these curves by using the command line tool `peaudiosys_plot_eq_curves.py`
+Optionally, you can make your own EQ curves by running the tools provided here:
+
+https://github.com/AudioHumLab/audiotools/tree/master/brutefir_eq
+
+You can easily visualize the system available curves under `share/eq` by using the command line tool `peaudiosys_plot_eq_curves.py`
 
 ### Optional share/eq files
 
