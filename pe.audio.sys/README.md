@@ -373,9 +373,13 @@ On target files yyyyyyy is also optional but neccessary if more than one target 
 
 You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`** to manage the target eq.
 
-The set of tone and loudness curves provided on this distro are the ones from the original **FIRtro** project from the pioneer **@rripio**
+A set of tone and loudness curves provided on this distro under `share/eq.sample.R20_ext` are the ones from the original **FIRtro** project from the pioneer **@rripio**
 
-You can easily visualize these curves by using the command line tool `peaudiosys_plot_eq_curves.py`
+Optionally, you can make your own EQ curves by running the tools provided here:
+
+https://github.com/AudioHumLab/audiotools/tree/master/brutefir_eq
+
+You can easily visualize the system available curves under `share/eq` by using the command line tool `peaudiosys_plot_eq_curves.py`
 
 ### Optional share/eq files
 
