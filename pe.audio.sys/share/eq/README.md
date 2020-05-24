@@ -6,8 +6,8 @@ https://github.com/AudioHumLab/pe.audio.sys/tree/master/pe.audio.sys#the-shareeq
 
 You can find sample files:
 
-- `share/eq.sample.R20_audiotools/` from the `audiotools` project.
-- `share/eq.sample.R20_ext/` from the FIRtro and predic projects by the pioneer @rripio.
+- `share/eq.sample.R20_audiotools/` from the `audiotools` project. Loudness contour curves here span from 0 to 90 phon.
+- `share/eq.sample.R20_ext/` from the FIRtro and predic projects by the pioneer @rripio. Loudness contour curves here span from 70 to 90 phon.
 
 You can make your own EQ curves by running the tools provided here:
 
