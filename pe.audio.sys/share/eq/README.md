@@ -4,7 +4,10 @@ More details here:
 
 https://github.com/AudioHumLab/pe.audio.sys/tree/master/pe.audio.sys#the-shareeq-folder
 
-You can find sample files into `share/eq.sample.R20_ext` that comes from the FIRtro and predic projects.
+You can find sample files:
+
+- `share/eq.sample.R20_audiotools/` from the `audiotools` project.
+- `share/eq.sample.R20_ext/` from the FIRtro and predic projects.
 
 You can make your own EQ curves by running the tools provided here:
 
