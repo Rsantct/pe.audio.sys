@@ -375,8 +375,8 @@ You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`
 
 A sets of tone, loudness and target curves are provided on this distro:
 
-- `share/eq.sample.R20_audiotools/` from the `audiotools` project.
-- `share/eq.sample.R20_ext/` from the `FIRtro` and `predic` projects by the pioneer @rripio.
+- `share/eq.sample.R20_audiotools/` from the `audiotools` project. Loudness contour curves here span from 0 to 90 phon. Tone curves and room gain house curve have a 1st order slope.
+- `share/eq.sample.R20_ext/` from the `FIRtro` and `predic` projects by the pioneer @rripio. Loudness contour curves here span from 70 to 90 phon. Tone curves and room gain house curve have a 2nd order slope.
 
 Optionally, you can make your own EQ curves by running the tools provided here:
 
