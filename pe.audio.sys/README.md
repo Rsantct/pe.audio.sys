@@ -358,7 +358,7 @@ Here you are an uncommented bare example of `config.yml`:
 
 This folder contains the set of curves that will be used to apply "soft" EQ to the system, i.e.: tone, loudness compensation and psychoacoustic room dimension equalization (aka 'target').
 
-(i) The curves will be rendered under the EQ stage on Brutefir, so your `brutefir_config` file must have an `"eq"` section properly configured with the same frequency bands as the contained into your xxxxxxxfreq.dat file. More info: https://www.ludd.ltu.se/~torger/brutefir.html#bflogic_eq
+(i) The curves will be rendered under the EQ stage on Brutefir, so your `brutefir_config` file must have an `"eq"` section properly configured with the same frequency bands as the contained into your xxxxxxxfreq.dat file. More info: https://torger.se/anders/brutefir.html#bflogic_eq
 
 Similar to the loudspeaker folder, some rules here must be observed when naming files:
 
@@ -373,7 +373,10 @@ On target files yyyyyyy is also optional but neccessary if more than one target 
 
 You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`** to manage the target eq.
 
-A set of tone and loudness curves provided on this distro under `share/eq.sample.R20_ext` are the ones from the original **FIRtro** project from the pioneer **@rripio**
+A sets of tone, loudness and target curves are provided on this distro:
+
+- `share/eq.sample.R20_audiotools/` from the `audiotools` project.
+- `share/eq.sample.R20_ext/` from the `FIRtro` and `predic` projects by the pioneer @rripio.
 
 Optionally, you can make your own EQ curves by running the tools provided here:
 
