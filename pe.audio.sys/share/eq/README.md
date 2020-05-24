@@ -4,7 +4,11 @@ More details here:
 
 https://github.com/AudioHumLab/pe.audio.sys/tree/master/pe.audio.sys#the-shareeq-folder
 
-You can find sample files into `share/eq.sample.R20_ext` that comes from the FIRtro and predic projects.
+You can find sample files:
+
+- `share/eq.sample.R20_audiotools/` from the `audiotools` project. Loudness contour curves here span from 0 to 90 phon. Tone curves and room gain house curve have a 1st order slope.
+
+- `share/eq.sample.R20_ext/` from the `FIRtro` and `predic` projects by the pioneer @rripio. Loudness contour curves here span from 70 to 90 phon. Tone curves and room gain house curve have a 2nd order slope.
 
 You can make your own EQ curves by running the tools provided here:
 
