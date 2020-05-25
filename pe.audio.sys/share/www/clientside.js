@@ -534,9 +534,9 @@ function fill_in_macro_buttons() {
         found = false;
         for ( i in mFnames ){
             // Macro file names: 'N_macro_name' where N is the button position
-            var mFname = mFnames[i];
-            var mPos  = mFname.split('_')[0];
-            var mName = mFname.split('_').slice(1,).join('_');
+            const mFname = mFnames[i];
+            const mPos  = mFname.split('_')[0];
+            const mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
             if ( mPos == bPos ){
                 found = true;
                 break;
