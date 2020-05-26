@@ -64,14 +64,21 @@ function onHttpReq( httpReq, httpRes ){
 
     let server_header = 'pe.audio.sys / Node.js ' + process.version
     httpRes.setHeader('server', server_header);
+    var fpath = '';
 
     // Serve our HTML code index.html as an http response
-    if (httpReq.url === '/' || httpReq.url === '/index.html') {
+    // (i) index2.html is used for better layout in a landscape tablet screen.
+    if (httpReq.url === '/' || httpReq.url === '/index.html'
+                            || httpReq.url === '/index2.html') {
 
-        console.log( '(node) httpServer TX: text/html' );
+        fpath = INDEX_HTML_PATH;
+        if (httpReq.url === '/index2.html'){
+            fpath = INDEX_HTML_PATH.replace('index', 'index2');
+        }
+        console.log( '(node) httpServer TX: text/html', '('+fpath+')' );
 
         httpRes.writeHead(200,  {'Content-Type': 'text/html'} );
-        fs.readFile(INDEX_HTML_PATH, 'utf8', (err,data) => {
+        fs.readFile(fpath, 'utf8', (err,data) => {
             if (err) throw err;
             httpRes.write(data);
             httpRes.end();
@@ -79,12 +86,17 @@ function onHttpReq( httpReq, httpRes ){
     }
 
     // Serve the JAVASCRIPT source file refered from index.html's <src=...>
-    else if (httpReq.url === '/clientside.js') {
+    // (i) clientside2.js currently NOT in use, only index2.html is used for tablets.
+    else if (httpReq.url === '/clientside.js' || httpReq.url === '/clientside2.js') {
 
-        console.log( '(node) httpServer TX: application/javascript' );
+        fpath = CLISIDE_JS_PATH;
+        if (httpReq.url === '/clientside2.js') {
+            fpath = CLISIDE_JS_PATH.replace('clientside', 'clientside2');
+        }
+        console.log( '(node) httpServer TX: application/javascript', '('+fpath+')' );
 
         httpRes.writeHead(200, {'Content-Type': 'application/javascript'});
-        fs.readFile(CLISIDE_JS_PATH, 'utf8', (err,data) => {
+        fs.readFile(fpath, 'utf8', (err,data) => {
             if (err) throw err;
             httpRes.write(data);
             httpRes.end();

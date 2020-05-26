@@ -51,8 +51,8 @@ var last_loudspeaker = ''               // Will detect if audio processes has be
                                         // restarted with new loudspeaker configuration.
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
-}catch{
-    console.log('problems with aux get_web_config');
+}catch(e){
+    console.log('problems with aux get_web_config', e.name, e.message);
     var web_config = { 'hide_macro_buttons': false,
                        'hide_LU':            false,
                        'LU_monitor_enabled': false,
@@ -86,10 +86,10 @@ function control_cmd( cmd ) {
     //console.log('httpTX: ' + cmd);
     //console.log('httpRX: ' + ans);
 
-    if ( ans.includes('socket_connect\(\) failed' ) ){
-        return '';
-    }else{
+    if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
         return ans;
+    }else{
+        return '';
     }
 }
 
@@ -137,7 +137,8 @@ function fill_in_page_statics(){
     function fill_in_inputs_selector() {
         try{
             var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
-        }catch{
+        }catch(e){
+            console.log( e.name, e.message );
             return;
         }
         // Filling in options in a selector
@@ -159,7 +160,8 @@ function fill_in_page_statics(){
     function fill_in_xo_selector() {
         try{
             var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
-        }catch{
+        }catch(e){
+            console.log( e.name, e.message );
             return;
         }
         select_clear_options(ElementId="xoSelector");
@@ -174,8 +176,9 @@ function fill_in_page_statics(){
     function fill_in_drc_selector() {
         try{
             var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
-        }catch{
-            return;
+        }catch(e){
+             console.log( e.name, e.message );
+           return;
         }
         select_clear_options(ElementId="drcSelector");
         const mySel = document.getElementById("drcSelector");
@@ -193,7 +196,8 @@ function fill_in_page_statics(){
     function fill_in_target_selector() {
         try{
             var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
-        }catch{
+        }catch(e){
+            console.log( e.name, e.message );
             return;
         }
         select_clear_options(ElementId="targetSelector");
@@ -208,7 +212,8 @@ function fill_in_page_statics(){
     function fill_in_LUscope_selector() {
         try{
             const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
-        }catch{
+        }catch(e){
+            console.log( e.name, e.message );
             return;
         }
         select_clear_options(ElementId="LUscopeSelector");
@@ -258,7 +263,8 @@ function page_update() {
                     ':: pe.audio.sys :: preamp OFFLINE';
             return;
         }
-    }catch{
+    }catch(e){
+        console.log( 'not connected', e.name, e.message );
         state = {loudspeaker:'not connected'};
     }
 
@@ -299,7 +305,7 @@ function page_update() {
     try{
         const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
         const LU_I = LU_mon_dict.LU_I
-        let scope  = LU_mon_dict.scope
+        var scope  = LU_mon_dict.scope
         // Preferred displaying 'track' instead of 'title'
         if ( scope == 'title' ) {
             scope = 'track';
@@ -307,8 +313,8 @@ function page_update() {
         document.getElementById("LU_meter").value           = LU_I;
         document.getElementById("LUscopeSelector").value    = scope;
         document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
-    }catch{
-        console.log('Error getting loudness monitor from server')
+    }catch(e){
+        console.log('Error getting loudness monitor from server', e.name, e.message);
     }
 
     // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
@@ -330,9 +336,8 @@ function page_update() {
 
     // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
     if ( show_graphs == true ) {
-        var now = performance.now()
-        now = Math.floor(now/3000);
-        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?' + now;
+        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
+                                                  + Math.floor(Date.now()/3000);
     }
 
     // Displays the track selector if input == 'cd'
@@ -368,7 +373,8 @@ function update_player_controls() {
                     ':: pe.audio.sys :: players OFFLINE';
             return;
         }
-    }catch{
+    }catch(e){
+        console.log( 'error getting player state', e.name, e.message );
         return;
     }
     if        ( playerState == 'stop' ) {
@@ -403,17 +409,20 @@ function update_player_info() {
                     ':: pe.audio.sys :: players OFFLINE';
             return;
         }
-    }catch{
+    }catch(e){
+        console.log( 'error getting player meta', e.name, e.message );
         return;
     }
     // players.py will allways give a dictionary as response, but if
     // no metadata are available then most fields will be empty, except 'player'
-    if ( ! tmp.includes("failed")  &&
-         ! tmp.includes("refused")    )  {
+    if ( tmp.indexOf("failed")  == -1 &&
+         tmp.indexOf("refused") == -1    )  {
 
         try{
             var d = JSON.parse( tmp );
-        }catch{
+        }catch(e){
+            console.log( 'error parsing metadata to dict, using metablank',
+                          e.name, e.message );
             var d = metablank;
         }
 
@@ -493,7 +502,8 @@ function update_ampli_switch() {
         if ( ! amp_state ) {
             var amp_state = '-';
         }
-    }catch{
+    }catch(e){
+        console.log( 'Amp switch error', e.name, e.message );
         var amp_state = '-';
     }
     document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
@@ -509,8 +519,9 @@ function set_LU_scope(scope){
 function fill_in_macro_buttons() {
     try{
         var mFnames = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
-    }catch{
+    }catch(e){
     // If no macros list, do nothing, so leaving "display:none" on the buttons keypad div
+        console.log( 'no macros', e.name, e.message );
         return
     }
     // If any macro found, lets show the corresponding cell playback_control_23
@@ -521,11 +532,11 @@ function fill_in_macro_buttons() {
 
     // Expands number of buttons to a multiple of 3 (arrange of Nx3 buttons)
     // (i) mFnames is supposed to be properly sorted.
-    let bTotal = parseInt(mFnames[mFnames.length - 1].split('_')[0])
+    var bTotal = parseInt(mFnames[mFnames.length - 1].split('_')[0])
     bTotal = 3 * ( Math.floor( (bTotal - 1) / 3) + 1 )
 
-    let mtable = document.getElementById("macro_buttons");
-    let row  = mtable.insertRow();
+    var mtable = document.getElementById("macro_buttons");
+    var row  = mtable.insertRow(index=-1);
 
     // Iterate over button available cells
     for (bPos = 1; bPos <= bTotal; bPos++) {
@@ -536,7 +547,7 @@ function fill_in_macro_buttons() {
             // Macro file names: 'N_macro_name' where N is the button position
             var mFname = mFnames[i];
             var mPos  = mFname.split('_')[0];
-            var mName = mFname.split('_').slice(1,).join('_');
+            var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
             if ( mPos == bPos ){
                 found = true;
                 break;
@@ -544,31 +555,36 @@ function fill_in_macro_buttons() {
         }
 
         // Insert a cell
-        let cell = row.insertCell();
+        var cell = row.insertCell(index=-1);
         cell.className = 'macro_cell';
-        // Make the actual button into the cell
+
+        // Create a button Element
         var btn = document.createElement('button');
         btn.type = "button";
         btn.className = "macro_button";
         if ( found == true ){
-            btn.innerText = mName;
-            // this x is weird but needed to onclick function to work
-            const x = mFname;
-            // https://www.w3schools.com/jsref/event_onclick.asp
-            btn.onclick = function(){ run_user_macro(x) };
+            btn.innerHTML = mName;
+            // This doesn't work: always pass mFname incorrectly to run_macro()
+            //btn.onclick=function(){run_macro(mFname)}
+            // As a workaround lets set the onclick attribute:
+            btn.setAttribute( "onclick",
+                              "run_macro(\'" + mFname + "\')" );
         }else{
-            btn.innerText = '-';
+            btn.innerHTML = '-';
         }
+
+        // Put the button inside the cell
         cell.appendChild(btn);
 
         // Arrange 3 buttons per row
         if ( bPos % 3 == 0 ) {
-            row  = mtable.insertRow();
+            row  = mtable.insertRow(index=-1);
         }
     }
 }
-function run_user_macro(x){
-    control_cmd( 'aux run_macro ' + x )
+function run_macro(x){
+    //console.log(x);
+    control_cmd( 'aux run_macro ' + x );
 }
 
 ///////////////  MISCEL INTERNAL ////////////
