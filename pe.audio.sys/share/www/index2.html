@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 
+<!-- INDEX2.html LAYOUT OPTIMISED FOR A LANDSCAPE TABLET -->
+
 <!--
 Copyright (c) 2019 Rafael Sánchez
 This file is part of 'pe.audio.sys', a PC based personal audio system.
@@ -31,6 +33,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 <head>
     <meta charset="utf-8">
+
 
     <title>pe.audio.sys</title>
 
@@ -92,14 +95,11 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
         td#main_cside       { width:  90%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
         td#main_rside       { width:   5%; text-align: center; border: none; }
 
-        td#OnOff            { width:   5%; text-align: center; border: none; }
-
-        td#levelInfo        { width:   5%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
-
-        td#LoudnessInfo     { width: 7%; border: none; font-size:0.6em;}
-        td#MonoInfo         { width: 7%; border: none; font-size:0.6em;}
-
-        td#input            { width:  85%; text-align: right; border: none;}
+        td#OnOff            { width: 10%; text-align: center; border: none; }
+        td#LoudnessInfo     { width: 15%; border: none; font-size:1.5em;}
+        td#MonoInfo         { width: 15%; border: none; font-size:1.5em;}
+        td#levelInfo        { width: 50%; text-align: center; font-size:3.0em; border: 1px solid white; border-radius: 10px/10px; }
+        td#input            { width: 25%; text-align: right; border: none;}
 
 
         td#treble           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
@@ -125,7 +125,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
         /* --- LU OFFSET --- */
         td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
-        td#LU_offset_value   { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:0.8em; vertical-align: middle;}
+        td#LU_offset_value   { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.2em; vertical-align: middle;}
         td#LU_offset_slider  { width:50%; border-style:none; vertical-align: middle;}
         /* The LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
         .LU_slider {
@@ -159,7 +159,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
         /* --- LU MONITOR --- */
         td#LU_meter_reset    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
-        td#LU_meter_value    { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_value    { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.2em; vertical-align: middle;}
         td#LU_meter_bar      { width:50%; border-style:none; vertical-align: middle;}
         /* The LU METER class (type METER) */
         .LU_meter { width: 100%; height: 0.8em; border: 1px solid; }
@@ -167,11 +167,11 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
         table#player_info   { text-align: left; }
         td#bitrate          { border: 1px solid grey; border-radius: 10px/10px; width: 5%; font-size:0.6em;}
-        td#artist           { border: 1px solid grey; border-radius: 10px/10px; }
-        td#track_info       { border: 1px solid grey; border-radius: 10px/10px; width: 3%; font-size:0.6em;}
-        td#time             { border: 1px solid grey; border-radius: 10px/10px; width: 7%; font-size:0.6em;}
-        td#album            { border: 1px solid grey; border-radius: 10px/10px; }
-        td#title            { border: 1px solid grey; border-radius: 10px/10px; }
+        td#artist           { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
+        td#track_info       { border: 1px solid grey; border-radius: 10px/10px; width: 3%; font-size:1.0em;}
+        td#time             { border: 1px solid grey; border-radius: 10px/10px; width: 7%; font-size:1.0em;}
+        td#album            { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
+        td#title            { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
 
 
         td#playback_control_11  { border-style: none; width:10%; }
@@ -227,14 +227,14 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
                         title="Amplifier ON/OFF" onmousedown="ampli('toggle')">-</button>
             </td>
 
-            <!-- LEVEL display -->
-            <td id="levelInfo" rowspan="2">
-            </td>
-
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud"
                         title="Loudness Contour" onmousedown="loudness_toggle()">LC</button>
+            </td>
+
+            <!-- LEVEL display -->
+            <td id="levelInfo" rowspan="2">
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -242,7 +242,9 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
                 <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901;</button>
                 <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
                 <select id="inputsSelector"
-                        title="Source Selector" onchange="control_cmd('input ' + this.value, update=false)" ></select>
+                        title="Source Selector"
+                        onchange="control_cmd('input ' + this.value, update=false)"
+                        style="font-size:1.5em" ></select>
             </td>
         </tr>
         <tr>
