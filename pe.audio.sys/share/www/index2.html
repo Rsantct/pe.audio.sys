@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<!-- INDEX2.html LAYOUT OPTIMISED FOR A LANDSCAPE TABLET -->
+
+<!--
+Copyright (c) 2019 Rafael Sánchez
+This file is part of 'pe.audio.sys', a PC based personal audio system.
+
+This is based on 'pre.di.c,' a preamp and digital crossover
+https://github.com/rripio/pre.di.c
+Copyright (C) 2018 Roberto Ripio
+'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
+https://github.com/AudioHumLab/FIRtro
+Copyright (c) 2006-2011 Roberto Ripio
+Copyright (c) 2011-2016 Alberto Miguélez
+Copyright (c) 2016-2018 Rafael Sánchez
+
+'pe.audio.sys' is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+'pe.audio.sys' is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+
+    <title>pe.audio.sys</title>
+
+    <!-- responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- web-app behavoir (full screen when iconize at init screen on smartphones -->
+    <!-- some Androids: -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- The javascript functions used when an event occurs on this page body's -->
+    <script src="clientside.js"></script>
+
+    <!-- CSS Styles
+        (i) To comment out inside CSS style tag use /* xxx */
+            The .xxxxx refers to classes definitions
+    -->
+    <style>
+
+        /* GLOBAL THEME */
+        body    {   color:white;
+                    background-color: rgb(38, 38, 38);
+                    font-family: Verdana, Helvetica, Arial;
+                    font-weight:bold;
+                }
+
+        /* GLOBAL BUTTONS STYLE */
+        button  {   background-color: rgb(100, 100, 100);
+                    border-radius: 5px/5px;
+                    border:2px solid rgb(120,120,120);
+                    /* Text inside buttons: */
+                    color: white;
+                    font-weight:bold;
+                    font-size:0.95em;   /* smaller than usual */
+                }
+
+        /* GLOBAL TABLES behavior */
+        table   {   width: 100%;
+                }
+
+        /* GLOBAL TABLES CELLS behavior */
+        th, td  {   padding: 5px;
+                    text-align: center;
+                    border: 1px solid gray;
+                    font-size:1.0em;
+                }
+
+        /* GLOBAL SELECT behavior */
+        select  {   font-size:          0.9em;
+                    font-weight:        bold;
+                    color:              white;
+                    background-color:   rgb(25, 25, 25);
+                }
+
+
+        td#main_lside       { width:   5%; text-align: center; border: none; }
+        td#main_cside       { width:  90%; text-align: center; border: 1px solid white; border-radius: 10px/10px; }
+        td#main_rside       { width:   5%; text-align: center; border: none; }
+
+        td#OnOff            { width: 10%; text-align: center; border: none; }
+        td#LoudnessInfo     { width: 15%; border: none; font-size:1.5em;}
+        td#MonoInfo         { width: 15%; border: none; font-size:1.5em;}
+        td#levelInfo        { width: 50%; text-align: center; font-size:3.0em; border: 1px solid white; border-radius: 10px/10px; }
+        td#input            { width: 25%; text-align: right; border: none;}
+
+
+        td#treble           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        td#bass             { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        td#balance          { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+        td#target           { width:50%; border: 1px solid grey; border-radius: 10px/10px; }
+
+
+        table#eq_table      { border: 1px solid grey; border-radius: 10px/10px; }
+        td#xo               { border: none; width: 32%; }
+        td#drc              { border: none; width: 32%; }
+        td#peq              { border: none; width: 32%; color:grey; }
+        td#graphs_toggle    { border: none; width: 4%; }
+
+
+        table#level_buttons_table  { table-layout: fixed; }
+        td#level_buttons11   { border-style: none; width:5%; }
+        td#level_buttons12   { border-style: none; width:90%; }
+        td#level_buttons13   { border-style: none; width:5%; }
+        td#level_buttons21   { border-style: none; width:5%; }
+        td#level_buttons22   { border-style: none; width:90%; }
+        td#level_buttons23   { border-style: none; width:5%; }
+
+        /* --- LU OFFSET --- */
+        td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        td#LU_offset_value   { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.2em; vertical-align: middle;}
+        td#LU_offset_slider  { width:50%; border-style:none; vertical-align: middle;}
+        /* The LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
+        .LU_slider {
+          -webkit-appearance:   none;
+          width:                100%;
+          height:               1.0em;
+          border-radius:        5px;
+          background:           rgb(120,120,120);
+          outline:              none;
+          opacity:              0.7;
+          -webkit-transition:   .2s;
+          transition:           opacity .2s;
+        }
+        /* The slider handler */
+        .LU_slider::-webkit-slider-thumb {
+          -webkit-appearance:   none;
+          appearance:           none;
+          width:                1.5em;
+          height:               1.5em;
+          border-radius:        50%;
+          background:           rgb(240,240,240);
+          cursor:               pointer;
+        }
+        .LU_slider::-moz-range-thumb {
+          width:                25px;
+          height:               25px;
+          border-radius:        50%;
+          background:           rgb(240,240,240);
+          cursor:               pointer;
+        }
+
+        /* --- LU MONITOR --- */
+        td#LU_meter_reset    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        td#LU_meter_value    { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.2em; vertical-align: middle;}
+        td#LU_meter_bar      { width:50%; border-style:none; vertical-align: middle;}
+        /* The LU METER class (type METER) */
+        .LU_meter { width: 100%; height: 0.8em; border: 1px solid; }
+
+
+        table#player_info   { text-align: left; }
+        td#bitrate          { border: 1px solid grey; border-radius: 10px/10px; width: 5%; font-size:0.6em;}
+        td#artist           { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
+        td#track_info       { border: 1px solid grey; border-radius: 10px/10px; width: 3%; font-size:1.0em;}
+        td#time             { border: 1px solid grey; border-radius: 10px/10px; width: 7%; font-size:1.0em;}
+        td#album            { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
+        td#title            { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
+
+
+        td#playback_control_11  { border-style: none; width:10%; }
+        td#playback_control_12  { border-style: none; width:75%; }
+        td#playback_control_13  { border-style: none; width:15%; text-align:left; }
+        td#playback_control_21  { border-style: none; width:10%; }
+        td#playback_control_22  { border-style: none; width:75%; }
+        td#playback_control_23  { border-style: none; width:15%; text-align:center;}
+
+
+        table#macro_buttons{ border-style: none; }
+        .macro_cell { border-style: none; width:30%; }
+        .macro_button  {
+            width: 100%;
+            min-height: 2.7em;
+            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
+            border:2px solid rgb(120,120,120);
+            border-radius: 10px/10px;
+            /* below is for text inside button: */
+            font-size:0.80em;
+            display: inline;
+        }
+
+    </style>
+
+</head>
+
+<!-- initizalizes the web page, and auto updates -->
+<body onload="page_initiate()" >
+
+    <!-- :: pe.audio.sys :: Loudspeaker | advanced_controls_switch -->
+    <div>
+    <table id="main_title" >
+        <tr>
+            <td id="main_lside" style="display:none">
+                <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="peaudiosys_restart()">&#9851;</button>
+            </td>
+            <td id="main_cside"></td>
+            <td id="main_rside">
+                <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="advanced('toggle')">&#9881;</button>
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <!-- AMPLI + LEVEL + LOUDNESS + MONO + INPUTS -->
+    <div>
+    <table id="level_ampli_input">
+        <tr>
+            <!-- AMPLI switch -->
+            <td id="OnOff"     rowspan="2">
+                <button type="button" id="OnOffButton"
+                        title="Amplifier ON/OFF" onmousedown="ampli('toggle')">-</button>
+            </td>
+
+            <!-- LOUDNESS control -->
+            <td id="LoudnessInfo">
+                <button type="button" id="buttonLoud"
+                        title="Loudness Contour" onmousedown="loudness_toggle()">LC</button>
+            </td>
+
+            <!-- LEVEL display -->
+            <td id="levelInfo" rowspan="2">
+            </td>
+
+            <!-- INPUTS selector, will be filled by javascript -->
+            <td id="input"     rowspan="2">
+                <button id="url_button"     style="text-align:center;font-size:0.7em;display:none" onclick="play_url()">&#9901;</button>
+                <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
+                <select id="inputsSelector"
+                        title="Source Selector"
+                        onchange="control_cmd('input ' + this.value, update=false)"
+                        style="font-size:1.5em" ></select>
+            </td>
+        </tr>
+        <tr>
+            <!-- MONO / STEREO control -->
+            <td id="MonoInfo">
+                <button type="button" id="buttonMono"
+                        title="Mono/Stereo" onmousedown="mono_toggle()">M</button>
+            </td>
+        </tr>
+    </table>
+    </div>
+
+    <!-- LEVEL butttons -->
+    <div class="level_buttons" id="level_buttons" >
+        <table id="level_buttons_table">
+          <tr>
+            <td id="level_buttons11">
+            </td>
+            <td id="level_buttons12">
+                <button type="button" onmousedown="audio_change('level', -1)" >
+                        &nbsp;-1&nbsp;</button>
+                <button type="button" onmousedown="mute_toggle()" id="buttonMute" >
+                        &nbsp;0&nbsp;</button>
+                <button type="button" onmousedown="audio_change('level', +1)" >
+                        &nbsp;+1&nbsp;</button>
+            </td>
+            <td id="level_buttons13">
+            </td>
+          </tr>
+          <tr>
+            <td id="level_buttons21">
+            </td>
+            <td id="level_buttons22">
+                <button type="button" onmousedown="audio_change('level', -3)" >
+                        &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
+                <button type="button" onmousedown="audio_change('level', +3)" >
+                        &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
+            </td>
+            <td id="level_buttons23">
+            </td>
+          </tr>
+        </table>
+    </div>
+
+    <!-- LU OFFSET CONTROL - JS will manage this-->
+    <div id="LU_offset" style="display:block" >
+    <table>
+      <tr>
+        <td id="LU_meter_scope">
+          <select id="LUscopeSelector" title="LU scope selector"
+                  onchange="set_LU_scope(this.value)">
+          </select>
+        </td>
+        <td id="LU_offset_value">LU offset: --
+        </td>
+        <td id="LU_offset_slider" >
+            <input  id="LU_slider" class="LU_slider" type="range"
+                    min="0" step="3" max="12.0"
+                    title="Adjust as estimated 'loudness war' music program"
+                    oninput="control_cmd('loudness_ref ' + this.value)">
+        </td>
+      </tr>
+    </table>
+    </div>
+
+    <!-- LU MONITOR - JS will manage this -->
+    <div id="LU_monitor" style="display:none;" >
+    <table>
+      <tr>
+        <td id="LU_meter_reset">
+            <button type="button" id="buttonLoudMonReset"
+                    onmousedown="control_cmd('aux loudness_monitor_reset')">
+                    reset
+            </button>
+        </td>
+        <td id="LU_meter_value">
+            LU monit: --
+        </td>
+        <td id="LU_meter_bar">
+        <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
+                min="0" optimum="0" low="5" high="8" max="12" ></meter>
+        </td>
+      </tr>
+    </table>
+    </div>
+
+
+    <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button) -->
+    <div id="advanced_controls" style="display:none; font-size:0.75em;">
+
+      <table>
+        <tr>
+            <td id="treble">
+                <button type="button"                 onmousedown="audio_change('treble', -1)"  >-</button>
+                <span id="trebleInfo">treble</span>
+                <button type="button"                 onmousedown="audio_change('treble', +1)"  >+</button>
+            </td>
+            <td id="balance">
+                <button type="button"                 onmousedown="audio_change('balance', -1)"  >-</button>
+                <span id="balInfo">BAL</span>
+                <button type="button"                 onmousedown="audio_change('balance', +1)"  >+</button>
+            </td>
+        </tr>
+        <tr>
+            <td id="bass">
+                <button type="button"                 onmousedown="audio_change('bass', -1)"  >-</button>
+                <span id="bassInfo">bass</span>
+                <button type="button"                 onmousedown="audio_change('bass', +1)"  >+</button>
+            </td>
+            <td id="target">
+                <span>
+                <select id="targetSelector"  onchange="control_cmd('set_target ' + this.value)" ></select>
+                </span>
+            </td>
+        </tr>
+      </table>
+      <table id="eq_table">
+        <tr>
+            <td id="xo">
+                <span>XO:
+                <select id="xoSelector"     onchange="control_cmd('xo ' + this.value, update=false)" ></select>
+                </span>
+            </td>
+            <td id="drc">
+                <span >DRC:
+                <select id="drcSelector"    onchange="control_cmd('drc ' + this.value, update=false)" ></select>
+                </span>
+            </td>
+            <td id="peq">
+                <!-- a PEQ selector will be created if ecasound is used -->
+                <span id="span_peq" style="display:inline-block;">[peq]
+                </span>
+            </td>
+            <td id="graphs_toggle">
+                <button type="button" title="toggle EQ graphs" onmousedown="graphs_toggle()">G</button>
+            </td>
+        </tr>
+      </table>
+
+      <div id="bfeq_graph" style="display:none"> <!-- needs explicit config.yml-->
+        <img id="bfeq_img" src="images/brutefir_eq.png?dummy=33" title="Brutefir EQ coeff" style="width:100%">
+      </div>
+      <div id="drc_graph" style="display:none"> <!-- needs explicit config.yml-->
+        <img id="drc_img" src="" title="Brutefir DRC FIRs" style="width:100%">
+      </div>
+
+    </div>
+
+    <!-- PLAYING INFO -->
+    <div>
+      <table id="player_info" >
+        <tr>
+            <td id="bitrate"></td>
+            <td id="track_info"></td>
+            <td id="artist"></td>
+            <td id="time"></td>
+        </tr>
+        <tr>
+            <td id="album" colspan="4"></td>
+        </tr>
+        <tr>
+            <td id="title" colspan="4"></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- PLAYBACK CONTROL and MACROS TOGGLE-->
+    <div>
+      <table id="playback_control">
+        <tr> <!-- row1 -->
+            <td id="playback_control_11">
+            </td>
+            <td id="playback_control_12" >
+                <button type="button" id="buttonPrevious" onmousedown="playerCtrl('previous')" >&lt;|           </button>
+                <button type="button" id="buttonRew"      onmousedown="playerCtrl('rew')"      >&lt;&lt;        </button>
+                <button type="button" id="buttonFF"       onmousedown="playerCtrl('ff')"       >&gt;&gt;        </button>
+                <button type="button" id="buttonNext"     onmousedown="playerCtrl('next')"     >|&gt;           </button>
+            </td>
+            <td id="playback_control_13" >
+            </td>
+       </tr>
+        <tr> <!-- row2 -->
+            <td id="playback_control_21" >
+            </td>
+            <td id="playback_control_22" >
+                <button type="button" id="buttonEject"    onmousedown="playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
+                <button type="button" id="buttonStop"     onmousedown="playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
+                <button type="button" id="buttonPause"    onmousedown="playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
+                <button type="button" id="buttonPlay"     onmousedown="playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
+            </td>
+            <!-- MACROS button toggle-->
+            <td id="playback_control_23" >
+                <button type="button" id="macros_toggle_button"  onmousedown="macros_toggle()">::</button>
+            </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- MACRO BUTTONS can be toggled -->
+    <!-- Nx3 buttons keypad for customizable user macros -->
+    <div>
+      <table id="macro_buttons" style="display:none">
+      </table>
+    </div>
+
+    <!-- UNCOMMENT TO TEST JAVASCRIPT FUNCTIONS WITH THIS BUTTON
+    <div>
+        <button type="button" onclick="FUNCTION_TO_TEST()" >TEST HERE</button>
+    </div>
+    -->
+
+</body>
+</html>
