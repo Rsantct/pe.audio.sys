@@ -1,6 +1,7 @@
-# LCD for pre.di.c
+# LCD for pe.audio.sys
 
-<a href="url"><img src="https://github.com/Rsantct/pre.di.c/blob/master/pre.di.c/clients/lcd/images/lcd%20display%20v0.1.jpg" align="center" width="340" ></a>
+<a href="url"><img src="https://github.com/AudioHumLab/pe.audio.sys/blob/master/pe.audio.sys/doc/images/lcd%20display%20v0.1.jpg" align="center" width="340" ></a>
+
 
 # Get the LCD hardware
 
