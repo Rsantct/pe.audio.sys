@@ -337,7 +337,7 @@ if __name__ == '__main__':
                 print( f'LUFS: {round(M, 1):6.1f}(M) {round(I, 1):6.1f}(I)       ' +
                        f'LU: {round(M_LU, 1):6.1f}(M) {round(I_LU, 1):6.1f}(I)   ')
 
-            # Saving to disk
+            # Saving to disk ROUNDED to 1 dB
             if save2disk:
                 with open( args.output_file, 'w') as fout:
                     d = {"LU_I": round(I_LU, 0), "scope": md_key}
