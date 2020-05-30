@@ -29,7 +29,7 @@ import json
 import os
 
 # CONFIGURE HERE THE MAX TIME TO ADMIT A CONSTANT LU LEVEL:
-MAX_SECONDS = 30 * 60 # seconds
+MAX_SECONDS = 30 * 60   # 30 minutes
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
