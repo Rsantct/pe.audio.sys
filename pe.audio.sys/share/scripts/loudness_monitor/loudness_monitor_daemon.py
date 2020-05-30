@@ -258,10 +258,11 @@ if __name__ == '__main__':
     # Intialize (I)ntegrated Loudness and gates to -23.0 dBFS => 0 LU
     M = -23.0
     I = -23.0
-    Iprev = -23.0   # previous in order to save writing to disk
+    Iprev = -23.0   # to decide if save2disk
     G1mean = -23.0
     G1 = 0          # gate counters to calculate the accu mean
     G2 = 0
+    save2disk = False
 
     ##################################################################
     # Main loop: open a capture stream that process 100ms audio blocks
@@ -309,32 +310,37 @@ if __name__ == '__main__':
             M_LU = M - -23.0
             I_LU = I - -23.0
 
-            # Writing the output file with the accumulated
-            # (I)ntegrated loudness program in LU units
-            # >>> ROUNDED TO 1 dB to save disk writing <<<
-            if abs(Iprev - I) > 1.0:
-                with open( args.output_file, 'w') as fout:
-                    d = {"LU_I": round(I_LU,0), "scope": md_key}
-                    fout.write( json.dumps( d ) )
-                Iprev = I
+            # End of computing levels.
 
             # Reseting the (I) measurement. <reset> is a global that can
             # be modified on the fly.
             if reset:
                 print('(loudness_monitor) restarting (I)ntegrated ' +
                       'Loudness measurement')
-                # RESET the accumulated
-                I = Iprev = -23.0
-                G1mean = -23.0
+                # RESET the cummulative values
+                I       = 0.0
+                I_LU    = I - -23.0
+                G1mean = 0.0
                 G1 = 0
                 G2 = 0
-                # and zeroes the output file
-                with open( args.output_file, 'w') as fout:
-                    d = {"LU_I": 0, "scope": md_key}
-                    fout.write( json.dumps( d ) )
-                reset = False
+                save2disk = True
+                reset = False   # done
 
-            # Optionally prints to console
+            # Writing the output file with the accumulated
+            # (I)ntegrated loudness program in LU units
+            # if it changes more than 1 dB from last value.
+            if abs(Iprev - I) > 1.0:
+                save2disk = True
+
+            # Prints to console
             if args.print:
                 print( f'LUFS: {round(M, 1):6.1f}(M) {round(I, 1):6.1f}(I)       ' +
                        f'LU: {round(M_LU, 1):6.1f}(M) {round(I_LU, 1):6.1f}(I)   ')
+
+            # Saving to disk
+            if save2disk:
+                with open( args.output_file, 'w') as fout:
+                    d = {"LU_I": round(I_LU, 0), "scope": md_key}
+                    fout.write( json.dumps( d ) )
+                Iprev = I
+                save2disk = False   # done
