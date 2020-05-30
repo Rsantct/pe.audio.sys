@@ -19,7 +19,7 @@
 """
     Starts the LCD server and lcd_daemon.py
 
-    usage:   lcd   start | stop
+    usage:   lcd.py   start | stop
 """
 
 import sys
