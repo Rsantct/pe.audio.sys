@@ -81,6 +81,7 @@ def mainloop():
 def stop():
     Popen( ['pkill', '-f', 'powersave.py'] )
 
+
 def start():
 
     # Exit if loudness_monitor_daemon.py is not running
