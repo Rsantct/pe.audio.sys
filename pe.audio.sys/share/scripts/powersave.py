@@ -39,7 +39,7 @@ sys.path.append(MAINFOLDER)
 from start import start_and_connect_brutefir
 
 # SETUP HERE:
-NOISE_FLOOR = -70 # will compute  low levels only below this floor in dBFS
+NOISE_FLOOR = -70 # will compute low levels only below this floor in dBFS
 MAX_WAIT    =  60 # time in seconds before shutting down Brutefir
 
 
