@@ -17,22 +17,30 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    A daemon that stop audio processes if the LU_Integrated
-    monitored value remains static for a long while.
+    A daemon that stops the Brutefir convolver if the preamp signal is too low.
+    (This program need loudness_monitor_daemon.py to be running)
 
     usage:   powersave.py  start | stop
+
+
+    NOTICE:
+    Brutefir has a powersave built-in feature, but if saving CPU% is insufficient,
+    this script will completely stop the convolver dynamically.
+
 """
 import sys
 from subprocess import Popen, check_output
-import time
+from time import sleep
 import json
 import os
-
-# CONFIGURE HERE THE MAX TIME TO ADMIT A CONSTANT LU LEVEL:
-MAX_SECONDS = 30 * 60   # 30 minutes
-
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(MAINFOLDER)
+from start import start_and_connect_brutefir
+
+# SETUP HERE:
+NOISE_FLOOR = -70 # will compute  low levels only below this floor in dBFS
+MAX_WAIT    =  60 # time in seconds before shutting down Brutefir
 
 
 def sec2min(s):
@@ -41,41 +49,68 @@ def sec2min(s):
     return f'{str(m).rjust(2,"0")}:{str(s).rjust(2,"0")}'
 
 
+def get_dBFS():
+    # Lets use LU_M (LU Momentary) from .loudness_monitor
+    try:
+        with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
+            d = json.loads( f.read() )
+            LU_M = d["LU_M"]
+    except:
+        LUM = 0.0
+    dBFS = LU_M - 23.0  # LU_M is referred to -23dBFS
+    return dBFS
+
+
+def brutefir_is_running():
+    try:
+        check_output("pgrep -f brutefir".split()).decode()
+        return True
+    except:
+        return False
+
+
+def check_loudness_monitor():
+    # Exit if loudness_monitor_daemon.py is not running
+    times = 10
+    while times:
+        try:
+            check_output('pgrep -f loudness_monitor_daemon.py'.split()).decode()
+            return
+        except:
+            times -= 1
+        sleep(1)
+    if not times:
+        print(f'(powersave.py) needs \'loudness_monitor_daemon.py\' to be running')
+        sys.exit()
+
+
 def mainloop():
 
-    last_LUI = 0.0
-    warnings = 0
-    print(f'(powersave.py) Will wait until {sec2min(MAX_SECONDS)}'
+    waited = 0
+
+    print(f'(powersave.py) Will wait until {sec2min(MAX_WAIT)}'
           f' without level changes, then will stop pe.audio.sys')
 
     while True:
 
-        try:
-            with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
-                d = json.loads( f.read() )
-                LUI = d["LU_I"]
-        except:
-            LUI = 0.0
+        dBFS = get_dBFS()
 
-        # skip if LUI > 0
-        if LUI > 0:
-            time.sleep(1)
-            continue
-
-        if LUI != last_LUI:
-            last_LUI = LUI
-            warnings = 0
-            #print('level has changed :-)')
+        if dBFS < NOISE_FLOOR:
+            waited +=1
         else:
-            warnings +=1
+            waited = 0
+            if not brutefir_is_running():
+                print('(powersave.py) level has changed, so resuming Brutefir :-)')
+                start_and_connect_brutefir()
 
-        if warnings >= MAX_SECONDS:
-            print(f'level not changed for {sec2min(MAX_SECONDS)}, '
-                  f'stopping audio. Bye!')
-            Popen(f'{MAINFOLDER}/start.py stop', shell=True)
-            return
+        if dBFS < NOISE_FLOOR and waited >= MAX_WAIT and brutefir_is_running():
+            print(f'(powersave.py) low level during {sec2min(MAX_WAIT)}, '
+                  f'stopping Brutefir!')
+            Popen(f'pkill -f brutefir', shell=True)
 
-        time.sleep(1)
+        # print('dBFS:', dBFS, 'waited:', waited)    # *** DEBUG ***
+
+        sleep(1)
 
 
 def stop():
@@ -83,15 +118,7 @@ def stop():
 
 
 def start():
-
-    # Exit if loudness_monitor_daemon.py is not running
-    try:
-        check_output('pgrep -f loudness_monitor_daemon.py'.split()).decode()
-        print(f'(powersave.py) \'loudness_monitor_daemon.py\' is running')
-    except:
-        print(f'(powersave.py) needs \'loudness_monitor_daemon.py\' to be running')
-        return
-
+    check_loudness_monitor()
     mainloop()
 
 
