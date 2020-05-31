@@ -228,6 +228,9 @@ scripts:
     ## A daemon that monitorizes the EBU R128 Loudness Integrated
     #- loudness_monitor.py
 
+    ## Stops the convolver dynamically if the monitored level is too low
+    #- powersave.py
+
     ## The LCDd server and lcd_daemon.py
     #- lcd.py
 
