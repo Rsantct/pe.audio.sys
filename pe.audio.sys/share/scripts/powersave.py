@@ -63,8 +63,11 @@ def get_dBFS():
 
 def brutefir_is_running():
     try:
-        check_output("pgrep -f brutefir".split()).decode()
-        return True
+        tmp = check_output("pgrep -f brutefir".split()).decode()
+        if tmp :
+            return True
+        else:
+            return False
     except:
         return False
 
@@ -88,8 +91,10 @@ def mainloop():
 
     waited = 0
 
-    print(f'(powersave.py) Will wait until {sec2min(MAX_WAIT)}'
-          f' without level changes, then will stop pe.audio.sys')
+    print(f'(powersave.py) Will wait until {sec2min(MAX_WAIT)} '
+          f'with low level signal then will stop the Brutefir convolver.\n'
+          f'Will resume Brutefir dynamically when signal level raises '
+          f'above the noise floor threshold')
 
     while True:
 
