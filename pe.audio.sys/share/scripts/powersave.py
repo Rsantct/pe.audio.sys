@@ -144,21 +144,28 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
 def restore_brutefir_settings():
     # Restore Brutefir settings as per the current .state.yml values
     errors = ''
+
     with open(f'{MAINFOLDER}/.state.yml', 'r') as f:
         state = yaml.safe_load( f )
+
     preamp    = Preamp()
     convolver = Convolver()
-    tmp = preamp._validate( state )
+
+    tmp = preamp._validate( state ) # this includes mute
     if tmp  != 'done':
         errors += tmp
+
     tmp = convolver.set_xo ( state['xo_set']  )
     if tmp  != 'done':
         errors += tmp
+
     tmp = convolver.set_drc( state['drc_set'] )
     if tmp  != 'done':
         errors += tmp
+
     del(convolver)
     del(preamp)
+
     if not errors:
         print(f'({ME}) Brutefir settings restored.')
     else:
