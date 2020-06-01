@@ -105,7 +105,7 @@ def mainloop():
         else:
             waited = 0
             if not brutefir_is_running():
-                print('(powersave.py) level has changed, so resuming Brutefir :-)')
+                print('(powersave.py) signal detected, so resuming Brutefir :-)')
                 start_and_connect_brutefir()
 
         if dBFS < NOISE_FLOOR and waited >= MAX_WAIT and brutefir_is_running():
