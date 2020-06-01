@@ -56,7 +56,7 @@ def get_dBFS():
             d = json.loads( f.read() )
             LU_M = d["LU_M"]
     except:
-        LUM = 0.0
+        LU_M = 0.0
     dBFS = LU_M - 23.0  # LU_M is referred to -23dBFS
     return dBFS
 
