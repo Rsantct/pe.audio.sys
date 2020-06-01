@@ -102,18 +102,17 @@ def get_brutefir_source_ports():
 
 def restart_and_reconnect_brutefir(bf_sources=[]):
     """ Restarts Brutefir as external process (Popen),
-        then check brutefir spawn connections to system ports,
+        then check Brutefir spawn connections to system ports,
         then reconnects Brutefir inputs.
         (i) Notice that Brutefir inputs can have sources
         other than 'pre_in_loop'
     """
     os.chdir(LSPKFOLDER)
-    Popen('brutefir brutefir_config'.split(), stdout=sys.stdout,
-                                                  stderr=sys.stderr)
+    Popen('brutefir brutefir_config'.split())
     os.chdir(UHOME)
     print(f'({ME}) STARTING BRUTEFIR ...')
 
-    # wait for brutefir to be running
+    # Waits for brutefir to be running
     sleep(3) # needed to jack.Client to work
     jc = jack.Client('check_brutefir')
     tries = 60
@@ -129,7 +128,7 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
         sleep(1)
 
     if tries:
-        bf_in_ports    = jc.get_ports('brutefir',    is_input=True)
+        bf_in_ports    = jc.get_ports('brutefir', is_input=True)
         for a, b in zip(bf_sources, bf_in_ports):
             jc.connect(a, b)
         print(f'({ME}) Brutefir running.')
@@ -163,7 +162,7 @@ def restore_brutefir_settings():
     if not errors:
         print(f'({ME}) Brutefir settings restored.')
     else:
-        print(f'({ME}) ERRORS restoring Brutefir settings.')
+        print(f'({ME}) ERRORS restoring Brutefir settings:', errors)
 
 
 def mainloop():
@@ -188,7 +187,7 @@ def mainloop():
                 restore_brutefir_settings()
 
         if dBFS < NOISE_FLOOR and waited >= MAX_WAIT and brutefir_is_running():
-            # Memorize current brutefir sources (maybe not preamp)
+            # Memorize current brutefir sources (can differ from 'pre_in_loop')
             bf_src_ports = get_brutefir_source_ports()
             print(f'({ME}) low level during {sec2min(MAX_WAIT)}, '
                   f'stopping Brutefir!')
