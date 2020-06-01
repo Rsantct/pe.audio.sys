@@ -72,29 +72,30 @@ def brutefir_is_running():
         return False
 
 
-def check_loudness_monitor():
-    # Exit if loudness_monitor_daemon.py is not running
+def loudness_monitor_is_running():
     times = 10
     while times:
         try:
             check_output('pgrep -f loudness_monitor_daemon.py'.split()).decode()
             return
         except:
+            if times == 10:
+                print('(powersave.py) waiting for \'loudness_monitor_daemon.py\' ...' )
             times -= 1
         sleep(1)
-    if not times:
-        print(f'(powersave.py) needs \'loudness_monitor_daemon.py\' to be running')
-        sys.exit()
+    if times:
+        return True
+    else:
+        print(f'(powersave.py) \'loudness_monitor_daemon.py\' not detected')
+        return False
 
 
 def mainloop():
+    # Loops forever every 1 sec reading the dBFS on preamp.
+    # If low level signal is detected for MAX_WAIT then stops Brutefir.
+    # If signal level raises, then resumes Brutefir.
 
     waited = 0
-
-    print(f'(powersave.py) Will wait until {sec2min(MAX_WAIT)} '
-          f'with low level signal then will stop the Brutefir convolver.\n'
-          f'Will resume Brutefir dynamically when signal level raises '
-          f'above the noise floor threshold')
 
     while True:
 
@@ -119,11 +120,19 @@ def mainloop():
 
 
 def stop():
+
     Popen( ['pkill', '-f', 'powersave.py'] )
 
 
 def start():
-    check_loudness_monitor()
+
+    if not loudness_monitor_is_running():
+        sys.exit()
+
+    print(f'(powersave.py) Will wait until {sec2min(MAX_WAIT)} '
+          f'with low level signal then will stop the Brutefir convolver.\n'
+          f'Will resume Brutefir dynamically when signal level raises '
+          f'above the noise floor threshold')
     mainloop()
 
 
