@@ -77,17 +77,14 @@ def loudness_monitor_is_running():
     while times:
         try:
             check_output('pgrep -f loudness_monitor_daemon.py'.split()).decode()
-            return
+            return True
         except:
             if times == 10:
                 print('(powersave.py) waiting for \'loudness_monitor_daemon.py\' ...' )
             times -= 1
         sleep(1)
-    if times:
-        return True
-    else:
-        print(f'(powersave.py) \'loudness_monitor_daemon.py\' not detected')
-        return False
+    print(f'(powersave.py) \'loudness_monitor_daemon.py\' not detected')
+    return False
 
 
 def mainloop():
