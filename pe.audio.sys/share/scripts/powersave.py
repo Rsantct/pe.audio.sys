@@ -32,16 +32,28 @@ import sys
 from subprocess import Popen, check_output
 from time import sleep
 import yaml
+from socket import socket
 import os
 import jack
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share/services/preamp_mod')
-from core import Preamp, Convolver
 
 # YOUR SETUP HERE:
 NOISE_FLOOR = -70 # will compute low levels only below this floor in dBFS
 MAX_WAIT    =  60 # time in seconds before shutting down Brutefir
+
+
+def control_cmd(cmd):
+    host, port = CTL_HOST, CTL_PORT
+    print( f'({ME}) sending: {cmd} to {host}:{port}')
+    with socket() as s:
+        try:
+            s.connect( (host, port) )
+            s.send( cmd.encode() )
+            s.close()
+        except:
+            print( f'({ME}) socket error on {host}:{port}' )
+    return
 
 
 def sec2min(s):
@@ -50,7 +62,7 @@ def sec2min(s):
     return f'{str(m).rjust(2,"0")}:{str(s).rjust(2,"0")}'
 
 
-def get_dBFS():
+def read_dBFS():
     # Lets use LU_M (LU Momentary) from .loudness_monitor
     try:
         with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
@@ -60,17 +72,6 @@ def get_dBFS():
         LU_M = 0.0
     dBFS = LU_M - 23.0  # LU_M is referred to -23dBFS
     return dBFS
-
-
-def brutefir_is_running():
-    try:
-        tmp = check_output("pgrep -f brutefir".split()).decode()
-        if tmp :
-            return True
-        else:
-            return False
-    except:
-        return False
 
 
 def loudness_monitor_is_running():
@@ -84,123 +85,45 @@ def loudness_monitor_is_running():
                 print(f'({ME}) waiting for \'loudness_monitor_daemon.py\' ...' )
             times -= 1
         sleep(1)
-    print(f'({ME}) \'loudness_monitor_daemon.py\' not detected')
     return False
 
 
-def get_brutefir_source_ports():
-    jc = jack.Client(name='tmp', no_start_server=True)
-    bf_inputs = jc.get_ports('brutefir', is_input=True)
-    src_ports = []
-    for p in bf_inputs:
-        srcs = jc.get_all_connections(p)
-        for src in srcs:
-            src_ports.append( src.name )
-    jc.close()
-    return src_ports
-
-
-def restart_and_reconnect_brutefir(bf_sources=[]):
-    """ Restarts Brutefir as external process (Popen),
-        then check Brutefir spawn connections to system ports,
-        then reconnects Brutefir inputs.
-        (i) Notice that Brutefir inputs can have sources
-        other than 'pre_in_loop'
-    """
-    os.chdir(LSPKFOLDER)
-    Popen('brutefir brutefir_config'.split())
-    os.chdir(UHOME)
-    print(f'({ME}) STARTING BRUTEFIR ...')
-
-    # Waits for brutefir to be running
-    sleep(3) # needed to jack.Client to work
-    jc = jack.Client('check_brutefir')
-    tries = 60
-    while tries:
-        bf_out_ports = jc.get_ports('brutefir', is_output=True)
-        count = 0
-        for bfop in bf_out_ports:
-            conns = jc.get_all_connections(bfop)
-            count += len(conns)
-        if count == len(bf_out_ports):
-            break
-        tries -= 1
-        sleep(1)
-
-    if tries:
-        bf_in_ports    = jc.get_ports('brutefir', is_input=True)
-        for a, b in zip(bf_sources, bf_in_ports):
-            jc.connect(a, b)
-        print(f'({ME}) Brutefir running.')
-
+def brutefir_is_running():
+    if jc.get_ports('brutefir'):
+        return True
     else:
-        print(f'({ME}) PROBLEM RUNNING BRUTEFIR. Bye :-(')
-        sys.exit()
-
-    jc.close()
-    del(jc)
-
-
-def restore_brutefir_settings():
-    # Restore Brutefir settings as per the current .state.yml values
-    errors = ''
-
-    with open(f'{MAINFOLDER}/.state.yml', 'r') as f:
-        state = yaml.safe_load( f )
-
-    preamp    = Preamp()
-    convolver = Convolver()
-
-    tmp = preamp._validate( state ) # this includes mute
-    if tmp  != 'done':
-        errors += tmp
-
-    tmp = convolver.set_xo ( state['xo_set']  )
-    if tmp  != 'done':
-        errors += tmp
-
-    tmp = convolver.set_drc( state['drc_set'] )
-    if tmp  != 'done':
-        errors += tmp
-
-    del(convolver)
-    del(preamp)
-
-    if not errors:
-        print(f'({ME}) Brutefir settings restored.')
-    else:
-        print(f'({ME}) ERRORS restoring Brutefir settings:', errors)
+        return False
 
 
 def mainloop():
     # Loops forever every 1 sec reading the dBFS on preamp.
-    # If low level signal is detected for MAX_WAIT then stops Brutefir.
+    # If low level signal is detected during MAX_WAIT then stops Brutefir.
     # If signal level raises, then resumes Brutefir.
 
-    waited = 0
-    bf_src_ports = []
+    lowSigElapsed = 0
 
     while True:
 
-        dBFS = get_dBFS()
+        dBFS = read_dBFS()
 
-        if dBFS < NOISE_FLOOR:
-            waited +=1
-        else:
-            waited = 0
+        if dBFS > NOISE_FLOOR:
+            lowSigElapsed = 0
             if not brutefir_is_running():
                 print(f'({ME}) signal detected, so resuming Brutefir :-)')
-                restart_and_reconnect_brutefir(bf_src_ports)
-                restore_brutefir_settings()
+                control_cmd('convolver on')
+        else:
+            lowSigElapsed +=1
 
-        if dBFS < NOISE_FLOOR and waited >= MAX_WAIT and brutefir_is_running():
-            # Memorize current brutefir sources (can differ from 'pre_in_loop')
-            bf_src_ports = get_brutefir_source_ports()
-            print(f'({ME}) low level during {sec2min(MAX_WAIT)}, '
-                  f'stopping Brutefir!')
-            Popen(f'pkill -f brutefir', shell=True)
+        if dBFS < NOISE_FLOOR and lowSigElapsed >= MAX_WAIT:
+            if brutefir_is_running():
+                print(f'({ME}) low level during {sec2min(MAX_WAIT)}, '
+                      f'stopping Brutefir!')
+                control_cmd('convolver off')
 
-        #print('dBFS:', dBFS, 'waited:', waited)    # *** DEBUG ***
+        # *** DEBUG ***
+        #print('Brutefir is running', brutefir_is_running())
+        #print('dBFS:', dBFS, 'lowSigElapsed:', lowSigElapsed)
+
         sleep(1)
 
 
@@ -212,6 +135,7 @@ def stop():
 def start():
 
     if not loudness_monitor_is_running():
+        print(f'({ME}) \'loudness_monitor_daemon.py\' not detected')
         sys.exit()
 
     print(f'({ME}) Will wait until {sec2min(MAX_WAIT)} '
@@ -223,11 +147,24 @@ def start():
 
 if __name__ == "__main__":
 
+    # This script name
     ME    = __file__.split('/')[-1]
 
-    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        CFG = yaml.safe_load( f )
-    LSPKFOLDER = f'{MAINFOLDER}/loudspeakers/{CFG["loudspeaker"]}'
+    # pe.audio.sys service addressing
+    try:
+        with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+            cfg = yaml.safe_load(f)
+            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
+    except:
+        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
+        sys.exit()
+
+    # Jack client to check for brutefir presence
+    try:
+        jc = jack.Client('powersave', no_start_server=True)
+    except Exception:
+        print(Exception)
+        sys.exit()
 
     if sys.argv[1:]:
 
