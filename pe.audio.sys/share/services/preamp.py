@@ -151,6 +151,8 @@ def process_commands( full_command ):
             'xo':               set_xo,
             'set_xo':           set_xo,
 
+            'convolver':        preamp.convolver,
+
             'help':             print_help
 
             } [ command ] ( arg, add )
