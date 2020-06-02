@@ -280,23 +280,16 @@ function page_update() {
         return;
     }
 
-    // Cancel updating if convolver off
-    if (state.convolver_runs == false){
-        document.getElementById("levelInfo").innerHTML  = '--';
-        document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                          'convolver-OFF';
-        return;
-    }
-    else{
-        document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                       state.loudspeaker;
-    }
-
     // Updates level, balance, and tone info
     document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
     document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
+
+    // Delete level info if convolver off
+    if (state.convolver_runs == false){
+        document.getElementById("levelInfo").innerHTML  = '--';
+    }
 
     // Updates the Integrated LU monitor and the LU offset slider
     document.getElementById("LU_offset_value").innerText =
