@@ -451,10 +451,14 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
     sp.Popen('brutefir brutefir_config'.split())
     os.chdir(UHOME)
 
-    # Wait for Brutefir out ports autoconnected to system ports
-    tries = 120
+    # Wait for Brutefir:out ports autoconnected to system ports
+    tries = 120     # ~ 60 sec
     while tries:
         bf_out_ports = JCLI.get_ports('brutefir', is_output=True)
+        # Ensures ports are available
+        if len(bf_out_ports) < 2:
+            sleep(.5)
+            continue
         count = 0
         for bfop in bf_out_ports:
             conns = JCLI.get_all_connections(bfop)
@@ -466,15 +470,15 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
     if not tries:
         return 'PROBLEM RUNNING BRUTEFIR :-('
 
-    # Wait for Brutefir input ports to be available
-    tries = 50
+    # Wait for Brutefir:input ports to be available
+    tries = 50      # ~ 10 sec
     while tries:
         bf_in_ports = JCLI.get_ports('brutefir', is_input=True)
         if len(bf_in_ports) >= 2:
             break
         else:
             tries -= 1
-            sleep(.1)
+            sleep(.2)
     if not tries:
         return 'Brutefir ERROR restoring input connections'
     sleep(1)  # to avoid early connections tries
