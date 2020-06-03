@@ -188,19 +188,23 @@ def process_aux( cmd, arg='' ):
             with open(LOUD_MON_VAL_FILE, 'r') as f:
                 result = json.loads( f.read() )
         except:
-            result = {"LU_I": 0, "scope": CONFIG["LU_reset_md_field"]}
+            if 'LU_reset_md_field' in CONFIG:
+                result = {'LU_I': 0.0, 'LU_M':0.0,
+                          'scope': CONFIG["LU_reset_md_field"]}
+            else:
+                result = {'LU_I': 0.0, 'LU_M':0.0, 'scope': 'album'}
 
     # RESTART
     elif cmd == 'restart':
         try:
-            restart_action = CONFIG["restart_cmd"]
+            restart_cmd = CONFIG["restart_cmd"]
         except:
-            restart_action = 'peaudiosys_restart.sh'
+            restart_cmd = f'{UHOME}/start.py all'
 
         try:
-            Popen( f'{restart_action}'.split() )
+            Popen( f'{restart_cmd}'.split() )
         except:
-            print( f'({ME}) Problems running \'{restart_action}\'' )
+            print( f'({ME}) Problems running \'{restart_cmd}\'' )
 
     # Get the WEB.CONFIG dictionary
     elif cmd == 'get_web_config':
