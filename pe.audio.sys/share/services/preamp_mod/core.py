@@ -586,7 +586,9 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
 
-    # (i) using is not None below to detect 0 or False values
+    # (i) Using 'is not None' below to detect '0' or 'False' values.
+    #     Also we go step by step instead of prepare a new candidate_state
+    #     and try to _validate the whole thing at once.
 
     on_init = CONFIG["on_init"]
 
