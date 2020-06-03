@@ -100,7 +100,7 @@ def main():
 
 
     h1 = f'-60       -50       -40       -30       -20       -10        0' + \
-                                                          f'  {args.mode.upper()}'
+         f'  {args.mode.upper()}'
     h2 =  ' |         |         |         |         |         |         |'
     if args.print:
         print(h1)
