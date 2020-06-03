@@ -135,7 +135,6 @@ def main():
                 print( f' {"#" * (60 + I +1)}{" " * (-I - 1)}  {M}', end='\r')
 
 
-
 if __name__ == '__main__':
 
     # Reading command line args
