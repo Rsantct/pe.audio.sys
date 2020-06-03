@@ -15,8 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
+"""
+    A simple audio meter
 
-""" A simple jack meter
+    To view suported devices run '-l' option
+
 """
 import sys
 import argparse
@@ -52,7 +55,7 @@ def parse_cmdline():
 
     parser.add_argument('-p', '--print', action="store_true",
             default=False,
-            help='console print out measured level')
+            help='prints out a nice bar level meter')
 
     args = parser.parse_args()
 
@@ -101,7 +104,7 @@ def main():
 
     h1 = f'-60       -50       -40       -30       -20       -10        0' + \
          f'  {args.mode.upper()}'
-    h2 =  ' |         |         |         |         |         |         |'
+    h2 =  ' |    |    |    |    |    |    |    |    |    |    |    |    |'
     if args.print:
         print(h1)
         print(h2)
