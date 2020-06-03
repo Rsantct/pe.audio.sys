@@ -45,7 +45,6 @@ import subprocess as sp
 from time import sleep
 import yaml
 import jack
-import threading
 
 ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
@@ -426,10 +425,8 @@ if __name__ == "__main__":
 
     if mode in ('all'):
         # BRUTEFIR
-        bfjob = threading.Thread( target=core.restart_and_reconnect_brutefir,
-                                  args=(['pre_in_loop:output_1',
-                                         'pre_in_loop:output_2'],) )
-        bfjob.start()
+        core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
+                                              'pre_in_loop:output_2'] )
         # RESTORE settings
         core.init_audio_settings()
         # PREAMP  --> MONITORS
