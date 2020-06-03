@@ -19,15 +19,11 @@
 """ A simple jack meter
 """
 import sys
-import os
 import argparse
 import numpy as np
 import queue
 # Thanks to https://python-sounddevice.readthedocs.io
 import sounddevice as sd
-
-UHOME           = os.path.expanduser("~")
-MAINFOLDER      = f'{UHOME}/pe.audio.sys'
 
 
 def int_or_str(text):
@@ -103,7 +99,8 @@ def main():
         return M
 
 
-    h1 = f'-60       -50       -40       -30       -20       -10        0 {args.mode}'
+    h1 = f'-60       -50       -40       -30       -20       -10        0' + \
+                                                          f'  {args.mode.upper()}'
     h2 =  ' |         |         |         |         |         |         |'
     if args.print:
         print(h1)
@@ -135,7 +132,7 @@ def main():
             if args.print:
                 M = round(M,1)
                 I = max(-60, int(M))
-                print( f' {"#" * (60-(-I))}{" " * (-I)}  {M}', end='\r')
+                print( f' {"#" * (60 + I +1)}{" " * (-I - 1)}  {M}', end='\r')
 
 
 
