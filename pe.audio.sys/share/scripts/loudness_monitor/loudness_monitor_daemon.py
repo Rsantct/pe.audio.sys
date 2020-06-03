@@ -135,6 +135,10 @@ def control_fifo_prepare(fname):
 
 
 def control_fifo_read_loop(fname):
+    """ Loop forever listen for runtime commands through by the fifo control file:
+        'reset'         force the reset flag to True
+        'scope=xxxxx'   update the scope (metadata key observed to auto reset LU-I)
+    """
     global reset, md_key
     while True:
         # opening fifo...
@@ -146,7 +150,7 @@ def control_fifo_read_loop(fname):
                 # set the flag reset=True
                 if f_data == 'reset':
                     reset = True
-                # runtime change the scope (metadata key observed to reset LU-I)
+                # runtime change the scope (metadata key observed to autoreset LU-I)
                 elif f_data[:6] == 'scope=':
                     new_md_key = f_data[6:]
                     if new_md_key in ('album','title', 'track'):
@@ -222,7 +226,7 @@ if __name__ == '__main__':
     with open( STATEPATH, 'r' ) as state_file:
         last_input = yaml.safe_load(state_file)['input']
 
-    # Threading to control this script (currently only the 'reset' flag)
+    # Threading to control this script
     control_fifo_prepare(args.control_fifo)
     control = threading.Thread( target=control_fifo_read_loop,
                                 args=(args.control_fifo,) )
