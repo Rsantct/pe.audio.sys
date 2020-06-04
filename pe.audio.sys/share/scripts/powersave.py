@@ -81,8 +81,6 @@ def loudness_monitor_is_running():
             check_output('pgrep -f loudness_monitor_daemon.py'.split()).decode()
             return True
         except:
-            if times == 10:
-                print(f'({ME}) waiting for \'loudness_monitor_daemon.py\' ...' )
             times -= 1
         sleep(1)
     return False
@@ -95,16 +93,28 @@ def brutefir_is_running():
         return False
 
 
-def mainloop():
-    # Loops forever every 1 sec reading the dBFS on preamp.
-    # If low level signal is detected during MAX_WAIT then stops Brutefir.
-    # If signal level raises, then resumes Brutefir.
-
+def start():
+    """ Loops forever every 1 sec reading the dBFS on preamp.
+        If low level signal is detected during MAX_WAIT then stops Brutefir.
+        If signal level raises, then resumes Brutefir.
+    """
     lowSigElapsed = 0
+
+    if not loud_mon_daemon_available:
+        # Prepare and start an audio_meter.Meter instance
+        print( f'({ME}) using \'audio_meter.py\'' )
+        from powersave_mod.audio_meter import Meter
+        meter = Meter(device='pre_in_loop', mode='peak', bar=False)
+        meter.start()
+    else:
+        print( f'({ME}) using \'loudness_monitor_daemon.py\'' )
 
     while True:
 
-        dBFS = read_dBFS()
+        if loud_mon_daemon_available:
+            dBFS = read_dBFS()
+        else:
+            dBFS = meter.L
 
         if dBFS > NOISE_FLOOR:
             lowSigElapsed = 0
@@ -132,19 +142,6 @@ def stop():
     Popen( ['pkill', '-f', 'powersave.py'] )
 
 
-def start():
-
-    if not loudness_monitor_is_running():
-        print(f'({ME}) \'loudness_monitor_daemon.py\' not detected')
-        sys.exit()
-
-    print(f'({ME}) Will wait until {sec2min(MAX_WAIT)} '
-          f'with low level signal then will stop the Brutefir convolver.\n'
-          f'Will resume Brutefir dynamically when signal level raises '
-          f'above the noise floor threshold')
-    mainloop()
-
-
 if __name__ == "__main__":
 
     # This script name
@@ -165,6 +162,10 @@ if __name__ == "__main__":
     except Exception:
         print(Exception)
         sys.exit()
+
+    # loudness_monitor_daemon.py is preferred, else will use audio_meter.py
+    print(f'({ME}) waiting for \'loudness_monitor_daemon.py\' ...' )
+    loud_mon_daemon_available = loudness_monitor_is_running()
 
     if sys.argv[1:]:
 
