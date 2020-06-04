@@ -100,14 +100,14 @@ def start():
     """
     lowSigElapsed = 0
 
-    if not loud_mon_daemon_available:
+    if loud_mon_daemon_available:
+        print( f'({ME}) using \'loudness_monitor_daemon.py\'' )
+    else:
         # Prepare and start an audio_meter.Meter instance
         print( f'({ME}) using \'audio_meter.py\'' )
         from powersave_mod.audio_meter import Meter
         meter = Meter(device='pre_in_loop', mode='peak', bar=False)
         meter.start()
-    else:
-        print( f'({ME}) using \'loudness_monitor_daemon.py\'' )
 
     while True:
 
