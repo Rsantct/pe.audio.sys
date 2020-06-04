@@ -731,12 +731,11 @@ class Preamp(object):
 
     def convolver( self, value, *dummy ):
 
-        result = 'done'
-
         if value == 'off':
             if self.state["convolver_runs"]:
                 self.bf_sources = bf_get_in_connections()
                 brutefir_stop()
+            result = 'done'
 
         elif value == 'on':
             if not self.state["convolver_runs"]:
@@ -747,6 +746,7 @@ class Preamp(object):
                     c.set_xo ( self.state['xo_set']  )
                     c.set_drc( self.state['drc_set'] )
                     del( c )
+            result = 'done'
 
         else:
             result = 'bad option'
