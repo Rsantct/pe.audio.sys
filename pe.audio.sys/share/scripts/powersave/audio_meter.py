@@ -77,21 +77,20 @@ def main():
         qIn.put( indata )
 
 
-    def measure(stereo_block, duration, mode=args.mode):
+    def measure(block, duration, mode=args.mode):
 
         if mode == 'rms':
-            # Mean square calculation for audio (b)locks
-            msqL = np.sum( np.square( stereo_block[:,0] ) ) / (fs * dur)
-            msqR = np.sum( np.square( stereo_block[:,1] ) ) / (fs * dur)
-            # Stereo
+            # Mean square calculation for audio blocks
+            msqL = np.sum( np.square( block[:,0] ) ) / (fs * dur)
+            msqR = np.sum( np.square( block[:,1] ) ) / (fs * dur)
+            # Combine 2 channels
             if msqL or msqR:    # avoid log10(0+0)
-                M = 20 * np.log10(msqL + msqR) / 2.0
+                M = 20 * np.log10(msqL + msqR) / 2
             else:
                 M = -100.0
 
         elif mode == 'peak':
-
-            ML, MR = np.max(stereo_block[:,0]), np.max(stereo_block[:,1])
+            ML, MR = np.max(block[:,0]), np.max(block[:,1])
             M = max(ML, MR)
             M = 20 * np.log10(M)
 
@@ -130,12 +129,12 @@ def main():
             # Reading captured (b)locks:
             b = qIn.get()
             # Compute the measured level
-            M = measure(stereo_block=b, duration=dur)
+            M = measure(block=b, duration=dur)
             # Print a nice bar meter
             if args.print:
-                M = round(M,1)
+                M = round(M, 1)
                 I = max(-60, int(M))
-                print( f' {"#" * (60 + I +1)}{" " * (-I - 1)}  {M}', end='\r')
+                print( f' {"#" * (60 + I + 1)}{" " * (-I - 1)}  {M}', end='\r')
 
 
 if __name__ == '__main__':
