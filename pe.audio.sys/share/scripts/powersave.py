@@ -155,7 +155,7 @@ if __name__ == "__main__":
         print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
         sys.exit()
 
-    # Jack client to check for brutefir presence
+    # Jack client to check for brutefir availability
     try:
         jc = jack.Client('powersave', no_start_server=True)
     except Exception:
