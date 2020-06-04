@@ -18,14 +18,13 @@
 
 """
     A daemon that stops the Brutefir convolver if the preamp signal is too low.
-    (This program needs loudness_monitor_daemon.py to be running)
 
     usage:   powersave.py  start | stop
 
 
     NOTICE:
     Brutefir has a powersave built-in feature, but if saving CPU% is insufficient,
-    this script will completely stop the convolver dynamically.
+    this script will completely stop and start the convolver dynamically.
 
 """
 import sys
