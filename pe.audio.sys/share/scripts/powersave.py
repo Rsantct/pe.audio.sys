@@ -143,7 +143,7 @@ def start():
 
 def stop():
 
-    Popen( ['pkill', '-f', 'powersave.py'] )
+    Popen( 'pkill -KILL -f "powersave.py\ start"', shell=True )
 
 
 if __name__ == "__main__":
