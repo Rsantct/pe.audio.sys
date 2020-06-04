@@ -97,7 +97,10 @@ def start():
         If low level signal is detected during MAX_WAIT then stops Brutefir.
         If signal level raises, then resumes Brutefir.
     """
-    lowSigElapsed = 0
+
+    # loudness_monitor_daemon.py is preferred, else will use audio_meter.py
+    print(f'({ME}) waiting for \'loudness_monitor_daemon.py\' ...' )
+    loud_mon_daemon_available = loudness_monitor_is_running()
 
     if loud_mon_daemon_available:
         print( f'({ME}) using \'loudness_monitor_daemon.py\'' )
@@ -108,6 +111,8 @@ def start():
         meter = Meter(device='pre_in_loop', mode='peak', bar=False)
         meter.start()
 
+    # Loop forever each 1 sec will check signal level
+    lowSigElapsed = 0
     while True:
 
         if loud_mon_daemon_available:
@@ -162,19 +167,14 @@ if __name__ == "__main__":
         print(Exception)
         sys.exit()
 
-    # loudness_monitor_daemon.py is preferred, else will use audio_meter.py
-    print(f'({ME}) waiting for \'loudness_monitor_daemon.py\' ...' )
-    loud_mon_daemon_available = loudness_monitor_is_running()
-
     if sys.argv[1:]:
 
-        for opc in sys.argv[1:]:
-            if opc == 'start':
-                start()
-            elif opc == 'stop':
-                stop()
-            else:
-                print(__doc__)
+        if sys.argv[1] == 'start':
+            start()
+        elif sys.argv[1] == 'stop':
+            stop()
+        else:
+            print(__doc__)
 
     else:
         print(__doc__)
