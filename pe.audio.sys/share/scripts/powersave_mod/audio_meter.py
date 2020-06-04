@@ -19,6 +19,8 @@
     A simple audio meter
 
     To view suported devices use '-l' option
+    
+    For options available use '-h'
 
 """
 import sys
