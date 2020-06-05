@@ -107,7 +107,7 @@ def start():
     else:
         # Prepare and start an audio_meter.Meter instance
         print( f'({ME}) using \'audio_meter.py\'' )
-        from powersave_mod.audio_meter import Meter
+        from share.audio_meter import Meter
         meter = Meter(device='pre_in_loop', mode='peak', bar=False)
         meter.start()
 
