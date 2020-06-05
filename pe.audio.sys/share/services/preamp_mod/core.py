@@ -417,11 +417,77 @@ def get_brutefir_config(prop):
         return []
 
 
-def brutefir_runs():
+def brutefir_is_running():
     if JCLI.get_ports('brutefir'):
         return True
     else:
         return False
+
+
+def bf_get_in_connections():
+    bf_inputs = JCLI.get_ports('brutefir', is_input=True)
+    src_ports = []
+    for p in bf_inputs:
+        srcs = JCLI.get_all_connections(p)
+        for src in srcs:
+            src_ports.append( src )
+    return src_ports
+
+
+def brutefir_stop():
+    sp.Popen(f'pkill -f brutefir', shell=True)
+    print(f'(core) STOOPING BRUTEFIR (!)')
+
+
+def restart_and_reconnect_brutefir(bf_sources=[]):
+    """ Restarts Brutefir as external process (Popen),
+        then check Brutefir spawn connections to system ports,
+        then reconnects Brutefir inputs.
+        (i) Notice that Brutefir inputs can have sources
+        other than 'pre_in_loop'
+    """
+    # Restarts Brutefir
+    os.chdir(LSPK_FOLDER)
+    sp.Popen('brutefir brutefir_config'.split())
+    os.chdir(UHOME)
+
+    # Wait for Brutefir:out ports autoconnected to system ports
+    tries = 120     # ~ 60 sec
+    while tries:
+        bf_out_ports = JCLI.get_ports('brutefir', is_output=True)
+        # Ensures ports are available
+        if len(bf_out_ports) < 2:
+            sleep(.5)
+            continue
+        count = 0
+        for bfop in bf_out_ports:
+            conns = JCLI.get_all_connections(bfop)
+            count += len(conns)
+        if count == len(bf_out_ports):
+            break
+        tries -= 1
+        sleep(.5)
+    if not tries:
+        return 'PROBLEM RUNNING BRUTEFIR :-('
+
+    # Wait for Brutefir:input ports to be available
+    tries = 50      # ~ 10 sec
+    while tries:
+        bf_in_ports = JCLI.get_ports('brutefir', is_input=True)
+        if len(bf_in_ports) >= 2:
+            break
+        else:
+            tries -= 1
+            sleep(.2)
+    if not tries:
+        return 'Brutefir ERROR restoring input connections'
+    sleep(1)  # to avoid early connections tries
+
+    # Restore input connections
+    for a, b in zip(bf_sources, bf_in_ports):
+        jack_connect(a, b)
+
+    return 'done'
 
 
 # JACK MANAGEMENT: =====================================================
@@ -520,7 +586,9 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
 
-    # (i) using is not None below to detect 0 or False values
+    # (i) Using 'is not None' below to detect '0' or 'False' values.
+    #     Also we go step by step instead of prepare a new candidate_state
+    #     and try to _validate the whole thing at once.
 
     on_init = CONFIG["on_init"]
 
@@ -635,6 +703,8 @@ class Preamp(object):
             get_target_sets
             get_eq
 
+            convolver       stops or resume Brutefir (energy saving)
+
     """
 
     def __init__(self):
@@ -656,6 +726,33 @@ class Preamp(object):
         self.gain_max    = float(CONFIG['gain_max'])
         # Max authorised balance
         self.balance_max = float(CONFIG['balance_max'])
+        # Brutefir input connected ports (used from convolver energy saving method)
+        self.bf_sources = []
+
+    def convolver( self, value, *dummy ):
+
+        if value == 'off':
+            if self.state["convolver_runs"]:
+                self.bf_sources = bf_get_in_connections()
+                brutefir_stop()
+            result = 'done'
+
+        elif value == 'on':
+            if not self.state["convolver_runs"]:
+                result = restart_and_reconnect_brutefir(self.bf_sources)
+                if result == 'done':
+                    self._validate( self.state ) # this includes mute
+                    c = Convolver()
+                    c.set_xo ( self.state['xo_set']  )
+                    c.set_drc( self.state['drc_set'] )
+                    del( c )
+                else:
+                    result = 'PANIC: ' + result
+
+        else:
+            result = 'bad option'
+
+        return result
 
     def _validate( self, candidate ):
         """ Validates that the given 'candidate' (new state dictionary)
@@ -687,8 +784,8 @@ class Preamp(object):
     # wich always will include two arguments for any function call.
 
     def get_state(self, *dummy):
-        #return yaml.safe_dump( self.state, default_flow_style=False )
-        self.state['convolver_runs'] = brutefir_runs()      # informative
+        # informative add-on
+        self.state['convolver_runs'] = brutefir_is_running()
         return self.state
 
     def get_target_sets(self, *dummy):
@@ -986,7 +1083,7 @@ class Convolver(object):
 # JCLI: THE CLIENT INTERFACE TO THE JACK SERVER ========================
 # IMPORTANT: this module core.py needs JACK to be running.
 try:
-    JCLI = jack.Client('tmp', no_start_server=True)
+    JCLI = jack.Client('core', no_start_server=True)
 except:
     print( '(core) ERROR cannot commuticate to the JACK SOUND SERVER.' )
 

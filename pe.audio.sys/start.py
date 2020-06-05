@@ -45,7 +45,6 @@ import subprocess as sp
 from time import sleep
 import yaml
 import jack
-import threading
 
 ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
@@ -210,47 +209,6 @@ def start_jackd():
     else:
         # JACK FAILED
         return False
-
-
-def start_and_connect_brutefir():
-    """ starts Brutefir as external process (Popen),
-        then check brutefir spawn connections to system ports,
-        then connects Preamp to Brutefir.
-    """
-    os.chdir(LSPK_FOLDER)
-    sp.Popen('brutefir brutefir_config'.split(), stdout=sys.stdout,
-                                                  stderr=sys.stderr)
-    os.chdir(UHOME)
-    print(f'({ME}) STARTING BRUTEFIR ...')
-
-    # wait for brutefir to be running
-    sleep(3) # needed to jack.Client to work
-    jc = jack.Client('check_brutefir')
-    tries = 60
-    while tries:
-        bf_out_ports = jc.get_ports('brutefir', is_output=True)
-        count = 0
-        for bfop in bf_out_ports:
-            conns = jc.get_all_connections(bfop)
-            count += len(conns)
-        if count == len(bf_out_ports):
-            break
-        tries -= 1
-        sleep(1)
-
-    if tries:
-        bf_in_ports    = jc.get_ports('brutefir',    is_input=True)
-        pre_out_ports  = jc.get_ports('pre_in_loop', is_output=True)
-        for a, b in zip(pre_out_ports, bf_in_ports):
-            jc.connect(a, b)
-        print(f'({ME}) BRUTEFIR RUNNING.')
-
-    else:
-        print(f'({ME}) PROBLEM RUNNING BRUTEFIR. Bye :-(')
-        sys.exit()
-
-    jc.close()
-    del(jc)
 
 
 def manage_service(service, address='localhost', port=TCP_BASE_PORT,
@@ -467,8 +425,8 @@ if __name__ == "__main__":
 
     if mode in ('all'):
         # BRUTEFIR
-        bfjob = threading.Thread( target=start_and_connect_brutefir )
-        bfjob.start()
+        core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
+                                              'pre_in_loop:output_2'] )
         # RESTORE settings
         core.init_audio_settings()
         # PREAMP  --> MONITORS
