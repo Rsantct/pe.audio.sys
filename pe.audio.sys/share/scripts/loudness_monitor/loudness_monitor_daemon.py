@@ -135,6 +135,10 @@ def control_fifo_prepare(fname):
 
 
 def control_fifo_read_loop(fname):
+    """ Loop forever listen for runtime commands through by the fifo control file:
+        'reset'         force the reset flag to True
+        'scope=xxxxx'   update the scope (metadata key observed to auto reset LU-I)
+    """
     global reset, md_key
     while True:
         # opening fifo...
@@ -146,7 +150,7 @@ def control_fifo_read_loop(fname):
                 # set the flag reset=True
                 if f_data == 'reset':
                     reset = True
-                # runtime change the scope (metadata key observed to reset LU-I)
+                # runtime change the scope (metadata key observed to autoreset LU-I)
                 elif f_data[:6] == 'scope=':
                     new_md_key = f_data[6:]
                     if new_md_key in ('album','title', 'track'):
@@ -222,7 +226,7 @@ if __name__ == '__main__':
     with open( STATEPATH, 'r' ) as state_file:
         last_input = yaml.safe_load(state_file)['input']
 
-    # Threading to control this script (currently only the 'reset' flag)
+    # Threading to control this script
     control_fifo_prepare(args.control_fifo)
     control = threading.Thread( target=control_fifo_read_loop,
                                 args=(args.control_fifo,) )
@@ -255,13 +259,15 @@ if __name__ == '__main__':
     # Initialize 400ms stereo block window
     w400 = np.zeros( (4 * BS, 2) , dtype='float32')
 
-    # Intialize (I)ntegrated Loudness and gates to -23.0 dBFS => 0 LU
-    M = -23.0
-    I = -23.0
-    Iprev = -23.0   # previous in order to save writing to disk
-    G1mean = -23.0
+    # Intialize (I)ntegrated Loudness and gates to a low level value dBFS
+    M = -100.0
+    I = -100.0
+    Idisk  = I  # used to detect changes then trigger save2disk=True
+    Mdisk  = M
+    G1mean = -100.0
     G1 = 0          # gate counters to calculate the accu mean
     G2 = 0
+    save2disk = True
 
     ##################################################################
     # Main loop: open a capture stream that process 100ms audio blocks
@@ -294,6 +300,8 @@ if __name__ == '__main__':
             # Stereo (M)omentary Loudness
             if msqL or msqR:    # avoid log10(0)
                 M = -0.691 + 10 * np.log10(msqL + msqR)
+            else:
+                M = -100.0
 
             # Dual gatting to compute (I)ntegrated Loudness.
             if M > -70.0:
@@ -305,36 +313,47 @@ if __name__ == '__main__':
                 G2 += 1
                 I = G1mean + (M - G1mean) / G2
 
-            # Converting FS (Full Scale) to LU (Loudness Units) ref to -23dBFS
-            M_LU = M - -23.0
-            I_LU = I - -23.0
-
-            # Writing the output file with the accumulated
-            # (I)ntegrated loudness program in LU units
-            # >>> ROUNDED TO 1 dB to save disk writing <<<
-            if abs(Iprev - I) > 1.0:
-                with open( args.output_file, 'w') as fout:
-                    d = {"LU_I": round(I_LU,0), "scope": md_key}
-                    fout.write( json.dumps( d ) )
-                Iprev = I
+            #print('M:', M)     # *** DEBUG ***
 
             # Reseting the (I) measurement. <reset> is a global that can
             # be modified on the fly.
             if reset:
                 print('(loudness_monitor) restarting (I)ntegrated ' +
                       'Loudness measurement')
-                # RESET the accumulated
-                I = Iprev = -23.0
-                G1mean = -23.0
+                # RESET variables
+                I       = -100.0
+                Idisk   = -100.0
+                M       = -100.0
+                Mdisk   = -100.0
+                G1mean  = -100.0
                 G1 = 0
                 G2 = 0
-                # and zeroes the output file
-                with open( args.output_file, 'w') as fout:
-                    d = {"LU_I": 0, "scope": md_key}
-                    fout.write( json.dumps( d ) )
+                save2disk = True
                 reset = False
 
-            # Optionally prints to console
+            # Converting FS (Full Scale) to LU (Loudness Units) ref to -23dBFS
+            I_LU = I - -23.0
+            M_LU = M - -23.0
+
+            # End of computing levels.
+
+            # Writing the output file if changes in 1 dB
+            if abs(Idisk - I) > 1.0 or abs(Mdisk - M) > 1.0:
+                save2disk = True
+
+            # Saving to disk rounded to 1 dB
+            if save2disk:
+                with open( args.output_file, 'w') as fout:
+                    d = { "LU_I":  round(I_LU, 0),
+                          "LU_M":  round(M_LU, 0),
+                          "scope": md_key }
+                    fout.write( json.dumps( d ) )
+                Idisk = I
+                Mdisk = M
+                save2disk = False
+
+            # Prints to console
             if args.print:
                 print( f'LUFS: {round(M, 1):6.1f}(M) {round(I, 1):6.1f}(I)       ' +
                        f'LU: {round(M_LU, 1):6.1f}(M) {round(I_LU, 1):6.1f}(I)   ')
+

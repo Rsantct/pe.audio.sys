@@ -56,3 +56,27 @@ Unfortunately, librestpot only provides the current song title, nor artist neith
  
  There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
 
+## Can I run Brutefir compiled from source rather than my distro version
+
+Yes. Simply download it from source, install and symlink the new binary under your $HOME/bin folder.
+
+Example to install Brutefir 1.0o version (see latest at https://torger.se/anders/brutefir.html#download)
+
+    sudo apt-get install build-essential flex libasound2-dev libjack-jackd2-dev libfftw3-dev
+    mkdir ~/tmp
+    cd tmp
+    wget http://www.ludd.luth.se/~torger/files/brutefir-1.0o.tar.gz
+    tar xvzf brutefir-1.0o.tar.gz
+    cd brutefir-1.0o
+    make
+    sudo make install
+
+The installed new files will be shown as:
+
+    install -d /usr/local/bin /usr/local/lib/brutefir
+    install brutefir /usr/local/bin
+    install cli.bflogic eq.bflogic file.bfio alsa.bfio oss.bfio jack.bfio /usr/local/lib/brutefir
+
+So now you can symlink it to run the new version:
+
+    ln -s /usr/local/bin/brutefir $HOME/bin/brutefir
