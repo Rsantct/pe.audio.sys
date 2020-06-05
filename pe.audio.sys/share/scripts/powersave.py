@@ -94,7 +94,7 @@ def brutefir_is_running():
 
 def start():
     """ Loops forever every 1 sec reading the dBFS on preamp.
-        If low level signal is detected during MAX_WAIT then stops Brutefir.
+        If detected signal below NOISE_FLOOR during MAX_WAIT then stops Brutefir.
         If signal level raises, then resumes Brutefir.
     """
 
