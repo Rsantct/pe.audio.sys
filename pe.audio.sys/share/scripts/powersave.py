@@ -106,8 +106,8 @@ def start():
         print( f'({ME}) using \'loudness_monitor_daemon.py\'' )
     else:
         # Prepare and start an audio_meter.Meter instance
-        print( f'({ME}) using \'audio_meter.py\'' )
-        from share.audio_meter import Meter
+        print( f'({ME}) using \'level_meter.py\'' )
+        from share.level_meter import Meter
         meter = Meter(device='pre_in_loop', mode='peak', bar=False)
         meter.start()
 
