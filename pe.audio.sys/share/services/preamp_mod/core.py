@@ -746,7 +746,8 @@ class Preamp(object):
                     c.set_xo ( self.state['xo_set']  )
                     c.set_drc( self.state['drc_set'] )
                     del( c )
-            result = 'done'
+                else:
+                    result = 'PANIC: ' + result
 
         else:
             result = 'bad option'
