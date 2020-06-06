@@ -162,11 +162,13 @@ def start():
             save2disk()
             M_event.clear()
 
+
     def wait_I():
         while True:
             I_event.wait()
             save2disk()
             I_event.clear()
+
 
     global last_input, last_scope, scope
 
