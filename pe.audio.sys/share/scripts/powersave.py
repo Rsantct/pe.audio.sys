@@ -77,7 +77,7 @@ def loudness_monitor_is_running():
     times = 10
     while times:
         try:
-            check_output('pgrep -f loudness_monitor_daemon.py'.split()).decode()
+            check_output('pgrep -f loudness_monitor.py'.split()).decode()
             return True
         except:
             times -= 1
@@ -98,14 +98,14 @@ def start():
         If signal level raises, then resumes Brutefir.
     """
 
-    # loudness_monitor_daemon.py is preferred, else will use audio_meter.py
-    print(f'({ME}) waiting for \'loudness_monitor_daemon.py\' ...' )
-    loud_mon_daemon_available = loudness_monitor_is_running()
+    # loudness_monitor.py is preferred, else will use level_meter.py
+    print(f'({ME}) waiting for \'loudness_monitor.py\' ...' )
+    loud_mon_available = loudness_monitor_is_running()
 
-    if loud_mon_daemon_available:
-        print( f'({ME}) using \'loudness_monitor_daemon.py\'' )
+    if loud_mon_available:
+        print( f'({ME}) using \'loudness_monitor.py\'' )
     else:
-        # Prepare and start an audio_meter.Meter instance
+        # Prepare and start an level_meter.Meter instance
         print( f'({ME}) using \'level_meter.py\'' )
         from share.level_meter import Meter
         meter = Meter(device='pre_in_loop', mode='peak', bar=False)
@@ -115,7 +115,7 @@ def start():
     lowSigElapsed = 0
     while True:
 
-        if loud_mon_daemon_available:
+        if loud_mon_available:
             dBFS = read_dBFS()
         else:
             dBFS = meter.L
