@@ -349,7 +349,7 @@ Here you are an uncommented bare example of `config.yml`:
         hide_LU: false
         show_graphs: true
 
-    LU_reset_md_field: album
+    LU_reset_scope: album
 
     cdrom_device:  /dev/cdrom
 
