@@ -43,8 +43,7 @@ METADATAFNAME   = f'{MAINFOLDER}/.player_metadata'
 
 
 def stop():
-    Popen( 'pkill -f "loudness_monitor.py\ start"', shell=True )
-    sleep(.5)
+    Popen( 'pkill -KILL -f "loudness_monitor.py\ start"', shell=True )
     sys.exit()
 
 def prepare_control_fifo(fname):
@@ -152,14 +151,40 @@ def get_configured_scope():
     return scope
 
 
+def wait_M():
+    """ This must be threaded.
+        Call the M_event and waits for its flag to be 'set' when the meter
+        has a new [M]omentary measurement change greater than a given threshold.
+        Then dumps measurements to disk, and clear the M_event flag.
+    """
+    while True:
+        M_event.wait()
+        save2disk()
+        M_event.clear()
+
+
+def wait_I():
+    """ This must be threaded.
+        Call the I_event and waits for its flag to be 'set' when the meter
+        has a new [I]ntegrated measurement change greater than a given threshold.
+        Then dumps measurements to disk, and clear the M_event flag.
+    """
+    while True:
+        I_event.wait()
+        save2disk()
+        I_event.clear()
+
+
 def save2disk():
     # Saving to disk rounded to 1 dB
     with open( MEASFNAME, 'w') as f:
-        I_LU = meter.I - -23.0      # from dBFS to dBLU ( 0 dBLU = -23dBFS )
+        # From dBFS to dBLU ( 0 dBLU = -23dBFS )
+        I_LU = meter.I - -23.0
         M_LU = meter.M - -23.0
-        d = { "LU_I":  round(I_LU // meter.I_threshold * meter.I_threshold, 0),
-              "LU_M":  round(M_LU // meter.M_threshold * meter.M_threshold, 0),
-              "scope": scope }
+        # Floor the value on disk as per the used threshold
+        I_LU = I_LU // meter.I_threshold * meter.I_threshold
+        M_LU = M_LU // meter.M_threshold * meter.M_threshold
+        d = { "LU_I":  I_LU, "LU_M":  M_LU, "scope": scope }
         f.write( json.dumps(d) )
 
 
@@ -177,28 +202,14 @@ if __name__ == '__main__':
         print(__doc__)
 
 
-    def wait_M():
-        while True:
-            M_event.wait()
-            save2disk()
-            M_event.clear()
-
-
-    def wait_I():
-        while True:
-            I_event.wait()
-            save2disk()
-            I_event.clear()
-
-
-    # Initialize the scope of the measurements (source, album or track)
+    # Initialize the scope of the measurements (input, album or track)
     scope = get_configured_scope()
 
     # Initialize current preamp source
     with open( STATEFNAME, 'r' ) as state_file:
         source = yaml.safe_load(state_file)['input']
 
-    # Starting the meter and passing events to listen for changes in measuremets
+    # Starting the meter and pass events to listen for changes in measurements
     M_event = threading.Event()
     I_event = threading.Event()
     meter = LU_meter( device='pre_in_loop', display=False,
@@ -207,7 +218,7 @@ if __name__ == '__main__':
     meter.start()
     print(f'(loudness_monitor) spawn PortAudio ports in JACK')
 
-    # Threading the fifo listening loop for controlling the meter
+    # Threading the fifo listening loop for controlling this module
     prepare_control_fifo(CTRLFNAME)
     control = threading.Thread( target=control_fifo_read_loop,
                                 args=(CTRLFNAME, meter) )
