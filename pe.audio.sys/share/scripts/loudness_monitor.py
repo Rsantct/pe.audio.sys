@@ -241,7 +241,7 @@ if __name__ == '__main__':
     obsthread = threading.Thread( target=observer.start() )
     obsthread.start()
 
-    # Threading the received meter events that triggers the output file writing
+    # Threading received meter events that will trigger writing the output file
     wait_M = threading.Thread( target=wait_M )
     wait_M.start()
     wait_I = threading.Thread( target=wait_I )
