@@ -188,9 +188,9 @@ def process_aux( cmd, arg='' ):
             with open(LOUD_MON_VAL_FILE, 'r') as f:
                 result = json.loads( f.read() )
         except:
-            if 'LU_reset_md_field' in CONFIG:
+            if 'LU_reset_scope' in CONFIG:
                 result = {'LU_I': 0.0, 'LU_M':0.0,
-                          'scope': CONFIG["LU_reset_md_field"]}
+                          'scope': CONFIG["LU_reset_scope"]}
             else:
                 result = {'LU_I': 0.0, 'LU_M':0.0, 'scope': 'album'}
 

@@ -218,7 +218,7 @@ function fill_in_page_statics(){
         }
         select_clear_options(ElementId="LUscopeSelector");
         const mySel = document.getElementById("LUscopeSelector");
-        scopes = ['album', 'track'];
+        scopes = ['input', 'album', 'track'];
         for ( i in scopes ) {
             var option = document.createElement("option");
             option.text = scopes[i];
@@ -503,9 +503,6 @@ function update_ampli_switch() {
 }
 // Changes the LU_monitor scope
 function set_LU_scope(scope){
-    if (scope == 'track'){
-        scope = 'title'
-    }
     control_cmd('aux set_loudness_monitor_scope ' + scope);
 }
 // Filling in the user's macro buttons
