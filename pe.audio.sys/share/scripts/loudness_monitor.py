@@ -91,8 +91,8 @@ class My_files_event_handler(FileSystemEventHandler):
     """
 
     def __init__(self, meter):
-        self.meter = meter
-        self.last_album_track = '' # memorize last album or track
+        self.meter            = meter  # We need to be able to reset the meter.
+        self.last_album_track = ''     # Memorize last album or track
 
     def on_modified(self, event):
 
@@ -209,12 +209,16 @@ if __name__ == '__main__':
     with open( STATEFNAME, 'r' ) as state_file:
         source = yaml.safe_load(state_file)['input']
 
-    # Starting the meter and pass events to listen for changes in measurements
+    # Will pass event objects to the meter to listen for changes in measurements
     M_event = threading.Event()
     I_event = threading.Event()
+    # LU_meter relevant parameters:
+    # M_threshold = 10.0   To avoid stress saving values to disk, because this
+    #                      measure only serves as a rough signal detector.
+    # I_threshold = 1.0    LU-[I]ntegrated values are relatively stable.
     meter = LU_meter( device='pre_in_loop', display=False,
-                      M_event=M_event,
-                      I_event=I_event )
+                      M_event=M_event, M_threshold=10.0,
+                      I_event=I_event, I_threshold=1.0 )
     meter.start()
     print(f'(loudness_monitor) spawn PortAudio ports in JACK')
 
@@ -224,8 +228,8 @@ if __name__ == '__main__':
                                 args=(CTRLFNAME, meter) )
     control.start()
 
-    # Threading an Observer watchdog for file changes, then
-    # reseting the measurements if necessary.
+    # Threading an Observer watchdog for file changes, and passing our meter
+    # instance reference in order to reset measurements if necessary.
     #   https://watchdog.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
