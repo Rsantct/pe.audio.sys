@@ -37,10 +37,10 @@ import jack
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
-# YOUR SETUP HERE:
+### CONFIG BEHAVIOR HERE:
 NOISE_FLOOR = -70 # will compute low levels only below this floor in dBFS
 MAX_WAIT    =  60 # time in seconds before shutting down Brutefir
-
+###
 
 def control_cmd(cmd):
     host, port = CTL_HOST, CTL_PORT
@@ -86,7 +86,7 @@ def loudness_monitor_is_running():
 
 
 def brutefir_is_running():
-    if jc.get_ports('brutefir'):
+    if JC.get_ports('brutefir'):
         return True
     else:
         return False
@@ -151,28 +151,31 @@ if __name__ == "__main__":
     # This script name
     ME    = __file__.split('/')[-1]
 
-    # pe.audio.sys service addressing
-    try:
-        with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-            cfg = yaml.safe_load(f)
-            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
-    except:
-        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-        sys.exit()
-
-    # Jack client to check for brutefir availability
-    try:
-        jc = jack.Client('powersave', no_start_server=True)
-    except Exception:
-        print(Exception)
-        sys.exit()
-
     if sys.argv[1:]:
 
-        if sys.argv[1] == 'start':
-            start()
-        elif sys.argv[1] == 'stop':
+        if sys.argv[1] == 'stop':
             stop()
+
+        elif sys.argv[1] == 'start':
+
+            # pe.audio.sys service addressing
+            try:
+                with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+                    cfg = yaml.safe_load(f)
+                    CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
+            except:
+                print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
+                sys.exit()
+
+            # Jack client to check for brutefir availability
+            try:
+                JC = jack.Client('powersave', no_start_server=True)
+            except Exception:
+                print(Exception)
+                sys.exit()
+
+            start()
+
         else:
             print(__doc__)
 
