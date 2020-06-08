@@ -209,7 +209,7 @@ if __name__ == '__main__':
     with open( STATEFNAME, 'r' ) as state_file:
         source = yaml.safe_load(state_file)['input']
 
-    # Will pass event objects to the meter to listen for changes in measurements
+    # Events to pass to the meter in order to notify for changes in measurements
     M_event = threading.Event()
     I_event = threading.Event()
     # LU_meter relevant parameters:
