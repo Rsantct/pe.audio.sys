@@ -135,7 +135,7 @@ def check_jloops():
     loop_names = ['pre_in_loop']
     for source in CONFIG['sources']:
         pname = CONFIG['sources'][source]['capture_port']
-        if 'loop' in pname:
+        if 'loop' in pname and pname not in loop_names:  # avoids duplicates
             loop_names.append( pname )
     for loop_name in loop_names:
             cfg_loops.append( f'{loop_name}:input_1' )
