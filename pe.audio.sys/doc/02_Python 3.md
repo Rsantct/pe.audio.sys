@@ -35,9 +35,13 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install JACK-Client
     ```
 
-### Necessary for CD-AUDIO metadata:
+### Necessary for CD-AUDIO:
 
+    # Metadata search
     sudo pip3 install discid musicbrainzngs
+
+    # Automatic detection of inserted disc
+    sudo apt install python3-pyudev
 
 and maybe:
 
@@ -50,6 +54,6 @@ and maybe:
     
 ### Optional the serial port extensions to run the IR receiver:
 
-    apt install python3-serial
+    sudo apt install python3-serial
     (or python3 -m pip install pyserial)
 
