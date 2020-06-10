@@ -18,7 +18,7 @@
 
 """
     A daemon that stops the Brutefir convolver if the preamp signal is too low
-    and restart it dynamically when signal arises.
+    and restarts it dynamically when signal arises.
 
     usage:   powersave.py  start | stop
 
