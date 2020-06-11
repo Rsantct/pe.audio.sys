@@ -97,7 +97,7 @@ class Widgets(object):
                 'input'             : { 'pos':'1  3',    'val':''           },
                 'level'             : { 'pos':'1  1',    'val':'v:'         },
                 'headroom'          : { 'pos':'0  0',    'val':'hrm:'       },
-                'balance'           : { 'pos':'10 1',    'val':'bl:'        },
+                'balance'           : { 'pos':'9  1',    'val':'bl:'        },
                 # the former 'mono' key is now 'midside'
                 'midside'           : { 'pos':'17 1',    'val':''           },
                 'solo'              : { 'pos':'0  0',    'val':''           },
@@ -234,6 +234,9 @@ def update_lcd_state(scr='scr_1'):
                     lbl = 'SIDE'
                 else:
                     lbl = ''
+                # Special usage mono label to display if convolver is off
+                if 'convolver_runs' in data and not data['convolver_runs']:
+                    lbl = ' zzz' # brutefir is sleeping
 
             # Any else key:
             else:
