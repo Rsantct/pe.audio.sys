@@ -55,8 +55,10 @@ import yaml
 def get_pulse_cards():
     pa_cards = {}
     try:
+        # if 'pactl' command not available will except
+        tmp = sp.check_output( 'which pactl'.split() )
         tmp = sp.check_output( 'export LANG=en_US.UTF-8 && pactl list cards',
-                                shell=True ).decode().split('\n')
+                                shell=True ).decode().split('\n' )
         new_card = False
         for line in tmp:
 
@@ -104,7 +106,11 @@ def PA_release_card( pa_name ):
 if __name__ == "__main__":
 
     if sys.argv[1:]:
-        if '-h' in sys.argv[1]:
+        if sys.argv[1] == 'start':
+            pass
+        if sys.argv[1] == 'stop':
+            sys.exit()
+        elif '-h' in sys.argv[1]:
             print(__doc__)
             sys.exit()
 

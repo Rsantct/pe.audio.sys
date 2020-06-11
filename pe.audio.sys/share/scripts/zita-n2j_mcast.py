@@ -20,23 +20,39 @@ BUFFER = 50
 
 
 def get_default_interface():
-    # Getting the machine's used interface name
-    interface = ''
-    # Linux
+    """ Getting the machine's interface name with best metric """
+    interfaces = []
+
+    # Linux 'ip route'
+    #   default via 192.168.1.1 dev eth0 src 192.168.1.236 metric 202
+    #   default via 192.168.1.1 dev wlan0 proto dhcp src 192.168.1.38 metric 303
     if uname()[0] == 'Linux':
         tmp = sp.check_output('ip route'.split()).decode()
-        # Example $ ip route
-        # default via 192.168.1.1 dev eth0 proto dhcp src 192.168.1.36 metric 202
         for line in tmp.split('\n'):
             if 'default' in line:
-                interface = line.split()[4]
-    # Mac OS
+                iface = { 'name':   line.split()[4],
+                          'metric': int(line.split()[-1]) }
+                interfaces.append( iface )
+
+    # Mac OS:   route get x.x.x.x will show the best metric interface, no matter
+    #           if you have more than one interface alive.
     elif uname()[0] == 'Darwin':
         tmp = sp.check_output( 'route get 10.10.10.10'.split() ).decode()
         for line in tmp.split('\n'):
             if 'interface:' in line:
-                interface = line.split(':')[-1].strip()
-    return interface
+                iface = { 'name':   line.split(':')[-1].strip(),
+                          'metric': 1 }
+                interfaces.append( iface )
+
+    # In Linux we can have more than one interface, lets get the best metric one
+    iname = ''
+    best_metric = 1e6
+    for i in interfaces:
+        if i["metric"] < best_metric:
+            iname = i["name"]
+            best_metric = i["metric"]
+
+    return iname
 
 
 def start():

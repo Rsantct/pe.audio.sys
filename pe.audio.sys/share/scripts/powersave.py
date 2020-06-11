@@ -17,14 +17,15 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    A daemon that stops the Brutefir convolver if the preamp signal is too low.
+    A daemon that stops the Brutefir convolver if the preamp signal is too low
+    and restarts it dynamically when signal arises.
 
     usage:   powersave.py  start | stop
 
 
     NOTICE:
-    Brutefir has a powersave built-in feature, but if saving CPU% is insufficient,
-    this script will completely stop and start the convolver dynamically.
+    Brutefir has a powersave built-in feature, the saving CPU% is significant
+    in single core CPU, but too low in multicore CPUs.
 
 """
 import sys
