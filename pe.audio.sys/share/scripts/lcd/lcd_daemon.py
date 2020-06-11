@@ -236,7 +236,7 @@ def update_lcd_state(scr='scr_1'):
                     lbl = ''
                 # Special usage mono label to display if convolver is off
                 if 'convolver_runs' in data and not data['convolver_runs']:
-                    lbl = ' zzz'
+                    lbl = ' zzz' # brutefir is sleeping
 
             # Any else key:
             else:
