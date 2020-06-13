@@ -243,7 +243,7 @@ def do(cmd):
         result = mplayer_control('eject', 'cdda')
 
     # An URL to be played back by the istreams Mplayer service:
-    elif cmd.startswith('http://'):
+    elif cmd.startswith('http://') or cmd.startswith('https://'):
         sp.Popen( f'{MAINFOLDER}/share/scripts/istreams.py url {cmd}'
                   .split() )
         result = 'done'
