@@ -57,13 +57,13 @@ All commands prefixed with 'player':
 
     eject                                   Ejects the CD tray
 
-    http://url                              Plays the internet audio stream at given url
-
     get_meta                                Gets metadata info from current player if available
 
 --- Miscel controls
 
 All commands prefixed with 'aux':
+
+    play http://url                         Listen an internet audio stream
 
     amp_switch   on | off                   Switch an amplifier
     
