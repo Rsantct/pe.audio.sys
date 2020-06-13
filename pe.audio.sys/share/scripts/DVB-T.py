@@ -32,6 +32,11 @@
                       stop
                       preset  <preset_num>
                       name    <channel_name>
+
+    Notice:
+    When loading a new stream, Mplayer jack ports will dissapear for a while,
+    so you'll need to wait for Mplayer ports to re-emerge before switching
+    the preamp input.
 """
 
 import sys
