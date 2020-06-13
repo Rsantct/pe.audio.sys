@@ -158,9 +158,9 @@ def wait_M():
         Then dumps measurements to disk, and clear the M_event flag.
     """
     while True:
-        M_event.wait()
+        meter.M_event.wait()
         save2disk()
-        M_event.clear()
+        meter.M_event.clear()
 
 
 def wait_I():
@@ -170,9 +170,9 @@ def wait_I():
         Then dumps measurements to disk, and clear the M_event flag.
     """
     while True:
-        I_event.wait()
+        meter.I_event.wait()
         save2disk()
-        I_event.clear()
+        meter.I_event.clear()
 
 
 def save2disk():
@@ -209,16 +209,13 @@ if __name__ == '__main__':
     with open( STATEFNAME, 'r' ) as state_file:
         source = yaml.safe_load(state_file)['input']
 
-    # Events to pass to the meter in order to notify for changes in measurements
-    M_event = threading.Event()
-    I_event = threading.Event()
-    # LU_meter relevant parameters:
+    # Starts a LU_meter instance with relevant parameters:
     # M_threshold = 10.0   To avoid stress saving values to disk, because this
     #                      measure only serves as a rough signal detector.
     # I_threshold = 1.0    LU-[I]ntegrated values are relatively stable.
     meter = LU_meter( device='pre_in_loop', display=False,
-                      M_event=M_event, M_threshold=10.0,
-                      I_event=I_event, I_threshold=1.0 )
+                      M_threshold=10.0,
+                      I_threshold=1.0 )
     meter.start()
     print(f'(loudness_monitor) spawn PortAudio ports in JACK')
 
