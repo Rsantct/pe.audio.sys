@@ -69,11 +69,11 @@ def select_by_name(channel_name):
         # check_output will fail if no command output
         sp.check_output( ['grep', channel_name, tuner_file] ).decode()
     except:
-        print( f'(init/DVB) Channel NOT found: \'{channel_name}\'' )
+        print( f'(DVB-T.py) Channel NOT found: \'{channel_name}\'' )
         return False
 
     try:
-        print( f'(init/DVB) trying to load \'{channel_name}\'' )
+        print( f'(DVB-T.py) trying to load \'{channel_name}\'' )
         # The whole address after 'loadfile' needs to be
         # SINGLE quoted to load properly:
         command = ('loadfile \'dvb://' + channel_name + '\'\n' )
@@ -82,7 +82,7 @@ def select_by_name(channel_name):
         f.close()
         return True
     except:
-        print( f'(init/DVB) failed to load \'{channel_name}\'' )
+        print( f'(DVB-T.py) failed to load \'{channel_name}\'' )
         return False
 
 
@@ -93,7 +93,7 @@ def select_by_preset(preset_num):
         select_by_name(channel_name)
         return True
     except:
-        print( f'(init/DVB) error in preset # {preset_num}' )
+        print( f'(DVB-T.py) error in preset # {preset_num}' )
         return False
 
 
@@ -152,7 +152,7 @@ if __name__ == '__main__':
             sys.exit()
 
         else:
-            print( '(init/DVB) Bad option' )
+            print( '(DVB-T.py) Bad option' )
 
     else:
         print(__doc__)
