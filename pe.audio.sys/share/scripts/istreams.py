@@ -75,6 +75,7 @@ redirection_path = f'{UHOME}/pe.audio.sys/.istreams_events'
 def load_url(url):
     try:
         command = ('loadfile ' + url + '\n' )
+        print( f'(istreams.py) trying to load \'{url}\'' )
         with open( input_fifo, 'w') as f:
             f.write(command)
         # print(command) # DEBUG
