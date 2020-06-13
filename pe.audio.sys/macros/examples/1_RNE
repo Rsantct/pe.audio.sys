@@ -13,8 +13,8 @@ UHOME = expanduser("~")
 mplayer_profile = 'istreams' # Mplayer profile "istreams" or "dvb"
 preset          = 1
 loud_ref        = 0
-xo_pattern      = 'mp'
-drc_pattern     = 'mp'
+xo_pattern      = ''
+drc_pattern     = ''
 
 
 def wait4ports(pattern):
