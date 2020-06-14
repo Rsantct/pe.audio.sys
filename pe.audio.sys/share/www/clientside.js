@@ -471,7 +471,7 @@ function select_track() {
 function play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
-        control_cmd( 'player ' + url );
+        control_cmd( 'aux play ' + url );
     }
 }
 
