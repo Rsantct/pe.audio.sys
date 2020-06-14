@@ -1,24 +1,90 @@
-#!/bin/bash
+#!/usr/bin/env python3
+"""
+    A macro template to tune a Mplayer radio station and listen to it.
+"""
+import sys
+from os.path import expanduser
+from time import sleep
+from subprocess import Popen, check_output
+import jack
+UHOME = expanduser("~")
 
-###############################################
-# configure here mode="internet" or "dvbt"
-mode="internet"
-###############################################
+###########   USER CONFIG    #############
+mplayer_profile = 'istreams' # Mplayer profile "istreams" or "dvb"
+preset          = 1
+loud_ref        = 0
+xo_pattern      = ''
+drc_pattern     = ''
 
-if [[ $mode == "dvbt" ]]; then
-    $HOME/pe.audio.sys/share/scripts/DVB-T.py preset 1
-    sleep .5 # because retuning takes a bit
-    echo "input tdt" | nc -N localhost 9990
 
-elif [[ $mode == "internet" ]]; then
-    $HOME/pe.audio.sys/share/scripts/istreams.py preset 1
-    sleep .5 # because retuning takes a bite
-    echo "input istreams" | nc -N localhost 9990
+def wait4ports(pattern):
+    """ Wait for mplayer jack ports
+    """
+    n = 20  # 10 sec
+    while n:
+        if len( JC.get_ports( pattern ) ) >= 2:
+            return True
+        n -= 1
+        sleep(0.5)
+    return False
 
-else
-    exit 0
-fi
 
-# RNE radio program uses to have a very high loudness LU level
-# config.yml.on_change_input or source settings will restore if desired
-echo "loudness_ref 9" | nc -N localhost 9990
+def get_sets(set_type):
+    sets = check_output( f'echo get_{set_type}_sets | nc -N localhost 9990',
+                            shell=True ).decode()
+    sets = sets.replace('[','').replace(']','').replace('"','') \
+               .replace(' ','').split(',')
+    return sets
+
+
+if __name__ == "__main__":
+
+    JC = jack.Client('macro', no_start_server=True)
+
+    # Prepare to use the proper share/scripts/xxxx.py and preamp input
+    if mplayer_profile == 'dvb':
+        script   = 'DVB-T.py'
+        preinput = 'tdt'
+    elif mplayer_profile == 'istreams':
+        script   = 'istreams.py'
+        preinput = 'istreams'
+    else:
+        print( f'(macros) Bad Mplayer profile \'{mplayer_profile}\'' )
+        sys.exit()
+
+    # Tune the radio station (Mplayer jack ports will dissapear for a while)
+    Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} preset {str(preset)}'
+            .split() )
+
+    # Wait a bit to Mplayer ports to dissapear from jack while loading a new stream.
+    sleep(2)
+
+    # Waiting for mplayer ports to re-emerge
+    if not wait4ports( f'mplayer_{mplayer_profile}' ):
+        print(f'(macros) ERROR jack ports \'mplayer_{mplayer_profile}\' not found, '
+               'bye :-/')
+        sys.exit(-1)
+
+    # Switching the preamp input
+    Popen( f'echo input {preinput} | nc -N localhost 9990', shell=True )
+
+    # LU level compensation
+    Popen( f'echo loudness_ref {loud_ref} | nc -N localhost 9990', shell=True )
+
+    # XO
+    if xo_pattern:
+        for s in get_sets('xo'):
+            if xo_pattern in s:
+                Popen( f'echo set_xo {s} | nc -N localhost 9990', shell=True )
+                print( f'(macros) setting XO \'{s}\'' )
+                break
+
+    # DRC
+    if drc_pattern:
+        for s in get_sets('drc'):
+            if xo_pattern in s:
+                Popen( f'echo set_drc {s} | nc -N localhost 9990', shell=True )
+                print( f'(macros) setting DRC \'{s}\'' )
+                break
+
+

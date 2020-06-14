@@ -9,15 +9,15 @@
 #   ao=jack:name=<mplayer_port_name>:port=<destination_port_name>
 
 [dvb]
-ao=jack:name=mplayer_dvb:port=pre_in_loop
+ao=jack:name=mplayer_dvb:noconnect
 
 [cdda]
-ao=jack:name=mplayer_cdda:port=pre_in_loop
+ao=jack:name=mplayer_cdda:noconnect
 speed=1
 # Try cache=1024 to avoid playback breakdowns
 cache=1024
 
 [istreams]
-ao=jack:name=mplayer_istreams:port=pre_in_loop
+ao=jack:name=mplayer_istreams:noconnect
 
 

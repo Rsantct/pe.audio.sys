@@ -40,8 +40,11 @@
                         name   <preset_name>
                         url    <some_url_stream>
 
+    Notice:
+    When loading a new stream, Mplayer jack ports will dissapear for a while,
+    so you'll need to wait for Mplayer ports to re-emerge before switching
+    the preamp input.
 """
-
 import sys
 import os
 from pathlib import Path
@@ -75,6 +78,7 @@ redirection_path = f'{UHOME}/pe.audio.sys/.istreams_events'
 def load_url(url):
     try:
         command = ('loadfile ' + url + '\n' )
+        print( f'(istreams.py) trying to load \'{url}\'' )
         with open( input_fifo, 'w') as f:
             f.write(command)
         # print(command) # DEBUG

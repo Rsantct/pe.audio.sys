@@ -26,6 +26,8 @@ import yaml
 import json
 from subprocess import Popen
 import os
+import jack
+from time import sleep
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
@@ -112,6 +114,47 @@ def process_aux( cmd, arg='' ):
     """ input:  a tuple (prefix, command, arg)
         output: a result string
     """
+
+
+    def play_istream(url):
+
+        def wait4ports(pattern):
+            """ Waits for jack ports
+            """
+            JC = jack.Client('peaudiosys', no_start_server=True)
+            n = 20  # 10 sec
+            while n:
+                if len( JC.get_ports( pattern ) ) >= 2:
+                    break
+                n -= 1
+                sleep(0.5)
+            JC.close()
+            if n:
+                return True
+            else:
+                return False
+
+
+        error = False
+
+        # Tune the radio station (Mplayer jack ports will dissapear for a while)
+        Popen( f'{UHOME}/pe.audio.sys/share/scripts/istreams.py url {url}'
+                .split() )
+        # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
+        sleep(2)
+        # Waiting for mplayer ports to re-emerge
+        if not wait4ports( f'mplayer_istreams' ):
+            print(f'(peaudiosys.py) ERROR jack ports \'mplayer_istreams\''
+                   ' not found' )
+            error = True
+        if not error:
+            # Switching the preamp input
+            Popen( f'echo input istreams | nc -N localhost 9990', shell=True )
+            return True
+        else:
+            return False
+
+
     result = ''
 
     # AMPLIFIER SWITCHING
@@ -161,6 +204,18 @@ def process_aux( cmd, arg='' ):
         print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
         result = 'tried'
+
+    # PLAYS SOMETHING
+    elif cmd == 'play':
+
+        # An URL: will be played back by the istreams Mplayer service:
+        if arg.startswith('http://') or arg.startswith('https://'):
+            if play_istream(arg):
+                result = 'done'
+            else:
+                result = 'failed'
+        else:
+            result = f'bad: {arg}'
 
     # RESET the LOUDNESS MONITOR DAEMON:
     elif cmd == 'loudness_monitor_reset' or cmd.lower() == 'lu_monitor_reset':
