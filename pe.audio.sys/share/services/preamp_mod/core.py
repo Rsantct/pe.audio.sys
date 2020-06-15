@@ -912,19 +912,11 @@ class Preamp(object):
         return { 'band': freq.tolist(), 'mag': mag.tolist(),
                                         'pha': pha.tolist() }
 
-    def select_source(self, value, *dummy):
-        """ this is the source selector """
+    def select_source(self, source, *dummy):
 
         def try_select(source):
+            """ this is the source selector """
             w = '' # warnings
-
-            if source == 'none':
-                jack_clear_preamp()
-                return 'done'
-
-            if source not in self.inputs:
-                # do nothing
-                return f'unknown source \'{source}\''
 
             # clearing 'preamp' connections
             jack_clear_preamp()
@@ -970,24 +962,36 @@ class Preamp(object):
                 print('(config.yml) missing \'on_change_input\' options')
             return candidate
 
-        result = try_select(value)
+        # Source = 'none'
+        if source == 'none':
+            jack_clear_preamp()
+            return 'done'
+
+        # Bad source
+        elif source not in self.inputs:
+            # do nothing
+            return f'unknown source \'{source}\''
+
+        # New source
+        else:
+            result = try_select(source)
 
         if result == 'done':
-            self.state['input'] = value
+            self.state['input'] = source
             candidate = self.state.copy()
+            # Global audio settings on change input, but ensure the convolver
+            # is running before applying audio settings.
+            if not self.state["convolver_runs"]:
+                self.convolver('on')
             candidate = on_change_input_behavior(candidate)
-            # Special source loudness_ref overrides
-            # the one in on_change_input_behavior
-            try:
+            # Some source specific audio settings overrides global settings
+            # Loudness_ref
+            if 'loudness_ref' in CONFIG["sources"][source]:
                 candidate["loudness_ref"] = \
-                               CONFIG["sources"][value]['loudness_ref']
-            except:
-                pass
-            # Special source target setting overrides the one in on_init
-            try:
-                candidate["target"] = CONFIG["sources"][value]['target']
-            except:
-                candidate["target"] = CONFIG["on_init"]['target']
+                               CONFIG["sources"][source]['loudness_ref']
+            # Target eq curve
+            if 'target' in CONFIG["sources"][source]:
+                candidate["target"] = CONFIG["sources"][source]['target']
             self._validate( candidate )
 
         return result
