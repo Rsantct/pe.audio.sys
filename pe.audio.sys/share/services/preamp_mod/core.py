@@ -713,6 +713,7 @@ class Preamp(object):
         self.inputs = CONFIG['sources']
         # The state dictionary
         self.state = yaml.safe_load( open(STATE_PATH, 'r') )
+        self.state["convolver_runs"] = brutefir_is_running()
         # will add some informative values:
         self.state['loudspeaker'] = CONFIG['loudspeaker']
         self.state['peq_set'] = get_peq_in_use()
@@ -727,15 +728,20 @@ class Preamp(object):
         # Max authorised balance
         self.balance_max = float(CONFIG['balance_max'])
         # Brutefir input connected ports (used from convolver energy saving method)
-        self.bf_sources = []
+        self.bf_sources = bf_get_in_connections()
+
 
     def convolver( self, value, *dummy ):
+
+        result = 'nothing done'
 
         if value == 'off':
             if self.state["convolver_runs"]:
                 self.bf_sources = bf_get_in_connections()
                 brutefir_stop()
-            result = 'done'
+                result = 'done'
+                self.state["convolver_runs"] = False
+                self.save_state()
 
         elif value == 'on':
             if not self.state["convolver_runs"]:
@@ -746,8 +752,11 @@ class Preamp(object):
                     c.set_xo ( self.state['xo_set']  )
                     c.set_drc( self.state['drc_set'] )
                     del( c )
+                    self.state["convolver_runs"] = True
                 else:
                     result = 'PANIC: ' + result
+                    self.state["convolver_runs"] = False
+                self.save_state()
 
         else:
             result = 'bad option'
@@ -784,8 +793,6 @@ class Preamp(object):
     # wich always will include two arguments for any function call.
 
     def get_state(self, *dummy):
-        # informative add-on
-        self.state['convolver_runs'] = brutefir_is_running()
         return self.state
 
     def get_target_sets(self, *dummy):
