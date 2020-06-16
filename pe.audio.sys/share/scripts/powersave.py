@@ -62,7 +62,7 @@ def sec2min(s):
     return f'{str(m).rjust(2,"0")}:{str(s).rjust(2,"0")}'
 
 
-def read_dBFS():
+def read_loudness_monitor():
     # Lets use LU_M (LU Momentary) from .loudness_monitor
     try:
         with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
@@ -117,7 +117,7 @@ def start():
     while True:
 
         if loud_mon_available:
-            dBFS = read_dBFS()
+            dBFS = read_loudness_monitor()
         else:
             dBFS = meter.L
 
