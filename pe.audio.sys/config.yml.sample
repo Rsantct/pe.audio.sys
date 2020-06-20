@@ -267,6 +267,6 @@ web_config:
 LU_reset_scope: album
 
 # Powersave: stops/starts Brutefir as per the monitored signal level.
-powersave:              on
+powersave:              false
 powersave_noise_floor: -70
 powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
