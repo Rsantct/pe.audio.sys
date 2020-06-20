@@ -870,10 +870,10 @@ class Preamp(object):
         #
         self.ps_convolver_off = threading.Event()
         self.ps_convolver_on  = threading.Event()
-        t1 = threading.Thread( name='waits for convolver ON',
-                               target=wait_PS_convolver_on )
-        t2 = threading.Thread( name='waits for convolver OFF',
+        t1 = threading.Thread( name='waits for convolver OFF',
                                target=wait_PS_convolver_off )
+        t2 = threading.Thread( name='waits for convolver ON',
+                               target=wait_PS_convolver_on )
         t1.start()
         t2.start()
         self._print_threads()
