@@ -852,8 +852,8 @@ class Preamp(object):
             while True:
                 # waiting ...
                 self.ps_convolver_off.wait()
+                print(f'(core) Thread \'waits for OFF\' received event')
                 self.ps_convolver_off.clear()
-                print('----OFF----')
                 self.switch_convolver('off')
         #
         def wait_PS_convolver_on():
@@ -862,14 +862,14 @@ class Preamp(object):
             while True:
                 # waiting ...
                 self.ps_convolver_on.wait()
+                print(f'(core) Thread \'waits for ON\' received event')
                 self.ps_convolver_on.clear()
-                print('----ON----')
                 self.switch_convolver('on')
         #
         self.ps_convolver_off = threading.Event()
         self.ps_convolver_on  = threading.Event()
         t1 = threading.Thread( name='waits for ON',
-                               target=wait_PS_convolver_off )
+                               target=wait_PS_convolver_on )
         t2 = threading.Thread( name='waits for OFF',
                                target=wait_PS_convolver_off )
         t1.start()
