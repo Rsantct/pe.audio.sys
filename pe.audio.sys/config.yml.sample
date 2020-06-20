@@ -228,9 +228,6 @@ scripts:
     ## A daemon that monitorizes the EBU R128 Loudness Integrated
     #- loudness_monitor.py
 
-    ## Stops the convolver dynamically if the monitored level is too low
-    #- powersave.py
-
     ## The LCDd server and lcd_daemon.py
     #- lcd.py
 
@@ -269,3 +266,7 @@ web_config:
 # from the optional loudness_monitor.py script. Can be modified in runtime.
 LU_reset_scope: album
 
+# Powersave: stops/starts Brutefir as per the monitored signal level.
+powersave:              on
+powersave_noise_floor: -70
+powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
