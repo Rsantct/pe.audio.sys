@@ -43,7 +43,7 @@ external_cards:
 # ALSA backend (leave $autoCard and $autoFS under options below,
 #               it will be replaced by the actual values)
 jack_options:           -R -d alsa
-jack_backend_options:   -d $autoCard -r autoFS -p 1024 -n2 
+jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n2 
 
 
 # =========================  LIMITS  ===========================================
@@ -250,7 +250,7 @@ amp_manager:  /home/predic/bin/ampli.sh
 # Put here some command line (from your PATH) you want to run
 # when ordering the 'aux restart' command
 # e.g.: 'sudo reboot', 'peaudiosys_restart.sh'
-restart_cmd: peaudiosys_restart.sh
+restart_cmd: ~/pe.audio.sys/start.py all
 
 # Control web page behavior
 web_config:
