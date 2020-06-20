@@ -219,36 +219,6 @@ def calc_gain( state ):
     return gain
 
 
-def sec2min(s):
-    m = s // 60
-    s = s % 60
-    return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
-
-
-def read_loudness_monitor():
-    # Lets use LU_M (LU Momentary) from .loudness_monitor
-    try:
-        with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
-            d = yaml.safe_load( f )
-            LU_M = d["LU_M"]
-    except:
-        LU_M = 0.0
-    dBFS = LU_M - 23.0  # LU_M is referred to -23dBFS
-    return dBFS
-
-
-def loudness_monitor_is_running():
-    times = 10
-    while times:
-        try:
-            check_output('pgrep -f loudness_monitor.py'.split()).decode()
-            return True
-        except:
-            times -= 1
-        sleep(1)
-    return False
-
-
 def powersave_loop( convolver_off_driver, convolver_on_driver,
                     end_loop_flag ):
     """ Loops forever every 1 sec reading the dBFS level on preamp input.
@@ -260,6 +230,38 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
         convolver_on_driver:    will set when detected signal
         end_loop_flag:          will check on every loop
     """
+
+
+    def sec2min(s):
+        m = s // 60
+        s = s % 60
+        return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
+
+
+    def read_loudness_monitor():
+        # Lets use LU_M (LU Momentary) from .loudness_monitor
+        try:
+            with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
+                d = yaml.safe_load( f )
+                LU_M = d["LU_M"]
+        except:
+            LU_M = 0.0
+        dBFS = LU_M - 23.0  # LU_M is referred to -23dBFS
+        return dBFS
+
+
+    def loudness_monitor_is_running():
+        times = 10
+        while times:
+            try:
+                check_output('pgrep -f loudness_monitor.py'.split()).decode()
+                return True
+            except:
+                times -= 1
+            sleep(1)
+        return False
+
+
     # Default values:
     NOISE_FLOOR = -70
     MAX_WAIT    =  60
@@ -852,7 +854,7 @@ class Preamp(object):
             while True:
                 # waiting ...
                 self.ps_convolver_off.wait()
-                print(f'(core) Thread \'waits for OFF\' received event')
+                print(f'(core) Thread \'waits for convolver OFF\' received event')
                 self.ps_convolver_off.clear()
                 self.switch_convolver('off')
         #
@@ -862,15 +864,15 @@ class Preamp(object):
             while True:
                 # waiting ...
                 self.ps_convolver_on.wait()
-                print(f'(core) Thread \'waits for ON\' received event')
+                print(f'(core) Thread \'waits for convolver ON\' received event')
                 self.ps_convolver_on.clear()
                 self.switch_convolver('on')
         #
         self.ps_convolver_off = threading.Event()
         self.ps_convolver_on  = threading.Event()
-        t1 = threading.Thread( name='waits for ON',
+        t1 = threading.Thread( name='waits for convolver ON',
                                target=wait_PS_convolver_on )
-        t2 = threading.Thread( name='waits for OFF',
+        t2 = threading.Thread( name='waits for convolver OFF',
                                target=wait_PS_convolver_off )
         t1.start()
         t2.start()
