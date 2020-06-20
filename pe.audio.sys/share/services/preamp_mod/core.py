@@ -910,8 +910,8 @@ class Preamp(object):
 
         elif mode == 'off':
             self.ps_end.set()
-            # To ensure that powersave_loop 1 sec cicle can detect,
-            # the ps_end flag then terminate itself.
+            # To ensure that powersave_loop 1 sec cicle can detect
+            # the ps_end flag, then terminate itself.
             sleep(2)
             self.ps_end.clear()
             self.state["powersave"] = False
