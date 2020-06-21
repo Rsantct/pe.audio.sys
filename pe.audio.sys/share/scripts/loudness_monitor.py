@@ -30,11 +30,13 @@ import json
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from share.loudness_meter import LU_meter
-
 
 UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
+
+sys.path.append(f'{MAINFOLDER}/share/audiotools')
+from loudness_meter import LU_meter
+
 CONFIGFNAME     = f'{MAINFOLDER}/config.yml'
 STATEFNAME      = f'{MAINFOLDER}/.state.yml'
 CTRLFNAME       = f'{MAINFOLDER}/.loudness_control'
