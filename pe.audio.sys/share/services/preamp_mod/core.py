@@ -278,7 +278,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
         print( f'(powersave) using \'loudness_monitor.py\'' )
     else:
         # Prepare and start a level_meter.Meter instance
-        sys.path.append( f'{MAINFOLDER}/share/scripts/share' )
+        sys.path.append( f'{MAINFOLDER}/share/audiotools' )
         from level_meter import Meter
         meter = Meter(device='pre_in_loop', mode='peak', bar=False)
         meter.start()
