@@ -96,6 +96,12 @@ All commands prefixed with `preamp`. This prexix can be omited.
     set_drc | drc    <name>                 Selects a DRC FIR set
     set_xo  | xo     <name>                 Selects a XOVER FIR set
 
+### Energy saving:
+
+    powersave        on | off               Enables auto switching off the convolver when the
+                                            preamp signal drops below a noise floor for a while
+
+
 ## Music players control
 
 All commands prefixed with `player`:

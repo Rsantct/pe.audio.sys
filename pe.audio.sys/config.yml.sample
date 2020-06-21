@@ -43,7 +43,7 @@ external_cards:
 # ALSA backend (leave $autoCard and $autoFS under options below,
 #               it will be replaced by the actual values)
 jack_options:           -R -d alsa
-jack_backend_options:   -d $autoCard -r autoFS -p 1024 -n2 
+jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n2 
 
 
 # =========================  LIMITS  ===========================================
@@ -228,9 +228,6 @@ scripts:
     ## A daemon that monitorizes the EBU R128 Loudness Integrated
     #- loudness_monitor.py
 
-    ## Stops the convolver dynamically if the monitored level is too low
-    #- powersave.py
-
     ## The LCDd server and lcd_daemon.py
     #- lcd.py
 
@@ -253,7 +250,7 @@ amp_manager:  /home/predic/bin/ampli.sh
 # Put here some command line (from your PATH) you want to run
 # when ordering the 'aux restart' command
 # e.g.: 'sudo reboot', 'peaudiosys_restart.sh'
-restart_cmd: peaudiosys_restart.sh
+restart_cmd: ~/pe.audio.sys/start.py all
 
 # Control web page behavior
 web_config:
@@ -269,3 +266,7 @@ web_config:
 # from the optional loudness_monitor.py script. Can be modified in runtime.
 LU_reset_scope: album
 
+# Powersave: stops/starts Brutefir as per the monitored signal level.
+powersave:              false
+powersave_noise_floor: -70
+powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
