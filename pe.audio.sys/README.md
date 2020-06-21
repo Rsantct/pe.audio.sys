@@ -235,6 +235,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     \-- share/              System folders
         |
+        |-- audiotools/     Auxiliary programs from the AudioHumLab/audiotools repository
+        |
         |-- eq/             Shared tone, loudness and target curves .dat files
         |
         |-- services/       Services to manage the whole system
@@ -358,6 +360,11 @@ Here you are an uncommented bare example of `config.yml`:
     LU_reset_scope: album
 
     cdrom_device:  /dev/cdrom
+
+    powersave:              true
+    powersave_noise_floor:  -70
+    powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
+
 
 
 # The share/eq folder
