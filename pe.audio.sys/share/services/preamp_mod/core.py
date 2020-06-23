@@ -649,19 +649,24 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
 
     #print('CAPTURE  ====> ', cap_ports)  # DEBUG
     #print('PLAYBACK ====> ', pbk_ports)
+    errors = ''
     if not cap_ports:
-        print( f'(core) cannot find jack port "{cap_pattern}"' )
-        return
+        tmp = f'cannot find jack port "{cap_pattern}" '
+        print(f'(core) {tmp}')
+        errors += tmp
     if not pbk_ports:
-        print( f'(core) cannot find jack port "{pbk_pattern}"' )
-        return
+        tmp = f'cannot find jack port "{pbk_pattern}" '
+        print(f'(core) {tmp}')
+        errors += tmp
+    if errors:
+        return errors
 
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     for cap_port, pbk_port in zip(cap_ports, pbk_ports):
         job_jc = threading.Thread( target=jack_connect,
                                    args=(cap_port, pbk_port, mode, wait) )
         job_jc.start()
-
+    return 'ordered'
 
 def jack_clear_preamp():
     """ Force clearing ANY clients, no matter what input was selected
@@ -1136,8 +1141,10 @@ class Preamp(object):
             jack_clear_preamp()
 
             # connecting the new SOURCE to PREAMP input
-            jack_connect_bypattern( CONFIG["sources"][source]["capture_port"],
-                                    'pre_in' )
+            res = jack_connect_bypattern(CONFIG["sources"][source]["capture_port"],
+                                         'pre_in')
+            if res != 'ordered':
+                return res
 
             # Trying to set the desired xo and drc for this source
             c = Convolver()
