@@ -47,8 +47,12 @@ var metablank = {                   // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
-var last_loudspeaker = ''               // Will detect if audio processes has beeen
-                                        // restarted with new loudspeaker configuration.
+var last_loudspeaker = ''           // Will detect if audio processes has beeen
+                                    // restarted with new loudspeaker configuration.
+var macro_button_list = [];
+var hold_tmp_msg = 0;               // A counter to keep tmp_msg during updates
+var tmp_msg = '';                   // A temporary message
+
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch(e){
@@ -93,6 +97,7 @@ function control_cmd( cmd ) {
     }
 }
 
+
 // Page INITIATE
 function page_initiate(){
     // Macros buttons (!) place this first because
@@ -121,6 +126,7 @@ function page_initiate(){
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
 }
+
 
 // Page STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
@@ -249,6 +255,7 @@ function fill_in_page_statics(){
     show_peq_info();
 }
 
+
 // Page UPDATE (RUNTIME VARIABLE ITEMS):
 function page_update() {
 
@@ -262,6 +269,14 @@ function page_update() {
             document.getElementById("main_cside").innerText =
                     ':: pe.audio.sys :: preamp OFFLINE';
             return;
+        } else {
+            if ( hold_tmp_msg == 0 ){
+                document.getElementById("main_cside").innerText =
+                        ':: pe.audio.sys :: ' + state.loudspeaker;
+            } else {
+                document.getElementById("main_cside").innerText = tmp_msg;
+                hold_tmp_msg -= 1;
+            }
         }
     }catch(e){
         console.log( 'not connected', e.name, e.message );
@@ -352,11 +367,14 @@ function page_update() {
 
 }
 
+
 //////// PLAYERS FUNCTIONS ////////
+
 // Controls the player
 function playerCtrl(action) {
     control_cmd( 'player ' + action );
 }
+
 // Updates the player control buttons, hightlights the corresponding button to the playback state
 function update_player_controls() {
     try{
@@ -393,6 +411,7 @@ function update_player_controls() {
         document.getElementById("buttonPlay").style.color       = "white";
     }
 }
+
 // Shows the playing info metadata
 function update_player_info() {
     try{
@@ -460,6 +479,7 @@ function update_player_info() {
         }
     }
 }
+
 // Emerge a dialog to select a disk track to be played
 function select_track() {
     var tracknum = prompt('Enter track number to play:');
@@ -467,6 +487,7 @@ function select_track() {
         control_cmd( 'player play_track_' + tracknum );
     }
 }
+
 // Sends an url to the server, to be played back
 function play_url() {
     var url = prompt('Enter url to play:');
@@ -475,17 +496,28 @@ function play_url() {
     }
 }
 
+
 //////// AUX FUNCTIONS ////////
+
+// Input selection
+function input_select(iname){
+    control_cmd('input ' + iname);
+    clear_highlighted();
+    document.getElementById('inputsSelector').style.color = "white";
+}
+
 // Restart procedure
 function peaudiosys_restart() {
     control_cmd('aux restart');
     advanced('off');
     page_update();
 }
+
 // Switch the amplifier
 function ampli(mode) {
     control_cmd( 'aux amp_switch ' + mode );
 }
+
 // Queries the remote amplifier switch state
 function update_ampli_switch() {
     try{
@@ -501,10 +533,12 @@ function update_ampli_switch() {
     }
     document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
 }
+
 // Changes the LU_monitor scope
 function set_LU_scope(scope){
     control_cmd('aux set_loudness_monitor_scope ' + scope);
 }
+
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
     try{
@@ -552,7 +586,9 @@ function fill_in_macro_buttons() {
         var btn = document.createElement('button');
         btn.type = "button";
         btn.className = "macro_button";
+        macro_button_list.push(mName);
         if ( found == true ){
+            btn.id = mName;
             btn.innerHTML = mName;
             // This doesn't work: always pass mFname incorrectly to run_macro()
             //btn.onclick=function(){run_macro(mFname)}
@@ -572,12 +608,34 @@ function fill_in_macro_buttons() {
         }
     }
 }
-function run_macro(x){
-    //console.log(x);
-    control_cmd( 'aux run_macro ' + x );
+
+// Runs a macro
+function run_macro(mFname){
+    //console.log(mFname);
+    control_cmd( 'aux run_macro ' + mFname );
+    var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+    clear_highlighted();
+    setTimeout(() => { highlight_macro_button(mName);}, 200);
+    hold_tmp_msg = 3;
+    tmp_msg = 'Please wait for "' + mName + '"';
 }
 
+// Hightlights a macro button
+function highlight_macro_button(id){
+    document.getElementById(id).className = 'macro_button_highlighted';
+}
+
+// Clear highlighted macro buttons and input selector
+function clear_highlighted(){
+    for (i = 0; i < macro_button_list.length; i++) {
+        document.getElementById(macro_button_list[i]).className = 'macro_button';
+    }
+    document.getElementById('inputsSelector').style.color = "rgb(200,200,200)";
+}
+
+
 ///////////////  MISCEL INTERNAL ////////////
+
 // Highlights the MUTE, MONO and LOUDNESS BUTTONS:
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
@@ -638,6 +696,7 @@ function buttonLoudHighlight(){
         document.getElementById("buttonLoud").innerText = 'LC';
     }
 }
+
 // Send preamp changes and display new values w/o waiting for the autoupdate
 function audio_change(param, value) {
     if ( param == 'level') {
@@ -676,6 +735,7 @@ function mono_toggle() {
     buttonMonoHighlight();
     control_cmd( 'mono toggle' );
 }
+
 // Toggle displaying macro buttons
 function macros_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
@@ -686,6 +746,7 @@ function macros_toggle() {
         document.getElementById( "macro_buttons").style.display = 'none'
     }
 }
+
 // Displays or hides the advanced controls section
 // (i) This also allows access to the RESTART button
 function advanced(mode) {
@@ -715,6 +776,7 @@ function advanced(mode) {
         document.getElementById( "main_lside").style.display = "none";
     }
 }
+
 // Toggle displaying graphs
 function graphs_toggle() {
     if ( web_config.show_graphs == false ){
@@ -742,6 +804,7 @@ function graphs_toggle() {
         document.getElementById("bfeq_img").src = '';
     }
 }
+
 // Avoid http socket lossing some symbols
 function http_prepare(x) {
     //x = x.replace(' ', '%20');  // leaving spaces as they are
@@ -762,6 +825,7 @@ function http_prepare(x) {
     x = x.replace('/', '%2F');
     return x;
 }
+
 // Test buttons
 function TESTING1(){
     //do something
