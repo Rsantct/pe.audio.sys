@@ -625,7 +625,7 @@ function highlight_macro_button(id){
     document.getElementById(id).className = 'macro_button_highlighted';
 }
 
-// Clear macro highlighted macro buttons and input selector
+// Clear highlighted macro buttons and input selector
 function clear_highlighted(){
     for (i = 0; i < macro_button_list.length; i++) {
         document.getElementById(macro_button_list[i]).className = 'macro_button';
