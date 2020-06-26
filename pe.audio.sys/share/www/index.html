@@ -305,7 +305,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
       <tr>
         <td id="LU_meter_scope">
           <select id="LUscopeSelector" title="LU scope selector"
-                  onchange="set_LU_scope(this.value)">
+                  onchange="LU_scope_select(this.value)">
           </select>
         </td>
         <td id="LU_offset_value">LU offset: --
@@ -366,7 +366,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
             </td>
             <td id="target">
                 <span>
-                <select id="targetSelector"  onchange="control_cmd('set_target ' + this.value)" ></select>
+                <select id="targetSelector"  onchange="target_select(this.value)" ></select>
                 </span>
             </td>
         </tr>
@@ -375,12 +375,12 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
         <tr>
             <td id="xo">
                 <span>XO:
-                <select id="xoSelector"     onchange="control_cmd('xo ' + this.value)" ></select>
+                <select id="xoSelector"     onchange="xo_select(this.value)" ></select>
                 </span>
             </td>
             <td id="drc">
                 <span >DRC:
-                <select id="drcSelector"    onchange="control_cmd('drc ' + this.value)" ></select>
+                <select id="drcSelector"    onchange="drc_select(this.value)" ></select>
                 </span>
             </td>
             <td id="peq">
