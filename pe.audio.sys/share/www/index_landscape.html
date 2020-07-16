@@ -84,9 +84,10 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
                 }
 
         /* GLOBAL SELECT behavior */
+        /* (i) Initial font color is grey, will uptate to white when changed */
         select  {   font-size:          0.9em;
                     font-weight:        bold;
-                    color:              white;
+                    color:              rgb(200,200,200);
                     background-color:   rgb(25, 25, 25);
                 }
 
@@ -96,9 +97,12 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
         td#main_rside       { width:   5%; text-align: center; border: none; }
 
         td#OnOff            { width: 10%; text-align: center; border: none; }
+
+        td#levelInfo        { width: 50%; text-align: center; font-size:3.0em; border: 1px solid white; border-radius: 10px/10px; }
+
         td#LoudnessInfo     { width: 15%; border: none; font-size:1.5em;}
         td#MonoInfo         { width: 15%; border: none; font-size:1.5em;}
-        td#levelInfo        { width: 50%; text-align: center; font-size:3.0em; border: 1px solid white; border-radius: 10px/10px; }
+
         td#input            { width: 25%; text-align: right; border: none;}
 
 
@@ -190,6 +194,17 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
             box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
             border:2px solid rgb(120,120,120);
             border-radius: 10px/10px;
+            /* below is for text inside button: */
+            font-size:0.80em;
+            display: inline;
+        }
+        .macro_button_highlighted  {
+            width: 100%;
+            min-height: 2.7em;
+            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
+            border:3px solid rgb(200,200,200);
+            border-radius: 10px/10px;
+            background-color: rgb(140, 140, 140);
             /* below is for text inside button: */
             font-size:0.80em;
             display: inline;
@@ -295,7 +310,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
       <tr>
         <td id="LU_meter_scope">
           <select id="LUscopeSelector" title="LU scope selector"
-                  onchange="set_LU_scope(this.value)">
+                  onchange="LU_scope_select(this.value)">
           </select>
         </td>
         <td id="LU_offset_value">LU offset: --
@@ -356,7 +371,7 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
             </td>
             <td id="target">
                 <span>
-                <select id="targetSelector"  onchange="control_cmd('set_target ' + this.value)" ></select>
+                <select id="targetSelector"  onchange="target_select(this.value)" ></select>
                 </span>
             </td>
         </tr>
@@ -365,12 +380,12 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
         <tr>
             <td id="xo">
                 <span>XO:
-                <select id="xoSelector"     onchange="control_cmd('xo ' + this.value, update=false)" ></select>
+                <select id="xoSelector"     onchange="xo_select(this.value)" ></select>
                 </span>
             </td>
             <td id="drc">
                 <span >DRC:
-                <select id="drcSelector"    onchange="control_cmd('drc ' + this.value, update=false)" ></select>
+                <select id="drcSelector"    onchange="drc_select(this.value)" ></select>
                 </span>
             </td>
             <td id="peq">
