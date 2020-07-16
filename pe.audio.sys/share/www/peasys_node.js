@@ -67,13 +67,13 @@ function onHttpReq( httpReq, httpRes ){
     var fpath = '';
 
     // Serve our HTML code index.html as an http response
-    // (i) index2.html is used for better layout in a landscape tablet screen.
+    // (i) index_landscape.html is used for better layout in a landscape tablet screen.
     if (httpReq.url === '/' || httpReq.url === '/index.html'
-                            || httpReq.url === '/index2.html') {
+                            || httpReq.url === '/index_landscape.html') {
 
         fpath = INDEX_HTML_PATH;
-        if (httpReq.url === '/index2.html'){
-            fpath = INDEX_HTML_PATH.replace('index', 'index2');
+        if (httpReq.url === '/index_landscape.html'){
+            fpath = INDEX_HTML_PATH.replace('index', 'index_landscape');
         }
         console.log( '(node) httpServer TX: text/html', '('+fpath+')' );
 
@@ -86,7 +86,8 @@ function onHttpReq( httpReq, httpRes ){
     }
 
     // Serve the JAVASCRIPT source file refered from index.html's <src=...>
-    // (i) clientside2.js currently NOT in use, only index2.html is used for tablets.
+    // (i) clientside2.js currently is NOT in use,
+    //     only index_landscape.html is used for landscape tablets.
     else if (httpReq.url === '/clientside.js' || httpReq.url === '/clientside2.js') {
 
         fpath = CLISIDE_JS_PATH;
