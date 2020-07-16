@@ -7,7 +7,7 @@ This folder hosts the web page that manages your pe.audio.sys, for instance from
 
 - `index.html` layout is designed for general browsers, including smartphones operated vertically.
 
-- `index2.html` is designed for a tablet placed on a shelf in a horizontal position.
+- `index_landscape.html` is designed for a horizontal tablet.
 
 ## Configure the web page behavior
 
