@@ -138,6 +138,7 @@ def list_filters():
     for f in filters:
         print(f'{f[2:].ljust(10)}', filters[f]['to_outputs'])
 
+
 if __name__ == '__main__':
 
 
