@@ -7,13 +7,17 @@
 
     Usage examples:
 
-    - To print the current output settings from 'sw' xover filter stage:
+    - Print the current output settings from 'sw' xover filter stage:
 
         peaudiosys_set_xo_gain.py  sw
 
-    - To set 1.2 dB output gain at 'hi' xover filter stage
+    - Set 1.2 dB output gain at 'hi' xover filter stage (all channels)
 
         peaudiosys_set_xo_gain.py  hi  1.2
+
+    - List your Brutefir's xover filters
+
+        peaudiosys_set_xo_gain.py  --list
 
 """
 
@@ -78,7 +82,7 @@ def get_outputs():
 
 def get_to_output(fname):
 
-    f = get_filters()[fname]
+    f = filters[fname]
     tmp = f['to_outputs'].split('/')
     out, att = tmp[:2]
     if len(tmp) == 2:
@@ -130,12 +134,21 @@ def print_curr(way):
              )
 
 
+def list_filters():
+    for f in filters:
+        print(f'{f[2:].ljust(10)}', filters[f]['to_outputs'])
+
 if __name__ == '__main__':
 
 
     outputs = get_outputs()
+    filters = get_filters()
 
     if sys.argv[1:]:
+
+        if '-l' in sys.argv[1]:
+            list_filters()
+            sys.exit()
 
         way = sys.argv[1]
         print('curr:')
