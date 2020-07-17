@@ -136,6 +136,7 @@ def print_curr(way):
 
 def list_filters():
     for f in filters:
+        # omit 'f.' prefix
         print(f'{f[2:].ljust(10)}', filters[f]['to_outputs'])
 
 
