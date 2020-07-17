@@ -58,7 +58,6 @@ def get_outputs():
     lines = bf_cli('lo').split('\n')
     outputs = {}
 
-    # Starting from the 1st xover filter, i.e: the '6:....'.
     i = lines.index('> Output channels:') + 1
 
     while True:
