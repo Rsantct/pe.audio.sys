@@ -20,7 +20,6 @@
         peaudiosys_set_xo_gain.py  --list
 
 """
-
 import sys
 import os
 UHOME = os.path.expanduser("~")
@@ -82,13 +81,17 @@ def get_outputs():
 
 def get_to_output(fname):
 
+    filters = get_filters()
     f = filters[fname]
+
     tmp = f['to_outputs'].split('/')
     out, att = tmp[:2]
+
     if len(tmp) == 2:
         pol = '1'
     else:
         pol = tmp[2]
+
     return [out, float(att), int(pol), f['to_outputs']]
 
 
@@ -135,6 +138,7 @@ def print_curr(way):
 
 
 def list_filters():
+    filters = get_filters()
     for f in filters:
         # omit 'f.' prefix
         print(f'{f[2:].ljust(10)}', filters[f]['to_outputs'])
@@ -144,7 +148,6 @@ if __name__ == '__main__':
 
 
     outputs = get_outputs()
-    filters = get_filters()
 
     if sys.argv[1:]:
 
@@ -155,7 +158,9 @@ if __name__ == '__main__':
         way = sys.argv[1]
         print('curr:')
         print_curr(way)
+
         if sys.argv[2:]:
+
             gain = float(sys.argv[2])
             set_filter_gain(way, gain)
             print('new:')
