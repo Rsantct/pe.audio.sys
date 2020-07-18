@@ -3,13 +3,13 @@ This folder hosts the web page that manages your pe.audio.sys, for instance from
 **(i)** Please mind that an **HTML5** capable browser is needed.
 
 
-## Depending on your device:
+## Web page layouts:
 
-You can browse two web page flavours depending on your device preference:
+You can browse two web page flavours depending on your device usage preference:
 
-- `index.html` is designed for general browsers, including smartphones operated vertically.
+- `index.html` is designed for general use cases, usually smartphones operated vertically.
 
-- `index_landscape.html` is designed for a horizontal tablet.
+- `index_big.html` has big characters to improve readability from far, for instance when browsing from a tablet placed on a shelf.
 
 
 ## Configure the web page behavior
