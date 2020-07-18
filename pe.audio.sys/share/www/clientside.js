@@ -53,6 +53,7 @@ var macro_button_list = [];
 var hold_tmp_msg = 0;               // A counter to keep tmp_msg during updates
 var tmp_msg = '';                   // A temporary message
 
+// Web config dictionary
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch(e){
@@ -65,7 +66,7 @@ try{
                      };
 }
 
-// Queries pe.audio.sys SERVER SIDE
+// SERVER SIDE COMMUNICATION
 function control_cmd( cmd ) {
     /*
     We need synchronous mode (async=false), althougt it is deprecated
@@ -97,6 +98,8 @@ function control_cmd( cmd ) {
     }
 }
 
+
+//////// PAGE MANAGEMENT ////////
 
 // Page INITIATE
 function page_initiate(){
@@ -368,6 +371,47 @@ function page_update() {
 }
 
 
+//////// PREAMP FUNCTIONS ////////
+
+// INPUT selection
+function input_select(iname){
+    hold_tmp_msg = 3;
+    tmp_msg = 'Please wait for "' + iname + '"';
+    document.getElementById("main_cside").innerText = tmp_msg;
+    setTimeout(() => { control_cmd('input ' + iname); }, 200);
+    clear_highlighted();
+    document.getElementById('inputsSelector').style.color = "white";
+}
+
+// DRC selection
+function drc_select(drcName){
+    control_cmd('set_drc ' + drcName);
+    clear_highlighted();
+    document.getElementById('drcSelector').style.color = "white";
+}
+
+// XO selection
+function xo_select(xoName){
+    control_cmd('set_xo ' + xoName);
+    clear_highlighted();
+    document.getElementById('xoSelector').style.color = "white";
+}
+
+// TARGET selection
+function target_select(xoName){
+    control_cmd('set_target ' + xoName);
+    clear_highlighted();
+    document.getElementById('targetSelector').style.color = "white";
+}
+
+// LU_monitor SCOPE selection
+function LU_scope_select(scope){
+    control_cmd('aux set_loudness_monitor_scope ' + scope);
+    clear_highlighted();
+    document.getElementById('LUscopeSelector').style.color = "white";
+}
+
+
 //////// PLAYERS FUNCTIONS ////////
 
 // Controls the player
@@ -499,13 +543,6 @@ function play_url() {
 
 //////// AUX FUNCTIONS ////////
 
-// Input selection
-function input_select(iname){
-    control_cmd('input ' + iname);
-    clear_highlighted();
-    document.getElementById('inputsSelector').style.color = "white";
-}
-
 // Restart procedure
 function peaudiosys_restart() {
     control_cmd('aux restart');
@@ -532,11 +569,6 @@ function update_ampli_switch() {
         var amp_state = '-';
     }
     document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
-}
-
-// Changes the LU_monitor scope
-function set_LU_scope(scope){
-    control_cmd('aux set_loudness_monitor_scope ' + scope);
 }
 
 // Filling in the user's macro buttons
@@ -620,21 +652,24 @@ function run_macro(mFname){
     tmp_msg = 'Please wait for "' + mName + '"';
 }
 
+
+///////////////  MISCEL INTERNAL ////////////
+
 // Hightlights a macro button
 function highlight_macro_button(id){
     document.getElementById(id).className = 'macro_button_highlighted';
 }
 
-// Clear highlighted macro buttons and input selector
+// Clear highlighteds
 function clear_highlighted(){
     for (i = 0; i < macro_button_list.length; i++) {
         document.getElementById(macro_button_list[i]).className = 'macro_button';
     }
-    document.getElementById('inputsSelector').style.color = "rgb(200,200,200)";
+    document.getElementById('inputsSelector').style.color   = "rgb(200,200,200)";
+    document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
+    document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
+    document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
-
-
-///////////////  MISCEL INTERNAL ////////////
 
 // Highlights the MUTE, MONO and LOUDNESS BUTTONS:
 function buttonMuteHighlight(){

@@ -1141,10 +1141,12 @@ class Preamp(object):
             jack_clear_preamp()
 
             # connecting the new SOURCE to PREAMP input
+            current_source = self.state['input']
             res = jack_connect_bypattern(CONFIG["sources"][source]["capture_port"],
                                          'pre_in')
+
             if res != 'ordered':
-                return res
+                w += res
 
             # Trying to set the desired xo and drc for this source
             c = Convolver()
@@ -1153,7 +1155,9 @@ class Preamp(object):
                 if xo and c.set_xo( xo ) == 'done':
                     self.state["xo_set"] = xo
                 elif xo:
-                    w = f'\'xo:{xo}\' in \'{source}\' is not valid'
+                    if w:
+                        w += '; '
+                    w += f'\'xo:{xo}\' in \'{source}\' is not valid'
             except:
                 pass
             try:
@@ -1162,7 +1166,7 @@ class Preamp(object):
                     self.state["drc_set"] = drc
                 elif drc:
                     if w:
-                        w += ' '
+                        w += '; '
                     w += f'\'drc:{xo}\' in \'{source}\' is not valid'
             except:
                 pass
@@ -1183,21 +1187,20 @@ class Preamp(object):
                 print('(config.yml) missing \'on_change_input\' options')
             return candidate
 
+        result = 'nothing done'
+
         # Source = 'none'
         if source == 'none':
             jack_clear_preamp()
-            return 'done'
+            result = 'done'
 
         # Bad source
         elif source not in self.inputs:
-            # do nothing
-            return f'unknown source \'{source}\''
+            result = f'unknown source \'{source}\''
 
         # New source
         else:
             result = try_select(source)
-
-        if result == 'done':
             self.state["input"] = source
             candidate = self.state.copy()
             # Global audio settings on change input, but ensure the convolver

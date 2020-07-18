@@ -13,6 +13,7 @@ UHOME = expanduser("~")
 mplayer_profile = 'istreams' # Mplayer profile "istreams" or "dvb"
 preset          = 1
 loud_ref        = 0
+loudness        = 'on'
 xo_pattern      = ''
 drc_pattern     = ''
 
@@ -70,6 +71,9 @@ if __name__ == "__main__":
 
     # LU level compensation
     Popen( f'echo loudness_ref {loud_ref} | nc -N localhost 9990', shell=True )
+
+    # Loudness contour on|off
+    Popen( f'echo loudness {loudness} | nc -N localhost 9990', shell=True )
 
     # XO
     if xo_pattern:

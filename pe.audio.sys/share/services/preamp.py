@@ -31,10 +31,17 @@
 
 import json
 import yaml
+from time import strftime
 from preamp_mod.core import Preamp, Convolver
-from os.path import expanduser
-UHOME = expanduser("~")
-CONFIG = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
+from os.path import expanduser, exists
+from os import remove
+UHOME   = expanduser("~")
+CONFIG  = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
+
+# Command log file
+PREAMP_LOG_FILE = f'{UHOME}/pe.audio.sys/.preamp_cmd.log'
+if exists(PREAMP_LOG_FILE):
+    remove(PREAMP_LOG_FILE)
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -153,8 +160,8 @@ def process_commands( full_command ):
 
             'set_drc':          set_drc,
             'drc':              set_drc,
-            'xo':               set_xo,
             'set_xo':           set_xo,
+            'xo':               set_xo,
 
             'convolver':        preamp.switch_convolver,
             'powersave':        preamp.powersave,
@@ -175,9 +182,18 @@ def process_commands( full_command ):
 # INTERFACE FUNCTION TO PLUG THIS MODULE ON SERVER.PY
 # AND ** KEEPING UP TO DATE THE STATE FILE **
 def do( cmdline ):
+
     result = process_commands( cmdline )
+
     if type(result) != str:
         result = json.dumps(result)
+
     if result:
         preamp.save_state()
+
+    # Command log
+    if cmdline not in ('state', 'status', 'get_state'):
+        with open(PREAMP_LOG_FILE, 'a') as f:
+            f.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmdline}; {result}\n')
+
     return result
