@@ -347,6 +347,8 @@ def do( command_phrase ):
 
         return pfx, cmd, arg
 
+    result = 'nothing done'
+
     if command_phrase.strip():
         pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
@@ -359,6 +361,5 @@ def do( command_phrase ):
                     'aux':      process_aux }[ pfx ]( cmd, arg )
         if type(result) != str:
             result = json.dumps(result)
-        return result
-    else:
-        return 'nothing done'
+
+    return result
