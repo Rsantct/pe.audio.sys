@@ -131,7 +131,7 @@ All commands prefixed with `aux`:
 
     restart                                 Restarts pe.audio.sys
     
-    add_delay  xx                           Delays xx ms the sound card outputs, can be useful for multiroom listening.
+    add_delay   xx                          Delays xx ms the sound card outputs, e.g for multiroom listening.
 
 
 ## Monitoring the system
