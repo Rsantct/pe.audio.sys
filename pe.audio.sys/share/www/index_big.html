@@ -119,13 +119,13 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
         td#graphs_toggle    { border: none; width: 4%; }
 
 
-        table#level_buttons_table  { table-layout: fixed; }
-        td#level_buttons11   { border-style: none; width:5%; }
-        td#level_buttons12   { border-style: none; width:90%; }
-        td#level_buttons13   { border-style: none; width:5%; }
-        td#level_buttons21   { border-style: none; width:5%; }
-        td#level_buttons22   { border-style: none; width:90%; }
-        td#level_buttons23   { border-style: none; width:5%; }
+        table#level_buttons_table  { }
+        td#level_buttons11   { border-style: none; width:10%; }
+        td#level_buttons12   { border-style: none; width:80%; }
+        td#level_buttons13   { border-style: none; width:10%; }
+        td#level_buttons21   { border-style: none; width:10%; }
+        td#level_buttons22   { border-style: none; width:80%; }
+        td#level_buttons23   { border-style: none; width:10%; }
 
         /* --- LU OFFSET --- */
         td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
@@ -303,6 +303,11 @@ along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
                         &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
             </td>
             <td id="level_buttons23">
+                <button type="button" id="RAOD" style="display:none;font-size:0.7em"
+                        title="Remove Added Outputs Delay"
+                        onmousedown="control_cmd('aux add_delay 0')">
+                        RAOD
+                </button>
             </td>
           </tr>
         </table>

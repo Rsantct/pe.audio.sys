@@ -159,19 +159,33 @@ def set_delay(ms):
 
 if __name__ == '__main__':
 
+    # Redirecting console temporary to ignore pe.audio.sys modules printouts.
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    devnull = open('/dev/null', 'w')
+    sys.stdout = devnull
+    sys.stderr = devnull
+
+    # Test if Brutefir is available
+    test = bf_cli('')
+
+    # Getting FS from start.py module
+    FS = int( get_Bfir_sample_rate() )
+
+    # Restoring stdout
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
+    devnull.close()
+
     # Getting configured outputs
     outputs = get_config_outputs()
 
-    # Getting FS from start.py module, and redirecting
-    # stdout temporary to ignore its printouts.
-    original_stdout = sys.stdout
-    with open('/dev/null', 'w') as devnull:
-        sys.stdout = devnull
-        FS = int( get_Bfir_sample_rate() )
-    sys.stdout = original_stdout
-
     # Reading command line
     if sys.argv[1:]:
+
+        if not test:
+            print( 'Brutefir not available')
+            sys.exit()
 
         if '-l' in sys.argv[1]:
             list_outputs( get_current_outputs() )
@@ -180,7 +194,6 @@ if __name__ == '__main__':
         delay = float(sys.argv[1])
 
         print( set_delay(delay) )
-        #list_outputs( get_current_outputs() )
 
     else:
         print(__doc__)
