@@ -804,11 +804,13 @@ function advanced(mode) {
         document.getElementById( "advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
+        document.getElementById( "RAOD").style.display = "inline-block";
     }
     else {
         document.getElementById( "advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
+        document.getElementById( "RAOD").style.display = "none";
     }
 }
 
