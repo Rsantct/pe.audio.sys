@@ -378,7 +378,14 @@ function input_select(iname){
     hold_tmp_msg = 3;
     tmp_msg = 'Please wait for "' + iname + '"';
     document.getElementById("main_cside").innerText = tmp_msg;
-    setTimeout(() => { control_cmd('input ' + iname); }, 200);
+
+    // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
+    // setTimeout( () => { control_cmd('input ' + iname); }, 200 );
+    function tmp(iname){
+        control_cmd('input ' + iname);
+    }
+    setTimeout( tmp, 200, iname );  // 'iname' is given as argument for 'tmp'
+
     clear_highlighted();
     document.getElementById('inputsSelector').style.color = "white";
 }
@@ -647,7 +654,14 @@ function run_macro(mFname){
     control_cmd( 'aux run_macro ' + mFname );
     var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
     clear_highlighted();
-    setTimeout(() => { highlight_macro_button(mName);}, 200);
+
+    // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
+    // setTimeout(() => { highlight_macro_button(mName);}, 200);
+    function tmp(mName){
+        highlight_macro_button(mName);
+    }
+    setTimeout( tmp, 200, mName );  // 'mName' is given as argument for 'tmp'
+
     hold_tmp_msg = 3;
     tmp_msg = 'Please wait for "' + mName + '"';
 }
