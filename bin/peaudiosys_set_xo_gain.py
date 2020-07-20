@@ -28,6 +28,8 @@ from core import bf_cli
 
 
 def get_filters():
+    """ Get runnning filter parameters
+    """
 
     lines = bf_cli('lf').split('\n')
     filters = {}
@@ -57,6 +59,8 @@ def get_filters():
 
 
 def get_outputs():
+    """ Get running outputs parameters
+    """
 
     lines = bf_cli('lo').split('\n')
     outputs = {}
@@ -80,6 +84,9 @@ def get_outputs():
 
 
 def get_to_output(fname):
+    """ Get 'to outputs' configuration from a Brutefir's filter section,
+        i.e. the destination output, the attenuation and the polarity.
+    """
 
     filters = get_filters()
     f = filters[fname]
@@ -96,6 +103,9 @@ def get_to_output(fname):
 
 
 def set_filter_gain(fname, gain):
+    """ Issue a Brutefir command to modify a filter output gain
+        (Brutefir manages attenuation instead of gain itself)
+    """
 
     if not 'sw' in fname:
         channels = 'L', 'R'
@@ -113,6 +123,10 @@ def set_filter_gain(fname, gain):
 
 
 def print_curr(way):
+    """ Prints out a line with filter 'to outputs' info like this:
+
+        f.hi.L  out: hi.L   gain: 7.5   pol: -1  ~~  to outputs:  3/-7.5/-1  ~~
+    """
 
     if not 'sw' in way:
         channels = 'L', 'R'
@@ -138,6 +152,8 @@ def print_curr(way):
 
 
 def list_filters():
+    """ Prints out a simple list of filter 'to outputs' info
+    """
     filters = get_filters()
     for f in filters:
         # omit 'f.' prefix
@@ -146,7 +162,9 @@ def list_filters():
 
 if __name__ == '__main__':
 
+    # (i) Brutefir's configured outputs are not of interest here.
 
+    # Getting Brutefir running outputs
     outputs = get_outputs()
 
     if sys.argv[1:]:

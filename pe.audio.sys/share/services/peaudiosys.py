@@ -265,6 +265,12 @@ def process_aux( cmd, arg='' ):
     elif cmd == 'get_web_config':
         result = WEBCONFIG
 
+    # Add outputs delay, can be useful for multiroom listening
+    elif cmd == 'add_delay':
+        print(f'({ME}) ordering adding {arg} ms of delay.')
+        Popen(f'{UHOME}/bin/peaudiosys_add_delay.py {arg}'.split())
+        result = 'tried'
+
     # HELP
     elif '-h' in cmd:
         print(__doc__)
