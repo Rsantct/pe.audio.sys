@@ -310,9 +310,9 @@ function page_update() {
     }
 
     // Updates the Integrated LU monitor and the LU offset slider
+    document.getElementById("LU_slider").value           =   state.loudness_ref;
     document.getElementById("LU_offset_value").innerText =
-                                      'LU offset: ' + -1 * state.loudness_ref;
-    document.getElementById("LU_slider").value           = state.loudness_ref;
+                                        'LU offset: ' + -1 * state.loudness_ref;
     try{
         const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
         const LU_I = LU_mon_dict.LU_I
@@ -664,6 +664,11 @@ function run_macro(mFname){
 
     hold_tmp_msg = 3;
     tmp_msg = 'Please wait for "' + mName + '"';
+}
+
+// Manages the LU_offset slider
+function LU_slider_action(slider_value){
+    control_cmd( 'loudness_ref ' + slider_value )
 }
 
 
