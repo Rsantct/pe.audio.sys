@@ -17,7 +17,18 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    A script to make a Brutefir config file from files in a loudspeaker folder.
+    A script to make a Brutefir config file from the
+    files found in the loudspeaker folder.
+
+    Usage:
+
+     peaudiosys_make_brutefir_config.py <loudspeaker_name> [ options ]
+
+        -fs=N         Sampling rate, default 44100 Hz
+        -flength=N    Filter length, default 32768 taps
+        -dither=X     Output dither true | false (default)
+
+
 """
 
 import sys, os
@@ -58,8 +69,8 @@ GENERAL_SETTINGS = \
 '''
 # --------- GENERAL SETTINGS --------
 
-sampling_rate:      48000 ;
-filter_length:      16384 ;
+sampling_rate:      FS ;
+filter_length:      FLENGTH ;
 float_bits:         32 ;
 overflow_warnings:  true ;
 allow_poll_mode:    false ;
@@ -90,7 +101,7 @@ output OUTPUTS_LIST {
     sample:   "AUTO";
     channels: CHANNELS_LIST;
     maxdelay: 1000;
-    dither:   false;
+    dither:   DITHER;
     delay:    DELAY_LIST;  # in samples
 };
 
@@ -232,9 +243,16 @@ def get_ways():
     return ways
 
 
+def do_GENERAL_SETTINGS():
+    tmp = GENERAL_SETTINGS
+    tmp = tmp.replace('FS', fs)
+    tmp = tmp.replace('FLENGTH', flength)
+    return tmp
+
+
 def do_IO():
 
-    IO_tmp  = IO
+    IO_tmp  = IO.replace('DITHER', dither)
 
     if 'fr' in ways and ('lo' in ways or 'hi' in ways or 'mi' in ways):
         print('BAD xo.xx FILES')
@@ -268,8 +286,11 @@ def do_IO():
     for i in range( pcounter ):
         tmp1 += f'{i}, '
         tmp2 += '0, '
+    global delay_list
+    delay_list = tmp2[:-2]
+
     IO_tmp = IO_tmp.replace('CHANNELS_LIST', tmp1[:-2])
-    IO_tmp = IO_tmp.replace('DELAY_LIST',    tmp2[:-2])
+    IO_tmp = IO_tmp.replace('DELAY_LIST',    delay_list)
 
     return IO_tmp
 
@@ -355,7 +376,7 @@ def main():
 
     tmp = ''
     tmp += EQ_CLI
-    tmp += GENERAL_SETTINGS
+    tmp += do_GENERAL_SETTINGS()
     tmp += do_IO()
     tmp += COEFF_EQ
     tmp += do_DRC_COEFFS()
@@ -369,9 +390,35 @@ def main():
 
     print(f"(i) saved to: {out_fname}" )
 
+    print(f'    Fs:             {fs}')
+    print(f'    Filter lenght:  {flength}')
+    print(f'    Output dither:  {dither}')
+    print(f'    Outputs delay:  {delay_list}')
+
+    print(f'(!) Check carefully the soundcard channels mapping, also')
+    print(f'    check \'to_outputs\': polarity and attenuation on each way.')
+
+
 if __name__ == '__main__':
 
-    lspkName = sys.argv[1]
+    fs      = '44100'
+    flength = '16384'
+    dither  = 'false'
+
+    if len( sys.argv ) > 1:
+        lspkName = sys.argv[1]
+    else:
+        print(__doc__)
+        sys.exit()
+
+    for opc in sys.argv[2:]:
+
+        if '-fs=' in opc:
+            fs = opc[4:]
+        elif '-flen' in opc:
+            flength = opc.split('=')[-1]
+        elif '-d' in opc:
+            dither = opc.split('=')[-1]
 
     lspkFolder = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
 
