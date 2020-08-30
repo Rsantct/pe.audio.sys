@@ -31,7 +31,11 @@ Review the README.md for **naming conventions and files under your loudspaker fo
 
 ### The `brutefir_config` file
 
-You can begin from one of the provided loudspeaker examples as a template for customizing your `brutefir_config` file, please check:
+You can begin from one of the provided loudspeaker examples as a template for customizing your `brutefir_config` file.
+
+Also, we provide a tool **`peaudiosys_make_brutefir_config.py`** to prepare it for you by scanning the `.pcm` files under your loudspeaker folder. 
+
+Please check:
 
     [  ] sampling_rate
     
