@@ -25,8 +25,8 @@
      peaudiosys_make_brutefir_config.py <loudspeaker_name> [ options ]
 
         -fs=N         Sampling rate, default 44100 Hz
-        -flength=N    Filter length, default 32768 taps
-        -dither=X     Output dither true | false (default)
+        -flength=N    Filter length, default 16384 taps
+        -dither=X     Output dither, true | false (default)
 
 
 """
