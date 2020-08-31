@@ -388,15 +388,18 @@ def main():
     with open(out_fname, 'w') as f:
         f.write(tmp)
 
-    print(f"(i) saved to: {out_fname}" )
+    print(f'(i) \'brutefir_config_draft\' has been saved to:')
+    print(f'    {lspkFolder}\n' )
 
     print(f'    Fs:             {fs}')
     print(f'    Filter lenght:  {flength}')
     print(f'    Output dither:  {dither}')
-    print(f'    Outputs delay:  {delay_list}')
+    print(f'    Outputs delay:  {delay_list}\n')
 
-    print(f'(!) Check carefully the soundcard channels mapping, also')
-    print(f'    check \'to_outputs\': polarity and attenuation on each way.')
+    print(f'(!) Check carefully:')
+    print(f'    - the soundcard channels mapping and delays')
+    print(f'    - attenuation for each coefficent if needed.')
+    print(f'    - \'to_outputs\': polarity and attenuation for each way.')
 
 
 if __name__ == '__main__':
