@@ -26,7 +26,7 @@
 
         -fs=N         Sampling rate, default 44100 Hz
         -flength=N    Filter length, default 16384 taps
-        -dither=X     Output dither, true | false (default)
+        -dither=X     Output dither true | false (default)
 
 
 """
@@ -388,8 +388,9 @@ def main():
     with open(out_fname, 'w') as f:
         f.write(tmp)
 
+    print()
     print(f'(i) \'brutefir_config_draft\' has been saved to:')
-    print(f'    {lspkFolder}\n' )
+    print(f'    {lspkFolder}/\n' )
 
     print(f'    Fs:             {fs}')
     print(f'    Filter lenght:  {flength}')
@@ -397,9 +398,10 @@ def main():
     print(f'    Outputs delay:  {delay_list}\n')
 
     print(f'(!) Check carefully:')
+    print(f'    - the sampling rate match the one from your .pcm files')
     print(f'    - the soundcard channels mapping and delays')
     print(f'    - attenuation for each coefficent if needed.')
-    print(f'    - \'to_outputs\': polarity and attenuation for each way.')
+    print(f'    - \'to_outputs\': polarity and attenuation for each way.\n')
 
 
 if __name__ == '__main__':
