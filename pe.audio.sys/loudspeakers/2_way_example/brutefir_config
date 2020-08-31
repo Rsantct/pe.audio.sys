@@ -165,13 +165,13 @@ filter "f.eq.R" {
 
 filter "f.drc.L" {
     from_filters: "f.eq.L";
-    to_filters:   "f.fr.L";
+    to_filters:   "f.lo.L", "f.hi.L";
     coeff:        -1;
 };
 
 filter "f.drc.R" {
     from_filters: "f.eq.R";
-    to_filters:   "f.fr.R";
+    to_filters:   "f.lo.R", "f.hi.R";
     coeff:        -1;
 };
 

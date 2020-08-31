@@ -327,6 +327,8 @@ def kill_bill():
 
 
 def check_state_file():
+    """ a sudden power break out can produce a blank file
+    """
     state_file = f'{MAINFOLDER}/.state.yml'
     with open(state_file, 'r') as f:
         state = f.read()
@@ -334,11 +336,11 @@ def check_state_file():
         if 'xo_set:' in state:
             sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
             print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
-        # if it is damaged:
+        # if it is damaged, lets recover from backup
         else:
-            print(f'({ME}) ERROR \'state.yml\' is damaged, ' +
-                    'you can restore it from \'.state.yml.BAK\'')
-            sys.exit()
+            sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
+            print(f'({ME}) ERROR \'state.yml\' was damaged, ' +
+                    'it has been restored from \'.state.yml.BAK\'')
 
 
 def prepare_drc_graphs():
@@ -393,7 +395,7 @@ if __name__ == "__main__":
         sys.stdout = flog
         sys.stderr = flog
 
-    # Lets backup .state.yml to help us if it get damaged.
+    # Lets check .state.yml
     check_state_file()
 
     # STOPPING
