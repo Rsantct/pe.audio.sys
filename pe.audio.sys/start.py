@@ -42,7 +42,7 @@
 import os
 import sys
 import subprocess as sp
-from time import sleep
+from time import sleep, time, ctime
 import yaml
 import jack
 
@@ -327,20 +327,33 @@ def kill_bill():
 
 
 def check_state_file():
-    """ a sudden power break out can produce a blank file
+    """ a sudden power break out can damage .state.yml  :-/
     """
-    state_file = f'{MAINFOLDER}/.state.yml'
-    with open(state_file, 'r') as f:
-        state = f.read()
-        # if the file is ok, lets backup it
-        if 'xo_set:' in state:
-            sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
-            print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
-        # if it is damaged, lets recover from backup
-        else:
-            sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
-            print(f'({ME}) ERROR \'state.yml\' was damaged, ' +
-                    'it has been restored from \'.state.yml.BAK\'')
+    state_file      = f'{MAINFOLDER}/.state.yml'
+    state_log_file  = f'{MAINFOLDER}/.state.log'
+
+    def recover_state(reason='damaged'):
+        sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
+        print(f'({ME}) ERROR \'state.yml\' was {reason}, ' +
+                'it has been restored from \'.state.yml.BAK\'')
+        now = ctime(time())
+        with open(state_log_file, 'a') as f2:
+            f2.write(f'{now}: \'state.yml\' was {reason} and restored.\n')
+
+    try:
+        with open(state_file, 'r') as f:
+            state = f.read()
+
+            # if the file is ok, lets backup it
+            if 'xo_set:' in state:
+                sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
+                print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
+
+            # if it is damaged, lets recover from backup, and log to .state.log
+            else:
+                recover_state(reason='damaged')
+    except:
+                recover_state(reason='missed')
 
 
 def prepare_drc_graphs():
