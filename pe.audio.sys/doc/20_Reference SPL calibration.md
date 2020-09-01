@@ -41,6 +41,11 @@ We propose as a summary:
 
             < 42                    74 dBC
 
+Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/establishing-project-studio-reference-monitoring-levels?page=2) (page 2):
+
+*However, although this 83dB SPL reference level (with 103dB peaks) is perfectly acceptable when listening in a big space, like a cinema or a film dubbing theatre, or even a very large and well‑treated commercial studio control room, it will be completely overwhelming in a smaller space, because the listener is inevitably sitting much closer to both the speakers and the room boundaries. The very different nature of early reflections in these conditions makes the level seem, psychoacoustically, much higher than it would be in a larger room.*
+
+
 6. Set pe.audio.sys:
 
     ```
@@ -97,5 +102,5 @@ For low volume listening, the LOUDNESS control switch will help you.
 
 In order to correctly apply a loudness compensantion curve, you'll need to adjust properly the LU offset control slider as discussed above.
 
-The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listenong level, so they are adequate for your 76 dBC calibrated system, because of the needed subjetive room volume compensation as discussed above.
+The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listenong level, so they are adequate for your 76 dBC calibrated system, because of the subjetive room volume needed compensation.
 
