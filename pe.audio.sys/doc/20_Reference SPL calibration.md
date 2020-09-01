@@ -105,7 +105,7 @@ Some examples are:
 
 In addition, the pe.audio.sys "LU monitor" display bar will show the loudness strenght of these recordings.
 
-Regarding this, pe.audio.sys provides the LU offset control slider, for you to compensate your calibrated listening level when playing intrensically high loudness recordings. Just put the slider in a position matching the LU meter bar displacement.
+Regarding this, pe.audio.sys provides the "LU offset" control slider, for you to compensate your calibrated listening level when playing intrensically high loudness recordings. Just put the slider in a position matching the "LU meter" bar displacement.
 
 ## Listening at moderate or low volume.
 
@@ -115,7 +115,7 @@ For low volume listening, the LOUDNESS control switch will help you.
 
 In order to correctly apply a loudness compensantion curve, you'll need to adjust properly the LU offset control slider as discussed above.
 
-The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listenong level, so they are adequate for your 76 dBC calibrated system. This is because of the applied subjetive room volume compensation will produce to you to perceive standard reference SPL as you were inside a large venue, as explained above.
+The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listening level, so they are adequate for your 76 dBC calibrated system. This is because of the applied subjetive room volume compensation will produce to you to perceive standard reference SPL as you were inside a large venue, as explained above.
 
 When your level control is properly calibrated, you'll find that you can safely keep loudness compensation activated in pe.audio.sys. Then, when you listen to some ""loudness war"" recording, you don't need to readjust your level control, instead you can adjust the LU offset control to compensate for that strong recording.
 
