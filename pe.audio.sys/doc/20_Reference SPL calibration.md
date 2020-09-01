@@ -43,7 +43,11 @@ We propose as a summary:
 
 Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/establishing-project-studio-reference-monitoring-levels?page=2) (page 2):
 
+
 *However, although this 83dB SPL reference level (with 103dB peaks) is perfectly acceptable when listening in a big space, like a cinema or a film dubbing theatre, or even a very large and well‑treated commercial studio control room, it will be completely overwhelming in a smaller space, because the listener is inevitably sitting much closer to both the speakers and the room boundaries. The very different nature of early reflections in these conditions makes the level seem, psychoacoustically, much higher than it would be in a larger room.*
+
+*Consequently, the optimum reference level for smaller rooms needs to be significantly lower, on a scale which is dependent on the enclosed volume of the room in question.*
+
 
 
 6. Set pe.audio.sys:
