@@ -30,11 +30,11 @@ https://www.soundonsound.com/techniques/establishing-project-studio-reference-mo
 
 We propose as a summary:
 
-5. Decide your Ref SPL as per your listening room volume:
+5. Decide your Reference SPL as per your listening room volume:
 
-            Room Volume             Ref. SPL
+            Room Volume m3          Ref. SPL
 
-            > 566  m3               83 dBC
+            > 566                   83 dBC
 
             284 - 566               80 dBC
 
