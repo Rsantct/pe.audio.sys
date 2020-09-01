@@ -10,7 +10,7 @@ You'll need:
 Preliminary:
 
 
-1. Check the capability of your Loudspeaker + Amp pairs . Find the one wich has the more compromised performance. Then adjust the rest to match its sensitivity from the point of view of your sound card outputs (analog domain).
+1. Check the capability of your loudspeaker + amplifier pairs . Find the one wich has the more compromised performance. Then adjust the rest to match its sensitivity from the point of view of your sound card outputs (analog domain).
 
 2. Adjust your sound card without mixer software attenuation.
 
