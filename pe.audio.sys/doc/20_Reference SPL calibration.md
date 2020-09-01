@@ -5,7 +5,10 @@ You'll need:
 
     - a SPL meter with C curve and slow time integration mode.
 
-    - a mono track Pink Noise -20 dBFS limited to 500-2000 Hz (find it at Bob Katz web site)
+    - a track of pink noise -20 dBFS RMS limited to 500-2000 Hz (find it under `doc/test signals` folder).
+
+Full bandwidth noise is not recommended because of issues on bass room modes and/or typical reflections on mid and high frequencies due to room and furnitures.
+
 
 Preliminary:
 
@@ -64,26 +67,30 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 (*) *It is supposed that your DRC pcm FIR has been referenced on your mid frequency region from your listening position averaged response.* 
 
 
-7. Play the limited pink noise track on the LEFT channel loudspeaker.
+7. Play the mid band limited pink noise track on the LEFT channel loudspeaker.
 
 8. Adjust pe.audio.sys level until the SPL meter displays ~ 76.0 dBC  at your listening position.
 
-9. Calculate the approrpiate ref_level_gain to get 76 dBC for level=0 and set it inside config.yml. Restart.
+9. Calculate the appropriate `ref_level_gain` to get 76 dBC for level=0 and set it inside `config.yml`. 
+
+Restart pe.audio.sys.
 
 10. Repeat on RIGTH loudspeaker, if your channels are balanced, you will get 76 dBC at level=0.
 
 Almost done ...
 
-11. In order to get the best digital S/N ratio, if your ref_level_gain value goes too low, it is prefereable to insert analog attenuation from your sound card outputs, that way your ref_level_gain will be near to 0 dB then you get the best S/N ratio ;-)
+11. In order to get the best digital S/N ratio, if your `ref_level_gain` value goes too low, it is prefereable to insert analog attenuation from your sound card outputs, that way your `ref_level_gain` will be not much away from 0 dB then you get the best S/N ratio ;-)
+
+Be advised: from now on your gain headroom will be ceiled as per the new `ref_level_gain`. If for some reason this is not enough for you, the only option is to reduce the digital gain chain by setting `ref_level_gain` for instance at -6.0 dB, then add +6.0 dB of analog gain on your analog gear.
 
 
 ## Testing whith real music:
 
-Bob Katz has plublished a very helpful list of CD references classified as per its loudness strenght.
+Bob Katz has published a very helpful list of CD references classified as per its loudness strength.
 
 https://www.digido.com/honor-roll/
 
-Recordings are grouped into four categories, as per how much you need to put down your calibrated volume control in order to maintain the perceived loudness when listeting to.
+Recordings are grouped into four categories, as per how much you need to put down your calibrated volume control in order to maintain the perceived loudness when listening to.
 
 Some examples are:
 
@@ -106,5 +113,5 @@ For low volume listening, the LOUDNESS control switch will help you.
 
 In order to correctly apply a loudness compensantion curve, you'll need to adjust properly the LU offset control slider as discussed above.
 
-The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listenong level, so they are adequate for your 76 dBC calibrated system, because of the subjetive room volume needed compensation.
+The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listenong level, so they are adequate for your 76 dBC calibrated system. This is because of the applied subjetive room volume compensation will produce to you to perceive standard reference SPL as you were inside a large venue, as explained above.
 
