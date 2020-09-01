@@ -61,7 +61,7 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
     target:         not much relevant, but none is preferred.
     ```
 
-(*) Notice that your DRC filter is supposed to be referenced on your mid frequency region from your listening position averaged response. 
+(*) *It is supposed that your DRC pcm FIR has been referenced on your mid frequency region from your listening position averaged response.* 
 
 
 7. Play the limited pink noise track on the LEFT channel loudspeaker.
