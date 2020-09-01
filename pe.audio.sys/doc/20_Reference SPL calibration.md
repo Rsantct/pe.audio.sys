@@ -71,11 +71,13 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 
 8. Adjust pe.audio.sys level until the SPL meter displays ~ 76.0 dBC  at your listening position.
 
+(i) If you cannot reach 76 dBC at listening point, set `ref_level_gain: 0.0`, restart pe.audio.sys and try it again. Maybe your analog gear needs more gain or maybe your sound card out line level is too low.
+
 9. Calculate the appropriate `ref_level_gain` to get 76 dBC for level=0 and set it inside `config.yml`. 
 
 Restart pe.audio.sys.
 
-10. Repeat on RIGTH loudspeaker, if your channels are balanced, you will get 76 dBC at level=0.
+10. Repeat on RIGTH loudspeaker, if your channels are balanced, you will get the same 76 dBC at level=0.
 
 Almost done ...
 
