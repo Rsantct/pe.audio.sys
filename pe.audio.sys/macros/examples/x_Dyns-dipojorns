@@ -6,7 +6,7 @@
 """
 ############### USER SETTINGS: ###############
 lspk_A = {  'name':         'dipojorns',
-            'drc_set':      'djestan_multiV2_mp',
+            'drc_set':      'sofa',
             'xo_set':       'lp'}
 
 lspk_B = {  'name':         'DynC5+AMRsub',
@@ -147,6 +147,7 @@ if __name__ == "__main__":
     os.chdir( f'{MAINFOLDER}/loudspeakers/{lspk_New["name"]}' )
     sp.Popen( 'brutefir brutefir_config'.split() )
     os.chdir( UHOME )
+    sleep(.33)
     sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split() )
     sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split() )
 
@@ -174,9 +175,11 @@ if __name__ == "__main__":
     #     we still need to set the wanted here at the very beginning
     #     for lspk_A or lspk_B
     ans = ''
-    times = 5
-    while not ans.strip() and times:
+    times = 10
+    while times:
         ans = peaudiosys_command( f'preamp set_drc {lspk_New["drc_set"]}')
+        if ans == 'done':
+            break
         sleep(.2)
         times -= 1
     if not times:
