@@ -19,7 +19,7 @@ Preliminary:
 
 3. Check carefully the max gain on each of your xover FIR pcm files. Be aware to set Brutefir attenuations to ensure you will not clip when a near to 0 dBFS signal is processed.
 
-4. As an starting point, set your config.yml:
+4. As an starting point, set your `config.yml` file:
 
     ref_level_gain: -10.0
 
@@ -53,12 +53,13 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 
 
 
-6. Set pe.audio.sys:
+6. Ensure pe.audio.sys has not any running eq:
 
     ```
     level:          -20
     loudness_ref:   0
-    drc:            the one you have prepared, or none (*)
+    loudness_trak:  off
+    drc:            none, or the one you have prepared (*)
     bass:           0
     treble:         0
     target:         not much relevant, but none is preferred.
@@ -71,7 +72,7 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 
 8. Adjust pe.audio.sys level until the SPL meter displays ~ 76.0 dBC  at your listening position.
 
-(i) If you cannot reach 76 dBC at listening point, set `ref_level_gain: 0.0`, restart pe.audio.sys and try it again. Maybe your analog gear needs more gain or maybe your sound card out line level is too low.
+(i) If you cannot reach 76 dBC at listening point, set `ref_level_gain: 0.0` inside `config.yml`, restart pe.audio.sys and try it again. Maybe your analog gear needs more gain or maybe your sound card out line level is too low.
 
 9. Calculate the appropriate `ref_level_gain` to get 76 dBC for level=0 and set it inside `config.yml`. 
 
@@ -85,8 +86,7 @@ Almost done ...
 
 Be advised: from now on your gain headroom will be ceiled as per the new `ref_level_gain`. If for some reason this is not enough for you, the only option is to reduce the digital gain chain by setting `ref_level_gain` for instance at -6.0 dB, then add +6.0 dB of analog gain on your analog gear.
 
-
-## Testing whith real music:
+## Testing whith real music:
 
 Bob Katz has published a very helpful list of CD references classified as per its loudness strength.
 
@@ -105,7 +105,7 @@ Some examples are:
 
 In addition, the pe.audio.sys "LU monitor" display bar will show the loudness strenght of these recordings.
 
-Regarding this, pe.audio.sys provides the LU offset control slider, for you to compensate your calibrated listening level when playing intrensically high loudness recordings. Just put the slider in a position matching the LU meter bar displacement.
+Regarding this, pe.audio.sys provides the "LU offset" control slider, for you to compensate your calibrated listening level when playing intrensically high loudness recordings. Just put the slider in a position matching the "LU meter" bar displacement.
 
 ## Listening at moderate or low volume.
 
@@ -115,7 +115,7 @@ For low volume listening, the LOUDNESS control switch will help you.
 
 In order to correctly apply a loudness compensantion curve, you'll need to adjust properly the LU offset control slider as discussed above.
 
-The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listenong level, so they are adequate for your 76 dBC calibrated system. This is because of the applied subjetive room volume compensation will produce to you to perceive standard reference SPL as you were inside a large venue, as explained above.
+The default compensation curves provided under the `pe.audio.sys/share/eq` folder are referenced for a subjective listening level of 83 dBC, although this may seem inconsistent with your calibrated 76 dBC system, that's fine. This is because the subjective room volume compensation applied will cause you to perceive the standard reference SPL as if you were inside a large venue, as explained above.
 
 When your level control is properly calibrated, you'll find that you can safely keep loudness compensation activated in pe.audio.sys. Then, when you listen to some ""loudness war"" recording, you don't need to readjust your level control, instead you can adjust the LU offset control to compensate for that strong recording.
 
