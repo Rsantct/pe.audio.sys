@@ -19,7 +19,7 @@ Preliminary:
 
 3. Check carefully the max gain on each of your xover FIR pcm files. Be aware to set Brutefir attenuations to ensure you will not clip when a near to 0 dBFS signal is processed.
 
-4. As an starting point, set your config.yml:
+4. As an starting point, set your `config.yml` file:
 
     ref_level_gain: -10.0
 
@@ -53,12 +53,13 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 
 
 
-6. Set pe.audio.sys:
+6. Ensure pe.audio.sys has not any running eq:
 
     ```
     level:          -20
     loudness_ref:   0
-    drc:            the one you have prepared, or none (*)
+    loudness_trak:  off
+    drc:            none, or the one you have prepared (*)
     bass:           0
     treble:         0
     target:         not much relevant, but none is preferred.
@@ -71,7 +72,7 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 
 8. Adjust pe.audio.sys level until the SPL meter displays ~ 76.0 dBC  at your listening position.
 
-(i) If you cannot reach 76 dBC at listening point, set `ref_level_gain: 0.0`, restart pe.audio.sys and try it again. Maybe your analog gear needs more gain or maybe your sound card out line level is too low.
+(i) If you cannot reach 76 dBC at listening point, set `ref_level_gain: 0.0` inside `config.yml`, restart pe.audio.sys and try it again. Maybe your analog gear needs more gain or maybe your sound card out line level is too low.
 
 9. Calculate the appropriate `ref_level_gain` to get 76 dBC for level=0 and set it inside `config.yml`. 
 
