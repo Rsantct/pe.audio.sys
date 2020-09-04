@@ -114,7 +114,7 @@ For low volume listening, the LOUDNESS control switch will help you.
 
 In order to correctly apply a loudness compensantion curve, you'll need to adjust properly the LU offset control slider as discussed above.
 
-The default compensation curves provided under the share/eq folder on pe.audio.sys are calibrated for 83 dBC subjective listening level, so they are adequate for your 76 dBC calibrated system. This is because of the applied subjetive room volume compensation will produce to you to perceive standard reference SPL as you were inside a large venue, as explained above.
+The default compensation curves provided under the `pe.audio.sys/share/eq` folder are referenced for a subjective listening level of 83 dBC, although this may seem inconsistent with your calibrated 76 dBC system, that's fine. This is because the subjective room volume compensation applied will cause you to perceive the standard reference SPL as if you were inside a large venue, as explained above.
 
 When your level control is properly calibrated, you'll find that you can safely keep loudness compensation activated in pe.audio.sys. Then, when you listen to some ""loudness war"" recording, you don't need to readjust your level control, instead you can adjust the LU offset control to compensate for that strong recording.
 
