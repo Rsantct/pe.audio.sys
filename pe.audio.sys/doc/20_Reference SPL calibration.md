@@ -85,8 +85,7 @@ Almost done ...
 
 Be advised: from now on your gain headroom will be ceiled as per the new `ref_level_gain`. If for some reason this is not enough for you, the only option is to reduce the digital gain chain by setting `ref_level_gain` for instance at -6.0 dB, then add +6.0 dB of analog gain on your analog gear.
 
-
-## Testing whith real music:
+## Testing whith real music:
 
 Bob Katz has published a very helpful list of CD references classified as per its loudness strength.
 
