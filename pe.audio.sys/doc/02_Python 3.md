@@ -2,7 +2,7 @@
 
 ### Python3 GENERAL USE, JACK and MPD packages:
 
-#### Debian pakages manager (apt):
+#### Debian packages manager (apt):
 
 First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 
