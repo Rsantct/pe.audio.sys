@@ -467,7 +467,7 @@ If you want not to use any xo filter at all, you simply do:
             coeff:        -1;
         };
 
-- Leave blank `xo_init:` inside `config.yml`
+- Leave blank `xo:` inside `on_init` section from `config.yml` 
 
 - Leave blank `xo_set:` inside `.state.yml`
 
