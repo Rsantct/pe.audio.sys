@@ -1,8 +1,8 @@
 ## Requires Python >= 3.6
 
-### Python3 basic packages
+### Python3 GENERAL USE, JACK and MPD packages:
 
-- Distro installation option:
+#### Debian packages manager (apt):
 
 First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 
@@ -12,7 +12,7 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install --upgrade setuptools
 ```
 
-- PIP standard installation option:
+#### Python standard packages manager (PIP) alternative:
 
     ```
     python3 -m pip install pyaml
@@ -35,7 +35,7 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install JACK-Client
     ```
 
-### Necessary for CD-AUDIO:
+### Python3 CD-Audio packages:
 
     # Metadata search
     sudo pip3 install discid musicbrainzngs
