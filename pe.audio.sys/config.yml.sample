@@ -63,7 +63,7 @@ bfeq_linear_phase: false
 # ========================== THE LOUDSPEAKER  ==================================
 
 # Put here your loudspeaker folder name
-loudspeaker: SeasFlat
+loudspeaker: full_range_example
 
 # Gain dBFS at convolver output to obtain the reference SPL (level = 0.0):
 ref_level_gain: -10.0
@@ -77,15 +77,15 @@ on_init:
 
     # Put here the common IDSTRING that identifies the XO FIR filters at start up.
     # ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
-    xo:     mp
+    xo:     none
 
     # Put here the IDSTRING that identifies the DRC FIR filters at start up.
     # ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
-    drc:    mp_multipV1
+    drc:    sample
 
     # Put here just whatever the target filename prefix,
     # w/o '_mag.dat' neither '_pha.dat'
-    target: +4.0-2.0_target
+    target: +3.0-1.5_target
 
     # Others settings: (if any max_level will override level)
     level:              
@@ -245,7 +245,7 @@ cdrom_device:  /dev/cdrom
 # (i) It is expected that the script will store the amplifier state
 #         'on'|'1'    or    'off'|'0'
 #     into the file '~/.amplifier' so that others processes could know about.
-amp_manager:  /home/predic/bin/ampli.sh
+amp_manager:  /home/pi/bin/ampli.sh
 
 # Put here some command line (from your PATH) you want to run
 # when ordering the 'aux restart' command
