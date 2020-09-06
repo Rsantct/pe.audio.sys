@@ -50,7 +50,7 @@ input "in.L", "in.R" {
 output "lo.L", "lo.R", "hi.L", "hi.R" {
     # hardwire to jack sound card:
     device: "jack" { ports:
-        "system:playback_3"/"lo.L", "system:playback_4"/"lo.R", 
+        "system:playback_3"/"lo.L", "system:playback_4"/"lo.R",
         "system:playback_5"/"hi.L", "system:playback_6"/"hi.R";
     };
     sample:   "AUTO";
@@ -69,61 +69,49 @@ coeff "c.eq" {
     shared_mem: true;
     blocks: 1;
 };
-    
-# -------  COEFFs for DRC & XOVER: --------
+
+# -------  COEFFs for DRC: --------
 # PCMs found under the loudspeaker folder
 
-coeff "drc.L.lp_multipV1" {
-    filename:    "drc.L.lp_multipV1.pcm";
+coeff "drc.L.sample" {
+    filename:    "drc.L.sample.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
-coeff "drc.L.mp_multipV1" {
-    filename:    "drc.L.mp_multipV1.pcm";
+coeff "drc.L.sample" {
+    filename:    "drc.L.sample.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
-coeff "drc.R.lp_multipV1" {
-    filename:    "drc.R.lp_multipV1.pcm";
+
+# -------  COEFFs for XOVER: --------
+coeff "xo.hi.linpha" {
+    filename:    "xo.hi.linpha.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
-coeff "drc.R.mp_multipV1" {
-    filename:    "drc.R.mp_multipV1.pcm";
+coeff "xo.hi.minpha" {
+    filename:    "xo.hi.minpha.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
-coeff "xo.hi.lp" {
-    filename:    "xo.hi.lp.pcm";
+coeff "xo.lo.linpha" {
+    filename:    "xo.lo.linpha.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
-coeff "xo.hi.mp" {
-    filename:    "xo.hi.mp.pcm";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-};
-
-coeff "xo.lo.lp" {
-    filename:    "xo.lo.lp.pcm";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-};
-
-coeff "xo.lo.mp" {
-    filename:    "xo.lo.mp.pcm";
+coeff "xo.minpha.mp" {
+    filename:    "xo.lo.minpha.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
@@ -182,23 +170,23 @@ filter "f.drc.R" {
 filter "f.lo.L" {
     from_filters: "f.drc.L";
     to_outputs:   "lo.L"/0.0/+1;
-    coeff:        "xo.lo.mp";
+    coeff:        "xo.lo.minpha";
 };
 
 filter "f.hi.L" {
     from_filters: "f.drc.L";
     to_outputs:   "hi.L"/0.0/+1;
-    coeff:        "xo.hi.mp";
+    coeff:        "xo.hi.minpha";
 };
 
 filter "f.lo.R" {
     from_filters: "f.drc.R";
     to_outputs:   "lo.R"/0.0/+1;
-    coeff:        "xo.lo.mp";
+    coeff:        "xo.lo.minpha";
 };
 
 filter "f.hi.R" {
     from_filters: "f.drc.R";
     to_outputs:   "hi.R"/0.0/+1;
-    coeff:        "xo.hi.mp";
+    coeff:        "xo.hi.minpha";
 };
