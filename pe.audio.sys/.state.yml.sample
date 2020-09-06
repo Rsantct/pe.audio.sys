@@ -1,6 +1,6 @@
 balance: 0.0
 bass: 0.0
-drc_set: drc1
+drc_set: sample
 input: none
 level: -20.0
 loudness_ref: 0.0
@@ -13,4 +13,4 @@ polarity: +
 solo: 'off'
 target: +3.0-1.5_target
 treble: 0.0
-xo_set: mp
+xo_set: none
