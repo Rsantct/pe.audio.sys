@@ -88,7 +88,12 @@ Once your `brutefir_config` file is ready, you can test it:
 
 ## [  ] EQ folder
 
-Nothing is needed here, the distro have an extensive set of 'target' eq files to start with.
+You need to copy here ONE of the providided `share/eq/eq.sample.XX` subfolders set of files.
+
+As a starting point, you may want to check the **full_range_example** loudspeaker, so copy all files from  `eq.sample.R20_audiotools`, because of curves compatibility:
+
+    cd ~/pe.audio.sys/share/eq
+    cp eq.sample.R20_audiotools/* . 
 
 
 ## [  ] The `.state.yml` file

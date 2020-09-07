@@ -26,7 +26,7 @@ logic:
 
 # --------- GENERAL SETTINGS --------
 
-sampling_rate:      48000 ;
+sampling_rate:      44100 ;
 filter_length:      16384 ;
 float_bits:         32 ;
 overflow_warnings:  true ;
