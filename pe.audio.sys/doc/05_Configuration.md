@@ -73,7 +73,7 @@ Once your `brutefir_config` file is ready, you can test it:
 
 - Run Jack with a dummy backend:
 
-        jackd -d dummy -P8 -C2 -r48000 &  # 8+2 channels
+        jackd -d dummy -P8 -C2 -r44100 &  # 8+2 channels
 
 - Run Brutefir
     
