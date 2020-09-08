@@ -58,7 +58,7 @@ except:
 try:
     AMP_MANAGER =  CONFIG['amp_manager']
 except:
-    AMP_MANAGER =  'For amp switching please configure config.yml'
+    AMP_MANAGER =  ''
 WEBCONFIG = CONFIG['web_config']
 WEBCONFIG['restart_cmd_info']   = CONFIG['restart_cmd']
 WEBCONFIG['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
@@ -81,6 +81,8 @@ def get_amp_state():
 
 # Set the amplifier switch:
 def set_amp_state(mode):
+    if not AMP_MANAGER:
+        return
     print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
     Popen( f'{AMP_MANAGER} {mode}'.split(), shell=False )
 
