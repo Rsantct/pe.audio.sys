@@ -245,7 +245,7 @@ cdrom_device:  /dev/cdrom
 # (i) It is expected that the script will store the amplifier state
 #         'on'|'1'    or    'off'|'0'
 #     into the file '~/.amplifier' so that others processes could know about.
-amp_manager:  /home/pi/bin/ampli.sh
+amp_manager:                       # for instance: /home/pi/bin/ampli.sh
 
 # Put here some command line (from your PATH) you want to run
 # when ordering the 'aux restart' command
