@@ -580,13 +580,23 @@ function update_ampli_switch() {
 
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
+
     try{
-        var mFnames = JSON.parse( control_cmd( 'aux get_macros' ).split(',') );
+        var mFnames = JSON.parse( control_cmd( 'aux get_macros' ) );
     }catch(e){
-    // If no macros list, do nothing, so leaving "display:none" on the buttons keypad div
-        console.log( 'no macros', e.name, e.message );
+		// If error getting macros, do nothing, 
+		// so leaving "display:none" on the buttons keypad div
+        console.log( 'error getting macros', e.name, e.message );
         return
     }
+
+    // If empty macros list, do nothing, 
+    // so leaving "display:none" on the buttons keypad div
+	if ( mFnames.length == 0 ){
+		console.log( 'empty macros array', mFnames)
+		return
+	}
+
     // If any macro found, lets show the corresponding cell playback_control_23
     // also call xx_21 just for symmetry reasons
     document.getElementById( "playback_control_23").style.display = 'block';
