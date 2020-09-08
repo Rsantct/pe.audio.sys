@@ -65,6 +65,26 @@ WEBCONFIG['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
                                           in CONFIG['scripts'] else False
 
 
+# Read the amplifier state file, if exists:
+def get_amp_state():
+    curr_sta = '-'
+    try:
+        with open( f'{AMP_STATE_FILE}', 'r') as f:
+            curr_sta =  f.read().strip()
+    except:
+        pass
+    if curr_sta.lower() in ('0', 'off'):
+        curr_sta = 'off'
+    elif curr_sta.lower() in ('1', 'on'):
+        curr_sta = 'on'
+    return curr_sta
+
+# Set the amplifier switch:
+def set_amp_state(mode):
+    print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
+    Popen( f'{AMP_MANAGER} {mode}'.split(), shell=False )
+
+
 # Auxiliary client to talk to othes server.py instances (preamp and players)
 def cli_cmd(service, cmd):
 
@@ -161,33 +181,19 @@ def process_aux( cmd, arg='' ):
     if cmd == 'amp_switch':
 
         # current switch state
-        try:
-            with open( f'{AMP_STATE_FILE}', 'r') as f:
-                tmp =  f.read().strip()
-            if tmp.lower() in ('0', 'off'):
-                curr_sta = 'off'
-            elif tmp.lower() in ('1', 'on'):
-                curr_sta = 'on'
-            else:
-                curr_sta = '-'
-                raise
-        except:
-            print( f'({ME}) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
-            curr_sta = '-'
-
         if arg == 'state':
-            return curr_sta
-
-        if arg == 'toggle':
+            result = get_amp_state()
+        
+        elif arg == 'toggle':
             # if unknown state, this switch defaults to 'on'
-            new_sta = {'on': 'off', 'off': 'on'}.get(curr_sta, 'on')
+            result = {'on': 'off', 'off': 'on'}.get( get_amp_state(), 'on' )
+            set_amp_state( result )
 
         if arg in ('on', 'off'):
-            new_sta = arg
-
-        print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {new_sta}\'' )
-        Popen( f'{AMP_MANAGER} {new_sta}'.split(), shell=False )
-        return new_sta
+            result = arg
+            set_amp_state( result )
+            
+        return result
 
     # LIST OF MACROS under macros/ folder
     elif cmd == 'get_macros':
