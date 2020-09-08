@@ -95,7 +95,7 @@ def mpd_control( query, port=6600 ):
     try:
         c.connect('localhost', port)
     except:
-        return ''
+        return 'stop'
 
     result = {  'state':      state,
                 'stop':       stop,
