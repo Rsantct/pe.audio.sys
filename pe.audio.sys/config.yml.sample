@@ -1,7 +1,7 @@
 # ===========================  SOUND CARDS =====================================
 
 # Main system card alsa name
-system_card: hw:UDJ6
+system_card: hw:0
 
 # Additional cards to be used resampled under jack,
 # either as capture or as playback devices.
@@ -99,7 +99,7 @@ on_init:
     midside:            'off'
     polarity:           '++'
     solo:               'off'
-    input:              'mpd'
+    input:              'none'
 
 
 # =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
@@ -136,28 +136,28 @@ sources:
     spotify:
         capture_port:   alsa_loop
         gain:           0.0
-        xo:             lp
+        xo:             
 
     mpd:
         capture_port:   mpd
         gain:           0.0
-        xo:             lp
+        xo:             
 
     istreams:
         capture_port:   mplayer_istreams
         gain:           0.0
-        xo:             lp
+        xo:             
     
     tv:
         capture_port:   system
         gain:           +6.0                # low level source
-        xo:             mp                  # low latency filtering
-        target:         +0.0-0.0_target     # preferred for movie dialogue
+        xo:                                 # min-pha if available for low latency
+        target:         none                # maybe preferred for movie dialogue
 
     remote:
         capture_port:   zita-n2j
         gain:           0.0
-        xo:             lp
+        xo:             
         address:        192.168.1.234
 
 
@@ -245,7 +245,7 @@ cdrom_device:  /dev/cdrom
 # (i) It is expected that the script will store the amplifier state
 #         'on'|'1'    or    'off'|'0'
 #     into the file '~/.amplifier' so that others processes could know about.
-amp_manager:  /home/pi/bin/ampli.sh
+amp_manager:                       # for instance: /home/pi/bin/ampli.sh
 
 # Put here some command line (from your PATH) you want to run
 # when ordering the 'aux restart' command

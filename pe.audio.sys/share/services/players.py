@@ -157,33 +157,37 @@ def player_control(action):
         returns: 'stop' | 'play' | 'pause'
         I/O:     .player_state
     """
-    nstate = 'play'  # default answer
+    newState = 'stop'  # default answer
+    source   = get_source()
 
-    source = get_source()
-
+    # newState will depends on different modules 
     if source == 'mpd':
-        nstate = mpd_control(action)
+        newState = mpd_control(action)
 
     elif source.lower() == 'spotify':
         if   SPOTIFY_CLIENT == 'desktop':
-            nstate = spotify_control(action)
+            newState = spotify_control(action)
         elif SPOTIFY_CLIENT == 'librespot':
-            nstate = librespot_control(action)
+            newState = librespot_control(action)
 
     elif 'tdt' in source or 'dvb' in source:
-        nstate = mplayer_control(cmd=action, service='dvb')
+        newState = mplayer_control(cmd=action, service='dvb')
 
     elif source in ['istreams', 'iradio']:
-        nstate = mplayer_control(cmd=action, service='istreams')
+        newState = mplayer_control(cmd=action, service='istreams')
 
     elif source == 'cd':
-        nstate = mplayer_control(cmd=action, service='cdda')
+        newState = mplayer_control(cmd=action, service='cdda')
+        
+    # Will fix newState to a valid value if a module answer was wrong
+    if newState not in ('stop', 'play', 'pause'):
+        newState = 'stop'  # default answer
 
-    # Store the player nstate
+    # Store the player newState
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write(nstate)
+        f.write(newState)
 
-    return nstate
+    return newState
 
 
 # init() will be autostarted from server.py when loading this module

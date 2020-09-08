@@ -1192,6 +1192,7 @@ class Preamp(object):
         # Source = 'none'
         if source == 'none':
             jack_clear_preamp()
+            self.state["input"] = source
             result = 'done'
 
         # Bad source
