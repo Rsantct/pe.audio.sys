@@ -173,6 +173,7 @@ def process_aux( cmd, arg='' ):
                 raise
         except:
             print( f'({ME}) UNKNOWN status in \'{AMP_STATE_FILE}\'' )
+            curr_sta = '-'
 
         if arg == 'state':
             return curr_sta
