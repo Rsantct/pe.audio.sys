@@ -267,7 +267,9 @@ function page_update() {
 
     // Getting the current STATUS
     try{
-        state = JSON.parse( control_cmd('get_state') );
+		state = control_cmd('get_state');
+        // console.log('Rx state:', state);	# debug
+        state = JSON.parse( state );
         if (state == null){
             document.getElementById("main_cside").innerText =
                     ':: pe.audio.sys :: preamp OFFLINE';
@@ -428,6 +430,7 @@ function playerCtrl(action) {
 
 // Updates the player control buttons, hightlights the corresponding button to the playback state
 function update_player_controls() {
+
     try{
         var playerState = control_cmd( 'player state' );
         if (playerState == "null"){
