@@ -190,7 +190,7 @@ scripts:
     - sound_cards_prepare.py
     
     ## Runs MPD:
-    #- mpd.py
+    - mpd.py
     
     ## Internet url audio streams player based on Mplayer:
     - istreams.py
