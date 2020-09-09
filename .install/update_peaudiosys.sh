@@ -43,10 +43,16 @@ fi
 ########################################################################
 # BACK UP USER CONFIG FILES
 ########################################################################
-cd "$HOME"
+
+# MPLAYER
+cd "$HOME"/.mplayer
+cp config           config.LAST             >/dev/null 2>&1
+cp channels.conf    channels.conf.LAST      >/dev/null 2>&1
+echo "(i) backing up .mplayer files"
 
 # HOME:
-# .asoundrc .mpdconf and .mplyer/* are distributed as .sample files
+# .asoundrc and .mpdconf are distributed as .sample files
+cd "$HOME"
 
 # PE.AUDIO.SYS:
 # use .LAST instead of .bak in order to respect any existing bak file if so.
@@ -89,10 +95,15 @@ cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
 ########################################################################
 if [ "$keepConfig" ]; then
 
-    cd "$HOME"
+    # MPLAYER
+    cd "$HOME"/.mplayer
+    mv config.LAST          config
+    mv channels.conf.LAST   channels.conf
+    echo "(i) Restoring .mplayer config files"
 
     # HOME
     # .asoundrc .mpdconf and .mplyer/* are distributed as .sample files
+    cd "$HOME"
 
     # PE.AUDIO.SYS
     echo "(i) Restoring pe.audio.sys config files"
@@ -107,13 +118,19 @@ if [ "$keepConfig" ]; then
 # If NO KEEPING CONFIG, then overwrite:
 ########################################################################
 else
-    cd "$HOME"/pe.audio.sys
 
+    cd "$HOME"/.mplayer
+    cp config.sample            config
+    cp channels.conf.sample     channels.conf
+    echo "(i) .mplayer files has been updated"
+    
+    cd "$HOME"/pe.audio.sys
     cp .state.yml.sample         .state.yml
     cp config.yml.sample         config.yml
     cp DVB-T.yml.sample          DVB-T.yml        >/dev/null 2>&1
     cp istreams.yml.sample       istreams.yml     >/dev/null 2>&1
-    echo "(i) New config.yml and .state files NEED to be adapted"
+
+    echo "(i) New config.yml and .state.yml files NEEDS to be adapted"
 fi
 
 ########################################################################
