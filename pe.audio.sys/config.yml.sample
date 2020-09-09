@@ -139,7 +139,7 @@ sources:
         xo:             
 
     mpd:
-        capture_port:   mpd
+        capture_port:   mpd_loop
         gain:           0.0
         xo:             
 
@@ -190,7 +190,7 @@ scripts:
     - sound_cards_prepare.py
     
     ## Runs MPD:
-    #- mpd.py
+    - mpd.py
     
     ## Internet url audio streams player based on Mplayer:
     - istreams.py

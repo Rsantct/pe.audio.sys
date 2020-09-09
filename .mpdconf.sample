@@ -10,8 +10,10 @@ music_directory         "~/music"
 follow_outside_symlinks "yes"
 follow_inside_symlinks  "no"
 
+# default local playlist folder
 playlist_directory      "~/.config/mpd/playlists"
-#playlist_directory      "/mnt/SOME/SHARED/playlists/"
+# alternative network playlist folder
+#playlist_directory      "/mnt/SOME/SHARED/FOLDER/playlists/"
 
 pid_file                "~/.config/mpd/pid"
 state_file              "~/.config/mpd/state"
