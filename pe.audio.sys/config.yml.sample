@@ -139,7 +139,7 @@ sources:
         xo:             
 
     mpd:
-        capture_port:   mpd
+        capture_port:   mpd_loop
         gain:           0.0
         xo:             
 
