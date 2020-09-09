@@ -133,7 +133,7 @@ else
     
     # MPD
     cd "$HOME"
-    cp .mpdconf.sample          mpdconf
+    cp .mpdconf.sample          .mpdconf
     echo "(i) .mpdconf has been updated"
     
     # MAIN
