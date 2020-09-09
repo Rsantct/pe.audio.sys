@@ -87,6 +87,7 @@ cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
 # MPLAYER
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
 # MPD
+mkdir music                                         >/dev/null 2>&1
 mkdir -p .config/mpd/playlists                      >/dev/null 2>&1
 cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
 # MAIN
