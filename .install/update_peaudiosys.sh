@@ -44,15 +44,17 @@ fi
 # BACK UP USER CONFIG FILES
 ########################################################################
 
+# ALSA .asoundrc is distributed as a .sample file and not updated here.
+
 # MPLAYER
 cd "$HOME"/.mplayer
 cp config           config.LAST             >/dev/null 2>&1
 cp channels.conf    channels.conf.LAST      >/dev/null 2>&1
 echo "(i) backing up .mplayer files"
 
-# HOME:
-# .asoundrc and .mpdconf are distributed as .sample files
+# MPD:
 cd "$HOME"
+cp .mpdconf .mpdconf.LAST
 
 # PE.AUDIO.SYS:
 # use .LAST instead of .bak in order to respect any existing bak file if so.
@@ -63,7 +65,7 @@ if [ -d "pe.audio.sys" ]; then
     done
 fi
 
-# WWW: does not contains any configurable file
+# WWW: does not contain any configurable file
 
 ########################################################################
 # CLEANING
@@ -80,13 +82,17 @@ fi
 ########################################################################
 echo "(i) Copying from $ORIG ..."
 cd "$HOME"
-# hidden files must be explicited each one to be copied
+# (i) HIDDEN FILES must be explicited each one to be copied
 cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
-cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
+# MPLAYER
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
+# MPD
+mkdir -p .config/mpd/playlists                      >/dev/null 2>&1
+cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
+# MAIN
 mkdir $HOME/pe.audio.sys                            >/dev/null 2>&1
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
-# some utils are provided inside ~/bin
+# SOME UTILS are provided inside ~/bin
 mkdir $HOME/bin                                     >/dev/null 2>&1
 cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
 
@@ -101,9 +107,9 @@ if [ "$keepConfig" ]; then
     mv channels.conf.LAST   channels.conf
     echo "(i) Restoring .mplayer config files"
 
-    # HOME
-    # .asoundrc .mpdconf and .mplyer/* are distributed as .sample files
+    # MPD
     cd "$HOME"
+    mv .mpdconf.LAST        .mpdconf
 
     # PE.AUDIO.SYS
     echo "(i) Restoring pe.audio.sys config files"
@@ -119,11 +125,18 @@ if [ "$keepConfig" ]; then
 ########################################################################
 else
 
+    # MPLAYER
     cd "$HOME"/.mplayer
     cp config.sample            config
     cp channels.conf.sample     channels.conf
     echo "(i) .mplayer files has been updated"
     
+    # MPD
+    cd "$HOME"
+    cp .mpdconf.sample          mpdconf
+    echo "(i) .mpdconf has been updated"
+    
+    # MAIN
     cd "$HOME"/pe.audio.sys
     cp .state.yml.sample         .state.yml
     cp config.yml.sample         config.yml
