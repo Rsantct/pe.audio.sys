@@ -33,9 +33,11 @@
 
     - Access permissions -
 
-    The user must belong to the system group wich
-    can access to devices under '/dev/input' folder. This group is defined
-    inside '/etc/udev/rules.d/99-input.rules', also can be seen this way:
+    The user must belong to the system group wich can access to devices under 
+    '/dev/input' folder.
+    
+    This group is defined inside '/etc/udev/rules.d/99-input.rules', 
+    it can be seen also this way:
 
     $ ls -l /dev/input/
     total 0
@@ -48,8 +50,10 @@
 """
 # v0.2beta: beeps by running the synth from SoX (play)
 # v0.3beta: beeps by running 'aplay beep.wav'
-# v0.4beta: adapted from FIRtro to pre.di.c (python3 and writen as a module)
-# v0.5beta: adapted from pre.di.c to pe.audio.sys
+# v0.4beta: python3 and writen as a module
+# v0.5beta: /proc/input/devices is an empty file, now using /dev/input/mice
+#           because it is always available
+#           (https://www.kernel.org/doc/html/latest/input/input.html#mousedev)
 
 import os
 import socket
@@ -62,6 +66,7 @@ import yaml
 UHOME   =  os.path.expanduser("~")
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 
+
 try:
     with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
         CONTROL_PORT = yaml.safe_load(f)['peaudiosys_port']
@@ -69,16 +74,19 @@ except KeyError:
     print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
     exit()
 
+
 try:
     with open(f'{THISDIR}/mouse_volume_daemon.yml', 'r') as f:
         CFG = yaml.safe_load(f)
 except:
-    CFG = { 'STEPdB':        3.0,
+    CFG = { 'mousedevice':  'mice',
+            'STEPdB':        3.0,
             'alertdB':      -6.0,
             # (i) Beta: for beep sound you need to configure your
             # .asondrc to have a jack plugin that connects to brutefir
             'beep':         False,
             'alsaplugin':   'brutefir' }
+
 
 def send_cmd(cmd, port=CONTROL_PORT):
     host = 'localhost'
@@ -91,36 +99,6 @@ def send_cmd(cmd, port=CONTROL_PORT):
         except:
             print( f'(mouse_volume_daemon) socket error on {host}:{port}' )
     return
-
-
-def get_mouse_handlers():
-    """ try to find your system's mouse handler
-    """
-
-    with open('/proc/bus/input/devices', 'r') as f:
-        lines = f.read().split('\n')
-
-    handlers = []
-    found = False
-    for line in lines:
-        if 'N: Name=' in line:
-            if 'mouse' in line.lower():
-                found = True
-        if found:
-            if 'H: Handlers=' in line:
-                handlers = line.split('=')[-1].split()
-                break
-    found = False
-    if not handlers:
-        for line in lines:
-            if 'mouse' in line.lower():
-                found = True
-            if found:
-                if 'H: Handlers=' in line:
-                    handlers = line.split('=')[-1].split()
-                    break
-
-    return handlers
 
 
 def getMouseEvent():
@@ -150,10 +128,8 @@ def getMouseEvent():
         B: REL=103
         B: MSC=10
     """
-    #  as per seen at /proc/bus/input/devices
-    mousedevice = get_mouse_handlers()[0]
     try:
-        fmice = open( f'/dev/input/{mousedevice}', 'rb' )
+        fmice = open( f'/dev/input/{CFG["mousedevice"]}', 'rb' )
     except:
         print(__doc__)
         print( '\nCheck your access permissions as above.' )
