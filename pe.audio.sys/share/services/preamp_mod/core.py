@@ -38,9 +38,6 @@ import numpy as np
 from time import sleep
 import threading
 
-sys.path.append ( os.path.dirname(__file__) )
-import bfeq2png
-
 
 # JCLI: the client interface to the jack server ================================
 try:
@@ -1321,6 +1318,11 @@ class Convolver(object):
 # COMMON USE VARIABLES: ========================================================
 CONFIG_PATH = f'{MAINFOLDER}/config.yml'
 CONFIG      = yaml.safe_load(open(CONFIG_PATH, 'r'))
+
+if CONFIG["web_config"]["show_graphs"]:
+    sys.path.append ( os.path.dirname(__file__) )
+    import bfeq2png
+
 LSPK_FOLDER = f'{MAINFOLDER}/loudspeakers/{CONFIG["loudspeaker"]}'
 STATE_PATH  = f'{MAINFOLDER}/.state.yml'
 EQ_FOLDER   = f'{MAINFOLDER}/share/eq'

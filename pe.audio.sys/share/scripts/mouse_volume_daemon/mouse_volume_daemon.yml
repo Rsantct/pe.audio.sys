@@ -1,10 +1,14 @@
 # user settings:
 
-STEPdB      : 3.0
+# If more than one mouse, choose here the right one as per under /dev/input/
+# for instance mouse0, mouse1, or just mice for default.
+mousedevice: mice
 
-alertdB     : -6.0
+STEPdB:      3.0
+
+alertdB:    -6.0
 
 # (i) Beta: for beep sound you need to configure your
 # .asondrc to have a jack plugin that connects to brutefir
-beep        : False
-alsaplugin  : 'brutefir'
+beep:       false
+alsaplugin: brutefir

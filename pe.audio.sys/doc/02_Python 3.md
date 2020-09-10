@@ -30,14 +30,11 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 ### Python3 CD-Audio packages:
 
     # Metadata search
+    sudo apt install libdiscid0
     sudo pip3 install discid musicbrainzngs
 
     # Automatic detection of inserted disc
     sudo apt install python3-pyudev
-
-and maybe:
-
-    sudo apt install libdiscid0
 
 ### Optionaly recommended if you wan to run `scripts/loudness_monitor.py`:
 
