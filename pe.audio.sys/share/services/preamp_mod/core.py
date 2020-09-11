@@ -556,13 +556,14 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
     Popen('brutefir brutefir_config'.split())
     os.chdir(UHOME)
 
-    # Wait for Brutefir:out ports autoconnected to system ports
+    # Wait for Brutefir:out ports to be autoconnected to system ports
     tries = 120     # ~ 60 sec
     while tries:
         bf_out_ports = JCLI.get_ports('brutefir', is_output=True)
         # Ensures ports are available
         if len(bf_out_ports) < 2:
             sleep(.5)
+            tries -= 1  # do not forget this decrement before 'continue'
             continue
         count = 0
         for bfop in bf_out_ports:

@@ -16,7 +16,7 @@ The user must belong to the system group wich can access to devices under `/dev/
     crw-rw---- 1 root input 13, 63 Mar 19 20:53 mice
     crw-rw---- 1 root input 13, 32 Mar 19 20:53 mouse0
 
-On the above example it can be seen that the group is 'input', so in order to mouse volume daemon to work you need run:
+On the above example it can be seen that the group is 'input', so in order to mouse volume daemon to work you need to run:
 
     $ sudo adduser  peaudiosys  input
   
