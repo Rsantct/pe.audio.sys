@@ -217,15 +217,18 @@ def calc_gain( state ):
 
 
 def powersave_loop( convolver_off_driver, convolver_on_driver,
-                    end_loop_flag ):
+                    end_loop_flag, reset_elapsed_flag ):
     """ Loops forever every 1 sec reading the dBFS level on preamp input.
         If detected signal is below NOISE_FLOOR during MAX_WAIT then stops
         Brutefir. If signal level raises, then resumes Brutefir.
 
         Events managed here:
-        convolver_off_driver:   will set when no detected signal
-        convolver_on_driver:    will set when detected signal
-        end_loop_flag:          will check on every loop
+        convolver_off_driver:   Will set when no detected signal
+        convolver_on_driver:    Will set when detected signal
+        end_loop_flag:          Will check on every loop
+        reset_elapsed_flag:     Will check and clear, useful when switching
+                                to a no signal source to avoid killing brutefir
+                                suddenly (see Preamp.select_source#NewSource)
     """
 
 
@@ -285,6 +288,10 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
     print(f'(powersave) running')
     lowSigElapsed = 0
     while True:
+
+        if reset_elapsed_flag.isSet():
+            lowSigElapsed = 0
+            reset_elapsed_flag.clear()
 
         # Reading level
         if loud_mon_available:
@@ -847,8 +854,11 @@ class Preamp(object):
         #   State file info
         self.state["powersave"] = False
         #
-        #   Loop breaking flag
+        #   Powersave loop: breaking flag
         self.ps_end = threading.Event()
+        #
+        #   Powersave loop:reset elapsed low level detected counter flag
+        self.ps_reset_elapsed = threading.Event()
         #
         #   Convolver driving events
         def wait_PS_convolver_off():
@@ -907,7 +917,8 @@ class Preamp(object):
                                        target=powersave_loop,
                                        args=( self.ps_convolver_off,
                                               self.ps_convolver_on,
-                                              self.ps_end ) )
+                                              self.ps_end,
+                                              self.ps_reset_elapsed ) )
             ps_job.start()
             self.state["powersave"] = True
 
@@ -1205,6 +1216,7 @@ class Preamp(object):
             # Global audio settings on change input, but ensure the convolver
             # is running before applying audio settings.
             if not self.state["convolver_runs"]:
+                self.ps_reset_elapsed.set()
                 self.switch_convolver('on')
             candidate = on_change_input_behavior(candidate)
             # Some source specific audio settings overrides global settings
