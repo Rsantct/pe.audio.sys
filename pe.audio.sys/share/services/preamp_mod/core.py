@@ -38,6 +38,19 @@ import numpy as np
 from time import sleep
 import threading
 
+# Some nice ANSI formats for printouts
+class Fmt:
+    PURPLE      = '\033[35m'
+    CYAN        = '\033[36m'
+    DARKCYAN    = '\033[36m'
+    BLUE        = '\033[34m'
+    YELLOW      = '\033[33m'
+    RED         = '\033[31m'
+    GREEN       = '\033[32m'
+    BOLD        = '\033[1m'
+    UNDERLINE   = '\033[4m'
+    END         = '\033[0m'
+
 
 # JCLI: the client interface to the jack server ================================
 try:
@@ -217,15 +230,18 @@ def calc_gain( state ):
 
 
 def powersave_loop( convolver_off_driver, convolver_on_driver,
-                    end_loop_flag ):
+                    end_loop_flag, reset_elapsed_flag ):
     """ Loops forever every 1 sec reading the dBFS level on preamp input.
         If detected signal is below NOISE_FLOOR during MAX_WAIT then stops
         Brutefir. If signal level raises, then resumes Brutefir.
 
         Events managed here:
-        convolver_off_driver:   will set when no detected signal
-        convolver_on_driver:    will set when detected signal
-        end_loop_flag:          will check on every loop
+        convolver_off_driver:   Will set when no detected signal
+        convolver_on_driver:    Will set when detected signal
+        end_loop_flag:          Will check on every loop
+        reset_elapsed_flag:     Will check and clear, useful when switching
+                                to a no signal source to avoid killing brutefir
+                                suddenly (see Preamp.select_source#NewSource)
     """
 
 
@@ -285,6 +301,10 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
     print(f'(powersave) running')
     lowSigElapsed = 0
     while True:
+
+        if reset_elapsed_flag.isSet():
+            lowSigElapsed = 0
+            reset_elapsed_flag.clear()
 
         # Reading level
         if loud_mon_available:
@@ -694,84 +714,87 @@ def init_audio_settings():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
 
+    def try_init(prop):
+        """ Try to set a value defined under CONFIG['on_init'][prop]
+            Returns a warning or an empty string
+        """
+
+        # Skipping 'input' because it is processed apart at init_source().
+        if prop == 'input':
+            return ''
+
+        value = CONFIG["on_init"][prop]
+
+        # Skipping if not defined
+        if value is None:
+            return ''
+
+        # Manage the special key 'max_level'
+        if prop == 'max_level':
+            value = min( value, preamp.state["level"] )
+            prop = 'level'
+
+        func = {
+                'xo':               convolver.set_xo,
+                'drc':              convolver.set_drc,
+                'target':           preamp.set_target,
+                'level':            preamp.set_level,
+                'muted':            preamp.set_mute,
+                'bass':             preamp.set_bass,
+                'treble':           preamp.set_treble,
+                'balance':          preamp.set_balance,
+                'loudness_track':   preamp.set_loud_track,
+                'loudness_ref':     preamp.set_loud_ref,
+                'midside':          preamp.set_midside,
+                'polarity':         preamp.set_polarity,
+                'solo':             preamp.set_solo
+                }[prop]
+
+        # Some keys can be formerly named:
+        if prop == 'xo':
+            state_prop = 'xo_set'
+        elif prop == 'drc':
+            state_prop = 'drc_set'
+        else:
+            state_prop = prop
+
+        # Processing
+        warning = ''
+        if func( value ) == 'done':
+            preamp.state[state_prop] = value
+        else:
+            warning = f'{Fmt.RED}bad {prop}:{value}{Fmt.END}'
+            # Using last state
+            value = preamp.state[state_prop]
+            if func( value ) != 'done':
+                # This should never happen:
+                warning = f'{Fmt.RED}{Fmt.BOLD} BAD STATE {prop}:{value}{Fmt.END}'
+
+        return warning
+
+
+    # temporary Preamp and Convolver instances
     preamp    = Preamp()
     convolver = Convolver()
+    warnings  = ''
 
-    # (i) Using 'is not None' below to detect '0' or 'False' values.
-    #     Also we go step by step instead of prepare a new candidate_state
-    #     and try to _validate the whole thing at once.
+    # Iterate over config.on_init:
+    for prop in CONFIG['on_init']:
+        warning = try_init(prop)
+        if warning:
+            warnings += f'{warning}, '
 
-    on_init = CONFIG["on_init"]
-
-    if on_init["muted"] is not None:
-        preamp.set_mute       (   on_init["muted"]                )
-    else:
-        preamp.set_mute       (   preamp.state["muted"]           )
-
-    if on_init["level"] is not None:
-        preamp.set_level      (   on_init["level"]                )
-    else:
-        preamp.set_level      (   preamp.state["level"]           )
-
-    if on_init["max_level"] is not None:
-        preamp.set_level(  min( on_init["max_level"],
-                                preamp.state["level"] ) )
-
-    if on_init["bass"] is not None :
-        preamp.set_bass       (   on_init["bass"]                 )
-    else:
-        preamp.set_bass       (   preamp.state["bass"]            )
-
-    if on_init["treble"] is not None :
-        preamp.set_treble     (   on_init["treble"]               )
-    else:
-        preamp.set_treble     (   preamp.state["treble"]          )
-
-    if on_init["balance"] is not None :
-        preamp.set_balance    (   on_init["balance"]              )
-    else:
-        preamp.set_balance    (   preamp.state["balance"]         )
-
-    if on_init["loudness_track"] is not None:
-        preamp.set_loud_track (   on_init["loudness_track"]       )
-    else:
-        preamp.set_loud_track (   preamp.state["loudness_track"]  )
-
-    if on_init["loudness_ref"] is not None :
-        preamp.set_loud_ref   (   on_init["loudness_ref"]         )
-    else:
-        preamp.set_loud_ref   (   preamp.state["loudness_ref"]    )
-
-    if on_init["midside"]:
-        preamp.set_midside    (   on_init["midside"]              )
-    else:
-        preamp.set_midside    (   preamp.state["midside"]         )
-
-    if on_init["solo"]:
-        preamp.set_solo       (   on_init["solo"]                 )
-    else:
-        preamp.set_solo       (   preamp.state["solo"]            )
-
-    if on_init["xo"]:
-        convolver.set_xo      (   on_init["xo"]                   )
-        preamp.state["xo_set"] = on_init["xo"]
-    else:
-        convolver.set_xo      (   preamp.state["xo_set"]          )
-
-    if on_init["drc"]:
-        convolver.set_drc     (   on_init["drc"]                  )
-        preamp.state["drc_set"] = on_init["drc"]
-    else:
-        convolver.set_drc     (   preamp.state["drc_set"]         )
-
-    if on_init["target"]:
-        preamp.set_target     (   on_init["target"]               )
-    else:
-        preamp.set_target     (   preamp.state["target"]          )
-
+    # saving state to disk, then closing tmp instances
     preamp.save_state()
     del(convolver)
     del(preamp)
+
+    if not warnings:
+        print( f'{Fmt.BLUE}(on_init) done.{Fmt.END}' )
+        return 'done'
+    else:
+        print( f'(on_init) {warnings[:-2]}' )
+        return warnings[:-2]
 
 
 def connect_monitors():
@@ -847,8 +870,11 @@ class Preamp(object):
         #   State file info
         self.state["powersave"] = False
         #
-        #   Loop breaking flag
+        #   Powersave loop: breaking flag
         self.ps_end = threading.Event()
+        #
+        #   Powersave loop:reset elapsed low level detected counter flag
+        self.ps_reset_elapsed = threading.Event()
         #
         #   Convolver driving events
         def wait_PS_convolver_off():
@@ -907,7 +933,8 @@ class Preamp(object):
                                        target=powersave_loop,
                                        args=( self.ps_convolver_off,
                                               self.ps_convolver_on,
-                                              self.ps_end ) )
+                                              self.ps_end,
+                                              self.ps_reset_elapsed ) )
             ps_job.start()
             self.state["powersave"] = True
 
@@ -1205,6 +1232,7 @@ class Preamp(object):
             # Global audio settings on change input, but ensure the convolver
             # is running before applying audio settings.
             if not self.state["convolver_runs"]:
+                self.ps_reset_elapsed.set()
                 self.switch_convolver('on')
             candidate = on_change_input_behavior(candidate)
             # Some source specific audio settings overrides global settings
