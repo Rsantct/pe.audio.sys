@@ -104,7 +104,7 @@ class Widgets(object):
                 'muted'             : { 'pos':'1  1',    'val':'(MUTED) '   },
                 'bass'              : { 'pos':'1  2',    'val':'b:'         },
                 'treble'            : { 'pos':'6  2',    'val':'t:'         },
-                'loudness_ref'      : { 'pos':'12 2',    'val':'LUref:'     },
+                'loudness_ref'      : { 'pos':'12 3',    'val':'LUref:'     },
                 'xo_set'            : { 'pos':'0  0',    'val':'xo:'        },
                 'drc_set'           : { 'pos':'0  0',    'val':'drc:'       },
                 'peq_set'           : { 'pos':'0  0',    'val':'peq:'       },
@@ -114,7 +114,7 @@ class Widgets(object):
                 }
 
         self.aux = {
-                'loudness_monitor'  : { 'pos':'12 3',    'val':'LUmon:'     }
+                'loudness_monitor'  : { 'pos':'12 2',    'val':'LUmon:'     }
                 }
 
         self.meta = {
@@ -195,6 +195,11 @@ def update_lcd_state(scr='scr_1'):
 
         for key, value in data.items():
 
+            # The LU bar disables displaying bass and treble
+            if LCD_CONFIG["LUmon_bar"]:
+                if key in ('bass', 'treble'):
+                    continue
+
             # some state dict keys cannot have its
             # correspondence into the widgets_state dict
             if key not in ws.state:
@@ -255,28 +260,77 @@ def update_lcd_state(scr='scr_1'):
         _state = yaml.safe_load(f)
         # avoid if reading an empty file:
         if _state and _state != _last_state:
+            # refresh state items
             show_state( _state )
+            # also refreshing the LU monitor bar if needed
+            if LCD_CONFIG["LUmon_bar"] and 'loudness_ref' in _last_state:
+                if _state["loudness_ref"] != _last_state["loudness_ref"]:
+                    update_lcd_loudness_monitor()
             _last_state = _state
 
 
 def update_lcd_loudness_monitor(scr='scr_1'):
     """ Reads the monitored value from the file .loudness_monitor
         then updates the LCD display.
-    """
-    ws   = Widgets()
-    wdg  = 'loudness_monitor'
-    pos  = ws.aux[wdg]['pos']
-    lbl  = ws.aux[wdg]['val']
 
+        Optionally, a LU meter bar will be displayed, having an inserted
+        marker as per the selected LU reference offset.
+        (see lcd.yml config file)
+        This makes it easy to adjust the proper LU reference offset setting
+    """
+
+    # Reading LU-I monitored value
     try:
         with open(LOUDNESSMON_file, 'r') as f:
             # e.g. {'LU_I': -6.0, 'scope': 'album'}
             lu_dict = json.loads( f.read() )
             lu_I = lu_dict["LU_I"]
-            # Will display integers values of LU-Integrated
-            lbl += str( int( round( lu_I , 0) ) ).rjust(3)
     except:
-        lbl += ' - '
+        lu_I = None
+
+
+    wdg  = 'loudness_monitor'
+
+    # LU monitor and reference as numbers option:
+    if not LCD_CONFIG["LUmon_bar"]:
+
+        ws   = Widgets()
+        pos  = ws.aux[wdg]['pos']
+        lbl  = ws.aux[wdg]['val']
+
+        if lu_I is not None:
+            # Will display integers values of LU-Integrated
+            lbl += str( int(round(lu_I)) ).rjust(3)
+        else:
+            lbl += ' - '
+
+    # LU monitor and reference bar option:
+    else:
+
+        pos = '1 2'
+        lbl = ''
+
+        # LU monitored
+        if lu_I is None:
+            lu_I = 0
+
+        # LU reference offset (usually in the range from 0 to 12)
+        # (it can be found in the global _state)
+        lu_ref = int(round(_state["loudness_ref"]))
+
+        # The LU meter bar length:
+        barLen = int( round( lu_I * 20 / 12.0 ) )
+
+        # The marker bar position for the LU reference offset value:
+        p = int( round( lu_ref * 20 / 12.0 ) )
+        # Clamped from 0 to 19
+        p = max(min(p, 19), 0)
+
+        # The "label" to print into the 20 char length ldc line:
+        lbl = '-' * barLen + ' ' * (20-barLen)
+
+        # Inserting the marker
+        lbl = lbl[:p] + '*' + lbl[p+1:]
 
     cmd = f'widget_set {scr} {wdg} {pos} "{lbl}"'
     LCD.send( cmd )
