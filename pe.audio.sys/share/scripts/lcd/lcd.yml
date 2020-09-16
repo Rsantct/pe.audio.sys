@@ -1,5 +1,11 @@
 # The live time for temporary info screens
-info_screen_timeout:    2
+info_screen_timeout: 2
 
 # number of movements per rendering stroke (8 times/second)
-scroller_speed:         2
+scroller_speed: 2
+
+# Optionally, a LU meter bar can be displayed, having an inserted
+# marker as per the selected LU reference offset.
+# This makes it easy to adjust the proper LU reference offset setting.
+# (this disables bass and treble display)
+LUmon_bar: true
