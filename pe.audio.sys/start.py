@@ -57,6 +57,20 @@ LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
 TCP_BASE_PORT   = CONFIG['peaudiosys_port']
 
 
+# Some nice ANSI formats for printouts
+class Fmt:
+    PURPLE      = '\033[35m'
+    CYAN        = '\033[36m'
+    DARKCYAN    = '\033[36m'
+    BLUE        = '\033[34m'
+    YELLOW      = '\033[33m'
+    RED         = '\033[31m'
+    GREEN       = '\033[32m'
+    BOLD        = '\033[1m'
+    UNDERLINE   = '\033[4m'
+    END         = '\033[0m'
+
+
 def get_Bfir_sample_rate():
     """ retrieve loudspeaker's filters FS from its Brutefir configuration
     """
@@ -78,9 +92,11 @@ def get_Bfir_sample_rate():
 
     if not FS:
         raise ValueError('unable to find Brutefir sample_rate')
-
-    if 'defaults' in fname:
-        print(f'({ME}) *** using .brutefir_defaults SAMPLE RATE ***')
+        
+    if 'brutefir_defaults' in fname:
+        print(f'{Fmt.RED}{Fmt.BOLD}'
+              f'({ME}) *** USING .brutefir_defaults SAMPLE RATE ***'
+              f'{Fmt.END}')
 
     return FS
 
