@@ -50,6 +50,10 @@ ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
+sys.path.append(f'{MAINFOLDER}/share')
+from miscel import Fmt
+
+
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 LOUDSPEAKER     = CONFIG['loudspeaker']
@@ -78,9 +82,11 @@ def get_Bfir_sample_rate():
 
     if not FS:
         raise ValueError('unable to find Brutefir sample_rate')
-
-    if 'defaults' in fname:
-        print(f'({ME}) *** using .brutefir_defaults SAMPLE RATE ***')
+        
+    if 'brutefir_defaults' in fname:
+        print(f'{Fmt.RED}{Fmt.BOLD}'
+              f'({ME}) *** USING .brutefir_defaults SAMPLE RATE ***'
+              f'{Fmt.END}')
 
     return FS
 

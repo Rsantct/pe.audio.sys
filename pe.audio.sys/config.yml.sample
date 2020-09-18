@@ -77,7 +77,7 @@ on_init:
 
     # Put here the common IDSTRING that identifies the XO FIR filters at start up.
     # ie: xo.lo.IDSTRING.pcm  xo.hi.IDSTRING.pcm
-    xo:     none
+    xo:     # leave blank for a fullrange loudspeaker
 
     # Put here the IDSTRING that identifies the DRC FIR filters at start up.
     # ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm

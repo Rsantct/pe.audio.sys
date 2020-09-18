@@ -38,18 +38,8 @@ import numpy as np
 from time import sleep
 import threading
 
-# Some nice ANSI formats for printouts
-class Fmt:
-    PURPLE      = '\033[35m'
-    CYAN        = '\033[36m'
-    DARKCYAN    = '\033[36m'
-    BLUE        = '\033[34m'
-    YELLOW      = '\033[33m'
-    RED         = '\033[31m'
-    GREEN       = '\033[32m'
-    BOLD        = '\033[1m'
-    UNDERLINE   = '\033[4m'
-    END         = '\033[0m'
+sys.path.append(f'{MAINFOLDER}/share')
+from miscel import Fmt
 
 
 # JCLI: the client interface to the jack server ================================
@@ -579,6 +569,10 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
     # Wait for Brutefir:out ports to be autoconnected to system ports
     tries = 120     # ~ 60 sec
     while tries:
+        # showing progress every 3 sec
+        if tries % 6 == 0:
+            print(  f'{Fmt.BLUE}(core) waiting for Brutefir ports '
+                    f'{"."*int((120-tries)/6)}{Fmt.END}')
         bf_out_ports = JCLI.get_ports('brutefir', is_output=True)
         # Ensures ports are available
         if len(bf_out_ports) < 2:
@@ -593,6 +587,7 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
             break
         tries -= 1
         sleep(.5)
+    print()
     if not tries:
         return 'PROBLEM RUNNING BRUTEFIR :-('
 

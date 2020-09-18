@@ -51,6 +51,11 @@ import sys
 import subprocess as sp
 import yaml
 
+UHOME = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share')
+from miscel import Fmt
+
 
 def get_pulse_cards():
     pa_cards = {}
@@ -99,8 +104,9 @@ def PA_release_card( pa_name ):
     try:
         sp.Popen( f'pactl set-card-profile {pa_name} off'.split() )
     except:
-        print(  f'(sound_cards_prepare) PROBLEMS releasing '
-                f'\'{pa_name}\' in pulseaudio' )
+        print(  f'{Fmt.RED}'
+                f'(sound_cards_prepare) PROBLEMS releasing '
+                f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
 
 
 if __name__ == "__main__":
@@ -139,5 +145,6 @@ if __name__ == "__main__":
             else:
                 raise
         except:
-            print(  f'(sound_cards_prepare) PROBLEMS restoring alsa: '
-                    f'\'{bareCardName}\'' )
+            print(  f'{Fmt.RED}'
+                    f'(sound_cards_prepare) PROBLEMS restoring alsa: '
+                    f'\'{bareCardName}\'{Fmt.END}' )
