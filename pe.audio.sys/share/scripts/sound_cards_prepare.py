@@ -51,19 +51,10 @@ import sys
 import subprocess as sp
 import yaml
 
-
-# Some nice ANSI formats for printouts
-class Fmt:
-    PURPLE      = '\033[35m'
-    CYAN        = '\033[36m'
-    DARKCYAN    = '\033[36m'
-    BLUE        = '\033[34m'
-    YELLOW      = '\033[33m'
-    RED         = '\033[31m'
-    GREEN       = '\033[32m'
-    BOLD        = '\033[1m'
-    UNDERLINE   = '\033[4m'
-    END         = '\033[0m'
+UHOME = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share')
+from miscel import Fmt
 
 
 def get_pulse_cards():
