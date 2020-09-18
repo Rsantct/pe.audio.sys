@@ -52,6 +52,20 @@ import subprocess as sp
 import yaml
 
 
+# Some nice ANSI formats for printouts
+class Fmt:
+    PURPLE      = '\033[35m'
+    CYAN        = '\033[36m'
+    DARKCYAN    = '\033[36m'
+    BLUE        = '\033[34m'
+    YELLOW      = '\033[33m'
+    RED         = '\033[31m'
+    GREEN       = '\033[32m'
+    BOLD        = '\033[1m'
+    UNDERLINE   = '\033[4m'
+    END         = '\033[0m'
+
+
 def get_pulse_cards():
     pa_cards = {}
     try:
@@ -99,8 +113,9 @@ def PA_release_card( pa_name ):
     try:
         sp.Popen( f'pactl set-card-profile {pa_name} off'.split() )
     except:
-        print(  f'(sound_cards_prepare) PROBLEMS releasing '
-                f'\'{pa_name}\' in pulseaudio' )
+        print(  f'{Fmt.RED}'
+                f'(sound_cards_prepare) PROBLEMS releasing '
+                f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
 
 
 if __name__ == "__main__":
@@ -139,5 +154,6 @@ if __name__ == "__main__":
             else:
                 raise
         except:
-            print(  f'(sound_cards_prepare) PROBLEMS restoring alsa: '
-                    f'\'{bareCardName}\'' )
+            print(  f'{Fmt.RED}'
+                    f'(sound_cards_prepare) PROBLEMS restoring alsa: '
+                    f'\'{bareCardName}\'{Fmt.END}' )
