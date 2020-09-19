@@ -36,6 +36,12 @@ import socket
 import pyudev
 from subprocess import check_output, Popen
 
+UHOME = os.path.expanduser("~")
+ME = __file__.split('/')[-1]
+
+sys.path.append(f'{UHOME}/pe.audio.sys')
+from share.miscel import send_cmd
+
 # Some distros as Ubuntu 18.04 LTS doesn't have
 # libcdio-dev >=2.0 as required from pycdio.
 #import cdio, pycdio
@@ -44,30 +50,17 @@ from subprocess import check_output, Popen
 # Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
 
-def send_cmd(cmd):
-    host, port = CTL_HOST, CTL_PORT
-    print( f'({ME}) sending: {cmd} to {host}:{port}')
-    with socket.socket() as s:
-        try:
-            s.connect( (host, port) )
-            s.send( cmd.encode() )
-            s.close()
-        except:
-            print( f'({ME}) socket error on {host}:{port}' )
-    return
-
-
 def check_for_CDDA(d):
 
     srDevice = d.device_path.split('/')[-1]
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'player pause' )
+        send_cmd( 'player pause', sender=ME )
         sleep(.5)
-        send_cmd( 'preamp input cd' )
+        send_cmd( 'preamp input cd', sender=ME )
         sleep(.5)
-        send_cmd( 'player play' )
+        send_cmd( 'player play', sender=ME )
 
     # Verbose if not CDDA
     try:
@@ -100,18 +93,6 @@ def main():
 
 
 if __name__ == '__main__':
-
-    UHOME = os.path.expanduser("~")
-    ME = __file__.split('/')[-1]
-
-    # pe.audio.sys service addressing
-    try:
-        with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            cfg = yaml.safe_load(f)
-            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
-    except:
-        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-        exit()
 
     if sys.argv[1:]:
         if sys.argv[1] == 'start':
