@@ -50,8 +50,8 @@ ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
-sys.path.append(f'{MAINFOLDER}/share')
-from miscel import Fmt
+sys.path.append(MAINFOLDER)
+from share.miscel import Fmt
 
 
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
