@@ -169,17 +169,19 @@ def main_loop(alertdB=CFG['alertdB'], beep=CFG['beep']):
         # Sending the order to pe.audio.sys
         if ev == 'buttonLeftDown':
             # Level --
-            send_cmd( f'level -{CFG["STEPdB"]} add', sender='mouse_volume' )
+            send_cmd( f'level -{CFG["STEPdB"]} add', sender='mouse_volume',
+                      verbose=True )
             level_ups = False
 
         elif ev == 'buttonRightDown':
             # Level ++
-            send_cmd( f'level +{CFG["STEPdB"]} add', sender='mouse_volume' )
+            send_cmd( f'level +{CFG["STEPdB"]} add', sender='mouse_volume',
+                      verbose=True )
             level_ups = True
 
         elif ev == 'buttonMid':
             # Mute toggle
-            send_cmd( 'mute toggle', sender='mouse_volume' )
+            send_cmd( 'mute toggle', sender='mouse_volume', verbose=True )
 
         # Alert if crossed the headroom threshold
         if level_ups:
