@@ -33,10 +33,10 @@
 
     - Access permissions -
 
-    The user must belong to the system group wich can access to devices under 
+    The user must belong to the system group wich can access to devices under
     '/dev/input' folder.
-    
-    This group is defined inside '/etc/udev/rules.d/99-input.rules', 
+
+    This group is defined inside '/etc/udev/rules.d/99-input.rules',
     it can be seen also this way:
 
     $ ls -l /dev/input/
@@ -55,26 +55,19 @@
 #           because it is always available
 #           (https://www.kernel.org/doc/html/latest/input/input.html#mousedev)
 
+import sys
 import os
-import socket
+UHOME   =  os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
 import time
 import subprocess as sp
 import binascii
 import yaml
 #import struct # only to debug see below
+from share.miscel import send_cmd
 
-UHOME   =  os.path.expanduser("~")
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
-
-
-try:
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        CONTROL_PORT = yaml.safe_load(f)['peaudiosys_port']
-except KeyError:
-    print(f'(mouse_volume_daemon) ERROR reading control port in config.yml')
-    exit()
-
-
 try:
     with open(f'{THISDIR}/mouse_volume_daemon.yml', 'r') as f:
         CFG = yaml.safe_load(f)
@@ -86,19 +79,6 @@ except:
             # .asondrc to have a jack plugin that connects to brutefir
             'beep':         False,
             'alsaplugin':   'brutefir' }
-
-
-def send_cmd(cmd, port=CONTROL_PORT):
-    host = 'localhost'
-    #print( f'(mouse_volume_daemon) sending: {cmd} to {host}:{port}')  # DEBUG
-    with socket.socket() as s:
-        try:
-            s.connect( (host, port) )
-            s.send( cmd.encode() )
-            s.close()
-        except:
-            print( f'(mouse_volume_daemon) socket error on {host}:{port}' )
-    return
 
 
 def getMouseEvent():
@@ -189,17 +169,17 @@ def main_loop(alertdB=CFG['alertdB'], beep=CFG['beep']):
         # Sending the order to pe.audio.sys
         if ev == 'buttonLeftDown':
             # Level --
-            send_cmd( f'level -{CFG["STEPdB"]} add' )
+            send_cmd( f'level -{CFG["STEPdB"]} add', sender='mouse_volume' )
             level_ups = False
 
         elif ev == 'buttonRightDown':
             # Level ++
-            send_cmd( f'level +{CFG["STEPdB"]} add' )
+            send_cmd( f'level +{CFG["STEPdB"]} add', sender='mouse_volume' )
             level_ups = True
 
         elif ev == 'buttonMid':
             # Mute toggle
-            send_cmd( 'mute toggle' )
+            send_cmd( 'mute toggle', sender='mouse_volume' )
 
         # Alert if crossed the headroom threshold
         if level_ups:
