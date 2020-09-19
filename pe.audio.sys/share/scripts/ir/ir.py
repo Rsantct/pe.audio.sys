@@ -36,8 +36,8 @@ import os
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share')
-from miscel import Fmt, send_cmd
+sys.path.append(MAINFOLDER)
+from share.miscel import Fmt, send_cmd
 
 
 def irpacket2cmd(p):
