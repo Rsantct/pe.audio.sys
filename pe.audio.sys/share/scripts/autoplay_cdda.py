@@ -32,7 +32,6 @@ import os
 import sys
 import yaml
 from time import sleep
-import socket
 import pyudev
 from subprocess import check_output, Popen
 
