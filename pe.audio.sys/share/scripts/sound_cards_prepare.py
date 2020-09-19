@@ -53,8 +53,9 @@ import yaml
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share')
-from miscel import Fmt
+sys.path.append(MAINFOLDER)
+
+from share.miscel import Fmt
 
 
 def get_pulse_cards():
@@ -87,7 +88,7 @@ def get_pulse_cards():
 
 def get_config_yml_cards():
     cards = []
-    with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+    with open( f'{MAINFOLDER}/config.yml', 'r') as f:
         CONFIG = yaml.safe_load( f )
 
     cards.append( CONFIG["system_card"] )
@@ -120,8 +121,6 @@ if __name__ == "__main__":
             print(__doc__)
             sys.exit()
 
-    UHOME = os.path.expanduser("~")
-
     pa_cards        = get_pulse_cards()
     config_cards    = get_config_yml_cards()
 
@@ -137,7 +136,7 @@ if __name__ == "__main__":
     for card in config_cards:
         bareCardName = card.split(':')[-1].split(',')[0]
 
-        asound_file = f'{UHOME}/pe.audio.sys/.asound.{bareCardName}'
+        asound_file = f'{MAINFOLDER}/.asound.{bareCardName}'
         try:
             if os.path.isfile( asound_file ):
                 sp.Popen( f'alsactl -f {asound_file} \

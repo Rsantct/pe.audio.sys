@@ -16,12 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+import socket
+import os
+import yaml
+
+UHOME = os.path.expanduser("~")
 
 # Some nice ANSI formats for printouts
 class Fmt:
     """
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
-    
+
     0         all attributes off
     1         bold (foreground is intense)
     4         underline (background is intense)
@@ -95,3 +100,33 @@ class Fmt:
     UNDERLINE   = '\033[4m'
     BLINK       = '\033[5m'
     END         = '\033[0m'
+
+
+def send_cmd(cmd, sender='', verbose=False):
+    """ send commands to the server pe.audio.sys
+    """
+
+    if not sender:
+        sender = 'share.miscel'
+
+    if verbose:
+        print( f'{Fmt.BLUE}({sender}) sending: {cmd} to {CHOST}:{CPORT}{Fmt.END}' )
+
+    with socket.socket() as s:
+        try:
+            s.connect( (CHOST, CPORT) )
+            s.send( cmd.encode() )
+            s.close()
+        except:
+            if verbose:
+                print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{CPORT}{Fmt.END}' )
+    return
+
+# pe.audio.sys control service addressing
+try:
+    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+        CFG = yaml.safe_load(f)
+        CHOST, CPORT = CFG['peaudiosys_address'], CFG['peaudiosys_port']
+except:
+    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in \'config.yml\'{Fmt.END}')
+    exit()

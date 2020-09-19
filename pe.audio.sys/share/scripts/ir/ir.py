@@ -31,36 +31,13 @@
 import serial
 import sys
 import yaml
-import socket
 from time import time
 import os
 
-
-class Color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-
-
-def send_cmd(cmd):
-    host, port = CTL_HOST, CTL_PORT
-    print( f'({ME})', Color.RED + 'sending:', cmd, \
-           f'to {host}:{port}\n' + Color.END )
-    with socket.socket() as s:
-        try:
-            s.connect( (host, port) )
-            s.send( cmd.encode() )
-            s.close()
-        except:
-            print( f'({ME}) socket error on {host}:{port}' )
-    return
+UHOME = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(MAINFOLDER)
+from share.miscel import Fmt, send_cmd
 
 
 def irpacket2cmd(p):
@@ -87,13 +64,13 @@ def irpacket2cmd(p):
             if vari <= maxVariance:
                 # found :-)
                 if debugMode:
-                    print( f'{Color.BOLD}   variance: {vari} found "{keymap[k]}"\
-                             {Color.END}' )
+                    print( f'{Fmt.BOLD}   variance: {vari} found "{keymap[k]}"\
+                             {Fmt.END}' )
                 return keymap[k]
             else:
                 if debugMode:
-                    print( f'{Color.CYAN}   variance: {vari}\
-                             {Color.END}' )
+                    print( f'{Fmt.CYAN}   variance: {vari}\
+                             {Fmt.END}' )
         else:
             if debugMode:
                 print()
@@ -142,10 +119,10 @@ def main_EOP():
             cmd = irpacket2cmd(irpacket)
             if cmd:
                 if time() - lastTimeStamp >= antibound:
-                    send_cmd(cmd)
+                    send_cmd(cmd, sender='ir.py', verbose=True)
                     lastTimeStamp = time()
                 else:
-                    print( Color.CYAN + 'too fast' + Color.END )
+                    print( Fmt.CYAN + 'too fast' + Fmt.END )
             irpacket = b''
 
         else:
@@ -161,7 +138,7 @@ def main_PL():
         cmd = irpacket2cmd(irpacket)
         if cmd:
             if time() - lastTimeStamp >= antibound:
-                send_cmd(cmd)
+                send_cmd(cmd, sender='ir.py', verbose=True)
                 lastTimeStamp = time()
 
 
@@ -179,7 +156,6 @@ def main_TM():
 
 if __name__ == "__main__":
 
-    UHOME = os.path.expanduser("~")
     THISPATH = os.path.dirname(os.path.abspath(__file__))
     ME = __file__.split('/')[-1]
 
@@ -189,14 +165,6 @@ if __name__ == "__main__":
 
     debugMode = True if '-d' in sys.argv else False
 
-    # pe.audio.sys service addressing
-    try:
-        with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-            cfg = yaml.safe_load(f)
-            CTL_HOST, CTL_PORT = cfg['peaudiosys_address'], cfg['peaudiosys_port']
-    except:
-        print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-        exit()
 
     # IR config file
     try:
