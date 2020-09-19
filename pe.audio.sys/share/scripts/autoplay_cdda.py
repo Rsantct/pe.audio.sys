@@ -55,11 +55,11 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'player pause', sender=ME )
+        send_cmd( 'player pause',    sender=ME, verbose=True )
         sleep(.5)
-        send_cmd( 'preamp input cd', sender=ME )
+        send_cmd( 'preamp input cd', sender=ME, verbose=True )
         sleep(.5)
-        send_cmd( 'player play', sender=ME )
+        send_cmd( 'player play',     sender=ME, verbose=True )
 
     # Verbose if not CDDA
     try:
