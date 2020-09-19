@@ -1001,8 +1001,8 @@ class Preamp(object):
         # (i)
         # 'config.yml' SOURCE's GAIN are set arbitrarily at the USER's OWN RISK,
         # so we exclude it from the headroom calculation.
-        # So although gmax = 0.0 (this is digital domain alowed gain), if 
-        # a source had gain: 6.0, the real gain on Brutefir's level stage
+        # So although 'gmax: 0.0' (this is digital domain alowed gain), 
+        # if a source had gain: 6.0, the real 'gain' on Brutefir level stage
         # can be up to +6.0 dB because of this consideration.
         if candidate["input"] != 'none':
             try:
