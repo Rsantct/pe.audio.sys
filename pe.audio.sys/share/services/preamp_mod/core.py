@@ -38,8 +38,8 @@ import numpy as np
 from time import sleep
 import threading
 
-sys.path.append(f'{MAINFOLDER}/share')
-from miscel import Fmt
+sys.path.append(MAINFOLDER)
+from share.miscel import Fmt
 
 
 # JCLI: the client interface to the jack server ================================
