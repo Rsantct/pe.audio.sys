@@ -212,10 +212,14 @@ def calc_gain( state ):
                                     ref_level_gain
                                     source gain offset
     """
+
     gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
                              - state["loudness_ref"]
+
+    # Adding here the specific source gain:
     if state["input"] != 'none':
         gain += float( CONFIG["sources"][state["input"]]["gain"] )
+
     return gain
 
 
@@ -681,6 +685,7 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
         job_jc.start()
     return 'ordered'
 
+
 def jack_clear_preamp():
     """ Force clearing ANY clients, no matter what input was selected
     """
@@ -992,6 +997,19 @@ class Preamp(object):
         bal             = candidate["balance"]
 
         headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0)
+
+        # (i)
+        # 'config.yml' SOURCE's GAIN are set arbitrarily at the USER's OWN RISK,
+        # so we exclude it from the headroom calculation.
+        # So although gmax = 0.0 (this is digital domain alowed gain), if 
+        # a source had gain: 6.0, the real gain on Brutefir's level stage
+        # can be up to +6.0 dB because of this consideration.
+        if candidate["input"] != 'none':
+            try:
+                input_gain = float( CONFIG["sources"][candidate["input"]]["gain"] )
+            except:
+                input_gain = 0.0
+        headroom += input_gain
 
         if headroom >= 0:
             # APPROVED
