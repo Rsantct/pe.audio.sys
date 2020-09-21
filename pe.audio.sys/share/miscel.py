@@ -20,6 +20,7 @@ import socket
 import os
 import yaml
 import jack
+from json import loads as json_loads
 
 UHOME = os.path.expanduser("~")
 
@@ -103,6 +104,26 @@ class Fmt:
     END         = '\033[0m'
 
 
+# Sets a peaudiosys parameter as per a given pattern, useful for user macros.
+def set_as_pattern(param, pattern, sender='miscel', verbose=False):
+    """ Sets a peaudiosys parameter as per a given pattern.
+        This applies only for 'xo', 'drc' and 'target'
+    """
+    result = ''
+
+    if param not in ('xo', 'drc', 'target'):
+        return "parameter mus be 'xo', 'drc' or 'target'"
+
+    for setName in json_loads( send_cmd(f'get_{param}_sets') ):
+
+        if pattern in setName:
+            result = send_cmd( f'set_{param} {setName}',
+                               sender=sender, verbose=verbose )
+            break
+
+    return result
+
+
 # Waiting for jack ports to be available
 def wait4ports(pattern):
     """ Waits for jack ports to be available
@@ -156,6 +177,7 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
                 print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
 
     return ans
+
 
 # pe.audio.sys control service addressing
 try:
