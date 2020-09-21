@@ -49,6 +49,7 @@ STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 aux_info = {    'amp':              'off',
                 'loudness_monitor': 0.0,
                 'user_macros':      [],
+                'last_macro':       '-',    # cannot be empty
                 'web_config':       {}
             }
 
@@ -139,12 +140,12 @@ def process_aux( cmd, arg='' ):
         output: a result string
     """
 
-    # Aux to provide the web configuration options:
+    # Aux to provide the static web configuration options:
     def get_web_config():
 
         wconfig = CONFIG['web_config']
 
-        # Complete some options
+        # Complete some additional info
         wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
         wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
                                                   in CONFIG['scripts'] else False
@@ -155,6 +156,7 @@ def process_aux( cmd, arg='' ):
         else:
             if wconfig["inputs_as_macros"] != True:
                 wconfig["inputs_as_macros"] = False
+
         return wconfig
 
 
@@ -230,10 +232,15 @@ def process_aux( cmd, arg='' ):
         # (i) The web page needs a sorted list
         result = sorted(macro_files, key=lambda x: int(x.split('_')[0]))
 
+    # LAST EXECUTED MACRO
+    elif cmd == 'get_last_macro':
+        result = aux_info['last_macro']
+
     # RUN MACRO
     elif cmd == 'run_macro':
         print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
+        aux_info["last_macro"] = arg
         result = 'tried'
 
     # PLAYS SOMETHING
