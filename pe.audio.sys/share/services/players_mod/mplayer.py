@@ -73,19 +73,8 @@ import jack
 sys.path.append( os.path.dirname(__file__) )
 import cdda
 
+
 ME          = __file__.split('/')[-1]
-
-
-## configured parameters in config.yml:
-CTL_PORT = CONFIG['peaudiosys_port']
-if 'cdrom_device' in CONFIG:
-    CDROM_DEVICE = CONFIG['cdrom_device']
-else:
-    CDROM_DEVICE = '/dev/cdrom'
-try:
-    CD_CAPTURE_PORT = CONFIG['sources']['cd']['capture_port']
-except:
-    CD_CAPTURE_PORT = 'mplayer_cdda'
 
 
 # Auxiliary function to format hh:mm:ss
@@ -141,7 +130,7 @@ def cdda_load():
     """
     print( f'({ME}) loading disk ...' )
     # Save disk info into a json file
-    cdda.save_disc_metadata(device=CDROM_DEVICE,
+    cdda.save_disc_metadata(device=cdda.CDROM_DEVICE,
                             fname=f'{MAINFOLDER}/.cdda_info')
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
@@ -216,7 +205,7 @@ def cdda_get_current_track():
 
 
 # Aux to disconect Mplayer jack ports from preamp ports.
-def pre_connect(mode, pname=CD_CAPTURE_PORT):
+def pre_connect(mode, pname=cdda.CD_CAPTURE_PORT):
     # (i) Mplayer cdda pausing becomes on strange behavior,
     #     a stutter audio frame stepping phenomena,
     #     even if a 'pausing_keep mute 1' command was issued.
@@ -276,7 +265,7 @@ def mplayer_control(cmd, service):
     if cmd == 'state':
         return status
     if cmd == 'eject':
-        Popen( f'eject {CDROM_DEVICE}'.split() )
+        Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cdda.cdda_info_template() ) )
