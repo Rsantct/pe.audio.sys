@@ -102,7 +102,7 @@ on_init:
     input:              'none'
 
 # Optional user macro at startup
-run_macro:          '1_RNE'
+run_macro:              '7_mpd_play_mylist'
 
 
 # =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
