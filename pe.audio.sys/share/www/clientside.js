@@ -32,7 +32,7 @@ const URL_PREFIX = '/functions.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
-// Some globals
+// SOME GLOBALS
 var state = {loudspeaker:"not connected"};
 var show_advanced = false;          // defaults for display advanced controls
 var show_graphs   = false;          // defaults for show graphs
@@ -51,16 +51,16 @@ var last_loudspeaker = ''           // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
 var mFnames = [];                   // User macros
 var macro_button_list = [];
-var last_macro = '';
 var hold_tmp_msg = 0;               // A counter to keep tmp_msg during updates
 var tmp_msg = '';                   // A temporary message
 
-// Web config dictionary
+// STATIC WEB CONFIGURATION
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch(e){
     console.log('problems with aux get_web_config', e.name, e.message);
-    var web_config = { 'hide_macro_buttons': false,
+    var web_config = { 'inputs_as_macros':   false,
+                       'hide_macro_buttons': false,
                        'hide_LU':            false,
                        'LU_monitor_enabled': false,
                        'restart_cmd_info':   '',
@@ -105,15 +105,18 @@ function control_cmd( cmd ) {
 
 // Page INITIATE
 function page_initiate(){
+
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
+
     // Shows or hides the macro buttons
     if ( web_config.hide_macro_buttons == true ){
         document.getElementById("macro_buttons").style.display = 'none';
     }else{
         document.getElementById("macro_buttons").style.display = 'inline-table';
     }
+
     // Shows or hides the LU offset slider and the LU monitor bar
     if ( web_config.hide_LU == true ){
         document.getElementById("LU_offset").style.display = 'none';
@@ -124,9 +127,11 @@ function page_initiate(){
             document.getElementById("LU_monitor").style.display = 'block';
         }
     }
+
     // Updates the title of the restart button as per config.yml
     document.getElementById("restart_switch").title = 'RESTART: ' +
                                          web_config.restart_cmd_info;
+
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -331,8 +336,9 @@ function page_update() {
 
     // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
     if ( web_config.inputs_as_macros == true ){
+        var mName = control_cmd('aux get_last_macro');
         document.getElementById("inputsSelector").value =
-               last_macro.slice(last_macro.indexOf('_') + 1, last_macro.length);
+                            mName.slice(mName.indexOf('_') + 1, mName.length);
     }else{
         document.getElementById("inputsSelector").value = state.input;
     }
@@ -725,7 +731,7 @@ function fill_in_inputs_as_macros(mFnames) {
 
 // Runs a macro
 function run_macro(mFname){
-    //console.log(mFname);
+
     control_cmd( 'aux run_macro ' + mFname );
     last_macro = mFname;
 
