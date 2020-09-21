@@ -60,6 +60,10 @@
 
 import os
 import sys
+UHOME       = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import MAINFOLDER, CONFIG
 from subprocess import Popen
 import json
 import yaml
@@ -70,25 +74,16 @@ sys.path.append( os.path.dirname(__file__) )
 import cdda
 
 ME          = __file__.split('/')[-1]
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
-## pe.audio.sys control port
-try:
-    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        PEASYSCONFIG = yaml.safe_load(f)
-    CTL_PORT = PEASYSCONFIG['peaudiosys_port']
-except:
-    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-    exit()
-## cdrom device to use
-try:
-    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
-except:
+
+## configured parameters in config.yml:
+CTL_PORT = CONFIG['peaudiosys_port']
+if 'cdrom_device' in CONFIG:
+    CDROM_DEVICE = CONFIG['cdrom_device']
+else:
     CDROM_DEVICE = '/dev/cdrom'
-## CD preamp ports
 try:
-    CD_CAPTURE_PORT = PEASYSCONFIG['sources']['cd']['capture_port']
+    CD_CAPTURE_PORT = CONFIG['sources']['cd']['capture_port']
 except:
     CD_CAPTURE_PORT = 'mplayer_cdda'
 
