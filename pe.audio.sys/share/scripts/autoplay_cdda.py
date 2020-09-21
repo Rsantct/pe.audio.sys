@@ -60,6 +60,9 @@ def check_for_CDDA(d):
         send_cmd( 'preamp input cd', sender=ME, verbose=True )
         sleep(.5)
         send_cmd( 'player play',     sender=ME, verbose=True )
+        # In order to clear the web page's inputs selector when used
+        # as macros manager, will order to run a fake macro:
+        send_cmd( 'aux run_macro -' )
 
     # Verbose if not CDDA
     try:
