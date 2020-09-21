@@ -304,6 +304,8 @@ Here you are an uncommented bare example of `config.yml`:
         solo:               'off'
         input:              'mpd'
 
+    run_macro: '7_mpd_play_mylist'
+
     on_change_input:
         bass:               0.0
         treble:             0.0
@@ -358,6 +360,8 @@ Here you are an uncommented bare example of `config.yml`:
         hide_macro_buttons: false
         hide_LU: false
         show_graphs: true
+        inputs_as_macros: false
+        
 
     LU_reset_scope: album
 

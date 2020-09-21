@@ -41,17 +41,17 @@
 
 import os
 import sys
-import subprocess as sp
-from time import sleep, time, ctime
-import yaml
-import jack
-
-ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-
 sys.path.append(MAINFOLDER)
-from share.miscel import Fmt
+
+from    share.miscel import Fmt, send_cmd
+import  subprocess as sp
+from    time import sleep, time, ctime
+import  yaml
+import  jack
+
+ME    = __file__.split('/')[-1]
 
 
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
@@ -82,7 +82,7 @@ def get_Bfir_sample_rate():
 
     if not FS:
         raise ValueError('unable to find Brutefir sample_rate')
-        
+
     if 'brutefir_defaults' in fname:
         print(f'{Fmt.RED}{Fmt.BOLD}'
               f'({ME}) *** USING .brutefir_defaults SAMPLE RATE ***'
@@ -464,6 +464,11 @@ if __name__ == "__main__":
         manage_service('preamp',  port=(TCP_BASE_PORT + 1), mode='start')
         manage_service('players', port=(TCP_BASE_PORT + 2), mode='start')
 
+    if mode in ('all'):
+        # OPTIONAL USER MACRO
+        if 'run_macro' in CONFIG:
+            send_cmd( f'aux run_macro {CONFIG["run_macro"]}',
+            sender='start.py', verbose=True )
 
     # END
     if logFlag:

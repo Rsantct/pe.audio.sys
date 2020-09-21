@@ -102,24 +102,29 @@ class Fmt:
     END         = '\033[0m'
 
 
-def send_cmd(cmd, sender='', verbose=False):
-    """ send commands to the server pe.audio.sys
+def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
+    """ send commands to the server
     """
+
+    port = {'peaudiosys':   CPORT,
+            'preamp':       CPORT + 1,
+            'players':      CPORT + 2
+            }[service]
 
     if not sender:
         sender = 'share.miscel'
 
     if verbose:
-        print( f'{Fmt.BLUE}({sender}) sending: {cmd} to {CHOST}:{CPORT}{Fmt.END}' )
+        print( f'{Fmt.BLUE}({sender}) sending: {cmd} to {CHOST}:{port}{Fmt.END}' )
 
     with socket.socket() as s:
         try:
-            s.connect( (CHOST, CPORT) )
+            s.connect( (CHOST, port) )
             s.send( cmd.encode() )
             s.close()
         except:
             if verbose:
-                print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{CPORT}{Fmt.END}' )
+                print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
     return
 
 # pe.audio.sys control service addressing

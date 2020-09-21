@@ -21,11 +21,18 @@
     This module is loaded by 'server.py'
 """
 
+import os
+import sys
+
+UHOME       = os.path.expanduser("~")
+MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAIN_FOLDER}/share')
+
+from miscel import send_cmd, Fmt
 from socket import socket
 import yaml
 import json
 from subprocess import Popen
-import os
 import jack
 from time import sleep
 #   https://watchdog.readthedocs.io/en/latest/
@@ -33,8 +40,6 @@ from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
 
 ME                  = __file__.split('/')[-1]
-UHOME               = os.path.expanduser("~")
-MAIN_FOLDER         = f'{UHOME}/pe.audio.sys'
 MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
 LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
 LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
@@ -44,6 +49,7 @@ STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
 aux_info = {    'amp':              'off',
                 'loudness_monitor': 0.0,
                 'user_macros':      [],
+                'last_macro':       '-',    # cannot be empty
                 'web_config':       {}
             }
 
@@ -59,13 +65,9 @@ try:
     AMP_MANAGER =  CONFIG['amp_manager']
 except:
     AMP_MANAGER =  ''
-WEBCONFIG = CONFIG['web_config']
-WEBCONFIG['restart_cmd_info']   = CONFIG['restart_cmd']
-WEBCONFIG['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
-                                          in CONFIG['scripts'] else False
 
 
-# Read the amplifier state file, if exists:
+# Read the amplifier state file, if it exists:
 def get_amp_state():
     curr_sta = '-'
     try:
@@ -78,6 +80,7 @@ def get_amp_state():
     elif curr_sta.lower() in ('1', 'on'):
         curr_sta = 'on'
     return curr_sta
+
 
 # Set the amplifier switch:
 def set_amp_state(mode):
@@ -137,7 +140,27 @@ def process_aux( cmd, arg='' ):
         output: a result string
     """
 
+    # Aux to provide the static web configuration options:
+    def get_web_config():
 
+        wconfig = CONFIG['web_config']
+
+        # Complete some additional info
+        wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
+        wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
+                                                  in CONFIG['scripts'] else False
+
+        # Special behavior for inputs selector as macros manager
+        if not 'inputs_as_macros' in wconfig:
+            wconfig["inputs_as_macros"] = False
+        else:
+            if wconfig["inputs_as_macros"] != True:
+                wconfig["inputs_as_macros"] = False
+
+        return wconfig
+
+
+    # Aux for playing an url stream
     def play_istream(url):
 
         def wait4ports(pattern):
@@ -171,12 +194,13 @@ def process_aux( cmd, arg='' ):
             error = True
         if not error:
             # Switching the preamp input
-            Popen( f'echo input istreams | nc -N localhost 9990', shell=True )
+            send_cmd('input istreams')
             return True
         else:
             return False
 
 
+    # BEGIN of process_aux
     result = ''
 
     # AMPLIFIER SWITCHING
@@ -185,7 +209,7 @@ def process_aux( cmd, arg='' ):
         # current switch state
         if arg == 'state':
             result = get_amp_state()
-        
+
         elif arg == 'toggle':
             # if unknown state, this switch defaults to 'on'
             result = {'on': 'off', 'off': 'on'}.get( get_amp_state(), 'on' )
@@ -194,7 +218,7 @@ def process_aux( cmd, arg='' ):
         if arg in ('on', 'off'):
             result = arg
             set_amp_state( result )
-            
+
         return result
 
     # LIST OF MACROS under macros/ folder
@@ -208,10 +232,15 @@ def process_aux( cmd, arg='' ):
         # (i) The web page needs a sorted list
         result = sorted(macro_files, key=lambda x: int(x.split('_')[0]))
 
+    # LAST EXECUTED MACRO
+    elif cmd == 'get_last_macro':
+        result = aux_info['last_macro']
+
     # RUN MACRO
     elif cmd == 'run_macro':
         print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
+        aux_info["last_macro"] = arg
         result = 'tried'
 
     # PLAYS SOMETHING
@@ -272,7 +301,7 @@ def process_aux( cmd, arg='' ):
 
     # Get the WEB.CONFIG dictionary
     elif cmd == 'get_web_config':
-        result = WEBCONFIG
+        result = get_web_config()
 
     # Add outputs delay, can be useful for multiroom listening
     elif cmd == 'add_delay':
