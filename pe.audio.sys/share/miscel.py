@@ -19,6 +19,7 @@
 import socket
 import os
 import yaml
+import jack
 
 UHOME = os.path.expanduser("~")
 
@@ -102,10 +103,29 @@ class Fmt:
     END         = '\033[0m'
 
 
-def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
-    """ send commands to the server
+# Waiting for jack ports to be available
+def wait4ports(pattern):
+    """ Waits for jack ports to be available
     """
+    JC = jack.Client('miscel', no_start_server=True)
+    n = 20  # 10 sec
+    while n:
+        if len( JC.get_ports( pattern ) ) >= 2:
+            break
+        n -= 1
+        sleep(0.5)
+    JC.close()
+    if n:
+        return True
+    else:
+        return False
 
+
+# Send a command to a peaudiosys server
+def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
+    """ send commands to a peaudiosys server
+    """
+    # (i) start.py will assign 'preamp' port number this way:
     port = {'peaudiosys':   CPORT,
             'preamp':       CPORT + 1,
             'players':      CPORT + 2
@@ -114,18 +134,28 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
     if not sender:
         sender = 'share.miscel'
 
-    if verbose:
-        print( f'{Fmt.BLUE}({sender}) sending: {cmd} to {CHOST}:{port}{Fmt.END}' )
 
+    ans = None
     with socket.socket() as s:
         try:
             s.connect( (CHOST, port) )
             s.send( cmd.encode() )
+            if verbose:
+                print( f'{Fmt.BLUE}({sender}) Tx: to   {service}: \'{cmd}\'{Fmt.END}' )
+            ans = ''
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
+            if verbose:
+                print( f'{Fmt.BLUE}({sender}) Rx: from {service}: \'{ans}\'{Fmt.END}' )
             s.close()
         except:
             if verbose:
                 print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
-    return
+
+    return ans
 
 # pe.audio.sys control service addressing
 try:
