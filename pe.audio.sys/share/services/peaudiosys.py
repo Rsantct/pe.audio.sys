@@ -180,6 +180,8 @@ def process_aux( cmd, arg='' ):
         print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
         AUX_INFO["last_macro"] = arg
+        # This updates disk file .aux_info for others to have fresh 'last_macro'
+        dump_aux_info()
         result = 'tried'
 
     # PLAYS SOMETHING
