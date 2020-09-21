@@ -101,6 +101,9 @@ on_init:
     solo:               'off'
     input:              'none'
 
+# User macro optional at start up
+run_macro:          '1_RNE'
+
 
 # =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
 # (i) This is intended to forget or keep some of your runtime settings (tone, etc)
