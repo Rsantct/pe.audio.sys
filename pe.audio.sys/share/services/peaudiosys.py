@@ -28,12 +28,11 @@ UHOME       = os.path.expanduser("~")
 MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAIN_FOLDER}/share')
 
-from miscel import send_cmd, Fmt
+from miscel import send_cmd, Fmt, wait4ports
 from socket import socket
 import yaml
 import json
 from subprocess import Popen
-import jack
 from time import sleep
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
@@ -90,48 +89,22 @@ def set_amp_state(mode):
     Popen( f'{AMP_MANAGER} {mode}'.split(), shell=False )
 
 
-# Auxiliary client to talk to othes server.py instances (preamp and players)
-def cli_cmd(service, cmd):
-
-    # (i) start.py will assign 'preamp' port number this way:
-    if service == 'preamp':
-        port = BASE_PORT + 1
-    elif service == 'players':
-        port = BASE_PORT + 2
-    else:
-        raise Exception(f'({ME}) wrong service \'{service}\'')
-
-    ans = None
-    with socket() as s:
-        try:
-            s.connect( ('localhost', port) )
-            s.send( cmd.encode() )
-            print( f'({ME}) Tx to {service}:   \'{cmd }\'' )
-            ans = ''
-            while True:
-                tmp = s.recv(1024).decode()
-                if not tmp:
-                    break
-                ans += tmp
-            print( f'({ME}) Rx from {service}: \'{ans }\' ' )
-            s.close()
-        except:
-            print( f'({ME}) service \'peaudiosys\' socket error on port {port}' )
-    return ans
-
-
 # Main function for PREDIC commands processing
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    return cli_cmd( service='preamp', cmd=cmd )
+    # (i) set verbose=True if you want to debug messages forwarding progress
+    return send_cmd( service='preamp', cmd=cmd,
+                     sender='peaudiosys', verbose=False )
 
 
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    return cli_cmd( service='players', cmd=cmd )
+    # (i) set verbose=True if you want to debug messages forwarding progress
+    return send_cmd( service='players', cmd=cmd,
+                     sender='peaudiosys', verbose=False )
 
 
 # Main function for AUX commands processing
@@ -162,23 +135,6 @@ def process_aux( cmd, arg='' ):
 
     # Aux for playing an url stream
     def play_istream(url):
-
-        def wait4ports(pattern):
-            """ Waits for jack ports
-            """
-            JC = jack.Client('peaudiosys', no_start_server=True)
-            n = 20  # 10 sec
-            while n:
-                if len( JC.get_ports( pattern ) ) >= 2:
-                    break
-                n -= 1
-                sleep(0.5)
-            JC.close()
-            if n:
-                return True
-            else:
-                return False
-
 
         error = False
 
