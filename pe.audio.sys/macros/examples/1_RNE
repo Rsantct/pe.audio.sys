@@ -56,7 +56,7 @@ if __name__ == "__main__":
     send_cmd( f'loudness_ref {loud_ref}', sender=ME, verbose=True )
 
     # Loudness compensation on|off
-    send_cmd( f'loudness_track {loudness}', sender=ME, verbose=True )
+    send_cmd( f'loudness_track {loudness_comp}', sender=ME, verbose=True )
 
     # XO
     if xo_pattern:
