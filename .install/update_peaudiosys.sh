@@ -77,9 +77,9 @@ if [ -d "pe.audio.sys" ]; then
     rm      pe.audio.sys/*BRANCH            >/dev/null 2>&1
     
     # major updates moved some files, so let's clean them all
-    rm      pe.audio.sys/share/servives/server.py       >/dev/null 2>&1
-    rm      pe.audio.sys/share/servives/aux.py          >/dev/null 2>&1
-    rm      pe.audio.sys/share/servives/pasysctrl.py    >/dev/null 2>&1
+    rm      pe.audio.sys/share/services/server.py       >/dev/null 2>&1
+    rm      pe.audio.sys/share/services/aux.py          >/dev/null 2>&1
+    rm      pe.audio.sys/share/services/pasysctrl.py    >/dev/null 2>&1
 fi
 
 ########################################################################
