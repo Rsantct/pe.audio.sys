@@ -16,8 +16,9 @@ You can browse two web page flavours depending on your device usage preference:
 
 Some options can be configured inside **`~/pe.audio.sys/config.yml`**:
 
-- Command to run when the reboot button is pressed
-- Show or hide the macro buttons array at startup
+- Command to run when the reboot button is pressed.
+- Show or hide the macro buttons array at startup.
+- The standard input selector can become an user's macro selector.
 - Enable download EQ graph images from the server.
 
 Downloading the Brutefir EQ graph on runtime increases the refreshing bandwidth only when the `[G]` button toggles to display it.
