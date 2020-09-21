@@ -75,6 +75,9 @@ if [ -d "pe.audio.sys" ]; then
     echo "(i) Removing old distro files"
     rm -rf  pe.audio.sys/doc/               >/dev/null 2>&1
     rm      pe.audio.sys/*BRANCH            >/dev/null 2>&1
+    
+    # A major update moved server.py from share/servies to share/
+    rm      pe.audio.sys/share/servives/server.py   >/dev/null 2>&1
 fi
 
 ########################################################################
