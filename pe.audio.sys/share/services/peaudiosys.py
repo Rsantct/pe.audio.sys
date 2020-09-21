@@ -23,13 +23,10 @@
 
 import os
 import sys
-
 UHOME       = os.path.expanduser("~")
-MAIN_FOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAIN_FOLDER}/share')
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from miscel import send_cmd, Fmt, wait4ports
-from socket import socket
+from share.miscel import *
 import yaml
 import json
 from subprocess import Popen
@@ -39,32 +36,18 @@ from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
 
 ME                  = __file__.split('/')[-1]
-MACROS_FOLDER       = f'{MAIN_FOLDER}/macros'
-LOUD_MON_CTRL_FILE  = f'{MAIN_FOLDER}/.loudness_control'
-LOUD_MON_VAL_FILE   = f'{MAIN_FOLDER}/.loudness_monitor'
+MACROS_FOLDER       = f'{MAINFOLDER}/macros'
+LOUD_MON_CTRL_FILE  = f'{MAINFOLDER}/.loudness_control'
+LOUD_MON_VAL_FILE   = f'{MAINFOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
-STATE_FILE          = f'{MAIN_FOLDER}/.state.yml'
+STATE_FILE          = f'{MAINFOLDER}/.state.yml'
 
-aux_info = {    'amp':              'off',
+AUX_INFO = {    'amp':              'off',
                 'loudness_monitor': 0.0,
                 'user_macros':      [],
                 'last_macro':       '-',    # cannot be empty
                 'web_config':       {}
             }
-
-## Reading config.yml
-try:
-    with open(f'{MAIN_FOLDER}/config.yml', 'r') as f:
-        CONFIG = yaml.safe_load(f)
-    BASE_PORT = CONFIG['peaudiosys_port']
-except:
-    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-    exit()
-try:
-    AMP_MANAGER =  CONFIG['amp_manager']
-except:
-    AMP_MANAGER =  ''
-
 
 # Read the amplifier state file, if it exists:
 def get_amp_state():
@@ -190,13 +173,13 @@ def process_aux( cmd, arg='' ):
 
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
-        result = aux_info['last_macro']
+        result = AUX_INFO['last_macro']
 
     # RUN MACRO
     elif cmd == 'run_macro':
         print( f'({ME}) running macro: {arg}' )
         Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
-        aux_info["last_macro"] = arg
+        AUX_INFO["last_macro"] = arg
         result = 'tried'
 
     # PLAYS SOMETHING
@@ -275,12 +258,12 @@ def process_aux( cmd, arg='' ):
 
 # Dumps pe.audio.sys/.aux_info
 def dump_aux_info():
-    aux_info['amp'] =               process_aux('amp_switch', 'state')
-    aux_info['loudness_monitor'] =  process_aux('get_loudness_monitor')
-    aux_info['user_macros'] =       process_aux('get_macros')
-    aux_info['web_config'] =        process_aux('get_web_config')
-    with open(f'{MAIN_FOLDER}/.aux_info', 'w') as f:
-        f.write( json.dumps(aux_info) )
+    AUX_INFO['amp'] =               process_aux('amp_switch', 'state')
+    AUX_INFO['loudness_monitor'] =  process_aux('get_loudness_monitor')
+    AUX_INFO['user_macros'] =       process_aux('get_macros')
+    AUX_INFO['web_config'] =        process_aux('get_web_config')
+    with open(f'{MAINFOLDER}/.aux_info', 'w') as f:
+        f.write( json.dumps(AUX_INFO) )
 
 
 # Handler class to do actions when a file change occurs
@@ -353,7 +336,7 @@ def do( command_phrase ):
         pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
         if cmd == 'help':
-            Popen( f'cat {MAIN_FOLDER}/doc/peaudiosys.hlp', shell=True)
+            Popen( f'cat {MAINFOLDER}/doc/peaudiosys.hlp', shell=True)
             return 'help has been printed to stdout, also available on ' \
                     '\'~/pe.audio.sys/doc/peaudiosys.hlp\''
         result = {  'preamp':   process_preamp,
