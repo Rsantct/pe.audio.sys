@@ -29,7 +29,7 @@ Will show the following key pad layout:
 
 # Recommended web control page behavior
 
-The main input selector can become an user's macro manager instead of a classical preamp input selector, by just setting one option inside `config.yml`, see more details under the **(share/www)[https://github.com/Rsantct/pe.audio.sys/tree/macros_update/pe.audio.sys/share/www#configure-the-web-page-behavior]** folder.
+The main input selector can become an user's macro manager instead of a classical preamp input selector, by just setting one option inside `config.yml`, see more details under the **[share/www](https://github.com/Rsantct/pe.audio.sys/tree/macros_update/pe.audio.sys/share/www#configure-the-web-page-behavior)** folder.
 
 This way, your web control page will be simplified, then your system becomes more user friendly than the former HiFi look.
 
