@@ -21,7 +21,7 @@ Some options can be configured inside **`~/pe.audio.sys/config.yml`**:
 - The standard input selector can become an user's macro selector.
 - Enable download EQ graph images from the server.
 
-Downloading the Brutefir EQ graph on runtime increases the refreshing bandwidth only when the `[G]` button toggles to display it.
+Downloading the Brutefir EQ graph on runtime increases the refreshing bandwidth only when the `[G]`raphics button toggles to display it.
 
 ## HTTP Server configuration: Apache+PHP or Node.js
 
