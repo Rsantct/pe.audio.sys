@@ -37,5 +37,5 @@ If so, it is recommended that **you plan a complete set of macro files** in orde
 
 **Classical vs simplified look:**
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/macros_update/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="340" ></a>
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/macros_update/pe.audio.sys/doc/images/web%20macros%20selector.png" align="center" width="340" ></a>
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/macros_update/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="480" ></a>
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/macros_update/pe.audio.sys/doc/images/web%20macros%20selector.png" align="center" width="480" ></a>
