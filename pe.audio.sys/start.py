@@ -42,61 +42,15 @@
 import os
 import sys
 UHOME = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from    share.miscel import Fmt, send_cmd
+from    share.miscel import *
 import  subprocess as sp
 from    time import sleep, time, ctime
 import  yaml
 import  jack
 
-ME    = __file__.split('/')[-1]
-
-
-with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-    CONFIG = yaml.safe_load(f)
-LOUDSPEAKER     = CONFIG['loudspeaker']
-LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-TCP_BASE_PORT   = CONFIG['peaudiosys_port']
-
-
-def get_Bfir_sample_rate():
-    """ retrieve loudspeaker's filters FS from its Brutefir configuration
-    """
-    FS = 0
-
-    for fname in (f'{LSPK_FOLDER}/brutefir_config',
-                  f'{UHOME}/.brutefir_defaults'):
-        with open(fname, 'r') as f:
-            lines = f.readlines()
-        for l in lines:
-            if 'sampling_rate:' in l and l.strip()[0] != '#':
-                try:
-                    FS = int([x for x in l.replace(';', '').split()
-                                         if x.isdigit() ][0])
-                except:
-                    pass
-        if FS:
-            break   # stops searching if found under lskp folder
-
-    if not FS:
-        raise ValueError('unable to find Brutefir sample_rate')
-
-    if 'brutefir_defaults' in fname:
-        print(f'{Fmt.RED}{Fmt.BOLD}'
-              f'({ME}) *** USING .brutefir_defaults SAMPLE RATE ***'
-              f'{Fmt.END}')
-
-    return FS
-
-
-def jack_is_running():
-    try:
-        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
-        return True
-    except sp.CalledProcessError:
-        return False
+ME              = __file__.split('/')[-1]
 
 
 def prepare_extra_cards(channels=2):
@@ -217,7 +171,7 @@ def start_jackd():
         return False
 
 
-def manage_service(service, address='localhost', port=TCP_BASE_PORT,
+def manage_service(service, address='localhost', port=SRV_BASE_PORT,
                     mode='restart', todevnull=False):
 
     if mode in ('stop', 'restart'):
@@ -235,7 +189,7 @@ def manage_service(service, address='localhost', port=TCP_BASE_PORT,
     if mode in ('start', 'restart'):
         # Start
         print(f'({ME}) starting SERVICE: \'{service}\'')
-        cmd = f'python3 {MAINFOLDER}/share/services/server.py {service}' \
+        cmd = f'python3 {MAINFOLDER}/share/server.py {service}' \
                                                     f' {address} {port}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
@@ -255,8 +209,8 @@ def stop_processes(mode):
 
     # Stop services:
     if mode in ('all', 'stop', 'services'):
-        manage_service('preamp',  TCP_BASE_PORT+1, mode='stop')
-        manage_service('players', TCP_BASE_PORT+2, mode='stop')
+        manage_service('preamp',  SRV_BASE_PORT+1, mode='stop')
+        manage_service('players', SRV_BASE_PORT+2, mode='stop')
 
     if mode in ('all', 'stop'):
         # Stop Brutefir
@@ -461,8 +415,8 @@ if __name__ == "__main__":
             update_bfeq_graph()
 
         # SERVICES (TCP SERVERS):
-        manage_service('preamp',  port=(TCP_BASE_PORT + 1), mode='start')
-        manage_service('players', port=(TCP_BASE_PORT + 2), mode='start')
+        manage_service('preamp',  port=(SRV_BASE_PORT + 1), mode='start')
+        manage_service('players', port=(SRV_BASE_PORT + 2), mode='start')
 
     if mode in ('all'):
         # OPTIONAL USER MACRO

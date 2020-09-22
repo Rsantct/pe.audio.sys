@@ -32,26 +32,32 @@
 #   }
 #
 
+import sys
+from os.path import expanduser
+UHOME = expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import Fmt, CONFIG
 import discid
 import musicbrainzngs as mz
-from os.path import expanduser
 import json
-import yaml
-import sys
-
-UHOME = expanduser("~")
-
-CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',
-                       '1': {'title': '-', 'length': '00:00.00'} }
 
 ## cdrom device to use
-try:
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        PEASYSCONFIG = yaml.safe_load(f)
-    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
-except:
+if 'cdrom_device' in CONFIG:
+    CDROM_DEVICE = CONFIG['cdrom_device']
+else:
     CDROM_DEVICE = '/dev/cdrom'
-    print(f'(cdda.py) Using default \'{CDROM_DEVICE}\'')
+    print(f'{Fmt.BLUE}(cdda.py) Using default \'{CDROM_DEVICE}\'{Fmt.END}')
+
+# cd port under Jack
+try:
+    CD_CAPTURE_PORT = CONFIG['sources']['cd']['capture_port']
+except:
+    CD_CAPTURE_PORT = 'mplayer_cdda'
+
+# cdda info template
+CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',
+                       '1': {'title': '-', 'length': '00:00.00'} }
 
 
 def cdda_info_template():

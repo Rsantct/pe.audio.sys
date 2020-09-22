@@ -60,6 +60,10 @@
 
 import os
 import sys
+UHOME       = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import MAINFOLDER, CONFIG
 from subprocess import Popen
 import json
 import yaml
@@ -69,28 +73,8 @@ import jack
 sys.path.append( os.path.dirname(__file__) )
 import cdda
 
-ME          = __file__.split('/')[-1]
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
-## pe.audio.sys control port
-try:
-    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        PEASYSCONFIG = yaml.safe_load(f)
-    CTL_PORT = PEASYSCONFIG['peaudiosys_port']
-except:
-    print(f'({ME}) ERROR with \'pe.audio.sys/config.yml\'')
-    exit()
-## cdrom device to use
-try:
-    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
-except:
-    CDROM_DEVICE = '/dev/cdrom'
-## CD preamp ports
-try:
-    CD_CAPTURE_PORT = PEASYSCONFIG['sources']['cd']['capture_port']
-except:
-    CD_CAPTURE_PORT = 'mplayer_cdda'
+ME          = __file__.split('/')[-1]
 
 
 # Auxiliary function to format hh:mm:ss
@@ -146,7 +130,7 @@ def cdda_load():
     """
     print( f'({ME}) loading disk ...' )
     # Save disk info into a json file
-    cdda.save_disc_metadata(device=CDROM_DEVICE,
+    cdda.save_disc_metadata(device=cdda.CDROM_DEVICE,
                             fname=f'{MAINFOLDER}/.cdda_info')
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
@@ -221,7 +205,7 @@ def cdda_get_current_track():
 
 
 # Aux to disconect Mplayer jack ports from preamp ports.
-def pre_connect(mode, pname=CD_CAPTURE_PORT):
+def pre_connect(mode, pname=cdda.CD_CAPTURE_PORT):
     # (i) Mplayer cdda pausing becomes on strange behavior,
     #     a stutter audio frame stepping phenomena,
     #     even if a 'pausing_keep mute 1' command was issued.
@@ -281,7 +265,7 @@ def mplayer_control(cmd, service):
     if cmd == 'state':
         return status
     if cmd == 'eject':
-        Popen( f'eject {CDROM_DEVICE}'.split() )
+        Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cdda.cdda_info_template() ) )

@@ -19,8 +19,14 @@
 import socket
 import os
 import yaml
+import jack
+from json import loads as json_loads
+from time import sleep
+import subprocess as sp
+
 
 UHOME = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 # Some nice ANSI formats for printouts
 class Fmt:
@@ -102,36 +108,140 @@ class Fmt:
     END         = '\033[0m'
 
 
-def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
-    """ send commands to the server
-    """
+# CONFIG & SERVER ADDRESSING
+with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+    CONFIG = yaml.safe_load(f)
 
-    port = {'peaudiosys':   CPORT,
-            'preamp':       CPORT + 1,
-            'players':      CPORT + 2
+try:
+    SRV_HOST, SRV_BASE_PORT = CONFIG['peaudiosys_address'], \
+                              CONFIG['peaudiosys_port']
+except:
+    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
+          f'\'config.yml\'{Fmt.END}')
+    exit()
+
+# COMMON USE VARIABLES FROM 'config.yml'
+LOUDSPEAKER     = CONFIG['loudspeaker']
+LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+if 'amp_manager' in CONFIG:
+    AMP_MANAGER =  CONFIG['amp_manager']
+else:
+    AMP_MANAGER =  ''
+
+
+# Retrieve loudspeaker's filters FS from its Brutefir configuration
+def get_Bfir_sample_rate():
+    """ Retrieve loudspeaker's filters FS from its 'brutefir_config' file,
+        or from '.brutefir_defaults' file
+    """
+    FS = 0
+
+    for fname in (f'{LSPK_FOLDER}/brutefir_config',
+                  f'{UHOME}/.brutefir_defaults'):
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+        for l in lines:
+            if 'sampling_rate:' in l and l.strip()[0] != '#':
+                try:
+                    FS = int([x for x in l.replace(';', '').split()
+                                         if x.isdigit() ][0])
+                except:
+                    pass
+        if FS:
+            break   # stops searching if found under lskp folder
+
+    if not FS:
+        raise ValueError('unable to find Brutefir sample_rate')
+
+    if 'brutefir_defaults' in fname:
+        print(f'{Fmt.RED}{Fmt.BOLD}'
+              f'(miscel.py) *** USING .brutefir_defaults SAMPLE RATE ***'
+              f'{Fmt.END}')
+
+    return FS
+
+
+# Checks for JACK process to be running
+def jack_is_running():
+    try:
+        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
+        return True
+    except sp.CalledProcessError:
+        return False
+
+
+# Sets a peaudiosys parameter as per a given pattern, useful for user macros.
+def set_as_pattern(param, pattern, sender='miscel', verbose=False):
+    """ Sets a peaudiosys parameter as per a given pattern.
+        This applies only for 'xo', 'drc' and 'target'
+    """
+    result = ''
+
+    if param not in ('xo', 'drc', 'target'):
+        return "parameter mus be 'xo', 'drc' or 'target'"
+
+    for setName in json_loads( send_cmd(f'get_{param}_sets') ):
+
+        if pattern in setName:
+            result = send_cmd( f'set_{param} {setName}',
+                               sender=sender, verbose=verbose )
+            break
+
+    return result
+
+
+# Waiting for jack ports to be available
+def wait4ports(pattern):
+    """ Waits for jack ports to be available
+    """
+    JC = jack.Client('miscel', no_start_server=True)
+    n = 20  # 10 sec
+    while n:
+        if len( JC.get_ports( pattern ) ) >= 2:
+            break
+        n -= 1
+        sleep(0.5)
+    JC.close()
+    if n:
+        return True
+    else:
+        return False
+
+
+# Send a command to a peaudiosys server
+def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
+    """ send commands to a peaudiosys server
+    """
+    # (i) start.py will assign 'preamp' port number this way:
+    port = {'peaudiosys':   SRV_BASE_PORT,
+            'preamp':       SRV_BASE_PORT + 1,
+            'players':      SRV_BASE_PORT + 2
             }[service]
 
     if not sender:
         sender = 'share.miscel'
 
-    if verbose:
-        print( f'{Fmt.BLUE}({sender}) sending: {cmd} to {CHOST}:{port}{Fmt.END}' )
 
+    ans = None
     with socket.socket() as s:
         try:
-            s.connect( (CHOST, port) )
+            s.connect( (SRV_HOST, port) )
             s.send( cmd.encode() )
+            if verbose:
+                print( f'{Fmt.BLUE}({sender}) Tx: to   {service}: \'{cmd}\'{Fmt.END}' )
+            ans = ''
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
+            if verbose:
+                print( f'{Fmt.BLUE}({sender}) Rx: from {service}: \'{ans}\'{Fmt.END}' )
             s.close()
         except:
             if verbose:
                 print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
-    return
 
-# pe.audio.sys control service addressing
-try:
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
-        CFG = yaml.safe_load(f)
-        CHOST, CPORT = CFG['peaudiosys_address'], CFG['peaudiosys_port']
-except:
-    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in \'config.yml\'{Fmt.END}')
-    exit()
+    return ans
+
+
