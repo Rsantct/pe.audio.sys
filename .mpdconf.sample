@@ -19,6 +19,8 @@ pid_file                "~/.config/mpd/pid"
 state_file              "~/.config/mpd/state"
 state_file_interval     "30"
 
+replaygain              "off"
+
 database {
     plugin "simple"
     path "~/.config/mpd/database"

@@ -101,6 +101,9 @@ on_init:
     solo:               'off'
     input:              'none'
 
+# Optional user macro at startup
+run_macro:              '7_mpd_play_mylist'
+
 
 # =================== BEHAVIOR WHEN CHANGE INPUT:  =============================
 # (i) This is intended to forget or keep some of your runtime settings (tone, etc)
@@ -260,6 +263,8 @@ web_config:
     hide_LU: false
     # display EQ and DRC graphs
     show_graphs: true
+    # the input selector can become a macros manager:
+    inputs_as_macros: false
 
 
 # The scope ('input', 'album' or 'track') to trigger to reset the measured LU

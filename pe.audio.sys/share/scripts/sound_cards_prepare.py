@@ -48,14 +48,13 @@
 """
 import os
 import sys
-import subprocess as sp
-import yaml
-
 UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from share.miscel import Fmt
+from share.miscel import Fmt, CONFIG
+import subprocess as sp
+import yaml
 
 
 def get_pulse_cards():
@@ -88,15 +87,10 @@ def get_pulse_cards():
 
 def get_config_yml_cards():
     cards = []
-    with open( f'{MAINFOLDER}/config.yml', 'r') as f:
-        CONFIG = yaml.safe_load( f )
-
     cards.append( CONFIG["system_card"] )
-
     if CONFIG["external_cards"]:
         for ecard in CONFIG["external_cards"]:
             cards.append( CONFIG["external_cards"][ecard]["alsacard"] )
-
     return cards
 
 

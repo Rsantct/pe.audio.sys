@@ -1,6 +1,6 @@
 #!/bin/bash
 
-serverPath="$HOME"/"pe.audio.sys/share/services/server.py"
+serverPath="$HOME"/"pe.audio.sys/share/server.py"
 
 function main {
 

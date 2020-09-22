@@ -790,10 +790,10 @@ def init_audio_settings():
     del(preamp)
 
     if not warnings:
-        print( f'{Fmt.BLUE}(on_init) done.{Fmt.END}' )
+        print( f'{Fmt.BLUE}(core.on_init) done.{Fmt.END}' )
         return 'done'
     else:
-        print( f'(on_init) {warnings[:-2]}' )
+        print( f'(core.on_init) {warnings[:-2]}' )
         return warnings[:-2]
 
 

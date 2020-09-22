@@ -1,0 +1,5 @@
+#!/bin/bash
+
+control player pause
+control input "cd"
+control player play

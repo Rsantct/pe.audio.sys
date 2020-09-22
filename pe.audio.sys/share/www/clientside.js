@@ -32,7 +32,7 @@ const URL_PREFIX = '/functions.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
-// Some globals
+// SOME GLOBALS
 var state = {loudspeaker:"not connected"};
 var show_advanced = false;          // defaults for display advanced controls
 var show_graphs   = false;          // defaults for show graphs
@@ -49,16 +49,18 @@ var metablank = {                   // A player's metadata blank dict
     }
 var last_loudspeaker = ''           // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
+var mFnames = [];                   // User macros
 var macro_button_list = [];
 var hold_tmp_msg = 0;               // A counter to keep tmp_msg during updates
 var tmp_msg = '';                   // A temporary message
 
-// Web config dictionary
+// STATIC WEB CONFIGURATION
 try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch(e){
     console.log('problems with aux get_web_config', e.name, e.message);
-    var web_config = { 'hide_macro_buttons': false,
+    var web_config = { 'inputs_as_macros':   false,
+                       'hide_macro_buttons': false,
                        'hide_LU':            false,
                        'LU_monitor_enabled': false,
                        'restart_cmd_info':   '',
@@ -103,15 +105,18 @@ function control_cmd( cmd ) {
 
 // Page INITIATE
 function page_initiate(){
+
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
+
     // Shows or hides the macro buttons
     if ( web_config.hide_macro_buttons == true ){
         document.getElementById("macro_buttons").style.display = 'none';
     }else{
         document.getElementById("macro_buttons").style.display = 'inline-table';
     }
+
     // Shows or hides the LU offset slider and the LU monitor bar
     if ( web_config.hide_LU == true ){
         document.getElementById("LU_offset").style.display = 'none';
@@ -122,9 +127,11 @@ function page_initiate(){
             document.getElementById("LU_monitor").style.display = 'block';
         }
     }
+
     // Updates the title of the restart button as per config.yml
     document.getElementById("restart_switch").title = 'RESTART: ' +
                                          web_config.restart_cmd_info;
+
     // Schedules the page_update (only runtime variable items):
     // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -133,17 +140,14 @@ function page_initiate(){
 
 // Page STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
-    // Aux to clearing selector elements to avoid repeating items
-    // when audio processes have changed
-    function select_clear_options(ElementId){
-        // https://www.w3schools.com/jsref/dom_obj_select.asp
-        const mySel = document.getElementById(ElementId);
-        for (opt in mySel.options){
-            mySel.remove(opt);
-        }
-    }
+
     // Fills in the INPUTS selector
     function fill_in_inputs_selector() {
+        // Special behavior: MACROS will be loaded inside the INPUTS SELECTOR:
+        if ( web_config.inputs_as_macros == true ){
+            document.getElementById("macros_toggle_button").style.display = 'none';
+            return
+        }
         try{
             var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
         }catch(e){
@@ -267,8 +271,8 @@ function page_update() {
 
     // Getting the current STATUS
     try{
-		state = control_cmd('get_state');
-        // console.log('Rx state:', state);	# debug
+        state = control_cmd('get_state');
+        // console.log('Rx state:', state); # debug
         state = JSON.parse( state );
         if (state == null){
             document.getElementById("main_cside").innerText =
@@ -331,7 +335,13 @@ function page_update() {
     }
 
     // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
-    document.getElementById("inputsSelector").value = state.input;
+    if ( web_config.inputs_as_macros == true ){
+        var mName = control_cmd('aux get_last_macro');
+        document.getElementById("inputsSelector").value =
+                            mName.slice(mName.indexOf('_') + 1, mName.length);
+    }else{
+        document.getElementById("inputsSelector").value = state.input;
+    }
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
     document.getElementById("targetSelector").value = state.target;
@@ -376,17 +386,43 @@ function page_update() {
 //////// PREAMP FUNCTIONS ////////
 
 // INPUT selection
-function input_select(iname){
+function input_select(itemName){
+    // (i) The input selector can have two flavors:
+    //      - regular input selector management
+    //      - alternative macros management
+
+    // Aux for web_config.inputs_as_macros special behavior
+    function get_macroName(x){
+        var result = '';
+        for ( i in mFnames ){
+            var mFname = mFnames[i];
+            var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+            if ( x == mName ){
+                result = mFname;
+                break
+            }
+        }
+        return result;
+    }
+
     hold_tmp_msg = 3;
-    tmp_msg = 'Please wait for "' + iname + '"';
+    tmp_msg = 'Please wait for "' + itemName + '"';
     document.getElementById("main_cside").innerText = tmp_msg;
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
-    // setTimeout( () => { control_cmd('input ' + iname); }, 200 );
-    function tmp(iname){
-        control_cmd('input ' + iname);
+    // setTimeout( () => { control_cmd('input ' + itemName); }, 200 );
+    function tmp(itemName){
+        // regular behavior managing preamp inputs
+        if ( web_config.inputs_as_macros == false ){
+            control_cmd('input ' + itemName);
+        // alternative behavior managing macros
+        }else{
+            mName = get_macroName(itemName);
+            control_cmd( 'aux run_macro ' + mName );
+            last_macro = mName;
+        }
     }
-    setTimeout( tmp, 200, iname );  // 'iname' is given as argument for 'tmp'
+    setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
 
     clear_highlighted();
     document.getElementById('inputsSelector').style.color = "white";
@@ -553,6 +589,15 @@ function play_url() {
 
 //////// AUX FUNCTIONS ////////
 
+// Aux to clearing selector elements
+function select_clear_options(ElementId){
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    const mySel = document.getElementById(ElementId);
+    for (opt in mySel.options){
+        mySel.remove(opt);
+    }
+}
+
 // Restart procedure
 function peaudiosys_restart() {
     control_cmd('aux restart');
@@ -585,20 +630,26 @@ function update_ampli_switch() {
 function fill_in_macro_buttons() {
 
     try{
-        var mFnames = JSON.parse( control_cmd( 'aux get_macros' ) );
+        mFnames = JSON.parse( control_cmd( 'aux get_macros' ) );
     }catch(e){
-		// If error getting macros, do nothing, 
-		// so leaving "display:none" on the buttons keypad div
+        // If error getting macros, do nothing,
+        // so leaving "display:none" on the buttons keypad div
         console.log( 'error getting macros', e.name, e.message );
         return
     }
 
-    // If empty macros list, do nothing, 
+    // If empty macros list, do nothing,
     // so leaving "display:none" on the buttons keypad div
-	if ( mFnames.length == 0 ){
-		console.log( 'empty macros array', mFnames)
-		return
-	}
+    if ( mFnames.length == 0 ){
+        console.log( 'empty macros array', mFnames)
+        return
+    }
+
+    // Special behavior: MACROS loaded inside the INPUTS SELECTOR
+    if ( web_config.inputs_as_macros == true ){
+        fill_in_inputs_as_macros(mFnames)
+        return
+    }
 
     // If any macro found, lets show the corresponding cell playback_control_23
     // also call xx_21 just for symmetry reasons
@@ -661,10 +712,29 @@ function fill_in_macro_buttons() {
     }
 }
 
+// Special behavior: MACROS loaded inside the INPUTS SELECTOR
+function fill_in_inputs_as_macros(mFnames) {
+
+    select_clear_options(ElementId="inputsSelector");
+
+    const mySel = document.getElementById("inputsSelector");
+
+    for ( i in mFnames) {
+        var mFname = mFnames[i];
+        var mName  = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+        var option = document.createElement("option");
+        option.text = mName;
+        mySel.add(option);
+    }
+
+}
+
 // Runs a macro
 function run_macro(mFname){
-    //console.log(mFname);
+
     control_cmd( 'aux run_macro ' + mFname );
+    last_macro = mFname;
+
     var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
     clear_highlighted();
 
