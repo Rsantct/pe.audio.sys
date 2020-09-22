@@ -69,15 +69,16 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        send_cmd( 'player pause',    sender=ME, verbose=True )
-        sleep(.5)
-        send_cmd( 'preamp input cd', sender=ME, verbose=True )
-        sleep(.5)
-        send_cmd( 'player play',     sender=ME, verbose=True )
         # In order to update the web page's inputs selector when used
         # as macros manager, will try to order a prepared CD macro:
         mName = find_cd_macro()
         send_cmd( f'aux run_macro {mName}' )
+        if mName == '-':
+            send_cmd( 'player pause',    sender=ME, verbose=True )
+            sleep(.5)
+            send_cmd( 'preamp input cd', sender=ME, verbose=True )
+            sleep(.5)
+            send_cmd( 'player play',     sender=ME, verbose=True )
 
     # Verbose if not CDDA
     try:
