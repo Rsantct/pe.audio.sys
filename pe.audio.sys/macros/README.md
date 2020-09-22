@@ -35,6 +35,8 @@ This way, your web control page will be simplified, then your system becomes mor
 
 If so, it is recommended that **you plan a complete set of macro files** in order to easily play your favourite music programs, alongside the required audio settings (e.g. type of filtering, loudness reference level, pausing the previous player, etc)
 
+Have a look inside the **`macros/examples`** folder.
+
 **Classical vs simplified look:**
 
 In this example several macros will tune your favourite Radio Stations. 'Jazz' and 'RockSinfonico' will run MPD playlists from your favourite music database.
