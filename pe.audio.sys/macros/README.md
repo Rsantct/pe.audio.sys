@@ -27,9 +27,9 @@ Will show the following key pad layout:
     [     --      ]  [     --      ]  [ flat sound ]
 ```
 
-# Recommended web control page macros behavior
+# Recommended web control page behavior
 
-The main input selector can become an user's macro manager instead of a classical preamp input selector, see more details under the **`share/www`** folder.
+The main input selector can become an user's macro manager instead of a classical preamp input selector, by just setting one option inside `config.yml`. see more details under the **`share/www`** folder.
 
 This way, your web control page will be simplified, then your system becomes more user friendly than the former HiFi look.
 
