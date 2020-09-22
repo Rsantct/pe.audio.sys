@@ -5,14 +5,14 @@
 
 # --- EDIT USER CONFIG HERE: ---
 mplayer_profile = 'istreams'    # choose an Mplayer profile: "istreams", "dvb"
-preset          = 1             # choose the right on from your <profile>.yml
-loud_ref        = 9
+preset          = 1             # choose the right one from your <profile>.yml
+loud_ref        = 9             # compensate the intrinsic level reference from this station.
 loudness_comp   = ''            # choose 'on', 'off' for loudness compensation
 xo_pattern      = 'mp'
 drc_pattern     = 'mp'
 
 
-# Below is common use code, do not edit.
+# --- Below is common use code, DO NOT EDIT ---
 from os.path import expanduser
 import sys
 UHOME = expanduser("~")

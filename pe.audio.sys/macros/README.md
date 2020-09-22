@@ -1,3 +1,4 @@
+# Macros
 This folder is intended for general purpose user macro scripts, for example for automation tasks,
 to go to listen to radio presets, etc...
 
@@ -26,6 +27,19 @@ Will show the following key pad layout:
     [     --      ]  [     --      ]  [ flat sound ]
 ```
 
-### Optional web control page macros behavior
+# Recommended web control page behavior
 
-If desired, the main input selector can become an user's macro manager insteaf of a standar preamp input selector, see more details under the **`share/www`** folder.
+The main input selector can become an user's macro manager instead of a classical preamp input selector, by just setting one option inside `config.yml`, see more details under the **[share/www](https://github.com/Rsantct/pe.audio.sys/tree/master/pe.audio.sys/share/www#configure-the-web-page-behavior)** folder.
+
+This way, your web control page will be simplified, then your system becomes more user friendly than the former HiFi look.
+
+If so, it is recommended that **you plan a complete set of macro files** in order to easily play your favourite music programs, alongside the required audio settings (e.g. type of filtering, loudness reference level, pausing the previous player, etc)
+
+Have a look inside the **`macros/examples`** folder.
+
+**Classical vs simplified look:**
+
+In this example several macros will tune your favourite Radio Stations. 'Jazz' and 'RockSinfonico' will run MPD playlists from your favourite music database.
+
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/master/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="480" ></a>
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/raw/master/pe.audio.sys/doc/images/web%20macros%20selector.png" align="center" width="480" ></a>
