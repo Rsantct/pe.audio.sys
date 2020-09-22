@@ -34,6 +34,7 @@ import yaml
 from time import sleep
 import pyudev
 from subprocess import check_output, Popen
+from json import loads as json_loads
 
 UHOME = os.path.expanduser("~")
 ME = __file__.split('/')[-1]
@@ -49,6 +50,19 @@ from share.miscel import send_cmd
 # Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
 
+def find_cd_macro():
+    """ Looks for a macro named 'NN_cd' or similar, if not found
+        then returns a fake macro name.
+    """
+    result = '-'    # a fake macro name
+    mNames = json_loads( send_cmd( 'aux get_macros' ) )
+    for mName in mNames:
+        if '_cd' in mName.lower():
+            result = mName
+            break
+    return result
+
+
 def check_for_CDDA(d):
 
     srDevice = d.device_path.split('/')[-1]
@@ -60,9 +74,10 @@ def check_for_CDDA(d):
         send_cmd( 'preamp input cd', sender=ME, verbose=True )
         sleep(.5)
         send_cmd( 'player play',     sender=ME, verbose=True )
-        # In order to clear the web page's inputs selector when used
-        # as macros manager, will order to run a fake macro:
-        send_cmd( 'aux run_macro -' )
+        # In order to update the web page's inputs selector when used
+        # as macros manager, will try to order a prepared CD macro:
+        mName = find_cd_macro()
+        send_cmd( f'aux run_macro {mName}' )
 
     # Verbose if not CDDA
     try:
