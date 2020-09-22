@@ -13,7 +13,7 @@ control loudness_ref 3
 mpc replaygain off
 
 # Load and shuffle your favourite playlist
-mcp clear
+mpc clear
 mpc load NAS_Jazz
 mpc shuffle
 mpc play
