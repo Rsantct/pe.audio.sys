@@ -36,6 +36,9 @@ if __name__ == "__main__":
         print( f'{Fmt.RED}(macros) Bad Mplayer profile \'{mplayer_profile}\'{Fmt.END}' )
         sys.exit()
 
+    # Pausing the current player
+    send_cmd( f'player pause', sender=ME, verbose=True )
+
     # Tune the radio station (Mplayer jack ports will dissapear for a while)
     Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} preset {str(preset)}'
             .split() )
