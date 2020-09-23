@@ -174,6 +174,8 @@ def process_aux( cmd, arg='' ):
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
         result = AUX_INFO['last_macro']
+        if not result:
+            result = '-' # safe value cannot be empty
 
     # RUN MACRO
     elif cmd == 'run_macro':
