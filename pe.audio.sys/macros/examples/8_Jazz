@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Stop the current player
-control player pause
+peaudiosys_control player pause
 
 # Select source
-control input "mpd"
+peaudiosys_control input "mpd"
 
 # Adjust the expected loudness reference level
-control loudness_ref 3
+peaudiosys_control loudness_ref 3
 
 # Adjust MPD settings
 mpc replaygain off
