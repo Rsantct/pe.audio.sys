@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Stop the current player
-control player pause
+peaudiosys_control player pause
 
 # Select CD source
-control input "cd"
+peaudiosys_control input "cd"
 
 # Play
-control player play
+peaudiosys_control player play
