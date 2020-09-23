@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Stop the current player
 control player pause
+
+# Select CD source
 control input "cd"
+
+# Play
 control player play
