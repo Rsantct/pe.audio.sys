@@ -147,17 +147,21 @@ def process_aux( cmd, arg='' ):
 
         # current switch state
         if arg == 'state':
-            result = get_amp_state()
+            return get_amp_state()
 
-        elif arg == 'toggle':
+        if arg == 'toggle':
             # if unknown state, this switch defaults to 'on'
             result = {'on': 'off', 'off': 'on'}.get( get_amp_state(), 'on' )
-            set_amp_state( result )
 
-        if arg in ('on', 'off'):
+        elif arg in ('on', 'off'):
             result = arg
-            set_amp_state( result )
 
+        set_amp_state( result )
+
+        # optionally will stop the current player
+        if result == 'off' and CONFIG['amp_off_stops_player']:
+            send_cmd( service='players', cmd='stop',
+                      sender=ME, verbose=True )
         return result
 
     # LIST OF MACROS under macros/ folder
@@ -174,8 +178,6 @@ def process_aux( cmd, arg='' ):
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
         result = AUX_INFO['last_macro']
-        if not result:
-            result = '-' # safe value cannot be empty
 
     # RUN MACRO
     elif cmd == 'run_macro':
