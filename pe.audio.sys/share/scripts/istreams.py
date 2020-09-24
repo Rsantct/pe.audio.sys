@@ -47,12 +47,15 @@
 """
 import sys
 import os
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+
+from miscel import *
 from pathlib import Path
 from time import sleep
 import subprocess as sp
 import yaml
 
-UHOME = os.path.expanduser("~")
 
 # Mplayer options:
 options = '-quiet -nolirc -slave -idle'
@@ -108,6 +111,9 @@ def select_by_preset(preset_num):
 
 
 def start():
+    tmp = check_Mplayer_config_file(profile='istreams')
+    if tmp != 'ok':
+        print( f'{Fmt.RED}(istreams.py) {tmp}{Fmt.END}' )
     cmd = f'mplayer {options} -profile istreams \
            -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
