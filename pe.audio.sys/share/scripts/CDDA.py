@@ -26,12 +26,15 @@
 
 import os
 import sys
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share')
+
+from miscel import *
 import subprocess as sp
 from pathlib import Path
 import yaml
 
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 ## --- Mplayer options ---
 # -quiet: see channels change
@@ -65,6 +68,10 @@ def eject():
 
 
 def start():
+    tmp = check_Mplayer_config_file(profile='cdda')
+    if tmp != 'ok':
+        print( f'{Fmt.RED}(CDDA.py) {tmp}{Fmt.END}' )
+    sys.exit()
     cmd = f'mplayer {options} -profile cdda -cdrom-device {CDROM_DEVICE}' \
           f' -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
