@@ -71,7 +71,7 @@ def start():
     tmp = check_Mplayer_config_file(profile='cdda')
     if tmp != 'ok':
         print( f'{Fmt.RED}(CDDA.py) {tmp}{Fmt.END}' )
-    sys.exit()
+        sys.exit()
     cmd = f'mplayer {options} -profile cdda -cdrom-device {CDROM_DEVICE}' \
           f' -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
