@@ -114,6 +114,7 @@ def start():
     tmp = check_Mplayer_config_file(profile='istreams')
     if tmp != 'ok':
         print( f'{Fmt.RED}(istreams.py) {tmp}{Fmt.END}' )
+    sys.exit()
     cmd = f'mplayer {options} -profile istreams \
            -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
