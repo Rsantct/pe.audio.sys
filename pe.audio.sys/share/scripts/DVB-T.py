@@ -41,12 +41,16 @@
 
 import sys
 import os
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share')
+
+from miscel import *
 from pathlib import Path
 from time import sleep
 import subprocess as sp
 import yaml
 
-UHOME = os.path.expanduser("~")
 
 ## USER SETTINGS: see inside DVB-T.yml
 
@@ -103,6 +107,10 @@ def select_by_preset(preset_num):
 
 
 def start():
+    tmp = check_Mplayer_config_file(profile='dvb')
+    if tmp != 'ok':
+        print( f'{Fmt.RED}(DVB-T.py) {tmp}{Fmt.END}' )
+        sys.exit()
     cmd = f'mplayer {options} -profile dvb -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
         sp.Popen( cmd.split(), shell=False, stdout=redirfile,
