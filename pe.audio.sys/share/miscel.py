@@ -245,6 +245,7 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
 
     return ans
 
+
 # Checks the Mplayer config file
 def check_Mplayer_config_file(profile='istreams'):
     """ Checks the Mplayer config file
@@ -263,7 +264,8 @@ def check_Mplayer_config_file(profile='istreams'):
         
     if not profile in mplayercfg:
         return f'ERROR Mplayer profile \'{profile}\' not found'
-    if 'ao' in mplayercfg[profile] and 'jack:name=' in mplayercfg[profile]['ao']:
+    if 'ao' in mplayercfg[profile] and \
+        mplayercfg[profile]['ao'].strip()[:9] == 'jack:name':
         return 'ok'
     else:
         return f'ERROR bad Mplayer profile \'{profile}\''
