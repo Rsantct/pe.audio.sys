@@ -18,11 +18,12 @@
 
 import socket
 import os
-import yaml
 import jack
 from json import loads as json_loads
 from time import sleep
 import subprocess as sp
+import yaml
+import configparser
 
 
 UHOME = os.path.expanduser("~")
@@ -243,5 +244,30 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
                 print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
 
     return ans
+
+
+# Checks the Mplayer config file
+def check_Mplayer_config_file(profile='istreams'):
+    """ Checks the Mplayer config file
+    """
+    cpath = f'{UHOME}/.mplayer/config'
+
+    # This never happens because Mplayer autodumps an empty .mplayer/config file
+    if not os.path.exists(cpath):
+        return f'ERROR Mplayer config file not found'
+
+    mplayercfg = configparser.ConfigParser()
+    try:
+        mplayercfg.read( cpath )
+    except:
+        return f'ERROR bad Mplayer config file'
+        
+    if not profile in mplayercfg:
+        return f'ERROR Mplayer profile \'{profile}\' not found'
+    if 'ao' in mplayercfg[profile] and \
+        mplayercfg[profile]['ao'].strip()[:9] == 'jack:name':
+        return 'ok'
+    else:
+        return f'ERROR bad Mplayer profile \'{profile}\''
 
 
