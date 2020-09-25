@@ -72,7 +72,34 @@ def set_amp_state(mode):
     Popen( f'{AMP_MANAGER} {mode}'.split(), shell=False )
 
 
-# Main function for PREDIC commands processing
+def amp_player_manager(mode):
+    """ An auxiliary function for controlling playback
+        from the amplifier switch.
+    """
+
+    if mode == 'off':
+
+        # Do stop playback when switching off the amplifier
+        send_cmd( service='players', cmd='stop',
+                  sender=ME, verbose=True )
+
+        # Special case: librespot doesn't have playback control feature
+        if 'librespot.py' in CONFIG['scripts']:
+            print(f'{Fmt.BLUE}({ME}) AMP OFF: shutting down librespot process{Fmt.END}')
+            Popen( f'{MAINFOLDER}/share/scripts/librespot.py stop', shell=True)
+            sleep(.5)
+
+    elif mode == 'on':
+        # Do not resume playback when switching on the amplifier
+
+        # Special case: librespot doesn't have playback control feature
+        if 'librespot.py' in CONFIG['scripts']:
+            print(f'{Fmt.BLUE}({ME}) AMP ON: restarting librespot process{Fmt.END}')
+            Popen( f'{MAINFOLDER}/share/scripts/librespot.py start', shell=True)
+            sleep(.5)
+
+
+# Main function for PREAMP/CONVOLVER commands processing
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
@@ -147,16 +174,20 @@ def process_aux( cmd, arg='' ):
 
         # current switch state
         if arg == 'state':
-            result = get_amp_state()
+            return get_amp_state()
 
-        elif arg == 'toggle':
+        if arg == 'toggle':
             # if unknown state, this switch defaults to 'on'
             result = {'on': 'off', 'off': 'on'}.get( get_amp_state(), 'on' )
-            set_amp_state( result )
 
-        if arg in ('on', 'off'):
+        elif arg in ('on', 'off'):
             result = arg
-            set_amp_state( result )
+
+        set_amp_state( result )
+
+        # optionally will stop the current player
+        if CONFIG['amp_off_stops_player']:
+            amp_player_manager(mode=result)
 
         return result
 
@@ -174,8 +205,6 @@ def process_aux( cmd, arg='' ):
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
         result = AUX_INFO['last_macro']
-        if not result:
-            result = '-' # safe value cannot be empty
 
     # RUN MACRO
     elif cmd == 'run_macro':
