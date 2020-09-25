@@ -100,7 +100,22 @@ function onHttpReq( httpReq, httpRes ){
         });
     }
 
-    // Serve IMAGES.
+    // Serve 'favicon.ico' for mozilla and chrome like browsers
+    else if (httpReq.url === '/favicon.ico') {
+
+        let ct = 'image/vnd.microsoft.icon';
+        let favicon_path = __dirname + '/favicon.ico';
+
+        httpRes.writeHead(200, {'Content-Type': ct});
+        fs.readFile(favicon_path, (err, data) => {
+            if (! err) {
+                httpRes.write(data);
+                httpRes.end();
+            }
+        });
+    }
+
+    // Serve pe.audio.sys IMAGES.
     // Pending to use ETag to allow browsers to cache images at client end.
     // By now, we will use Cache-Control 60 seconds for Safary to chache the
     // sent image. Firefox uses cached image even if omitted this header.
