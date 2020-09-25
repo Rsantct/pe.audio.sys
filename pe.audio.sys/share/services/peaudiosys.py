@@ -72,7 +72,34 @@ def set_amp_state(mode):
     Popen( f'{AMP_MANAGER} {mode}'.split(), shell=False )
 
 
-# Main function for PREDIC commands processing
+def amp_player_manager(mode):
+    """ An auxiliary function for controlling playback
+        from the amplifier switch.
+    """
+
+    if mode == 'off':
+
+        # Do stop playback when switching off the amplifier
+        send_cmd( service='players', cmd='stop',
+                  sender=ME, verbose=True )
+
+        # Special case: librespot doesn't have playback control feature
+        if 'librespot.py' in CONFIG['scripts']:
+            print(f'{Fmt.BLUE}({ME}) AMP OFF: shutting down librespot process{Fmt.END}')
+            Popen( f'{MAINFOLDER}/share/scripts/librespot.py stop', shell=True)
+            sleep(.5)
+
+    elif mode == 'on':
+        # Do not resume playback when switching on the amplifier
+
+        # Special case: librespot doesn't have playback control feature
+        if 'librespot.py' in CONFIG['scripts']:
+            print(f'{Fmt.BLUE}({ME}) AMP ON: restarting librespot process{Fmt.END}')
+            Popen( f'{MAINFOLDER}/share/scripts/librespot.py start', shell=True)
+            sleep(.5)
+
+
+# Main function for PREAMP/CONVOLVER commands processing
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
@@ -159,9 +186,9 @@ def process_aux( cmd, arg='' ):
         set_amp_state( result )
 
         # optionally will stop the current player
-        if result == 'off' and CONFIG['amp_off_stops_player']:
-            send_cmd( service='players', cmd='stop',
-                      sender=ME, verbose=True )
+        if CONFIG['amp_off_stops_player']:
+            amp_player_manager(mode=result)
+
         return result
 
     # LIST OF MACROS under macros/ folder
