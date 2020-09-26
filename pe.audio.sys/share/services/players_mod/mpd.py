@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" A MPD interface module for players.py
+"""
 import os
 import mpd
 
@@ -91,20 +93,25 @@ def mpd_control( query, port=6600 ):
         c.seekcur('+30')
         return c.status()['state']
 
+    def listplaylists():
+        return [ x['playlist'] for x in c.listplaylists() ]
+
+
     c = mpd.MPDClient()
     try:
         c.connect('localhost', port)
     except:
         return 'stop'
 
-    result = {  'state':      state,
-                'stop':       stop,
-                'pause':      pause,
-                'play':       play,
-                'next':       next,
-                'previous':   previous,
-                'rew':        rew,
-                'ff':         ff
+    result = {  'state':            state,
+                'stop':             stop,
+                'pause':            pause,
+                'play':             play,
+                'next':             next,
+                'previous':         previous,
+                'rew':              rew,
+                'ff':               ff,
+                'get_playlists':    listplaylists
              }[query]()
 
     c.close()

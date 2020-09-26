@@ -25,3 +25,11 @@
     name:   Europa FM     
     url:    http://212.129.60.86:9968/stream/1/
 
+7:
+    name:   Cadena SER Madrid
+    url:    http://20423.live.streamtheworld.com:3690/CADENASER_SC
+
+8: 
+    name:   Onda Cero Madrid
+    url:    http://icecast-streaming.nice264.com/ondacero
+

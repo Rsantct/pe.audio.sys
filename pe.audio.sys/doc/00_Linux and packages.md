@@ -11,9 +11,9 @@ https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-
 
 ### Usually it is enough:
 
-- add the **`peaudiosys`** user to your system, this is optional because you can run the **pe.audio.sys** system under **ANY USER ACCOUNT** if you want so.
+- add the **`paudio`** user to your system, this is optional because you can run the **pe.audio.sys** system under **ANY USER ACCOUNT** if you want so.
 
-    `sudo adduser peaudiosys`
+    `sudo adduser paudio`
 
 - then integrate the user which will run pe.audio.sys into convenient groups:
 

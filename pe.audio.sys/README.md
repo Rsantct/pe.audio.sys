@@ -20,7 +20,7 @@ The system is intended as a personal audio system based on a PC.
 The originary main features are:
 
 - **Digital crossover** for sophysticated loudspeakers management
-- Preamplifier with **loudness compensated and calibrated volume control**.
+- Preamplifier with **calibrated volume control and equal loudness compensation eq**.
 - **Web page for system control** (FIRtro)
 
  Additional features on **pe.audio.sys** are extended to involve:
@@ -113,9 +113,14 @@ All commands prefixed with `player`:
     
     eject                                   Ejects the CD tray
     
-    http://url                              Plays the internet audio stream at given url
+    http://url                              Plays the internet audio stream from a given url
+    
+    load_playlist  <plist_name>             Tells the current player to load a playlist
+
+    get_playlists                           Gets the available playlist from the current player
     
     get_meta                                Gets metadata info from current player if available 
+    
 
 ## Miscel controls
 

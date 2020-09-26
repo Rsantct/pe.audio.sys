@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" A libresport interface module for players.py
+"""
 import os
 import subprocess as sp
 
@@ -23,12 +25,15 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
 
-def librespot_control(throwit):
-    """ fake control, always will return 'play'
+def librespot_control(cmd, arg=''):
+    """ fake control  
         input:  a fake command
-        output: the resulting status
+        output: the resulting status always 'play' or an empty playlists list
     """
-    return 'play'
+    if cmd == 'get_playlists':
+        return []
+    else:
+        return 'play'
 
 
 # librespot (Spotify Connect client) metatata
