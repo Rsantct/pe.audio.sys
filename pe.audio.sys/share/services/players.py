@@ -152,42 +152,52 @@ def player_get_meta():
 
 
 # Generic function to control any player
-def player_control(action):
+def player_control(cmd, arg=''):
     """ controls the playback
         returns: 'stop' | 'play' | 'pause'
         I/O:     .player_state
     """
-    newState = 'stop'  # default answer
+
+    newState = 'stop'  # default state
     source   = get_source()
 
-    # newState will depends on different modules 
-    if source == 'mpd':
-        newState = mpd_control(action)
+    # (i) result depends on different source modules:
 
+    # MPD
+    if source == 'mpd':
+        result = mpd_control(cmd)
+
+    # Spotify
     elif source.lower() == 'spotify':
         if   SPOTIFY_CLIENT == 'desktop':
-            newState = spotify_control(action)
+            result = spotify_control(cmd, arg)
         elif SPOTIFY_CLIENT == 'librespot':
-            newState = librespot_control(action)
+            result = librespot_control(cmd)
 
+    # DVB-T.py
     elif 'tdt' in source or 'dvb' in source:
-        newState = mplayer_control(cmd=action, service='dvb')
+        result = mplayer_control(cmd=cmd, service='dvb')
 
+    # istreams.py
     elif source in ['istreams', 'iradio']:
-        newState = mplayer_control(cmd=action, service='istreams')
+        result = mplayer_control(cmd=cmd, service='istreams')
 
+    # CDDA.py
     elif source == 'cd':
-        newState = mplayer_control(cmd=action, service='cdda')
-        
-    # Will fix newState to a valid value if a module answer was wrong
-    if newState not in ('stop', 'play', 'pause'):
-        newState = 'stop'  # default answer
+        result = mplayer_control(cmd=cmd, service='cdda')
 
-    # Store the player newState
+    # A generic source without a player module
+    else:
+        result = 'stop'
+
+    # Dumps the player newState
+    # (fix newState to a valid value if a module answer was wrong)
+    if result not in ('stop', 'play', 'pause'):
+        newState = 'stop'  # default state
     with open( f'{MAINFOLDER}/.player_state', 'w') as f:
         f.write(newState)
 
-    return newState
+    return result
 
 
 # init() will be autostarted from server.py when loading this module
@@ -213,7 +223,7 @@ def init():
 
 
 # Interface entry function for this module plugged inside 'server.py'
-def do(cmd):
+def do(cmd_phrase):
     """ Entry interface function for a parent server.py listener.
         - in:   a command phrase
         - out:  a string result (dicts are json dumped)
@@ -221,16 +231,28 @@ def do(cmd):
 
     result = 'nothing done'
 
-    # First clearing the cmd phrase
-    cmd = cmd.strip()
+    # Reading command phrase:
+    cmd, arg = '', ''
+    chunks = cmd_phrase.strip().split(' ')
+    cmd = chunks[0]
+    if chunks[1:]:
+        # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
+        arg = ' '.join(chunks[1:])
+
+    # PLAYBACK STATE
+    if cmd == 'state':
+        result = player_control( cmd )
 
     # Getting METADATA
-    if cmd == 'get_meta':
+    elif cmd == 'get_meta':
         with open( f'{MAINFOLDER}/.player_metadata', 'r') as f:
             result = f.read()
 
-    # PLAYBACK STATE
-    elif cmd == 'state':
+    # PLAYLISTS
+    elif cmd == 'load_playlist':
+        result = player_control( cmd, arg )
+    elif cmd == 'get_playlists':
+        # (currently only works with Spotify playlists file)
         result = player_control( cmd )
 
     # PLAYBACK CONTROL. (i) Some commands need to be adequated later,
