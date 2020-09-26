@@ -31,8 +31,11 @@ from pydbus import SessionBus
 # You can browse it also by command line tool:
 #   $ mdbus2 org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2
 bus = SessionBus()
-spotibus = bus.get( 'org.mpris.MediaPlayer2.spotify',
-                    '/org/mpris/MediaPlayer2' )
+try:
+    spotibus = bus.get( 'org.mpris.MediaPlayer2.spotify',
+                        '/org/mpris/MediaPlayer2' )
+except:
+    spotibus = None
 
 # bitrate HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE   = '320'
