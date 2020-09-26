@@ -45,25 +45,6 @@ try:
 except:
     PLAYLISTS = {}
 
-
-# Auxiliary to detect the Spotify Client in use: desktop or librespot
-def detect_spotify_client():
-    cname = None
-    # Check if a desktop client is running:
-    try:
-        check_output( 'pgrep -f Spotify'.split() )
-        cname = 'desktop'
-    except:
-        pass
-    # Check if 'librespot' (a Spotify Connect daemon) is running:
-    try:
-        check_output( 'pgrep -f librespot'.split() )
-        cname = 'librespot'
-    except:
-        pass
-    return cname
-
-
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
     """ in:     x seconds   (float)
