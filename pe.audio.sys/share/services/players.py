@@ -60,7 +60,6 @@ with open(f'{MAINFOLDER}/config.yml', 'r') as f:
 ## Spotify client detection
 SPOTIFY_CLIENT = detect_spotify_client()
 
-
 ## generic metadata template (!) remember to use copies of this ;-)
 METATEMPLATE = {
                 'player':       '',
@@ -179,6 +178,8 @@ def player_control(cmd, arg=''):
             result = spotify_control(cmd, arg)
         elif SPOTIFY_CLIENT == 'librespot':
             result = librespot_control(cmd)
+        else:
+            result = 'stop'
 
     # DVB-T.py
     elif 'tdt' in source or 'dvb' in source:
