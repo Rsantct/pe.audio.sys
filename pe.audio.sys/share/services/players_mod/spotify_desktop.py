@@ -16,15 +16,34 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" A Spotify Desktop client interface module for players.py
+"""
 import os
-from subprocess import Popen, check_output
-import json
-
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 
+from time import sleep
+from subprocess import check_output
+import yaml
+from pydbus import SessionBus
+
+# The dbus interface of the Spotify Desktop client.
+# You can browse it also by command line tool:
+#   $ mdbus2 org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2
+bus = SessionBus()
+spotibus = bus.get( 'org.mpris.MediaPlayer2.spotify',
+                    '/org/mpris/MediaPlayer2' )
+
 # bitrate HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE   = '320'
+
+# User playlists
+try:
+    CONFIG = yaml.safe_load( open(f'{MAINFOLDER}/config.yml', 'r') )
+    plist_file = CONFIG['spotify_playlists_file']
+    PLAYLISTS = yaml.safe_load(open(plist_file, 'r'))
+except:
+    PLAYLISTS = {}
 
 
 # Auxiliary to detect the Spotify Client in use: desktop or librespot
@@ -59,63 +78,56 @@ def timeFmt(x):
 
 
 # Spotify Desktop control
-def spotify_control(cmd):
+def spotify_control(cmd, arg=''):
     """ Controls the Spotify Desktop player
-        input:  a command
+        input:  a command string
         output: the resulting status string
     """
-    # It is assumed that you have the mpris2-dbus utility 'playerctl' installed.
-    #      https://wiki.archlinux.org/index.php/spotify#MPRIS
-    # dbus-send command can also work
-    #       http://www.skybert.net/linux/spotify-on-the-linux-command-line/
 
-    # playerctl - Available Commands:
-    #   play                    Command the player to play
-    #   pause                   Command the player to pause
-    #   play-pause              Command the player to toggle between play/pause
-    #   stop                    Command the player to stop
-    #   next                    Command the player to skip to the next track
-    #   previous                Command the player to skip to the previous track
-    #   position [OFFSET][+/-]  Command the player to go to the position or seek forward/backward OFFSET in seconds
-    #   volume [LEVEL][+/-]     Print or set the volume to LEVEL from 0.0 to 1.0
-    #   status                  Get the play status of the player
-    #   metadata [KEY]          Print metadata information for the current track. Print only value of KEY if passed
+    if   cmd == 'state':
+        pass
 
-    # (!) Unfortunately, 'position' does not work, so we cannot rewind neither fast forward
-    if cmd in ('play', 'pause', 'next', 'previous' ):
-        Popen( f'playerctl --player=spotify {cmd}'.split() )
+    elif cmd == 'play':
+        spotibus.Play()
 
-    # Retrieving the playback state
-    result = ''
-    if cmd == 'state':
-        try:
-            result = check_output( f'playerctl --player=spotify status'
-                                    .split() ).decode()
-        except:
-            pass
-    # playerctl just returns 'Playing' or 'Paused'
-    if 'play' in result.lower():
-        return 'play'
-    else:
-        return 'pause'
+    elif cmd == 'pause':
+        spotibus.Pause()
+
+    elif cmd == 'next':
+        spotibus.Next()
+
+    elif cmd == 'previous':
+        spotibus.Previous()
+
+    elif cmd == 'load_playlist':
+        if PLAYLISTS:
+            if arg in PLAYLISTS:
+                spotibus.OpenUri( PLAYLISTS[arg] )
+            else:
+                return 'ERROR: playlist not found'
+        else:
+            return 'ERROR: Spotify playlist not available'
+
+    elif cmd == 'get_playlists':
+        return list( PLAYLISTS.keys() )
+
+    sleep(.25)
+    return {'Playing':  'play',
+            'Paused':   'pause',
+            'Stopped':  'stop' }[spotibus.PlaybackStatus]
 
 
 # Spotify Desktop metadata
 def spotify_meta(md):
-    """ Analize the MPRIS metadata info retrieved by the daemon scripts/spotify_monitor
-        which monitorizes a Spotify Desktop Client
+    """ Analize the MPRIS metadata info from spotibus.Metadata
         Input:      blank md dict
         Output:     Spotify metadata dict
-        I/O:        .spotify_events (r) MPRIS desktop metadata from spotify_monitor.py
     """
     md['player']  = 'Spotify Desktop Client'
     md['bitrate'] = SPOTIFY_BITRATE
 
     try:
-        with open(f'{MAINFOLDER}/.spotify_events', 'r') as f:
-            tmp = f.read()
-
-        tmp = json.loads( tmp )
+        tmp = spotibus.Metadata
         # Example:
         # {
         # "mpris:trackid": "spotify:track:5UmNPIwZitB26cYXQiEzdP",
