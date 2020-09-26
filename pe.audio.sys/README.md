@@ -20,7 +20,7 @@ The system is intended as a personal audio system based on a PC.
 The originary main features are:
 
 - **Digital crossover** for sophysticated loudspeakers management
-- Preamplifier with **loudness compensated and calibrated volume control**.
+- Preamplifier with **calibrated volume control and equal loudness compensation eq**.
 - **Web page for system control** (FIRtro)
 
  Additional features on **pe.audio.sys** are extended to involve:
