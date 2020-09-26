@@ -261,7 +261,7 @@ def check_Mplayer_config_file(profile='istreams'):
         mplayercfg.read( cpath )
     except:
         return f'ERROR bad Mplayer config file'
-        
+
     if not profile in mplayercfg:
         return f'ERROR Mplayer profile \'{profile}\' not found'
     if 'ao' in mplayercfg[profile] and \
@@ -271,3 +271,19 @@ def check_Mplayer_config_file(profile='istreams'):
         return f'ERROR bad Mplayer profile \'{profile}\''
 
 
+# Auxiliary to detect the Spotify Client in use: desktop or librespot
+def detect_spotify_client():
+    cname = ''
+    # Check if a desktop client is running:
+    try:
+        sp.check_output( 'pgrep -f Spotify'.split() )
+        cname = 'desktop'
+    except:
+        pass
+    # Check if 'librespot' (a Spotify Connect daemon) is running:
+    try:
+        sp.check_output( 'pgrep -f librespot'.split() )
+        cname = 'librespot'
+    except:
+        pass
+    return cname
