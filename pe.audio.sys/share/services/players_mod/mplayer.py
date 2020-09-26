@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" A module to deal with playing services supported by Mplayer:
+""" A module to players.py to deal with playing services supported by Mplayer:
         DVB-T
         CDDA
         istreams
@@ -255,15 +255,25 @@ def mplayer_control(cmd, service):
         result: a result string: 'play' | 'stop' | 'pause' | ''
     """
 
+    supported_commands = (  'state',
+                            'stop',
+                            'pause',
+                            'play',
+                            'next',
+                            'previous',
+                            'rew',
+                            'ff'        )
+
     # (i) Mplayer sends its responses to the terminal where Mplayer
     #     was launched, or to a redirected file.
     #     Available commands: http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
     status = playing_status()
 
-    # Early return if no action commands
-    if cmd == 'state':
+    # Early return if no action commands or not supported command:
+    if cmd == 'state' or cmd not in supported_commands:
         return status
+
     if cmd == 'eject':
         Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
