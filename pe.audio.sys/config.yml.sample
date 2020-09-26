@@ -278,3 +278,6 @@ LU_reset_scope: album
 powersave:              false
 powersave_noise_floor: -70
 powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
+
+# Spotify client, playlists file path:
+spotify_playlists_file: spotify_plists.yml
