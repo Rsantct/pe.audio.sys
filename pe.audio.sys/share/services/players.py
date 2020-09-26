@@ -30,6 +30,13 @@
 #
 
 import os
+import sys
+UHOME = os.path.expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
+
+sys.path.append(f'{MAINFOLDER}/share')
+from miscel import *
+
 import subprocess as sp
 import threading
 import yaml
@@ -43,17 +50,16 @@ from  players_mod.mplayer           import  mplayer_control,            \
 from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
 from  players_mod.spotify_desktop   import  spotify_control,            \
-                                            spotify_meta,               \
-                                            detect_spotify_client
+                                            spotify_meta
 
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
+## Getting sources list
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
     SOURCES = yaml.safe_load( f )["sources"]
 
 
 ## Spotify client detection
 SPOTIFY_CLIENT = detect_spotify_client()
+
 
 ## generic metadata template (!) remember to use copies of this ;-)
 METATEMPLATE = {
