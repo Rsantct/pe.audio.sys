@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" A libresport interface module for players.py
+"""
 import os
 import subprocess as sp
 
