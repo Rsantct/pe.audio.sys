@@ -648,7 +648,10 @@ function fill_in_macro_buttons() {
     // Special behavior: MACROS loaded inside the INPUTS SELECTOR
     if ( web_config.inputs_as_macros == true ){
         fill_in_inputs_as_macros(mFnames)
-        return
+        document.getElementById("inputsSelector").title = 'Macros Launcher';
+       return
+    }else{
+        document.getElementById("inputsSelector").title = 'Source Selector';
     }
 
     // If any macro found, lets show the corresponding cell playback_control_23

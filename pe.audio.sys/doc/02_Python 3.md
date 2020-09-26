@@ -8,7 +8,7 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
 
 
     sudo apt install python3-pip python3-yaml python3-jack-client python3-mpd
-    sudo apt install python3-numpy python3-scipy python3-matplotlib
+    sudo apt install python3-pydbus python3-numpy python3-scipy python3-matplotlib
     sudo python3 -m pip install --upgrade setuptools
 
 
@@ -17,6 +17,7 @@ First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
     sudo python3 -m pip install --upgrade setuptools
     python3 -m pip install pyaml
     python3 -m pip install python-mpd2
+    python3 -m pip install pydbus
     python3 -m pip install numpy
     python3 -m pip install scipy
     python3 -m pip install matplotlib

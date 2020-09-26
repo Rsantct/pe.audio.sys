@@ -18,5 +18,5 @@ The user must belong to the system group wich can access to devices under `/dev/
 
 On the above example it can be seen that the group is 'input', so in order to mouse volume daemon to work you need to run:
 
-    $ sudo adduser  peaudiosys  input
+    $ sudo adduser  paudio  input
   
