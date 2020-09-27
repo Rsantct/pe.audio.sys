@@ -357,7 +357,8 @@ Here you are an uncommented bare example of `config.yml`:
     peaudiosys_address:     localhost
     peaudiosys_port:        9990
 
-    amp_manager:  /home/predic/bin/ampli.sh
+    amp_manager:            /home/predic/bin/ampli.sh
+    amp_off_stops_player:   true
 
     restart_cmd: peaudiosys_restart.sh
 
@@ -376,7 +377,7 @@ Here you are an uncommented bare example of `config.yml`:
     powersave_noise_floor:  -70
     powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
 
-
+    spotify_playlists_file: spotify_plists.yml
 
 # The share/eq folder
 
