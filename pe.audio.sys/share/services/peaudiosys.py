@@ -49,6 +49,7 @@ AUX_INFO = {    'amp':              'off',
                 'web_config':       {}
             }
 
+
 # Read the amplifier state file, if it exists:
 def get_amp_state():
     curr_sta = '-'
@@ -186,7 +187,10 @@ def process_aux( cmd, arg='' ):
         set_amp_state( result )
 
         # optionally will stop the current player
-        if CONFIG['amp_off_stops_player']:
+        #if CONFIG['amp_off_stops_player']:
+        #    amp_player_manager(mode=result)
+        if 'amp_off_stops_player' in CONFIG and \
+           CONFIG['amp_off_stops_player'] == True:
             amp_player_manager(mode=result)
 
         return result
