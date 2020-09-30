@@ -41,12 +41,13 @@ except:
 SPOTIFY_BITRATE   = '320'
 
 # User playlists
-try:
-    CONFIG = yaml.safe_load( open(f'{MAINFOLDER}/config.yml', 'r') )
-    plist_file = CONFIG['spotify_playlists_file']
-    PLAYLISTS = yaml.safe_load(open(plist_file, 'r'))
-except:
-    PLAYLISTS = {}
+plist_file = f'{MAINFOLDER}/spotify_plists.yml'
+PLAYLISTS = {}
+if os.path.exists(plist_file):
+    try:
+        PLAYLISTS = yaml.safe_load(open(plist_file, 'r'))
+    except:
+        print(f'(spotify_desktop.py) ERROR reading \'{plist_file}\'')
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
