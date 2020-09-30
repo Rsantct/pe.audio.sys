@@ -260,14 +260,12 @@ restart_cmd: ~/pe.audio.sys/start.py all
 
 # Control web page behavior
 web_config:
-    # hide macro buttons at web startup
-    hide_macro_buttons: false
     # hide the LU offset slider and the LU monitor bar
     hide_LU: false
     # display EQ and DRC graphs
     show_graphs: true
-    # the main selector can manage inputs or macros:
-    main_selector: 'macros'
+    # the main selector can manage 'inputs' or 'macros':
+    main_selector: 'inputs'
 
 
 # The scope ('input', 'album' or 'track') to trigger to reset the measured LU
