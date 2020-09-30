@@ -134,12 +134,12 @@ def process_aux( cmd, arg='' ):
         wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
                                                   in CONFIG['scripts'] else False
 
-        # Special behavior for inputs selector as macros manager
-        if not 'inputs_as_macros' in wconfig:
-            wconfig["inputs_as_macros"] = False
+        # main selector manages inputs or macros
+        if not 'main_selector' in wconfig:
+            wconfig["main_selector"] = 'inputs';
         else:
-            if wconfig["inputs_as_macros"] != True:
-                wconfig["inputs_as_macros"] = False
+            if wconfig["main_selector"] not in ('inputs', 'macros'):
+                wconfig["main_selector"] = 'inputs'
 
         return wconfig
 
@@ -195,7 +195,7 @@ def process_aux( cmd, arg='' ):
 
         return result
 
-    # LIST OF MACROS under macros/ folder
+    # LIST OF MACROS under macros/ folder (numeric sorted)
     elif cmd == 'get_macros':
         macro_files = []
         with os.scandir( f'{MACROS_FOLDER}' ) as entries:
