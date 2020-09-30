@@ -55,7 +55,7 @@ try:
 except:
     CD_CAPTURE_PORT = 'mplayer_cdda'
 
-# cdda info template
+# cdda info template with a fake track #1
 CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',
                        '1': {'title': '-', 'length': '00:00.00'} }
 
@@ -136,25 +136,65 @@ def get_disc_metadata(device=CDROM_DEVICE):
         print('(cdda.py) disc not found or bad response')
         return simple_md(disc)
 
+    # most of discs are 'disc' musicbrainz kinf of
     if result.get('disc'):
+
         print(f'(cdda.py) musicbrainz got \'disc\': {disc.id}' )
+
         mz_md = result['disc']['release-list'][0]
+
         md['artist'] = mz_md['artist-credit-phrase']
+
         md['album']  = mz_md['title']
+
         track_list   = mz_md['medium-list'][0]['track-list']
 
+    # but somo are 'cdstub' musicbrainz kind of
     elif result.get('cdstub'):
-        print(f'(cdda.py) musicbrainz got \'cdstub\': {disc.id}' )
-        mz_md = result['cdstub']
-        md['artist'] = mz_md['artist-credit-phrase']
-        md['album']  = mz_md['title']
-        # (!) pending on investigate more on tracks under 'cdstub'
-        track_list   = []
 
-    for track in track_list:
-        lenghtStr = msec2string( float(track['recording']['length']) )
-        md[ track['position'] ] = {'title':  track['recording']['title'],
-                                   'length': lenghtStr}
+        print(f'(cdda.py) musicbrainz got \'cdstub\': {disc.id}' )
+
+        mz_md = result['cdstub']
+
+        if 'artist' in mz_md:
+            md['artist'] = mz_md['artist']
+        elif 'artist-credit-phrase' in mz_md:
+            md['artist'] = mz_md['artist-credit-phrase']
+
+        if 'title' in mz_md:
+            md['album']  = mz_md['title']
+
+        # (!) pending on investigate more on tracks under 'cdstub'
+        if 'track-list' in mz_md:
+            track_list   = mz_md['track-list']
+        else:
+            track_list   = []
+
+    # finally, lets complete our track list structure inside the 'md' template
+    for pos, track in enumerate( track_list ):
+
+        # Retrieve track length
+        # from normal 'disc':
+        if 'recording' in track and 'length' in track['recording']:
+            lengthStr = msec2string( float(track['recording']['length']) )
+        # from some 'cdstub':
+        elif 'length' in track:
+            lengthStr = msec2string( float(track['length']) )
+        # from some 'cdstub':
+        elif 'track_or_recording_length' in track:
+            lengthStr = msec2string( float(track['track_or_recording_length']) )
+        else:
+            lengthStr = msec2string( 0.0 )
+
+        # Retrieve track title
+        if 'recording' in track and 'title' in track['recording']:
+            track_title = track['recording']['title']
+        elif 'title' in track:
+            track_title = track['title']
+
+        # adding to our metadata disc structure
+        md[ str(pos + 1) ] = { 'title':  track_title,
+                               'length': lengthStr }
 
     return md
 
