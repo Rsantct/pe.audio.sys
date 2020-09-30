@@ -132,10 +132,13 @@ def start_jackd():
                     .replace('$autoCard', CONFIG["system_card"]) \
                     .replace('$autoFS', str(get_Bfir_sample_rate()))
 
-    cmdlist = ['jackd'] + f'{CONFIG["jack_options"]}'.split() + \
-              f'{jack_backend_options}'.split()
+    cmdlist = ['jackd']
 
-    #print(' '.join(cmdlist)) ; sys.exit() # DEBUG
+    if logFlag:
+        cmdlist += ['--silent']
+
+    cmdlist += f'{CONFIG["jack_options"]}'.split() + \
+               f'{jack_backend_options}'.split()
 
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
@@ -351,17 +354,24 @@ if __name__ == "__main__":
 
     # READING OPTIONS FROM COMMAND LINE
     logFlag = False
+
     if sys.argv[1:]:
         mode = sys.argv[1]
     else:
         print(__doc__)
         sys.exit()
+
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
+
     if mode not in ['all', 'stop', 'services', 'scripts']:
         print(__doc__)
         sys.exit()
+
     if logFlag:
+        print('\n' + '-' * 80)
+        print(f'start process logged at \'{MAINFOLDER}/start.log\'')
+        print('-' * 80)
         flog = open(f'{MAINFOLDER}/start.log', 'w')
         original_stdout = sys.stdout
         original_stderr = sys.stderr
@@ -425,7 +435,3 @@ if __name__ == "__main__":
             sender='start.py', verbose=True )
 
     # END
-    if logFlag:
-        sys.stdout = original_stdout
-        sys.stderr = original_stderr
-        print(f'start process logged at \'{MAINFOLDER}/start.log\'')
