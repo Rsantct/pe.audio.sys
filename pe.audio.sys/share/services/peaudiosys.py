@@ -52,13 +52,13 @@ AUX_INFO = {    'amp':              'off',
 
 # Read the amplifier state file, if it exists:
 def get_amp_state():
-    curr_sta = '-'
+    curr_sta = 'off'
     try:
         with open( f'{AMP_STATE_FILE}', 'r') as f:
             curr_sta =  f.read().strip()
     except:
         pass
-    if curr_sta.lower() in ('0', 'off'):
+    if not curr_sta or curr_sta.lower() in ('0', 'off'):
         curr_sta = 'off'
     elif curr_sta.lower() in ('1', 'on'):
         curr_sta = 'on'
