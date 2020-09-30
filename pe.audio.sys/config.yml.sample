@@ -266,8 +266,8 @@ web_config:
     hide_LU: false
     # display EQ and DRC graphs
     show_graphs: true
-    # the input selector can become a macros manager:
-    inputs_as_macros: false
+    # the main selector can manage inputs or macros:
+    main_selector: 'macros'
 
 
 # The scope ('input', 'album' or 'track') to trigger to reset the measured LU
