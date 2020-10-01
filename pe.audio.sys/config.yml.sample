@@ -137,24 +137,24 @@ on_change_input:
 sources:
 
     spotify:
-        capture_port:   alsa_loop           # a loop for alsa players
+        capture_port:   alsa_loop           # (i) same in ALSA players's config
         gain:           0.0
         xo:             
 
     mpd:
-        capture_port:   mpd_loop            # a loop for MPD is needed
+        capture_port:   mpd_loop            # (i) same in ~/.mpdconf
         gain:           0.0
         xo:             
 
     istreams:
-        capture_port:   mplayer_istreams    # remember: ~/.mplayer/config
-        gain:           0.0                 #   [istreams]
-        xo:                                 #   ao=jack:name=mplayer_istreams:noconnect
+        capture_port:   mplayer_istreams    # (i) same in ~/.mplayer/config
+        gain:           0.0
+        xo:
     
     dvb:
-        capture_port:   mplayer_dvb         # remember: ~/.mplayer/config
-        gain:           0.0                 #   [dvb]
-        xo:                                 #   ao=jack:name=mplayer_dvb:noconnect
+        capture_port:   mplayer_dvb         # (i) same in ~/.mplayer/config
+        gain:           0.0
+        xo:
     
     tv:
         capture_port:   system
