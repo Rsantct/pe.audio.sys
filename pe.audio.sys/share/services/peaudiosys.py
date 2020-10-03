@@ -21,16 +21,17 @@
     This module is loaded by 'server.py'
 """
 
-import os
+from os import scandir
+from os.path import expanduser, exists, getsize
 import sys
-UHOME       = os.path.expanduser("~")
+UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel import *
 import yaml
 import json
 from subprocess import Popen
-from time import sleep
+from time import sleep, strftime
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
@@ -48,6 +49,13 @@ AUX_INFO = {    'amp':              'off',
                 'last_macro':       '-',    # cannot be empty
                 'web_config':       {}
             }
+
+
+# COMMAND LOG FILE
+logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
+if exists(logFname) and getsize(logFname) > 2e6:
+    print ( f"{Fmt.RED}(peaudiosys) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
+print ( f"{Fmt.BLUE}(peaudiosys) logging commands in '{logFname}'{Fmt.END}" )
 
 
 # Read the amplifier state file, if it exists:
@@ -168,7 +176,7 @@ def process_aux( cmd, arg='' ):
 
 
     # BEGIN of process_aux
-    result = ''
+    result = 'bad command'
 
     # AMPLIFIER SWITCHING
     if cmd == 'amp_switch':
@@ -198,7 +206,7 @@ def process_aux( cmd, arg='' ):
     # LIST OF MACROS under macros/ folder (numeric sorted)
     elif cmd == 'get_macros':
         macro_files = []
-        with os.scandir( f'{MACROS_FOLDER}' ) as entries:
+        with scandir( f'{MACROS_FOLDER}' ) as entries:
             for entrie in entries:
                 fname = entrie.name
                 if fname.split('_')[0].isdigit():
@@ -336,9 +344,9 @@ def init():
 
 
 # Interface function to plug this on server.py
-def do( command_phrase ):
+def do( cmd_phrase ):
 
-    def read_command_phrase(command_phrase):
+    def read_cmd_phrase(cmd_phrase):
 
         # (i) command phrase SYNTAX must start with an appropriate prefix:
         #           preamp  command  arg1 ...
@@ -349,8 +357,8 @@ def do( command_phrase ):
         pfx, cmd, arg = '', '', ''
 
         # This is to avoid empty values when there are more
-        # than on space as delimiter inside the command_phrase:
-        chunks = [x for x in command_phrase.split(' ') if x]
+        # than on space as delimiter inside the cmd_phrase:
+        chunks = [x for x in cmd_phrase.split(' ') if x]
 
         # If not prefix, will treat as a preamp command kind of
         if not chunks[0] in ('preamp', 'player', 'aux'):
@@ -360,7 +368,7 @@ def do( command_phrase ):
         if chunks[1:]:
             cmd = chunks[1]
         else:
-            raise Exception(f'({ME}) BAD command: {command_phrase}')
+            raise Exception(f'({ME}) BAD command: {cmd_phrase}')
         if chunks[2:]:
             # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
             arg = ' '.join( chunks[2:] )
@@ -368,9 +376,10 @@ def do( command_phrase ):
         return pfx, cmd, arg
 
     result = 'nothing done'
-
-    if command_phrase.strip():
-        pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
+    cmd_phrase = cmd_phrase.strip()
+    
+    if cmd_phrase.strip():
+        pfx, cmd, arg = read_cmd_phrase( cmd_phrase )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
         if cmd == 'help':
             Popen( f'cat {MAINFOLDER}/doc/peaudiosys.hlp', shell=True)
@@ -381,5 +390,11 @@ def do( command_phrase ):
                     'aux':      process_aux }[ pfx ]( cmd, arg )
         if type(result) != str:
             result = json.dumps(result)
+
+        # Command log ~ estimated growing size: pending
+        if 'state' not in cmd_phrase:
+            with open(logFname, 'a') as FLOG:
+                FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; '
+                           f'{result}\n')
 
     return result
