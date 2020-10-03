@@ -29,18 +29,17 @@
 # .player_state     'w'     Stores the current playback state
 #
 
-import os
+from os.path import expanduser, exists, getsize
 import sys
-UHOME = os.path.expanduser("~")
+UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(MAINFOLDER)
 
-sys.path.append(f'{MAINFOLDER}/share')
-from miscel import *
-
+from share.miscel import *
 import subprocess as sp
 import threading
 import yaml
-from time import sleep
+from time import sleep, strftime
 import json
 from socket import socket
 from  players_mod.mpd               import  mpd_control,                \
@@ -51,6 +50,13 @@ from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
 from  players_mod.spotify_desktop   import  spotify_control,            \
                                             spotify_meta
+
+# COMMAND LOG FILE
+logFname = f'{UHOME}/pe.audio.sys/.players_cmd.log'
+if exists(logFname) and getsize(logFname) > 2e6:
+    print ( f"{Fmt.RED}(preamp) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
+print ( f"{Fmt.BLUE}(preamp) logging commands in '{logFname}'{Fmt.END}" )
+
 
 ## Getting sources list
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
@@ -239,8 +245,9 @@ def do(cmd_phrase):
     result = 'nothing done'
 
     # Reading command phrase:
+    cmd_phrase = cmd_phrase.strip()
     cmd, arg = '', ''
-    chunks = cmd_phrase.strip().split(' ')
+    chunks = cmd_phrase.split(' ')
     cmd = chunks[0]
     if chunks[1:]:
         # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
@@ -277,5 +284,11 @@ def do(cmd_phrase):
 
     if type(result) != str:
         result = json.dumps(result)
+
+    # Command log
+    if 'state' not in cmd_phrase:
+        with open(logFname, 'a') as FLOG:
+            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; '
+                       f'{result}\n')
 
     return result
