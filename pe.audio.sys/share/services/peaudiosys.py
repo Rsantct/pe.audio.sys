@@ -391,7 +391,7 @@ def do( cmd_phrase ):
         if type(result) != str:
             result = json.dumps(result)
 
-        # Command log ~ estimated growing size: pending
+        # Command log
         if 'state' not in cmd_phrase:
             with open(logFname, 'a') as FLOG:
                 FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; '
