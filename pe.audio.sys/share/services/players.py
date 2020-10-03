@@ -242,10 +242,15 @@ def do(cmd_phrase):
         - out:  a string result (dicts are json dumped)
     """
 
+    cmd_phrase = cmd_phrase.strip()
     result = 'nothing done'
 
+    # cmd_phrase log
+    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
+        with open(logFname, 'a') as FLOG:
+            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
+
     # Reading command phrase:
-    cmd_phrase = cmd_phrase.strip()
     cmd, arg = '', ''
     chunks = cmd_phrase.split(' ')
     cmd = chunks[0]
@@ -285,10 +290,9 @@ def do(cmd_phrase):
     if type(result) != str:
         result = json.dumps(result)
 
-    # Command log
-    if 'state' not in cmd_phrase:
+    # result log
+    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
         with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; '
-                       f'{result}\n')
+            FLOG.write(f'{result}\n')
 
     return result
