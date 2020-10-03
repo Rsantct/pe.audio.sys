@@ -30,24 +30,25 @@
 """
 
 import sys
+from os.path import expanduser, exists, getsize
+UHOME = expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import Fmt
 import json
 import yaml
 from time import strftime
 from preamp_mod.core import Preamp, Convolver
-from os.path import expanduser, exists, getsize
-UHOME   = expanduser("~")
-CONFIG  = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
 
-sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import Fmt
+
+# pe.audio.sys CONFIG
+CONFIG  = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
 
 # COMMAND LOG FILE
 logFname = f'{UHOME}/pe.audio.sys/.preamp_cmd.log'
 if exists(logFname) and getsize(logFname) > 2e6:
-    print ( f"{Fmt.RED}(preamp) Preamp log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
-# 'a'ppend ( < 1 MB per year ) or 'w'rite
-logMode  = 'a'   
-print ( f"{Fmt.BLUE}(preamp) Logging preamp commands in '{logFname}'{Fmt.END}" )
+    print ( f"{Fmt.RED}(preamp) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
+print ( f"{Fmt.BLUE}(preamp) logging commands in '{logFname}'{Fmt.END}" )
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -187,9 +188,10 @@ def process_commands( full_command ):
 
 # INTERFACE FUNCTION TO PLUG THIS MODULE ON SERVER.PY
 # AND ** KEEPING UP TO DATE THE STATE FILE **
-def do( cmdline ):
+def do( cmd_phrase ):
 
-    result = process_commands( cmdline )
+    cmd_phrase = cmd_phrase.strip()
+    result = process_commands( cmd_phrase )
 
     if type(result) != str:
         result = json.dumps(result)
@@ -197,9 +199,9 @@ def do( cmdline ):
     if result:
         preamp.save_state()
 
-    # Command log
-    if cmdline not in ('state', 'status', 'get_state'):
-        with open(logFname, logMode) as FLOG:
-            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmdline}; {result}\n')
+    # Command log ~ estimated growing size: < 1 MB per year
+    if 'state' not in cmd_phrase:
+        with open(logFname, 'a') as FLOG:
+            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; {result}\n')
         
     return result
