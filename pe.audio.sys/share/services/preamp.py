@@ -191,17 +191,24 @@ def process_commands( full_command ):
 def do( cmd_phrase ):
 
     cmd_phrase = cmd_phrase.strip()
+    result = 'nothing done'
+
+    # cmd_phrase log
+    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
+        with open(logFname, 'a') as FLOG:
+            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
+
     result = process_commands( cmd_phrase )
 
     if type(result) != str:
         result = json.dumps(result)
 
-    if result:
+    if result != 'nothing done':
         preamp.save_state()
 
-    # Command log
-    if 'state' not in cmd_phrase:
+    # result log
+    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
         with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; {result}\n')
+            FLOG.write(f'{result}\n')
         
     return result
