@@ -379,6 +379,12 @@ def do( cmd_phrase ):
     cmd_phrase = cmd_phrase.strip()
     
     if cmd_phrase.strip():
+
+        # cmd_phrase log
+        if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
+            with open(logFname, 'a') as FLOG:
+                FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
+
         pfx, cmd, arg = read_cmd_phrase( cmd_phrase )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
         if cmd == 'help':
@@ -391,10 +397,9 @@ def do( cmd_phrase ):
         if type(result) != str:
             result = json.dumps(result)
 
-        # Command log
-        if 'state' not in cmd_phrase:
+        # result log
+        if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
             with open(logFname, 'a') as FLOG:
-                FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; '
-                           f'{result}\n')
+                FLOG.write(f'{result}\n')
 
     return result
