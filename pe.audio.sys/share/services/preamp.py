@@ -199,7 +199,7 @@ def do( cmd_phrase ):
     if result:
         preamp.save_state()
 
-    # Command log ~ estimated growing size: < 1 MB per year
+    # Command log
     if 'state' not in cmd_phrase:
         with open(logFname, 'a') as FLOG:
             FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; {result}\n')
