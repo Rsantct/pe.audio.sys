@@ -80,3 +80,16 @@ The installed new files will be shown as:
 So now you can symlink it to run the new version:
 
     ln -s /usr/local/bin/brutefir $HOME/bin/brutefir
+    
+## How much network bandwidth does consume zita-j2n (JACK to NETWORK) 
+
+If you use the script **`zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously.
+
+For a typical setting of 2 ch 44100 Hz 16 bit, the used BW is about 1.7 Mb/s over your LAN.
+
+
+
+
+
+
+
