@@ -181,7 +181,14 @@ def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     if param not in ('xo', 'drc', 'target'):
         return "parameter mus be 'xo', 'drc' or 'target'"
 
-    for setName in json_loads( send_cmd(f'get_{param}_sets') ):
+    sets = send_cmd(f'get_{param}_sets')
+    
+    try:
+        sets = json_loads( sets )
+    except:
+        return result
+
+    for setName in sets:
 
         if pattern in setName:
             result = send_cmd( f'set_{param} {setName}',
