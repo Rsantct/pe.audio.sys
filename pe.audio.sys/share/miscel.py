@@ -210,9 +210,12 @@ def wait4ports(pattern):
 
 
 # Send a command to a peaudiosys server
-def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
+def send_cmd(cmd, sender='', verbose=False, service='peaudiosys', timeout=60):
     """ send commands to a pe.audio.sys server
     """
+    # (i) socket timeout 60 because Brutefir can need some time 
+    #     in slow machines after powersave shot it down.
+
     # (i) start.py will assign 'preamp' port number this way:
     port = {'peaudiosys':   SRV_BASE_PORT,
             'preamp':       SRV_BASE_PORT + 1,
@@ -228,7 +231,7 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
     # (i) We prefer high-level socket function 'create_connection()',
     #     rather than low level 'settimeout() + connect()'
     try:
-        with socket.create_connection( (SRV_HOST, port), timeout=3 ) as s:
+        with socket.create_connection( (SRV_HOST, port), timeout=timeout ) as s:
             s.send( cmd.encode() )
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Tx: to   {service}: \'{cmd}\'{Fmt.END}' )
