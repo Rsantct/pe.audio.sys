@@ -30,6 +30,7 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 # Some nice ANSI formats for printouts
+# (KEEP THIS class AT THE VERY BEGINNING)
 class Fmt:
     """
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
@@ -112,7 +113,6 @@ class Fmt:
 # CONFIG & SERVER ADDRESSING
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
-
 try:
     SRV_HOST, SRV_BASE_PORT = CONFIG['peaudiosys_address'], \
                               CONFIG['peaudiosys_port']
@@ -211,7 +211,7 @@ def wait4ports(pattern):
 
 # Send a command to a peaudiosys server
 def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
-    """ send commands to a peaudiosys server
+    """ send commands to a pe.audio.sys server
     """
     # (i) start.py will assign 'preamp' port number this way:
     port = {'peaudiosys':   SRV_BASE_PORT,
@@ -222,11 +222,13 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
     if not sender:
         sender = 'share.miscel'
 
+    # Default answer: "no answer from ...."
+    ans = f'no answer from {SRV_HOST}:{port}'
 
-    ans = None
-    with socket.socket() as s:
-        try:
-            s.connect( (SRV_HOST, port) )
+    # (i) We prefer high-level socket function 'create_connection()',
+    #     rather than low level 'settimeout() + connect()'
+    try:
+        with socket.create_connection( (SRV_HOST, port), timeout=3 ) as s:
             s.send( cmd.encode() )
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Tx: to   {service}: \'{cmd}\'{Fmt.END}' )
@@ -239,9 +241,9 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Rx: from {service}: \'{ans}\'{Fmt.END}' )
             s.close()
-        except:
-            if verbose:
-                print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
+    except Exception as e:
+        if verbose:
+            print( f'{Fmt.RED}({sender}) {SRV_HOST}:{port} {e} {Fmt.END}' )
 
     return ans
 
