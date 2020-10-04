@@ -36,12 +36,17 @@ def run_server(host, port, verbose=False):
     """ Inside this simple server, it is called the desired PROCESSING MODULE to
         request the actual service action then will return back the action result.
     """
+    # UNDERSTANDING A SERVER:
     # https://realpython.com/python-sockets/#echo-client-and-server
     # One thing that’s imperative to understand is that we now have
     # a new socket object from accept(). This is important since
     # it’s the socket that you’ll use to communicate with the client.
     # It’s distinct from the listening socket that the server is using
     # to accept new connections
+
+    # (i) In a future, Python 3.8 will provide a higher level function
+    #     'create_server()' that can replace the below 4 commands for
+    #     srv creation. In the meanwhile, lets use the well known procedure:
 
     # Prepare the server (the 1st listening socket)
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
