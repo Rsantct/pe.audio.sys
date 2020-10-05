@@ -262,7 +262,8 @@ def mplayer_control(cmd, service):
                             'next',
                             'previous',
                             'rew',
-                            'ff'        )
+                            'ff',
+                            'eject'     )
 
     # (i) pe.audio.sys scripts redirects Mplayer stdout & stderr
     #     towards special files:
