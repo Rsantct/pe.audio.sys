@@ -217,7 +217,7 @@
     <table id="main_title" >
         <tr>
             <td id="main_lside" style="display:none">
-                <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="peaudiosys_restart()">&#9851;</button>
+                <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="peaudiosys_restart()">&#128585;</button>
             </td>
             <td id="main_cside"></td>
             <td id="main_rside">
@@ -252,13 +252,17 @@
                 <button id="url_button"
                         title = "enter an URL to be played"
                         style="text-align:center;font-size:0.7em;display:none"
-                        onclick="play_url()">&#9901;
+                        onclick="play_url()">
+                    &#9901;
                 </button>
-                <button type="button" id="track_selector" onmousedown="select_track()" >#</button>
-                <select id="inputsSelector"
+                <button type="button" id="track_selector" onmousedown="select_track()" >
+                    #
+                </button>
+                <select id="mainSelector"
                         title="Source Selector"
-                        onchange="control_cmd('input ' + this.value, update=false)"
-                        style="font-size:1.5em" ></select>
+                        onchange="main_select(this.value)"
+                        style="font-size:1.5em" >
+                </select>
             </td>
         </tr>
         <tr>
@@ -465,7 +469,7 @@
     <!-- MACRO BUTTONS can be toggled -->
     <!-- Nx3 buttons keypad for customizable user macros -->
     <div>
-      <table id="macro_buttons" style="display:none">
+      <table id="macro_buttons" style="display:inline-table">
       </table>
     </div>
 

@@ -59,14 +59,14 @@ try{
     var web_config = JSON.parse( control_cmd('aux get_web_config') );
 }catch(e){
     console.log('problems with aux get_web_config', e.name, e.message);
-    var web_config = { 'inputs_as_macros':   false,
-                       'hide_macro_buttons': false,
+    var web_config = { 'main_selector':      'inputs',
                        'hide_LU':            false,
                        'LU_monitor_enabled': false,
                        'restart_cmd_info':   '',
                        'show_graphs':        false,
                      };
 }
+var main_selector = web_config.main_selector;
 
 // SERVER SIDE COMMUNICATION
 function control_cmd( cmd ) {
@@ -110,13 +110,6 @@ function page_initiate(){
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
 
-    // Shows or hides the macro buttons
-    if ( web_config.hide_macro_buttons == true ){
-        document.getElementById("macro_buttons").style.display = 'none';
-    }else{
-        document.getElementById("macro_buttons").style.display = 'inline-table';
-    }
-
     // Shows or hides the LU offset slider and the LU monitor bar
     if ( web_config.hide_LU == true ){
         document.getElementById("LU_offset").style.display = 'none';
@@ -141,34 +134,23 @@ function page_initiate(){
 // Page STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
 
-    // Fills in the INPUTS selector
-    function fill_in_inputs_selector() {
-        // Special behavior: MACROS will be loaded inside the INPUTS SELECTOR:
-        if ( web_config.inputs_as_macros == true ){
-            document.getElementById("macros_toggle_button").style.display = 'none';
-            return
+
+    // MAIN_SELECTOR
+    function fill_in_main_selector(){
+        // standard INPUTS manager
+        if ( main_selector == 'inputs' ){
+            document.getElementById("mainSelector").title = 'Source Selector';
+            document.getElementById("macro_buttons").style.display = 'inline-table';
+            fill_in_main_as_inputs();
+
+        // alternative MACROS manager
+        }else{
+            document.getElementById("mainSelector").title = 'Macros Launcher';
+            document.getElementById("macro_buttons").style.display = 'none';
+            fill_in_main_as_macros();
         }
-        try{
-            var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
-        }catch(e){
-            console.log( e.name, e.message );
-            return;
-        }
-        // Filling in options in a selector
-        // https://www.w3schools.com/jsref/dom_obj_select.asp
-        select_clear_options(ElementId="inputsSelector");
-        const mySel = document.getElementById("inputsSelector");
-        for ( i in inputs) {
-            var option = document.createElement("option");
-            option.text = inputs[i];
-            mySel.add(option);
-        }
-        // And adds the input 'none' as expected in core.Preamp
-        // so that all inputs will be disconnected.
-        var option = document.createElement("option");
-        option.text = 'none';
-        mySel.add(option);
     }
+
     // Fills in the XO selector
     function fill_in_xo_selector() {
         try{
@@ -185,6 +167,7 @@ function fill_in_page_statics(){
             mySel.add(option);
         }
     }
+
     // Fills in the DRC selector
     function fill_in_drc_selector() {
         try{
@@ -205,6 +188,7 @@ function fill_in_page_statics(){
         option.text = 'none';
         mySel.add(option);
     }
+
     // Fills in the TARGETS selector
     function fill_in_target_selector() {
         try{
@@ -221,6 +205,7 @@ function fill_in_page_statics(){
             mySel.add(option);
         }
     }
+
     // Fills in the LU scope selector
     function fill_in_LUscope_selector() {
         try{
@@ -238,6 +223,7 @@ function fill_in_page_statics(){
             mySel.add(option);
         }
     }
+
     // Shows the PEQ info
     function show_peq_info() {
         if ( state.peq_set != 'none'){
@@ -254,11 +240,13 @@ function fill_in_page_statics(){
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        state.loudspeaker;
     // Selectors:
-    fill_in_inputs_selector();
+    fill_in_main_selector();
     fill_in_target_selector();
     fill_in_xo_selector();
     fill_in_drc_selector();
     fill_in_LUscope_selector();
+
+    // PEQ info
     show_peq_info();
 }
 
@@ -335,12 +323,12 @@ function page_update() {
     }
 
     // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
-    if ( web_config.inputs_as_macros == true ){
+    if ( main_selector == 'macros' ){
         var mName = control_cmd('aux get_last_macro');
-        document.getElementById("inputsSelector").value =
+        document.getElementById("mainSelector").value =
                             mName.slice(mName.indexOf('_') + 1, mName.length);
     }else{
-        document.getElementById("inputsSelector").value = state.input;
+        document.getElementById("mainSelector").value = state.input;
     }
     document.getElementById("xoSelector").value     = state.xo_set;
     document.getElementById("drcSelector").value    = state.drc_set;
@@ -385,14 +373,14 @@ function page_update() {
 
 //////// PREAMP FUNCTIONS ////////
 
-// INPUT selection
-function input_select(itemName){
-    // (i) The input selector can have two flavors:
+// MAIN SELECTOR
+function main_select(itemName){
+    // (i) The main selector can have two flavors:
     //      - regular input selector management
     //      - alternative macros management
 
-    // Aux for web_config.inputs_as_macros special behavior
-    function get_macroName(x){
+    // Aux for macros manager behavior
+    function find_macroName(x){
         var result = '';
         for ( i in mFnames ){
             var mFname = mFnames[i];
@@ -413,11 +401,11 @@ function input_select(itemName){
     // setTimeout( () => { control_cmd('input ' + itemName); }, 200 );
     function tmp(itemName){
         // regular behavior managing preamp inputs
-        if ( web_config.inputs_as_macros == false ){
+        if ( main_selector == 'inputs' ){
             control_cmd('input ' + itemName);
         // alternative behavior managing macros
         }else{
-            mName = get_macroName(itemName);
+            mName = find_macroName(itemName);
             control_cmd( 'aux run_macro ' + mName );
             last_macro = mName;
         }
@@ -425,7 +413,7 @@ function input_select(itemName){
     setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
 
     clear_highlighted();
-    document.getElementById('inputsSelector').style.color = "white";
+    document.getElementById('mainSelector').style.color = "white";
 }
 
 // DRC selection
@@ -589,12 +577,12 @@ function play_url() {
 
 //////// AUX FUNCTIONS ////////
 
-// Aux to clearing selector elements
+// Aux to clearing selector elements, aka options.
 function select_clear_options(ElementId){
     // https://www.w3schools.com/jsref/dom_obj_select.asp
-    const mySel = document.getElementById(ElementId);
-    for (opt in mySel.options){
-        mySel.remove(opt);
+    var mySel = document.getElementById(ElementId);
+    while (mySel.length > 0){
+        mySel.remove( mySel.length-1 );
     }
 }
 
@@ -626,32 +614,73 @@ function update_ampli_switch() {
     document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
 }
 
-// Filling in the user's macro buttons
-function fill_in_macro_buttons() {
+// MAIN SELECTOR manages inputs:
+function fill_in_main_as_inputs() {
+    // getting input names
+    try{
+        var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+        return;
+    }
+    // clearing selector options
+    select_clear_options(ElementId="mainSelector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("mainSelector");
+    for ( i in inputs) {
+        var option = document.createElement("option");
+        option.text = inputs[i];
+        mySel.add(option);
+    }
+    // And adds the input 'none' as expected in core.Preamp
+    // so that all inputs will be disconnected.
+    var option = document.createElement("option");
+    option.text = 'none';
+    mySel.add(option);
+}
 
+// MAIN SELECTOR manages macros
+function fill_in_main_as_macros() {
+    // getting macros
+    var mFnames = get_macroFnames();
+    // clearing selector options
+    select_clear_options(ElementId="mainSelector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    var mySel = document.getElementById("mainSelector");
+    for ( i in mFnames) {
+        var mFname = mFnames[i];
+        var mName  = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+        var option = document.createElement("option");
+        option.text = mName;
+        mySel.add(option);
+    }
+}
+
+// Getting macro filenames
+function get_macroFnames(){
+    var mFnames = [];
     try{
         mFnames = JSON.parse( control_cmd( 'aux get_macros' ) );
     }catch(e){
         // If error getting macros, do nothing,
         // so leaving "display:none" on the buttons keypad div
         console.log( 'error getting macros', e.name, e.message );
-        return
     }
+    return mFnames
+}
 
-    // If empty macros list, do nothing,
-    // so leaving "display:none" on the buttons keypad div
+// Filling in the user's macro buttons
+function fill_in_macro_buttons() {
+
+    mFnames = get_macroFnames();
+
+    // If empty macros list, do nothing
     if ( mFnames.length == 0 ){
-        console.log( 'empty macros array', mFnames)
+        console.log( '(i) empty macros array', mFnames)
+        document.getElementById( "macro_buttons").style.display = 'none';
         return
-    }
-
-    // Special behavior: MACROS loaded inside the INPUTS SELECTOR
-    if ( web_config.inputs_as_macros == true ){
-        fill_in_inputs_as_macros(mFnames)
-        document.getElementById("inputsSelector").title = 'Macros Launcher';
-       return
-    }else{
-        document.getElementById("inputsSelector").title = 'Source Selector';
     }
 
     // If any macro found, lets show the corresponding cell playback_control_23
@@ -715,23 +744,6 @@ function fill_in_macro_buttons() {
     }
 }
 
-// Special behavior: MACROS loaded inside the INPUTS SELECTOR
-function fill_in_inputs_as_macros(mFnames) {
-
-    select_clear_options(ElementId="inputsSelector");
-
-    const mySel = document.getElementById("inputsSelector");
-
-    for ( i in mFnames) {
-        var mFname = mFnames[i];
-        var mName  = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
-        var option = document.createElement("option");
-        option.text = mName;
-        mySel.add(option);
-    }
-
-}
-
 // Runs a macro
 function run_macro(mFname){
 
@@ -770,7 +782,7 @@ function clear_highlighted(){
     for (i = 0; i < macro_button_list.length; i++) {
         document.getElementById(macro_button_list[i]).className = 'macro_button';
     }
-    document.getElementById('inputsSelector').style.color   = "rgb(200,200,200)";
+    document.getElementById('mainSelector').style.color   = "rgb(200,200,200)";
     document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
     document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
@@ -881,10 +893,13 @@ function macros_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
     if (curMode == 'none') {
         document.getElementById( "macro_buttons").style.display = 'inline-table'
+        main_selector = 'inputs';
     }
     else {
         document.getElementById( "macro_buttons").style.display = 'none'
+        main_selector = 'macros';
     }
+    fill_in_page_statics();
 }
 
 // Displays or hides the advanced controls section

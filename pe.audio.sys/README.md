@@ -363,10 +363,9 @@ Here you are an uncommented bare example of `config.yml`:
     restart_cmd: peaudiosys_restart.sh
 
     web_config:
-        hide_macro_buttons: false
         hide_LU: false
         show_graphs: true
-        inputs_as_macros: false
+        main_selector: 'inputs'
         
 
     LU_reset_scope: album

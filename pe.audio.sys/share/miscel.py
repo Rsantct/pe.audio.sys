@@ -30,6 +30,7 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 # Some nice ANSI formats for printouts
+# (KEEP THIS class AT THE VERY BEGINNING)
 class Fmt:
     """
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
@@ -112,7 +113,6 @@ class Fmt:
 # CONFIG & SERVER ADDRESSING
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
-
 try:
     SRV_HOST, SRV_BASE_PORT = CONFIG['peaudiosys_address'], \
                               CONFIG['peaudiosys_port']
@@ -181,7 +181,14 @@ def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     if param not in ('xo', 'drc', 'target'):
         return "parameter mus be 'xo', 'drc' or 'target'"
 
-    for setName in json_loads( send_cmd(f'get_{param}_sets') ):
+    sets = send_cmd(f'get_{param}_sets')
+    
+    try:
+        sets = json_loads( sets )
+    except:
+        return result
+
+    for setName in sets:
 
         if pattern in setName:
             result = send_cmd( f'set_{param} {setName}',
@@ -210,9 +217,12 @@ def wait4ports(pattern):
 
 
 # Send a command to a peaudiosys server
-def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
-    """ send commands to a peaudiosys server
+def send_cmd(cmd, sender='', verbose=False, service='peaudiosys', timeout=60):
+    """ send commands to a pe.audio.sys server
     """
+    # (i) socket timeout 60 because Brutefir can need some time 
+    #     in slow machines after powersave shot it down.
+
     # (i) start.py will assign 'preamp' port number this way:
     port = {'peaudiosys':   SRV_BASE_PORT,
             'preamp':       SRV_BASE_PORT + 1,
@@ -222,11 +232,13 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
     if not sender:
         sender = 'share.miscel'
 
+    # Default answer: "no answer from ...."
+    ans = f'no answer from {SRV_HOST}:{port}'
 
-    ans = None
-    with socket.socket() as s:
-        try:
-            s.connect( (SRV_HOST, port) )
+    # (i) We prefer high-level socket function 'create_connection()',
+    #     rather than low level 'settimeout() + connect()'
+    try:
+        with socket.create_connection( (SRV_HOST, port), timeout=timeout ) as s:
             s.send( cmd.encode() )
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Tx: to   {service}: \'{cmd}\'{Fmt.END}' )
@@ -239,9 +251,9 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys'):
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Rx: from {service}: \'{ans}\'{Fmt.END}' )
             s.close()
-        except:
-            if verbose:
-                print( f'{Fmt.RED}({sender}) socket error on {CHOST}:{port}{Fmt.END}' )
+    except Exception as e:
+        if verbose:
+            print( f'{Fmt.RED}({sender}) {SRV_HOST}:{port} {e} {Fmt.END}' )
 
     return ans
 
