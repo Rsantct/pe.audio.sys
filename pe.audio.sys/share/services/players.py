@@ -50,12 +50,6 @@ from  players_mod.librespot         import  librespot_control,          \
 from  players_mod.spotify_desktop   import  spotify_control,            \
                                             spotify_meta
 
-# COMMAND LOG FILE
-logFname = f'{UHOME}/pe.audio.sys/.players_cmd.log'
-if exists(logFname) and getsize(logFname) > 2e6:
-    print ( f"{Fmt.RED}(preamp) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
-print ( f"{Fmt.BLUE}(preamp) logging commands in '{logFname}'{Fmt.END}" )
-
 
 ## Getting sources list
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
@@ -244,11 +238,6 @@ def do(cmd_phrase):
     cmd_phrase = cmd_phrase.strip()
     result = 'nothing done'
 
-    # cmd_phrase log
-    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-        with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
-
     # Reading command phrase:
     cmd, arg = '', ''
     chunks = cmd_phrase.split(' ')
@@ -289,12 +278,8 @@ def do(cmd_phrase):
     if type(result) != str:
         result = json.dumps(result)
 
-    # result log
-    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-        with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{result}\n')
-
     return result
+
 
 # AUTORUN init()
 init()
