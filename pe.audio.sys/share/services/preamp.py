@@ -26,7 +26,6 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """ Controls the preamp (inputs, level, tones and convolver)
-    This module is loaded by 'server.py'
 """
 
 import sys
@@ -210,5 +209,5 @@ def do( cmd_phrase ):
     if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
         with open(logFname, 'a') as FLOG:
             FLOG.write(f'{result}\n')
-        
+
     return result
