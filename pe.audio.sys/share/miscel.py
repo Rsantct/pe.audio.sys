@@ -114,8 +114,7 @@ class Fmt:
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 try:
-    SRV_HOST, SRV_BASE_PORT = CONFIG['peaudiosys_address'], \
-                              CONFIG['peaudiosys_port']
+    SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
 except:
     print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
           f'\'config.yml\'{Fmt.END}')
@@ -182,7 +181,7 @@ def set_as_pattern(param, pattern, sender='miscel', verbose=False):
         return "parameter mus be 'xo', 'drc' or 'target'"
 
     sets = send_cmd(f'get_{param}_sets')
-    
+
     try:
         sets = json_loads( sets )
     except:
@@ -217,31 +216,25 @@ def wait4ports(pattern):
 
 
 # Send a command to a peaudiosys server
-def send_cmd(cmd, sender='', verbose=False, service='peaudiosys', timeout=60):
+def send_cmd(cmd, sender='', verbose=False, timeout=60):
     """ send commands to a pe.audio.sys server
     """
-    # (i) socket timeout 60 because Brutefir can need some time 
+    # (i) socket timeout 60 because Brutefir can need some time
     #     in slow machines after powersave shot it down.
-
-    # (i) start.py will assign 'preamp' port number this way:
-    port = {'peaudiosys':   SRV_BASE_PORT,
-            'preamp':       SRV_BASE_PORT + 1,
-            'players':      SRV_BASE_PORT + 2
-            }[service]
 
     if not sender:
         sender = 'share.miscel'
 
     # Default answer: "no answer from ...."
-    ans = f'no answer from {SRV_HOST}:{port}'
+    ans = f'no answer from {SRV_HOST}:{SRV_PORT}'
 
     # (i) We prefer high-level socket function 'create_connection()',
     #     rather than low level 'settimeout() + connect()'
     try:
-        with socket.create_connection( (SRV_HOST, port), timeout=timeout ) as s:
+        with socket.create_connection( (SRV_HOST, SRV_PORT), timeout=timeout ) as s:
             s.send( cmd.encode() )
             if verbose:
-                print( f'{Fmt.BLUE}({sender}) Tx: to   {service}: \'{cmd}\'{Fmt.END}' )
+                print( f'{Fmt.BLUE}({sender}) Tx: \'{cmd}\'{Fmt.END}' )
             ans = ''
             while True:
                 tmp = s.recv(1024).decode()
@@ -249,11 +242,12 @@ def send_cmd(cmd, sender='', verbose=False, service='peaudiosys', timeout=60):
                     break
                 ans += tmp
             if verbose:
-                print( f'{Fmt.BLUE}({sender}) Rx: from {service}: \'{ans}\'{Fmt.END}' )
+                print( f'{Fmt.BLUE}({sender}) Rx: \'{ans}\'{Fmt.END}' )
             s.close()
+
     except Exception as e:
         if verbose:
-            print( f'{Fmt.RED}({sender}) {SRV_HOST}:{port} {e} {Fmt.END}' )
+            print( f'{Fmt.RED}({sender}) {SRV_HOST}:{SRV_PORT} {e} {Fmt.END}' )
 
     return ans
 
