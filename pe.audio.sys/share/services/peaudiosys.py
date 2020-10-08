@@ -316,7 +316,7 @@ def dump_aux_info():
 
 
 # Handler class to do actions when a file change occurs
-class My_files_event_handler(FileSystemEventHandler):
+class files_event_handler(FileSystemEventHandler):
     """ will do something when some file changes
     """
     def on_modified(self, event):
@@ -339,12 +339,18 @@ def init():
     #   Use recursive=True to observe also subfolders
     #  (i) Even observing recursively the CPU load is negligible
 
-    # Will observe for changes in files under $HOME.
-    observer = Observer()
-    observer.schedule(event_handler=My_files_event_handler(),
+    # Will observe for changes in files
+    observer1 = Observer()
+    observer1.schedule(event_handler=files_event_handler(),
                       path=UHOME,
-                      recursive=True)
-    observer.start()
+                      recursive=False)
+    observer1.start()
+
+    observer2 = Observer()
+    observer2.schedule(event_handler=files_event_handler(),
+                      path=MAINFOLDER,
+                      recursive=False)
+    observer2.start()
 
 
 # Interface function to plug this on server.py
