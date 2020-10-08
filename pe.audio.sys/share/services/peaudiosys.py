@@ -28,6 +28,9 @@ UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel import *
+import preamp
+import players
+
 import yaml
 import json
 from subprocess import Popen
@@ -112,18 +115,14 @@ def amp_player_manager(mode):
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    # (i) set verbose=True if you want to debug messages forwarding progress
-    return send_cmd( service='preamp', cmd=cmd,
-                     sender='peaudiosys', verbose=False )
+    return preamp.do(cmd)
 
 
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    # (i) set verbose=True if you want to debug messages forwarding progress
-    return send_cmd( service='players', cmd=cmd,
-                     sender='peaudiosys', verbose=False )
+    return players.do(cmd)
 
 
 # Main function for AUX commands processing
@@ -195,8 +194,6 @@ def process_aux( cmd, arg='' ):
         set_amp_state( result )
 
         # optionally will stop the current player
-        #if CONFIG['amp_off_stops_player']:
-        #    amp_player_manager(mode=result)
         if 'amp_off_stops_player' in CONFIG and \
            CONFIG['amp_off_stops_player'] == True:
             amp_player_manager(mode=result)
@@ -377,7 +374,7 @@ def do( cmd_phrase ):
 
     result = 'nothing done'
     cmd_phrase = cmd_phrase.strip()
-    
+
     if cmd_phrase.strip():
 
         # cmd_phrase log
