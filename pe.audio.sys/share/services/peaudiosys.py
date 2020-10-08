@@ -318,7 +318,7 @@ class My_files_event_handler(FileSystemEventHandler):
             dump_aux_info()
 
 
-# init() will be autostarted from server.py when loading this module
+# init() autostarted when loading this module
 def init():
 
     # First update
@@ -399,3 +399,6 @@ def do( cmd_phrase ):
                 FLOG.write(f'{result}\n')
 
     return result
+
+# AUTORUN init()
+init()
