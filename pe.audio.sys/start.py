@@ -174,22 +174,17 @@ def start_jackd():
         return False
 
 
-def manage_server(address='localhost', port=SRV_PORT,
-                    mode='restart', todevnull=False):
+def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
+                  todevnull=False):
 
-    if mode in ('stop', 'restart'):
+    if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}({ME}) stopping \'server.py peaudiosys\'{Fmt.END}')
         sp.Popen(f'pkill -KILL -f "server.py peaudiosys" \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
-    sleep(.25)  # this is necessary because of asyncronous stopping
-
-    if mode in ('stop'):
-        return
-
-    if mode in ('start', 'restart'):
+    elif mode == 'start':
         # Start
         print(f'{Fmt.BLUE}({ME}) starting \'server.py peaudiosys\'{Fmt.END}')
         cmd = f'python3 {MAINFOLDER}/share/server.py peaudiosys' \
@@ -200,6 +195,9 @@ def manage_server(address='localhost', port=SRV_PORT,
         else:
             sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
+    else:
+        raise Exception(f'usage: manage_server(start|stop)')
+
 
 def stop_processes(mode):
 
@@ -209,10 +207,6 @@ def stop_processes(mode):
     # Stop scripts
     if mode in ('all', 'stop', 'scripts'):
         run_scripts(mode='stop')
-
-    # Stops the server:
-    if mode in ('all', 'stop', 'server'):
-        manage_server(mode='stop')
 
     if mode in ('all', 'stop'):
         # Stop Brutefir
@@ -226,6 +220,10 @@ def stop_processes(mode):
         # Stop Jack
         print(f'({ME}) STOPPING JACKD')
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
+
+    if mode in ('all', 'stop', 'server'):
+        # Stops the server:
+        manage_server(mode='stop')
 
     sleep(1)
 
@@ -383,12 +381,12 @@ if __name__ == "__main__":
     # STOPPING
     stop_processes(mode)
 
-    # The 'peaudiosys' service always runs, so that we can do basic operation
-    manage_server( address=CONFIG['peaudiosys_address'],
-                   mode='restart', todevnull=True )
-
     if mode in ('stop', 'shutdown'):
+        print(f'({ME}) Bye!')
         sys.exit()
+
+    # The 'peaudiosys' service always runs, so that we can do basic operation
+    manage_server(mode='start')
 
     if mode in ('all'):
         # If necessary will prepare drc graphs for the web page
