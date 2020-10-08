@@ -92,8 +92,7 @@ def amp_player_manager(mode):
     if mode == 'off':
 
         # Do stop playback when switching off the amplifier
-        send_cmd( service='players', cmd='stop',
-                  sender=ME, verbose=True )
+        players.do('stop')
 
         # Special case: librespot doesn't have playback control feature
         if 'librespot.py' in CONFIG['scripts']:
@@ -168,7 +167,7 @@ def process_aux( cmd, arg='' ):
             error = True
         if not error:
             # Switching the preamp input
-            send_cmd('input istreams')
+            preamp.do('input istreams')
             return True
         else:
             return False
