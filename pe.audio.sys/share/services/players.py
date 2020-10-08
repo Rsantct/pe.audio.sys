@@ -17,7 +17,6 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """ Controls and retrieve metadata info from the current player.
-    This module is loaded by 'server.py'
 """
 
 # (i) I/O FILES MANAGED HERE:
