@@ -212,7 +212,7 @@ def player_control(cmd, arg=''):
     return result
 
 
-# init() will be autostarted from server.py when loading this module
+# init() autostarted when loading this module
 def init():
     """ This init function will:
         - Periodically store the metadata info to .player_metadata file
@@ -295,3 +295,6 @@ def do(cmd_phrase):
             FLOG.write(f'{result}\n')
 
     return result
+
+# AUTORUN init()
+init()
