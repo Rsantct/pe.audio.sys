@@ -21,8 +21,7 @@
 
     Usage:   server.py  <processing_module>  <address>  <port> [-v]
 
-    e.g:     server.py  control localhost 9999
-             server.py  aux     localhost 9998
+    e.g:     server.py  peaudiosys localhost 9990
 
     (use -v for verbose debug info printout)
 """
@@ -89,7 +88,7 @@ if __name__ == "__main__":
     else:
         verbose = False
 
-    # Adding the path where to look for importing service modules
+    # Adding the path where to look for importing the service module
     UHOME = os.path.expanduser("~")
     sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
 
