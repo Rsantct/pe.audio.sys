@@ -1,0 +1,42 @@
+#!/bin/bash
+
+SERVERPATH="$HOME"/"pe.audio.sys/share/server.py"
+
+opc=$1
+
+# Reading TCP address and port from the pe.audio.sy config file
+ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+ADDR=${ADDR//\"/}; CTL_ADDR=${ADDR//\'/}
+PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+if [[ ! $ADDR ]]; then
+    echo ERROR reading config.yml
+    exit -1
+fi
+
+
+if [[ $opv == *"-h"* ]]; then
+    echo "usage:    peaudiosys_service_restart.sh  [stop | --verbose]"
+    echo ""
+    echo "          stop        stops the server"
+    echo "          --verbose   will keep messages to console,"
+    echo "                      otherways will redirect to /dev/null"
+    exit 0
+fi
+
+
+# Killing the running service:
+pkill -KILL -f "server.py peaudiosys"
+if [[ $opc == *'stop'* ]]; then
+    exit 0
+fi
+sleep .25
+
+# Re-launching the service.
+# (i) It is IMPORTANT to redirect stdout & stderr to keep it alive even
+#     if the launcher session has been closed (e.g. a crontab job),
+#     except if -v --verbose is indicated
+if [[ $opc == *"-v"* ]]; then
+    python3 "$SERVERPATH" "peaudiosys" "$ADDR" "$PORT" -v &
+else
+    python3 "$SERVERPATH" "peaudiosys" "$ADDR" "$PORT" >/dev/null 2>&1 &
+fi
