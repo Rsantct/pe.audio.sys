@@ -110,6 +110,18 @@ def amp_player_manager(mode):
             sleep(.5)
 
 
+# LIST OF MACROS under macros/ folder (numeric sorted)
+def get_macros():
+    macro_files = []
+    with scandir( f'{MACROS_FOLDER}' ) as entries:
+        for entrie in entries:
+            fname = entrie.name
+            if fname.split('_')[0].isdigit():
+                macro_files.append(fname)
+    # (i) The web page needs a sorted list
+    return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+
+
 # Main function for PREAMP/CONVOLVER commands processing
 def process_preamp( cmd, arg='' ):
     if arg:
@@ -199,16 +211,9 @@ def process_aux( cmd, arg='' ):
 
         return result
 
-    # LIST OF MACROS under macros/ folder (numeric sorted)
+    # LIST OF MACROS
     elif cmd == 'get_macros':
-        macro_files = []
-        with scandir( f'{MACROS_FOLDER}' ) as entries:
-            for entrie in entries:
-                fname = entrie.name
-                if fname.split('_')[0].isdigit():
-                    macro_files.append(fname)
-        # (i) The web page needs a sorted list
-        result = sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+        result = get_macros()
 
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
@@ -216,12 +221,15 @@ def process_aux( cmd, arg='' ):
 
     # RUN MACRO
     elif cmd == 'run_macro':
-        print( f'({ME}) running macro: {arg}' )
-        Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
-        AUX_INFO["last_macro"] = arg
-        # This updates disk file .aux_info for others to have fresh 'last_macro'
-        dump_aux_info()
-        result = 'tried'
+        if arg in get_macros():
+            print( f'({ME}) running macro: {arg}' )
+            Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
+            AUX_INFO["last_macro"] = arg
+            # This updates disk file .aux_info for others to have fresh 'last_macro'
+            dump_aux_info()
+            result = 'tried'
+        else:
+            result = 'macro not found'
 
     # PLAYS SOMETHING
     elif cmd == 'play':
