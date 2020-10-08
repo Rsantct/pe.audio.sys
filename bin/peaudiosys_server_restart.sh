@@ -14,7 +14,7 @@ if [[ ! $ADDR ]]; then
 fi
 
 
-if [[ $opv == *"-h"* ]]; then
+if [[ $opc == *"-h"* ]]; then
     echo "usage:    peaudiosys_service_restart.sh  [stop | --verbose]"
     echo ""
     echo "          stop        stops the server"
