@@ -315,18 +315,25 @@ def dump_aux_info():
         f.write( json.dumps(AUX_INFO) )
 
 
-# Handler class to do actions when a file change occurs
+# Handler class to do actions when a file change occurs.
 class files_event_handler(FileSystemEventHandler):
-    """ will do something when some file changes
+    """ will do something when <wanted_path> file changes
     """
+    # (i) This is an inherited class from the imported one 'FileSystemEventHandler',
+    #     which provides the 'event' propiertie.
+    #     Here we expand the class with our custom parameter 'wanted_path'.
+
+    def __init__(self, wanted_path=''):
+        self.wanted_path = wanted_path
+
     def on_modified(self, event):
-        path = event.src_path
-        #print( f'({ME}) file {event.event_type}: \'{path}\'' ) # DEBUG
-        if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
+        # DEBUG
+        #print( f'({ME}) event type: {event.event_type}, file: {event.src_path}' )
+        if event.src_path == self.wanted_path:
             dump_aux_info()
 
 
-# init() autostarted when loading this module
+# auto-started when loading this module
 def init():
 
     # First update
@@ -337,19 +344,21 @@ def init():
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     #   Use recursive=True to observe also subfolders
-    #  (i) Even observing recursively the CPU load is negligible
+    #   Even observing recursively the CPU load is negligible,
+    #   but we prefer to observe to a single folder.
 
-    # Will observe for changes in files
+    # Will observe for changes in AMP_STATE_FILE under HOME folder:
     observer1 = Observer()
-    observer1.schedule(event_handler=files_event_handler(),
-                      path=UHOME,
-                      recursive=False)
+    observer1.schedule( files_event_handler(AMP_STATE_FILE),
+                        path=UHOME,
+                        recursive=False )
     observer1.start()
 
+    # Will observe for changes in LOUD_MON_VAL_FILE under MAINFOLDER folder:
     observer2 = Observer()
-    observer2.schedule(event_handler=files_event_handler(),
-                      path=MAINFOLDER,
-                      recursive=False)
+    observer1.schedule( files_event_handler(LOUD_MON_VAL_FILE),
+                        path=MAINFOLDER,
+                        recursive=False )
     observer2.start()
 
 
@@ -415,5 +424,5 @@ def do( cmd_phrase ):
     return result
 
 
-# AUTORUN init()
+# Will AUTO-START init when loading this module
 init()
