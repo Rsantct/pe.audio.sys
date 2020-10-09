@@ -88,8 +88,19 @@ If you use the script **`zita-n2j_mcast.py`**, then UDP multicast packets will b
 For a typical setting of 2 ch 44100 Hz 16 bit, the used BW is about 1.7 Mb/s over your LAN.
 
 
+## How to tune DVB-T channels
 
+    sudo apt-get install dvb-apps w-scan
+    w_scan -ft -cES -M > ~/.mplayer/channels.conf # see notes below
+    
+w_scan notes:
 
+    X = czap/tzap/xine channels.conf
+    x = "initial tuning data" for Scan
+    G = Gstreamer dvbsrc Plugin
+    k = channels.dvb for Kaffeine
+    L = VLC xspf playlist (experimental)
+    M = mplayer format, similar to X
 
-
+More info: http://linuxtv.org/wiki/index.php/W_scan
 
