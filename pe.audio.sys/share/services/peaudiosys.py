@@ -28,6 +28,9 @@ UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel import *
+import preamp
+import players
+
 import yaml
 import json
 from subprocess import Popen
@@ -89,8 +92,7 @@ def amp_player_manager(mode):
     if mode == 'off':
 
         # Do stop playback when switching off the amplifier
-        send_cmd( service='players', cmd='stop',
-                  sender=ME, verbose=True )
+        players.do('stop')
 
         # Special case: librespot doesn't have playback control feature
         if 'librespot.py' in CONFIG['scripts']:
@@ -108,22 +110,30 @@ def amp_player_manager(mode):
             sleep(.5)
 
 
+# LIST OF MACROS under macros/ folder (numeric sorted)
+def get_macros():
+    macro_files = []
+    with scandir( f'{MACROS_FOLDER}' ) as entries:
+        for entrie in entries:
+            fname = entrie.name
+            if fname.split('_')[0].isdigit():
+                macro_files.append(fname)
+    # (i) The web page needs a sorted list
+    return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+
+
 # Main function for PREAMP/CONVOLVER commands processing
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    # (i) set verbose=True if you want to debug messages forwarding progress
-    return send_cmd( service='preamp', cmd=cmd,
-                     sender='peaudiosys', verbose=False )
+    return preamp.do(cmd)
 
 
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    # (i) set verbose=True if you want to debug messages forwarding progress
-    return send_cmd( service='players', cmd=cmd,
-                     sender='peaudiosys', verbose=False )
+    return players.do(cmd)
 
 
 # Main function for AUX commands processing
@@ -169,7 +179,7 @@ def process_aux( cmd, arg='' ):
             error = True
         if not error:
             # Switching the preamp input
-            send_cmd('input istreams')
+            preamp.do('input istreams')
             return True
         else:
             return False
@@ -195,24 +205,15 @@ def process_aux( cmd, arg='' ):
         set_amp_state( result )
 
         # optionally will stop the current player
-        #if CONFIG['amp_off_stops_player']:
-        #    amp_player_manager(mode=result)
         if 'amp_off_stops_player' in CONFIG and \
            CONFIG['amp_off_stops_player'] == True:
             amp_player_manager(mode=result)
 
         return result
 
-    # LIST OF MACROS under macros/ folder (numeric sorted)
+    # LIST OF MACROS
     elif cmd == 'get_macros':
-        macro_files = []
-        with scandir( f'{MACROS_FOLDER}' ) as entries:
-            for entrie in entries:
-                fname = entrie.name
-                if fname.split('_')[0].isdigit():
-                    macro_files.append(fname)
-        # (i) The web page needs a sorted list
-        result = sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+        result = get_macros()
 
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
@@ -220,12 +221,15 @@ def process_aux( cmd, arg='' ):
 
     # RUN MACRO
     elif cmd == 'run_macro':
-        print( f'({ME}) running macro: {arg}' )
-        Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
-        AUX_INFO["last_macro"] = arg
-        # This updates disk file .aux_info for others to have fresh 'last_macro'
-        dump_aux_info()
-        result = 'tried'
+        if arg in get_macros():
+            print( f'({ME}) running macro: {arg}' )
+            Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
+            AUX_INFO["last_macro"] = arg
+            # This updates disk file .aux_info for others to have fresh 'last_macro'
+            dump_aux_info()
+            result = 'tried'
+        else:
+            result = 'macro not found'
 
     # PLAYS SOMETHING
     elif cmd == 'play':
@@ -311,18 +315,25 @@ def dump_aux_info():
         f.write( json.dumps(AUX_INFO) )
 
 
-# Handler class to do actions when a file change occurs
-class My_files_event_handler(FileSystemEventHandler):
-    """ will do something when some file changes
+# Handler class to do actions when a file change occurs.
+class files_event_handler(FileSystemEventHandler):
+    """ will do something when <wanted_path> file changes
     """
+    # (i) This is an inherited class from the imported one 'FileSystemEventHandler',
+    #     which provides the 'event' propiertie.
+    #     Here we expand the class with our custom parameter 'wanted_path'.
+
+    def __init__(self, wanted_path=''):
+        self.wanted_path = wanted_path
+
     def on_modified(self, event):
-        path = event.src_path
-        #print( f'({ME}) file {event.event_type}: \'{path}\'' ) # DEBUG
-        if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
+        # DEBUG
+        #print( f'({ME}) event type: {event.event_type}, file: {event.src_path}' )
+        if event.src_path == self.wanted_path:
             dump_aux_info()
 
 
-# init() will be autostarted from server.py when loading this module
+# auto-started when loading this module
 def init():
 
     # First update
@@ -333,14 +344,22 @@ def init():
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     #   Use recursive=True to observe also subfolders
-    #  (i) Even observing recursively the CPU load is negligible
+    #   Even observing recursively the CPU load is negligible,
+    #   but we prefer to observe to a single folder.
 
-    # Will observe for changes in files under $HOME.
-    observer = Observer()
-    observer.schedule(event_handler=My_files_event_handler(),
-                      path=UHOME,
-                      recursive=True)
-    observer.start()
+    # Will observe for changes in AMP_STATE_FILE under HOME folder:
+    observer1 = Observer()
+    observer1.schedule( files_event_handler(AMP_STATE_FILE),
+                        path=UHOME,
+                        recursive=False )
+    observer1.start()
+
+    # Will observe for changes in LOUD_MON_VAL_FILE under MAINFOLDER folder:
+    observer2 = Observer()
+    observer1.schedule( files_event_handler(LOUD_MON_VAL_FILE),
+                        path=MAINFOLDER,
+                        recursive=False )
+    observer2.start()
 
 
 # Interface function to plug this on server.py
@@ -377,7 +396,7 @@ def do( cmd_phrase ):
 
     result = 'nothing done'
     cmd_phrase = cmd_phrase.strip()
-    
+
     if cmd_phrase.strip():
 
         # cmd_phrase log
@@ -403,3 +422,7 @@ def do( cmd_phrase ):
                 FLOG.write(f'{result}\n')
 
     return result
+
+
+# Will AUTO-START init() when loading this module
+init()

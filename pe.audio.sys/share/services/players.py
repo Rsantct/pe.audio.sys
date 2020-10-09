@@ -17,7 +17,6 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """ Controls and retrieve metadata info from the current player.
-    This module is loaded by 'server.py'
 """
 
 # (i) I/O FILES MANAGED HERE:
@@ -50,12 +49,6 @@ from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
 from  players_mod.spotify_desktop   import  spotify_control,            \
                                             spotify_meta
-
-# COMMAND LOG FILE
-logFname = f'{UHOME}/pe.audio.sys/.players_cmd.log'
-if exists(logFname) and getsize(logFname) > 2e6:
-    print ( f"{Fmt.RED}(preamp) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
-print ( f"{Fmt.BLUE}(preamp) logging commands in '{logFname}'{Fmt.END}" )
 
 
 ## Getting sources list
@@ -213,7 +206,7 @@ def player_control(cmd, arg=''):
     return result
 
 
-# init() will be autostarted from server.py when loading this module
+# auto-started when loading this module
 def init():
     """ This init function will:
         - Periodically store the metadata info to .player_metadata file
@@ -244,11 +237,6 @@ def do(cmd_phrase):
 
     cmd_phrase = cmd_phrase.strip()
     result = 'nothing done'
-
-    # cmd_phrase log
-    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-        with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
 
     # Reading command phrase:
     cmd, arg = '', ''
@@ -290,9 +278,8 @@ def do(cmd_phrase):
     if type(result) != str:
         result = json.dumps(result)
 
-    # result log
-    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-        with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{result}\n')
-
     return result
+
+
+# Will AUTO-START init() when loading this module
+init()

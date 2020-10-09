@@ -26,7 +26,6 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """ Controls the preamp (inputs, level, tones and convolver)
-    This module is loaded by 'server.py'
 """
 
 import sys
@@ -43,12 +42,6 @@ from preamp_mod.core import Preamp, Convolver
 
 # pe.audio.sys CONFIG
 CONFIG  = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
-
-# COMMAND LOG FILE
-logFname = f'{UHOME}/pe.audio.sys/.preamp_cmd.log'
-if exists(logFname) and getsize(logFname) > 2e6:
-    print ( f"{Fmt.RED}(preamp) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
-print ( f"{Fmt.BLUE}(preamp) logging commands in '{logFname}'{Fmt.END}" )
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -193,11 +186,6 @@ def do( cmd_phrase ):
     cmd_phrase = cmd_phrase.strip()
     result = 'nothing done'
 
-    # cmd_phrase log
-    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-        with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
-
     result = process_commands( cmd_phrase )
 
     if type(result) != str:
@@ -206,9 +194,4 @@ def do( cmd_phrase ):
     if result != 'nothing done':
         preamp.save_state()
 
-    # result log
-    if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-        with open(logFname, 'a') as FLOG:
-            FLOG.write(f'{result}\n')
-        
     return result
