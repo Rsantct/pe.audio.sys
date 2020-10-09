@@ -206,7 +206,7 @@ def player_control(cmd, arg=''):
     return result
 
 
-# init() autostarted when loading this module
+# auto-started when loading this module
 def init():
     """ This init function will:
         - Periodically store the metadata info to .player_metadata file
@@ -281,5 +281,5 @@ def do(cmd_phrase):
     return result
 
 
-# AUTORUN init()
+# Will AUTO-START init() when loading this module
 init()
