@@ -424,5 +424,5 @@ def do( cmd_phrase ):
     return result
 
 
-# Will AUTO-START init when loading this module
+# Will AUTO-START init() when loading this module
 init()
