@@ -17,7 +17,6 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """ Controls and retrieve metadata info from the current player.
-    This module is loaded by 'server.py'
 """
 
 # (i) I/O FILES MANAGED HERE:
@@ -29,18 +28,17 @@
 # .player_state     'w'     Stores the current playback state
 #
 
-import os
+from os.path import expanduser, exists, getsize
 import sys
-UHOME = os.path.expanduser("~")
+UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(MAINFOLDER)
 
-sys.path.append(f'{MAINFOLDER}/share')
-from miscel import *
-
+from share.miscel import *
 import subprocess as sp
 import threading
 import yaml
-from time import sleep
+from time import sleep, strftime
 import json
 from socket import socket
 from  players_mod.mpd               import  mpd_control,                \
@@ -51,6 +49,7 @@ from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
 from  players_mod.spotify_desktop   import  spotify_control,            \
                                             spotify_meta
+
 
 ## Getting sources list
 with open(f'{MAINFOLDER}/config.yml', 'r') as f:
@@ -207,7 +206,7 @@ def player_control(cmd, arg=''):
     return result
 
 
-# init() will be autostarted from server.py when loading this module
+# auto-started when loading this module
 def init():
     """ This init function will:
         - Periodically store the metadata info to .player_metadata file
@@ -236,11 +235,12 @@ def do(cmd_phrase):
         - out:  a string result (dicts are json dumped)
     """
 
+    cmd_phrase = cmd_phrase.strip()
     result = 'nothing done'
 
     # Reading command phrase:
     cmd, arg = '', ''
-    chunks = cmd_phrase.strip().split(' ')
+    chunks = cmd_phrase.split(' ')
     cmd = chunks[0]
     if chunks[1:]:
         # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
@@ -279,3 +279,7 @@ def do(cmd_phrase):
         result = json.dumps(result)
 
     return result
+
+
+# Will AUTO-START init() when loading this module
+init()

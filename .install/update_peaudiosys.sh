@@ -171,9 +171,9 @@ chmod +x    bin/peaudiosys*                         >/dev/null 2>&1
 ########################################################################
 # Prepare miscel files
 ########################################################################
-mkfifo pe.audio.sys/cdda_fifo               >/dev/null 2>&1
-mkfifo pe.audio.sys/dvb_fifo                >/dev/null 2>&1
-mkfifo pe.audio.sys/istreams_fifo           >/dev/null 2>&1
+mkfifo pe.audio.sys/.cdda_fifo               >/dev/null 2>&1
+mkfifo pe.audio.sys/.dvb_fifo                >/dev/null 2>&1
+mkfifo pe.audio.sys/.istreams_fifo           >/dev/null 2>&1
 touch pe.audio.sys/.cdda_events
 touch pe.audio.sys/.dvb_events
 touch pe.audio.sys/.istreams_events

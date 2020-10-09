@@ -124,7 +124,7 @@ on_change_input:
 # (i)
 #     - If capture_ports here are named 'xxxxloop', then the preamp will
 #       automagically spawn them for the sources can connect into. Obviously the
-#       sources must be configured accordingly.
+#       sources must be configured accordingly. This applies for MPD and ALSA players.
 #
 #     - xo, drc fields are optional, you may want minimum phase FIRs for video.
 #
@@ -137,19 +137,24 @@ on_change_input:
 sources:
 
     spotify:
-        capture_port:   alsa_loop
+        capture_port:   alsa_loop           # (i) same in ALSA players's config
         gain:           0.0
         xo:             
 
     mpd:
-        capture_port:   mpd_loop
+        capture_port:   mpd_loop            # (i) same in ~/.mpdconf
         gain:           0.0
         xo:             
 
     istreams:
-        capture_port:   mplayer_istreams
+        capture_port:   mplayer_istreams    # (i) same in ~/.mplayer/config
         gain:           0.0
-        xo:             
+        xo:
+    
+    dvb:
+        capture_port:   mplayer_dvb         # (i) same in ~/.mplayer/config
+        gain:           0.0
+        xo:
     
     tv:
         capture_port:   system
@@ -161,7 +166,7 @@ sources:
         capture_port:   zita-n2j
         gain:           0.0
         xo:             
-        address:        192.168.1.234
+        address:        localhost
 
 
 # ========================== SOURCE MONITOR PORTS ==============================
@@ -219,7 +224,7 @@ scripts:
     ## A LAN multicast audio receiver
     #- zita-n2j_mcast.py
     
-    ## A LAN multicast audio sender
+    ## A LAN multicast audio sender (network BW ~ 1.7 Mb/s 2ch 44100 16bit)
     #- zita-j2n_mcast.py
     
     ## A Spotify Desktop monitor
@@ -260,14 +265,12 @@ restart_cmd: ~/pe.audio.sys/start.py all
 
 # Control web page behavior
 web_config:
-    # hide macro buttons at web startup
-    hide_macro_buttons: false
     # hide the LU offset slider and the LU monitor bar
     hide_LU: false
     # display EQ and DRC graphs
     show_graphs: true
-    # the input selector can become a macros manager:
-    inputs_as_macros: false
+    # the main selector can manage 'inputs' or 'macros':
+    main_selector: 'inputs'
 
 
 # The scope ('input', 'album' or 'track') to trigger to reset the measured LU
@@ -279,5 +282,3 @@ powersave:              false
 powersave_noise_floor: -70
 powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
 
-# Spotify client, playlists file path:
-spotify_playlists_file: spotify_plists.yml

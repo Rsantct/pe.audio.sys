@@ -21,16 +21,20 @@
     This module is loaded by 'server.py'
 """
 
-import os
+from os import scandir
+from os.path import expanduser, exists, getsize
 import sys
-UHOME       = os.path.expanduser("~")
+UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel import *
+import preamp
+import players
+
 import yaml
 import json
 from subprocess import Popen
-from time import sleep
+from time import sleep, strftime
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
 from watchdog.events    import FileSystemEventHandler
@@ -49,15 +53,23 @@ AUX_INFO = {    'amp':              'off',
                 'web_config':       {}
             }
 
+
+# COMMAND LOG FILE
+logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
+if exists(logFname) and getsize(logFname) > 2e6:
+    print ( f"{Fmt.RED}(peaudiosys) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
+print ( f"{Fmt.BLUE}(peaudiosys) logging commands in '{logFname}'{Fmt.END}" )
+
+
 # Read the amplifier state file, if it exists:
 def get_amp_state():
-    curr_sta = '-'
+    curr_sta = 'off'
     try:
         with open( f'{AMP_STATE_FILE}', 'r') as f:
             curr_sta =  f.read().strip()
     except:
         pass
-    if curr_sta.lower() in ('0', 'off'):
+    if not curr_sta or curr_sta.lower() in ('0', 'off'):
         curr_sta = 'off'
     elif curr_sta.lower() in ('1', 'on'):
         curr_sta = 'on'
@@ -80,8 +92,7 @@ def amp_player_manager(mode):
     if mode == 'off':
 
         # Do stop playback when switching off the amplifier
-        send_cmd( service='players', cmd='stop',
-                  sender=ME, verbose=True )
+        players.do('stop')
 
         # Special case: librespot doesn't have playback control feature
         if 'librespot.py' in CONFIG['scripts']:
@@ -99,22 +110,30 @@ def amp_player_manager(mode):
             sleep(.5)
 
 
+# LIST OF MACROS under macros/ folder (numeric sorted)
+def get_macros():
+    macro_files = []
+    with scandir( f'{MACROS_FOLDER}' ) as entries:
+        for entrie in entries:
+            fname = entrie.name
+            if fname.split('_')[0].isdigit():
+                macro_files.append(fname)
+    # (i) The web page needs a sorted list
+    return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+
+
 # Main function for PREAMP/CONVOLVER commands processing
 def process_preamp( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    # (i) set verbose=True if you want to debug messages forwarding progress
-    return send_cmd( service='preamp', cmd=cmd,
-                     sender='peaudiosys', verbose=False )
+    return preamp.do(cmd)
 
 
 # Main function for PLAYERS commands processing
 def process_players( cmd, arg='' ):
     if arg:
         cmd  = ' '.join( (cmd, arg) )
-    # (i) set verbose=True if you want to debug messages forwarding progress
-    return send_cmd( service='players', cmd=cmd,
-                     sender='peaudiosys', verbose=False )
+    return players.do(cmd)
 
 
 # Main function for AUX commands processing
@@ -133,12 +152,12 @@ def process_aux( cmd, arg='' ):
         wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
                                                   in CONFIG['scripts'] else False
 
-        # Special behavior for inputs selector as macros manager
-        if not 'inputs_as_macros' in wconfig:
-            wconfig["inputs_as_macros"] = False
+        # main selector manages inputs or macros
+        if not 'main_selector' in wconfig:
+            wconfig["main_selector"] = 'inputs';
         else:
-            if wconfig["inputs_as_macros"] != True:
-                wconfig["inputs_as_macros"] = False
+            if wconfig["main_selector"] not in ('inputs', 'macros'):
+                wconfig["main_selector"] = 'inputs'
 
         return wconfig
 
@@ -160,14 +179,14 @@ def process_aux( cmd, arg='' ):
             error = True
         if not error:
             # Switching the preamp input
-            send_cmd('input istreams')
+            preamp.do('input istreams')
             return True
         else:
             return False
 
 
     # BEGIN of process_aux
-    result = ''
+    result = 'bad command'
 
     # AMPLIFIER SWITCHING
     if cmd == 'amp_switch':
@@ -186,21 +205,15 @@ def process_aux( cmd, arg='' ):
         set_amp_state( result )
 
         # optionally will stop the current player
-        if CONFIG['amp_off_stops_player']:
+        if 'amp_off_stops_player' in CONFIG and \
+           CONFIG['amp_off_stops_player'] == True:
             amp_player_manager(mode=result)
 
         return result
 
-    # LIST OF MACROS under macros/ folder
+    # LIST OF MACROS
     elif cmd == 'get_macros':
-        macro_files = []
-        with os.scandir( f'{MACROS_FOLDER}' ) as entries:
-            for entrie in entries:
-                fname = entrie.name
-                if fname.split('_')[0].isdigit():
-                    macro_files.append(fname)
-        # (i) The web page needs a sorted list
-        result = sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+        result = get_macros()
 
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
@@ -208,12 +221,15 @@ def process_aux( cmd, arg='' ):
 
     # RUN MACRO
     elif cmd == 'run_macro':
-        print( f'({ME}) running macro: {arg}' )
-        Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
-        AUX_INFO["last_macro"] = arg
-        # This updates disk file .aux_info for others to have fresh 'last_macro'
-        dump_aux_info()
-        result = 'tried'
+        if arg in get_macros():
+            print( f'({ME}) running macro: {arg}' )
+            Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
+            AUX_INFO["last_macro"] = arg
+            # This updates disk file .aux_info for others to have fresh 'last_macro'
+            dump_aux_info()
+            result = 'tried'
+        else:
+            result = 'macro not found'
 
     # PLAYS SOMETHING
     elif cmd == 'play':
@@ -299,18 +315,25 @@ def dump_aux_info():
         f.write( json.dumps(AUX_INFO) )
 
 
-# Handler class to do actions when a file change occurs
-class My_files_event_handler(FileSystemEventHandler):
-    """ will do something when some file changes
+# Handler class to do actions when a file change occurs.
+class files_event_handler(FileSystemEventHandler):
+    """ will do something when <wanted_path> file changes
     """
+    # (i) This is an inherited class from the imported one 'FileSystemEventHandler',
+    #     which provides the 'event' propiertie.
+    #     Here we expand the class with our custom parameter 'wanted_path'.
+
+    def __init__(self, wanted_path=''):
+        self.wanted_path = wanted_path
+
     def on_modified(self, event):
-        path = event.src_path
-        #print( f'({ME}) file {event.event_type}: \'{path}\'' ) # DEBUG
-        if path in (AMP_STATE_FILE, LOUD_MON_VAL_FILE):
+        # DEBUG
+        #print( f'({ME}) event type: {event.event_type}, file: {event.src_path}' )
+        if event.src_path == self.wanted_path:
             dump_aux_info()
 
 
-# init() will be autostarted from server.py when loading this module
+# auto-started when loading this module
 def init():
 
     # First update
@@ -321,20 +344,28 @@ def init():
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     #   Use recursive=True to observe also subfolders
-    #  (i) Even observing recursively the CPU load is negligible
+    #   Even observing recursively the CPU load is negligible,
+    #   but we prefer to observe to a single folder.
 
-    # Will observe for changes in files under $HOME.
-    observer = Observer()
-    observer.schedule(event_handler=My_files_event_handler(),
-                      path=UHOME,
-                      recursive=True)
-    observer.start()
+    # Will observe for changes in AMP_STATE_FILE under HOME folder:
+    observer1 = Observer()
+    observer1.schedule( files_event_handler(AMP_STATE_FILE),
+                        path=UHOME,
+                        recursive=False )
+    observer1.start()
+
+    # Will observe for changes in LOUD_MON_VAL_FILE under MAINFOLDER folder:
+    observer2 = Observer()
+    observer1.schedule( files_event_handler(LOUD_MON_VAL_FILE),
+                        path=MAINFOLDER,
+                        recursive=False )
+    observer2.start()
 
 
 # Interface function to plug this on server.py
-def do( command_phrase ):
+def do( cmd_phrase ):
 
-    def read_command_phrase(command_phrase):
+    def read_cmd_phrase(cmd_phrase):
 
         # (i) command phrase SYNTAX must start with an appropriate prefix:
         #           preamp  command  arg1 ...
@@ -345,8 +376,8 @@ def do( command_phrase ):
         pfx, cmd, arg = '', '', ''
 
         # This is to avoid empty values when there are more
-        # than on space as delimiter inside the command_phrase:
-        chunks = [x for x in command_phrase.split(' ') if x]
+        # than on space as delimiter inside the cmd_phrase:
+        chunks = [x for x in cmd_phrase.split(' ') if x]
 
         # If not prefix, will treat as a preamp command kind of
         if not chunks[0] in ('preamp', 'player', 'aux'):
@@ -356,7 +387,7 @@ def do( command_phrase ):
         if chunks[1:]:
             cmd = chunks[1]
         else:
-            raise Exception(f'({ME}) BAD command: {command_phrase}')
+            raise Exception(f'({ME}) BAD command: {cmd_phrase}')
         if chunks[2:]:
             # allows spaces inside the arg part, e.g. 'run_macro 2_Radio Clasica'
             arg = ' '.join( chunks[2:] )
@@ -364,9 +395,16 @@ def do( command_phrase ):
         return pfx, cmd, arg
 
     result = 'nothing done'
+    cmd_phrase = cmd_phrase.strip()
 
-    if command_phrase.strip():
-        pfx, cmd, arg = read_command_phrase( command_phrase.strip() )
+    if cmd_phrase.strip():
+
+        # cmd_phrase log
+        if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
+            with open(logFname, 'a') as FLOG:
+                FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
+
+        pfx, cmd, arg = read_cmd_phrase( cmd_phrase )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
         if cmd == 'help':
             Popen( f'cat {MAINFOLDER}/doc/peaudiosys.hlp', shell=True)
@@ -378,4 +416,13 @@ def do( command_phrase ):
         if type(result) != str:
             result = json.dumps(result)
 
+        # result log
+        if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
+            with open(logFname, 'a') as FLOG:
+                FLOG.write(f'{result}\n')
+
     return result
+
+
+# Will AUTO-START init() when loading this module
+init()

@@ -9,6 +9,9 @@
         sound cards of the systems using it
 
     usage:    zita-j2n_mcast.py   start | stop
+    
+    NOTICE: 2 ch 44100 Hz 16 bit will use about ~ 1.7 Mb/s network bandwidth
+            (UDP packets)
 
 """
 import sys

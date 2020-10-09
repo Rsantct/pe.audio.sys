@@ -21,8 +21,7 @@
 
     Usage:   server.py  <processing_module>  <address>  <port> [-v]
 
-    e.g:     server.py  control localhost 9999
-             server.py  aux     localhost 9998
+    e.g:     server.py  peaudiosys localhost 9990
 
     (use -v for verbose debug info printout)
 """
@@ -36,12 +35,17 @@ def run_server(host, port, verbose=False):
     """ Inside this simple server, it is called the desired PROCESSING MODULE to
         request the actual service action then will return back the action result.
     """
+    # UNDERSTANDING A SERVER:
     # https://realpython.com/python-sockets/#echo-client-and-server
     # One thing that’s imperative to understand is that we now have
     # a new socket object from accept(). This is important since
     # it’s the socket that you’ll use to communicate with the client.
     # It’s distinct from the listening socket that the server is using
     # to accept new connections
+
+    # (i) In a future, Python 3.8 will provide a higher level function
+    #     'create_server()' that can replace the below 4 commands for
+    #     srv creation. In the meanwhile, lets use the well known procedure:
 
     # Prepare the server (the 1st listening socket)
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -84,7 +88,7 @@ if __name__ == "__main__":
     else:
         verbose = False
 
-    # Adding the path where to look for importing service modules
+    # Adding the path where to look for importing the service module
     UHOME = os.path.expanduser("~")
     sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
 
@@ -92,11 +96,6 @@ if __name__ == "__main__":
     # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
     MODULE = __import__(service)
     print( f'(server.py) will run \'{service}\' module at {addr}:{port} ...' )
-    # Optional MODULE.init (autostart) function:
-    try:
-        MODULE.init()
-    except:
-        pass
 
     # Runing the server with the MODULE.do() interface
     run_server( host=addr, port=int(port), verbose=verbose )

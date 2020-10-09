@@ -262,18 +262,27 @@ def mplayer_control(cmd, service):
                             'next',
                             'previous',
                             'rew',
-                            'ff'        )
+                            'ff',
+                            'eject'     )
 
-    # (i) Mplayer sends its responses to the terminal where Mplayer
-    #     was launched, or to a redirected file.
+    # (i) pe.audio.sys scripts redirects Mplayer stdout & stderr
+    #     towards special files:
+    #       ~/pe.audio.sys/.<service>_events
+    #     so that will capture there the Mplayer's answers when
+    #     a Mplayer command has been issued.
     #     Available commands: http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
     status = playing_status()
 
-    # Early return if no action commands or not supported command:
-    if cmd == 'state' or cmd not in supported_commands:
+    # Early return if SLAVE GETTING INFO commands:
+    if cmd.startswith('get_'):
+        send_cmd( cmd, service )
+        return status
+    # Early return if STATE or NOT SUPPORTED command:
+    elif cmd == 'state'or cmd not in supported_commands:
         return status
 
+    # Special command EJECT
     if cmd == 'eject':
         Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
@@ -283,7 +292,7 @@ def mplayer_control(cmd, service):
         send_cmd('stop', service)
         return playing_status()
 
-    # Action commands i.e. playback control
+    # Processing ACTION commands (playback control)
     if service == 'istreams':
 
         # useful when playing a mp3 stream (e.g. a podcast url)
@@ -427,11 +436,9 @@ def mplayer_meta(md, service):
     with open(mplayer_redirection_path, 'r') as file:
         try:
             # get last 4 lines plus the empty one when splitting
-            tmp = file.read().split('\n')[-5:]
+            tmp = file.read().replace('\x00', '').split('\n')[-5:]
         except:
             tmp = []
-
-    #print('DEBUG\n', tmp)
 
     # Flushing the Mplayer output file to avoid continue growing:
     with open(mplayer_redirection_path, 'w') as file:
