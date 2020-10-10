@@ -21,10 +21,9 @@
     This module is loaded by 'server.py'
 """
 
-from os import scandir
-from os.path import expanduser, exists, getsize
+import os
 import sys
-UHOME = expanduser("~")
+UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel import *
@@ -56,7 +55,7 @@ AUX_INFO = {    'amp':              'off',
 
 # COMMAND LOG FILE
 logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
-if exists(logFname) and getsize(logFname) > 2e6:
+if os.path.exists(logFname) and os.path.getsize(logFname) > 2e6:
     print ( f"{Fmt.RED}(peaudiosys) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
 print ( f"{Fmt.BLUE}(peaudiosys) logging commands in '{logFname}'{Fmt.END}" )
 
@@ -111,15 +110,31 @@ def amp_player_manager(mode):
 
 
 # LIST OF MACROS under macros/ folder (numeric sorted)
-def get_macros():
+def get_macros(only_web_macros=True):
+
     macro_files = []
-    with scandir( f'{MACROS_FOLDER}' ) as entries:
+
+    with os.scandir( f'{MACROS_FOLDER}' ) as entries:
+
         for entrie in entries:
             fname = entrie.name
-            if fname.split('_')[0].isdigit():
-                macro_files.append(fname)
+
+            # Only executables files
+            if os.path.isfile(f'{MACROS_FOLDER}/{fname}') and \
+               os.access(f'{MACROS_FOLDER}/{fname}', os.X_OK):
+
+                # Web macros are the ones named NN_xxxxxx
+                if only_web_macros:
+                    if fname.split('_')[0].isdigit():
+                        macro_files.append(fname)
+                else:
+                    macro_files.append(fname)
+
     # (i) The web page needs a sorted list
-    return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+    if only_web_macros:
+        return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+    else:
+        return sorted(macro_files)
 
 
 # Main function for PREAMP/CONVOLVER commands processing
@@ -213,7 +228,11 @@ def process_aux( cmd, arg='' ):
 
     # LIST OF MACROS
     elif cmd == 'get_macros':
-        result = get_macros()
+        if arg == 'web':
+            only_web = True
+        else:
+            only_web = False
+        result = get_macros(only_web)
 
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
@@ -221,7 +240,7 @@ def process_aux( cmd, arg='' ):
 
     # RUN MACRO
     elif cmd == 'run_macro':
-        if arg in get_macros():
+        if arg in get_macros(only_web_macros=False):
             print( f'({ME}) running macro: {arg}' )
             Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
             AUX_INFO["last_macro"] = arg
@@ -309,7 +328,7 @@ def process_aux( cmd, arg='' ):
 def dump_aux_info():
     AUX_INFO['amp'] =               process_aux('amp_switch', 'state')
     AUX_INFO['loudness_monitor'] =  process_aux('get_loudness_monitor')
-    AUX_INFO['user_macros'] =       process_aux('get_macros')
+    AUX_INFO['user_macros'] =       process_aux('get_macros', 'web')
     AUX_INFO['web_config'] =        process_aux('get_web_config')
     with open(f'{MAINFOLDER}/.aux_info', 'w') as f:
         f.write( json.dumps(AUX_INFO) )
