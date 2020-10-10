@@ -662,7 +662,7 @@ function fill_in_main_as_macros() {
 function get_macroFnames(){
     var mFnames = [];
     try{
-        mFnames = JSON.parse( control_cmd( 'aux get_macros' ) );
+        mFnames = JSON.parse( control_cmd( 'aux get_macros web' ) );
     }catch(e){
         // If error getting macros, do nothing,
         // so leaving "display:none" on the buttons keypad div
