@@ -45,13 +45,6 @@ LOUD_MON_VAL_FILE   = f'{MAINFOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
 STATE_FILE          = f'{MAINFOLDER}/.state.yml'
 
-AUX_INFO = {    'amp':              'off',
-                'loudness_monitor': 0.0,
-                'user_macros':      [],
-                'last_macro':       '-',    # cannot be empty
-                'web_config':       {}
-            }
-
 
 # COMMAND LOG FILE
 logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
@@ -109,9 +102,11 @@ def amp_player_manager(mode):
             sleep(.5)
 
 
-# LIST OF MACROS under macros/ folder (numeric sorted)
-def get_macros(only_web_macros=True):
-
+# LIST OF MACROS under macros/ folder
+def get_macros(only_web_macros=False):
+    """ Return the list of executable files under macros folder,
+        optionally can be restricted to web macros NN_xxxxxx then numeric sorted
+    """
     macro_files = []
 
     with os.scandir( f'{MACROS_FOLDER}' ) as entries:
@@ -326,10 +321,10 @@ def process_aux( cmd, arg='' ):
 
 # Dumps pe.audio.sys/.aux_info
 def dump_aux_info():
+    # Dynamic updates
     AUX_INFO['amp'] =               process_aux('amp_switch', 'state')
     AUX_INFO['loudness_monitor'] =  process_aux('get_loudness_monitor')
-    AUX_INFO['user_macros'] =       process_aux('get_macros', 'web')
-    AUX_INFO['web_config'] =        process_aux('get_web_config')
+    # Dumping to disk
     with open(f'{MAINFOLDER}/.aux_info', 'w') as f:
         f.write( json.dumps(AUX_INFO) )
 
@@ -354,6 +349,15 @@ class files_event_handler(FileSystemEventHandler):
 
 # auto-started when loading this module
 def init():
+
+    global AUX_INFO
+
+    AUX_INFO = {    'amp':                  'off',
+                    'loudness_monitor':     0.0,
+                    'web_config':           process_aux('get_web_config'),
+                    'user_macros':          process_aux('get_macros', 'web'),
+                    'last_macro':           '-'  # cannot be empty
+                }
 
     # First update
     dump_aux_info()
