@@ -305,6 +305,10 @@ def process_aux( cmd, arg='' ):
     elif cmd == 'get_web_config':
         result = get_web_config()
 
+    # Get the AUX_INFO dict
+    elif cmd == 'get_aux_info' or cmd == 'state':
+        return AUX_INFO
+
     # Add outputs delay, can be useful for multiroom listening
     elif cmd == 'add_delay':
         print(f'({ME}) ordering adding {arg} ms of delay.')
