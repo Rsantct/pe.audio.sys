@@ -104,8 +104,8 @@ def amp_player_manager(mode):
 
 # LIST OF MACROS under macros/ folder
 def get_macros(only_web_macros=False):
-    """ Return the list of executable files under macros folder,
-        optionally can be restricted to web macros NN_xxxxxx then numeric sorted
+    """ Return the list of executable files under macros folder. The list
+        can be restricted to web macros NN_xxxxxx, then numeric sorted.
     """
     macro_files = []
 
@@ -125,11 +125,13 @@ def get_macros(only_web_macros=False):
                 else:
                     macro_files.append(fname)
 
-    # (i) The web page needs a sorted list
+    macro_files.sort()
+
+    # (i) The web page needs a sorted list (numeric sorting only if NN_xxxxxx items)
     if only_web_macros:
-        return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
-    else:
-        return sorted(macro_files)
+        macro_files.sort( key=lambda x: int(x.split('_')[0]) )
+
+    return macro_files
 
 
 # Main function for PREAMP/CONVOLVER commands processing
@@ -151,26 +153,6 @@ def process_aux( cmd, arg='' ):
     """ input:  a tuple (prefix, command, arg)
         output: a result string
     """
-
-    # Aux to provide the static web configuration options:
-    def get_web_config():
-
-        wconfig = CONFIG['web_config']
-
-        # Complete some additional info
-        wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
-        wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
-                                                  in CONFIG['scripts'] else False
-
-        # main selector manages inputs or macros
-        if not 'main_selector' in wconfig:
-            wconfig["main_selector"] = 'inputs';
-        else:
-            if wconfig["main_selector"] not in ('inputs', 'macros'):
-                wconfig["main_selector"] = 'inputs'
-
-        return wconfig
-
 
     # Aux for playing an url stream
     def play_istream(url):
@@ -223,11 +205,7 @@ def process_aux( cmd, arg='' ):
 
     # LIST OF MACROS
     elif cmd == 'get_macros':
-        if arg == 'web':
-            only_web = True
-        else:
-            only_web = False
-        result = get_macros(only_web)
+        result = get_macros()
 
     # LAST EXECUTED MACRO
     elif cmd == 'get_last_macro':
@@ -235,7 +213,7 @@ def process_aux( cmd, arg='' ):
 
     # RUN MACRO
     elif cmd == 'run_macro':
-        if arg in get_macros(only_web_macros=False):
+        if arg in get_macros():
             print( f'({ME}) running macro: {arg}' )
             Popen( f'"{MACROS_FOLDER}/{arg}"', shell=True)
             AUX_INFO["last_macro"] = arg
@@ -301,12 +279,8 @@ def process_aux( cmd, arg='' ):
         except:
             print( f'({ME}) Problems running \'{restart_cmd}\'' )
 
-    # Get the WEB.CONFIG dictionary
-    elif cmd == 'get_web_config':
-        result = get_web_config()
-
     # Get the AUX_INFO dict
-    elif cmd == 'get_aux_info' or cmd == 'state':
+    elif cmd == 'get_aux_info' or cmd == 'info':
         return AUX_INFO
 
     # Add outputs delay, can be useful for multiroom listening
@@ -356,12 +330,36 @@ def init():
 
     global AUX_INFO
 
+
+    # Static web configuration options:
+    def get_web_config():
+
+        wconfig = CONFIG['web_config']
+
+        # Macros used by the web page
+        wconfig['user_macros'] = get_macros(only_web_macros=True)
+
+        # Main selector manages inputs or macros
+        if not 'main_selector' in wconfig:
+            wconfig['main_selector'] = 'inputs';
+        else:
+            if wconfig['main_selector'] not in ('inputs', 'macros'):
+                wconfig['main_selector'] = 'inputs'
+
+        # Complete some additional info
+        wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
+        wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
+                                                  in CONFIG['scripts'] else False
+
+        return wconfig
+
+
     AUX_INFO = {    'amp':                  'off',
                     'loudness_monitor':     0.0,
-                    'web_config':           process_aux('get_web_config'),
-                    'user_macros':          process_aux('get_macros', 'web'),
+                    'web_config':           get_web_config(),
                     'last_macro':           '-'  # cannot be empty
                 }
+
 
     # First update
     dump_aux_info()
