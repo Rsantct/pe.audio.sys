@@ -21,10 +21,9 @@
     This module is loaded by 'server.py'
 """
 
-from os import scandir
-from os.path import expanduser, exists, getsize
+import os
 import sys
-UHOME = expanduser("~")
+UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel import *
@@ -46,17 +45,10 @@ LOUD_MON_VAL_FILE   = f'{MAINFOLDER}/.loudness_monitor'
 AMP_STATE_FILE      = f'{UHOME}/.amplifier'
 STATE_FILE          = f'{MAINFOLDER}/.state.yml'
 
-AUX_INFO = {    'amp':              'off',
-                'loudness_monitor': 0.0,
-                'user_macros':      [],
-                'last_macro':       '-',    # cannot be empty
-                'web_config':       {}
-            }
-
 
 # COMMAND LOG FILE
 logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
-if exists(logFname) and getsize(logFname) > 2e6:
+if os.path.exists(logFname) and os.path.getsize(logFname) > 2e6:
     print ( f"{Fmt.RED}(peaudiosys) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
 print ( f"{Fmt.BLUE}(peaudiosys) logging commands in '{logFname}'{Fmt.END}" )
 
@@ -110,16 +102,36 @@ def amp_player_manager(mode):
             sleep(.5)
 
 
-# LIST OF MACROS under macros/ folder (numeric sorted)
-def get_macros():
+# LIST OF MACROS under macros/ folder
+def get_macros(only_web_macros=False):
+    """ Return the list of executable files under macros folder. The list
+        can be restricted to web macros NN_xxxxxx, then numeric sorted.
+    """
     macro_files = []
-    with scandir( f'{MACROS_FOLDER}' ) as entries:
+
+    with os.scandir( f'{MACROS_FOLDER}' ) as entries:
+
         for entrie in entries:
             fname = entrie.name
-            if fname.split('_')[0].isdigit():
-                macro_files.append(fname)
-    # (i) The web page needs a sorted list
-    return sorted(macro_files, key=lambda x: int(x.split('_')[0]))
+
+            # Only executables files
+            if os.path.isfile(f'{MACROS_FOLDER}/{fname}') and \
+               os.access(f'{MACROS_FOLDER}/{fname}', os.X_OK):
+
+                # Web macros are the ones named NN_xxxxxx
+                if only_web_macros:
+                    if fname.split('_')[0].isdigit():
+                        macro_files.append(fname)
+                else:
+                    macro_files.append(fname)
+
+    macro_files.sort()
+
+    # (i) The web page needs a sorted list (numeric sorting only if NN_xxxxxx items)
+    if only_web_macros:
+        macro_files.sort( key=lambda x: int(x.split('_')[0]) )
+
+    return macro_files
 
 
 # Main function for PREAMP/CONVOLVER commands processing
@@ -141,26 +153,6 @@ def process_aux( cmd, arg='' ):
     """ input:  a tuple (prefix, command, arg)
         output: a result string
     """
-
-    # Aux to provide the static web configuration options:
-    def get_web_config():
-
-        wconfig = CONFIG['web_config']
-
-        # Complete some additional info
-        wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
-        wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
-                                                  in CONFIG['scripts'] else False
-
-        # main selector manages inputs or macros
-        if not 'main_selector' in wconfig:
-            wconfig["main_selector"] = 'inputs';
-        else:
-            if wconfig["main_selector"] not in ('inputs', 'macros'):
-                wconfig["main_selector"] = 'inputs'
-
-        return wconfig
-
 
     # Aux for playing an url stream
     def play_istream(url):
@@ -287,9 +279,9 @@ def process_aux( cmd, arg='' ):
         except:
             print( f'({ME}) Problems running \'{restart_cmd}\'' )
 
-    # Get the WEB.CONFIG dictionary
-    elif cmd == 'get_web_config':
-        result = get_web_config()
+    # Get the AUX_INFO dict
+    elif cmd == 'get_aux_info' or cmd == 'info':
+        return AUX_INFO
 
     # Add outputs delay, can be useful for multiroom listening
     elif cmd == 'add_delay':
@@ -307,10 +299,10 @@ def process_aux( cmd, arg='' ):
 
 # Dumps pe.audio.sys/.aux_info
 def dump_aux_info():
+    # Dynamic updates
     AUX_INFO['amp'] =               process_aux('amp_switch', 'state')
     AUX_INFO['loudness_monitor'] =  process_aux('get_loudness_monitor')
-    AUX_INFO['user_macros'] =       process_aux('get_macros')
-    AUX_INFO['web_config'] =        process_aux('get_web_config')
+    # Dumping to disk
     with open(f'{MAINFOLDER}/.aux_info', 'w') as f:
         f.write( json.dumps(AUX_INFO) )
 
@@ -335,6 +327,39 @@ class files_event_handler(FileSystemEventHandler):
 
 # auto-started when loading this module
 def init():
+
+    global AUX_INFO
+
+
+    # Static web configuration options:
+    def get_web_config():
+
+        wconfig = CONFIG['web_config']
+
+        # Macros used by the web page
+        wconfig['user_macros'] = get_macros(only_web_macros=True)
+
+        # Main selector manages inputs or macros
+        if not 'main_selector' in wconfig:
+            wconfig['main_selector'] = 'inputs';
+        else:
+            if wconfig['main_selector'] not in ('inputs', 'macros'):
+                wconfig['main_selector'] = 'inputs'
+
+        # Complete some additional info
+        wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
+        wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
+                                                  in CONFIG['scripts'] else False
+
+        return wconfig
+
+
+    AUX_INFO = {    'amp':                  'off',
+                    'loudness_monitor':     0.0,
+                    'web_config':           get_web_config(),
+                    'last_macro':           '-'  # cannot be empty
+                }
+
 
     # First update
     dump_aux_info()
