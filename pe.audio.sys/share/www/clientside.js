@@ -56,14 +56,15 @@ var tmp_msg = '';                   // A temporary message
 
 // STATIC WEB CONFIGURATION
 try{
-    var web_config = JSON.parse( control_cmd('aux get_web_config') );
+    var web_config = JSON.parse( control_cmd('aux info') )['web_config'];
 }catch(e){
-    console.log('problems with aux get_web_config', e.name, e.message);
+    console.log('problems with \'aux info\' command', e.name, e.message);
     var web_config = { 'main_selector':      'inputs',
                        'hide_LU':            false,
                        'LU_monitor_enabled': false,
                        'restart_cmd_info':   '',
                        'show_graphs':        false,
+                       'user_macros':        []
                      };
 }
 var main_selector = web_config.main_selector;
@@ -642,10 +643,13 @@ function fill_in_main_as_inputs() {
 
 // MAIN SELECTOR manages macros
 function fill_in_main_as_macros() {
+
     // getting macros
-    var mFnames = get_macroFnames();
+    var mFnames = web_config['user_macros'];
+
     // clearing selector options
     select_clear_options(ElementId="mainSelector");
+
     // Filling in options in a selector
     // https://www.w3schools.com/jsref/dom_obj_select.asp
     var mySel = document.getElementById("mainSelector");
@@ -658,23 +662,11 @@ function fill_in_main_as_macros() {
     }
 }
 
-// Getting macro filenames
-function get_macroFnames(){
-    var mFnames = [];
-    try{
-        mFnames = JSON.parse( control_cmd( 'aux get_macros web' ) );
-    }catch(e){
-        // If error getting macros, do nothing,
-        // so leaving "display:none" on the buttons keypad div
-        console.log( 'error getting macros', e.name, e.message );
-    }
-    return mFnames
-}
-
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
 
-    mFnames = get_macroFnames();
+    // getting macros
+    var mFnames = web_config['user_macros'];
 
     // If empty macros list, do nothing
     if ( mFnames.length == 0 ){
