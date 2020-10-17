@@ -74,21 +74,13 @@ METATEMPLATE = {
 
 # Gets metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
-    ans = None
+    ans = ''
     md = METATEMPLATE.copy()
-    with socket() as s:
-        try:
-            s.connect( (host, port) )
-            s.send( 'player get_meta'.encode() )
-            ans = ''
-            while True:
-                tmp = s.recv(1024).decode()
-                if not tmp:
-                    break
-                ans += tmp
-            s.close()
-        except:
-            pass
+    try:
+        ans = send_cmd( cmd='player get_meta',
+                        host=host, port=port, timeout=3)
+    except:
+        pass
     if ans:
         md = json.loads(ans)
     return md
