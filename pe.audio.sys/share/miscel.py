@@ -33,8 +33,6 @@ MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 # (KEEP THIS class AT THE VERY BEGINNING)
 class Fmt:
     """
-    usage example: print( f'{Fmt.BOLD}some thing to print in bold{Fmt.END}' )
-    
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
 
     0         all attributes off
@@ -285,6 +283,10 @@ def detect_spotify_client(timeout=5):
     """
     result = ''
 
+    # early return if no Spotify script is used:
+    if not any( 'spo' in x.lower() for x in CONFIG['scripts'] ):
+        return result
+
     tries = timeout
     while tries:
         try:
@@ -292,13 +294,11 @@ def detect_spotify_client(timeout=5):
             result = 'desktop'
         except:
             pass
-
         try:
             sp.check_output( 'pgrep -f librespot'.split() )
             result = 'librespot'
         except:
             pass
-
         if result:
             return result
         else:
