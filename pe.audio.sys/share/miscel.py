@@ -216,7 +216,8 @@ def wait4ports(pattern):
 
 
 # Send a command to a peaudiosys server
-def send_cmd(cmd, sender='', verbose=False, timeout=60):
+def send_cmd( cmd, sender='', verbose=False, timeout=60,
+              host=SRV_HOST, port=SRV_PORT ):
     """ send commands to a pe.audio.sys server
     """
     # (i) socket timeout 60 because Brutefir can need some time
@@ -226,12 +227,12 @@ def send_cmd(cmd, sender='', verbose=False, timeout=60):
         sender = 'share.miscel'
 
     # Default answer: "no answer from ...."
-    ans = f'no answer from {SRV_HOST}:{SRV_PORT}'
+    ans = f'no answer from {host}:{port}'
 
     # (i) We prefer high-level socket function 'create_connection()',
     #     rather than low level 'settimeout() + connect()'
     try:
-        with socket.create_connection( (SRV_HOST, SRV_PORT), timeout=timeout ) as s:
+        with socket.create_connection( (host, port), timeout=timeout ) as s:
             s.send( cmd.encode() )
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Tx: \'{cmd}\'{Fmt.END}' )
@@ -247,7 +248,7 @@ def send_cmd(cmd, sender='', verbose=False, timeout=60):
 
     except Exception as e:
         if verbose:
-            print( f'{Fmt.RED}({sender}) {SRV_HOST}:{SRV_PORT} {e} {Fmt.END}' )
+            print( f'{Fmt.RED}({sender}) {host}:{port} {e} {Fmt.END}' )
 
     return ans
 
