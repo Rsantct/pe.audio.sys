@@ -33,6 +33,8 @@ MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 # (KEEP THIS class AT THE VERY BEGINNING)
 class Fmt:
     """
+    usage example: print( f'{Fmt.BOLD}some thing to print in bold{Fmt.END}' )
+    
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
 
     0         all attributes off
