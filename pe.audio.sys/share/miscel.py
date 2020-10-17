@@ -278,18 +278,29 @@ def check_Mplayer_config_file(profile='istreams'):
 
 
 # Auxiliary to detect the Spotify Client in use: desktop or librespot
-def detect_spotify_client():
-    cname = ''
-    # Check if a desktop client is running:
-    try:
-        sp.check_output( 'pgrep -f Spotify'.split() )
-        cname = 'desktop'
-    except:
-        pass
-    # Check if 'librespot' (a Spotify Connect daemon) is running:
-    try:
-        sp.check_output( 'pgrep -f librespot'.split() )
-        cname = 'librespot'
-    except:
-        pass
-    return cname
+def detect_spotify_client(timeout=5):
+    """ the timeout will wait some seconds for the client to be running
+    """
+    result = ''
+
+    tries = timeout
+    while tries:
+        try:
+            sp.check_output( 'pgrep -f Spotify'.split() )
+            result = 'desktop'
+        except:
+            pass
+
+        try:
+            sp.check_output( 'pgrep -f librespot'.split() )
+            result = 'librespot'
+        except:
+            pass
+
+        if result:
+            return result
+        else:
+            tries -= 1
+            sleep(1)
+
+    return result
