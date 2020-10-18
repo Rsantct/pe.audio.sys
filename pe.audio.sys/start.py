@@ -202,7 +202,7 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
 def stop_processes(mode):
 
     # Killing any previous instance of start.py
-    kill_bill()
+    kill_bill( 'pe.audio.sys/start.py all', os.getpid() )
 
     # Stop scripts
     if mode in ('all', 'stop', 'scripts'):
@@ -239,51 +239,6 @@ def run_scripts(mode='start'):
                                   stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
-
-
-def kill_bill():
-    """ killing any previous instance of this, becasue
-        some residual try can be alive accidentaly.
-    """
-
-    # List processes like this one
-    processString = f'pe.audio.sys/start.py all'
-    rawpids = []
-    cmd =   f'ps -eo etimes,pid,cmd' + \
-            f' | grep "{processString}"' + \
-            f' | grep -v grep'
-    try:
-        rawpids = sp.check_output(cmd, shell=True).decode().split('\n')
-    except sp.CalledProcessError:
-        pass
-    # Discard blanks and strip spaces:
-    rawpids = [ x.strip().replace('\n', '') for x in rawpids if x ]
-    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
-
-    # Removing the own pid
-    own_pid = str(os.getpid())
-    for rawpid in rawpids:
-        if rawpid.split()[1] == own_pid:
-            rawpids.remove(rawpid)
-
-    # Just display the processes to be killed, if any.
-    print('-' * 21 + f' ({ME}) killing running before me ' + '-' * 21)
-    for rawpid in rawpids:
-        print(rawpid)
-    print('-' * 80)
-
-    if not rawpids:
-        return
-
-    # Extracting just the 'pid' at 2ndfield [1]:
-    pids = [ x.split()[1] for x in rawpids ]
-
-    # Killing the remaining pids, if any:
-    for pid in pids:
-        print(f'({ME}) killing old \'start.py\' processes:', pid)
-        sp.Popen(f'kill -KILL {pid}'.split())
-        sleep(.1)
-    sleep(.5)
 
 
 def check_state_file():
