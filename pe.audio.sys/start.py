@@ -202,7 +202,7 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
 def stop_processes(mode):
 
     # Killing any previous instance of start.py
-    kill_bill( 'pe.audio.sys/start.py all', os.getpid() )
+    kill_bill( os.getpid() )
 
     # Stop scripts
     if mode in ('all', 'stop', 'scripts'):
