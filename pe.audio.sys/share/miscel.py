@@ -307,3 +307,62 @@ def detect_spotify_client(timeout=5):
             sleep(1)
 
     return result
+
+
+# Kill previous instaces of a process
+def kill_bill(pid=0):
+    """ Killing previous instances of a process as per its <pid>.
+        This is mainly used from start.py.
+    """
+
+    if not pid:
+        print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() needs <pid> '
+               f'(process own pid) as argument{Fmt.END}' )
+        return
+
+    # Retrieving the process string that identifies the given pid
+    tmp = ''
+    try:
+        tmp = sp.check_output( f'ps -p {pid} -o command='.split() ).decode()
+    except:
+        print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() cannot found pid: {pid} ' )
+        return
+    processString = tmp.replace('python3', '').strip()
+
+    # List processes like this one
+    rawpids = []
+    cmd =   f'ps -eo etimes,pid,cmd' + \
+            f' | grep "{processString}"' + \
+            f' | grep -v grep'
+    try:
+        rawpids = sp.check_output(cmd, shell=True).decode().split('\n')
+    except sp.CalledProcessError:
+        pass
+    # Discard blanks and strip spaces:
+    rawpids = [ x.strip().replace('\n', '') for x in rawpids if x ]
+    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
+
+    # Removing the own pid
+    for rawpid in rawpids:
+        if rawpid.split()[1] == str(pid):
+            rawpids.remove(rawpid)
+
+    # Just display the processes to be killed, if any.
+    print('-' * 21 + f' (miscel) killing \'{processString}\' running before me ' \
+           + '-' * 21)
+    for rawpid in rawpids:
+        print(rawpid)
+    print('-' * 80)
+
+    if not rawpids:
+        return
+
+    # Extracting just the 'pid' at 2ndfield [1]:
+    pids = [ x.split()[1] for x in rawpids ]
+
+    # Killing the remaining pids, if any:
+    for pid in pids:
+        print(f'(miscel) killing old \'{processString}\' processes:', pid)
+        sp.Popen(f'kill -KILL {pid}'.split())
+        sleep(.1)
+    sleep(.5)
