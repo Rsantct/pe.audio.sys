@@ -706,20 +706,6 @@ def jack_clear_preamp():
 
 
 # THE PREAMP: AUDIO PROCESSOR, SELECTOR, and SYSTEM STATE KEEPER ===============
-def init_source():
-    """ Forcing if indicated on config.yml or restoring last state from disk
-    """
-    preamp = Preamp()
-
-    if CONFIG["on_init"]["input"]:
-        preamp.select_source  ( CONFIG["on_init"]["input"] )
-    else:
-        preamp.select_source  ( preamp.state["input"] )
-
-    preamp.save_state()
-    del(preamp)
-
-
 def init_audio_settings():
     """ Forcing if indicated on config.yml or restoring last state from disk
     """
@@ -728,11 +714,6 @@ def init_audio_settings():
         """ Try to set a value defined under CONFIG['on_init'][prop]
             Returns a warning or an empty string
         """
-
-        # Skipping 'input' because it is processed apart at init_source().
-        if prop == 'input':
-            return ''
-
         value = CONFIG["on_init"][prop]
 
         # Skipping if not defined
@@ -747,6 +728,7 @@ def init_audio_settings():
         func = {
                 'xo':               convolver.set_xo,
                 'drc':              convolver.set_drc,
+                'input':            preamp.select_source,
                 'target':           preamp.set_target,
                 'level':            preamp.set_level,
                 'muted':            preamp.set_mute,
