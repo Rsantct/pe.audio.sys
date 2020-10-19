@@ -380,7 +380,8 @@ if __name__ == "__main__":
         # OPTIONAL USER MACRO
         if 'run_macro' in CONFIG:
             mname = CONFIG["run_macro"]
-            print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
-            send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
+            if mname:
+                print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
+                send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
 
     # END
