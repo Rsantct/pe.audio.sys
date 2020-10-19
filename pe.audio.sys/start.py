@@ -356,24 +356,27 @@ if __name__ == "__main__":
         # Running USER SCRIPTS
         run_scripts()
 
-    # Init audio by importing 'core' temporally (needs JACK to be running)
-    import share.services.preamp_mod.core as core
-
     if mode in ('all'):
-        # BRUTEFIR
+
+        # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
+        import share.services.preamp_mod.core as core
+
+        # - BRUTEFIR
         core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
                                               'pre_in_loop:output_2'] )
-        # RESTORE on_init config settings
+        # - RESTORE on_init config settings
         core.init_audio_settings()
-        # PREAMP  --> MONITORS
+
+        # - PREAMP  --> MONITORS
         core.connect_monitors()
+
+        del core
+
 
     if mode in ('all', 'server'):
         # Will update Brutefir EQ graph for the web page
         if CONFIG["web_config"]["show_graphs"]:
             update_bfeq_graph()
-
-    del core
 
     # The 'peaudiosys' service always runs, so that we can do basic operation
     manage_server(mode='start')
