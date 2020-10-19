@@ -42,11 +42,21 @@ sys.path.append(MAINFOLDER)
 from share.miscel import Fmt
 
 
-# JCLI: the client interface to the jack server ================================
-try:
-    JCLI = jack.Client('core', no_start_server=True)
-except:
-    print( '(core) ERROR cannot commuticate to the JACK SOUND SERVER.' )
+# JCLI: the client interface to the JACK server ================================
+tries = 15 #  15 * 1/5 s = 3 s
+print( f'{Fmt.BOLD}(core) connecting to JACK ', end='' )
+while tries:
+    try:
+        JCLI = jack.Client('core', no_start_server=True)
+        break
+    except:
+        print( f'.', end='' )
+    tries -=1
+    sleep(.2)
+print(Fmt.END)
+if not tries:
+    # BYE :-/
+    raise ValueError( '(core) ERROR cannot commuticate to the JACK SOUND SERVER')
 
 
 # AUX and FILES MANAGEMENT: ====================================================
@@ -702,9 +712,9 @@ def init_source():
     preamp = Preamp()
 
     if CONFIG["on_init"]["input"]:
-        preamp.select_source  (   CONFIG["on_init"]["input"]      )
+        preamp.select_source  ( CONFIG["on_init"]["input"] )
     else:
-        preamp.select_source  (   preamp.state["input"]             )
+        preamp.select_source  ( preamp.state["input"] )
 
     preamp.save_state()
     del(preamp)
