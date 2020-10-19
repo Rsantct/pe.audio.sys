@@ -157,6 +157,8 @@ def start_jackd():
         print(f'({ME}) waiting for jackd ' + '.' * tries)
         sleep(.5)
         tries -= 1
+    # Still will wait a few
+    sleep(.2)
 
     if tries:
 
