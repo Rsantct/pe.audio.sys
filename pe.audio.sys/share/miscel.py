@@ -279,7 +279,7 @@ def check_Mplayer_config_file(profile='istreams'):
 
 
 # Auxiliary to detect the Spotify Client in use: desktop or librespot
-def detect_spotify_client(timeout=5):
+def detect_spotify_client(timeout=10):
     """ the timeout will wait some seconds for the client to be running
     """
     result = ''

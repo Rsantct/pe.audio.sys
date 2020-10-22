@@ -157,6 +157,8 @@ def start_jackd():
         print(f'({ME}) waiting for jackd ' + '.' * tries)
         sleep(.5)
         tries -= 1
+    # Still will wait a few, convenient for fast CPUs
+    sleep(.2)
 
     if tries:
 
@@ -340,9 +342,6 @@ if __name__ == "__main__":
         print(f'({ME}) Bye!')
         sys.exit()
 
-    # The 'peaudiosys' service always runs, so that we can do basic operation
-    manage_server(mode='start')
-
     if mode in ('all'):
         # If necessary will prepare drc graphs for the web page
         if CONFIG["web_config"]["show_graphs"]:
@@ -353,34 +352,41 @@ if __name__ == "__main__":
             print(f'({ME}) Problems starting JACK ')
             sys.exit()
 
-        # (i) Importing core.py needs JACK to be running
-        import share.services.preamp_mod.core as core
-
     if mode in ('all', 'scripts'):
         # Running USER SCRIPTS
         run_scripts()
 
     if mode in ('all'):
-        # BRUTEFIR
+
+        # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
+        import share.services.preamp_mod.core as core
+
+        # - BRUTEFIR
         core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
                                               'pre_in_loop:output_2'] )
-        # RESTORE settings
+        # - RESTORE on_init config settings
         core.init_audio_settings()
-        # PREAMP  --> MONITORS
+
+        # - PREAMP  --> MONITORS
         core.connect_monitors()
-        # RESTORE source
-        core.init_source()
+
+        del core
+
 
     if mode in ('all', 'server'):
         # Will update Brutefir EQ graph for the web page
         if CONFIG["web_config"]["show_graphs"]:
             update_bfeq_graph()
 
+    # The 'peaudiosys' service always runs, so that we can do basic operation
+    manage_server(mode='start')
+
     if mode in ('all'):
         # OPTIONAL USER MACRO
         if 'run_macro' in CONFIG:
             mname = CONFIG["run_macro"]
-            print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
-            send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
+            if mname:
+                print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
+                send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
 
     # END
