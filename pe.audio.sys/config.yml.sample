@@ -218,6 +218,9 @@ scripts:
     ## librespot (a headless Spotify Connect player daemon)
     #- librespot.py
     
+    ## A Spotify Desktop monitor
+    #- spotify_monitor.py
+    
     ## Plays audio streamed from AirPlay sources
     #- shairport-sync.py
     
@@ -226,9 +229,6 @@ scripts:
     
     ## A LAN multicast audio sender (network BW ~ 1.7 Mb/s 2ch 44100 16bit)
     #- zita-j2n_mcast.py
-    
-    ## A Spotify Desktop monitor
-    #- spotify_monitor.py
     
     ## Controls the volume by a mouse
     #- mouse_volume_daemon.py

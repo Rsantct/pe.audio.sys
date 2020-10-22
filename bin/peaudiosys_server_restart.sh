@@ -36,7 +36,10 @@ sleep .25
 #     if the launcher session has been closed (e.g. a crontab job),
 #     except if -v --verbose is indicated
 if [[ $opc == *"-v"* ]]; then
+    echo "(i) RESTARTING pe.audio.sys server (VERBOSE MODE)"
     python3 "$SERVERPATH" "peaudiosys" "$ADDR" "$PORT" -v &
+
 else
+    echo "(i) RESTARTING pe.audio.sys server (QUIET MODE redirected to /dev/null)"
     python3 "$SERVERPATH" "peaudiosys" "$ADDR" "$PORT" >/dev/null 2>&1 &
 fi

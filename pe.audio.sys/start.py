@@ -157,6 +157,8 @@ def start_jackd():
         print(f'({ME}) waiting for jackd ' + '.' * tries)
         sleep(.5)
         tries -= 1
+    # Still will wait a few, convenient for fast CPUs
+    sleep(.2)
 
     if tries:
 
@@ -202,7 +204,7 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
 def stop_processes(mode):
 
     # Killing any previous instance of start.py
-    kill_bill()
+    kill_bill( os.getpid() )
 
     # Stop scripts
     if mode in ('all', 'stop', 'scripts'):
@@ -239,51 +241,6 @@ def run_scripts(mode='start'):
                                   stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
-
-
-def kill_bill():
-    """ killing any previous instance of this, becasue
-        some residual try can be alive accidentaly.
-    """
-
-    # List processes like this one
-    processString = f'pe.audio.sys/start.py all'
-    rawpids = []
-    cmd =   f'ps -eo etimes,pid,cmd' + \
-            f' | grep "{processString}"' + \
-            f' | grep -v grep'
-    try:
-        rawpids = sp.check_output(cmd, shell=True).decode().split('\n')
-    except sp.CalledProcessError:
-        pass
-    # Discard blanks and strip spaces:
-    rawpids = [ x.strip().replace('\n', '') for x in rawpids if x ]
-    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
-
-    # Removing the own pid
-    own_pid = str(os.getpid())
-    for rawpid in rawpids:
-        if rawpid.split()[1] == own_pid:
-            rawpids.remove(rawpid)
-
-    # Just display the processes to be killed, if any.
-    print('-' * 21 + f' ({ME}) killing running before me ' + '-' * 21)
-    for rawpid in rawpids:
-        print(rawpid)
-    print('-' * 80)
-
-    if not rawpids:
-        return
-
-    # Extracting just the 'pid' at 2ndfield [1]:
-    pids = [ x.split()[1] for x in rawpids ]
-
-    # Killing the remaining pids, if any:
-    for pid in pids:
-        print(f'({ME}) killing old \'start.py\' processes:', pid)
-        sp.Popen(f'kill -KILL {pid}'.split())
-        sleep(.1)
-    sleep(.5)
 
 
 def check_state_file():
@@ -385,9 +342,6 @@ if __name__ == "__main__":
         print(f'({ME}) Bye!')
         sys.exit()
 
-    # The 'peaudiosys' service always runs, so that we can do basic operation
-    manage_server(mode='start')
-
     if mode in ('all'):
         # If necessary will prepare drc graphs for the web page
         if CONFIG["web_config"]["show_graphs"]:
@@ -398,34 +352,41 @@ if __name__ == "__main__":
             print(f'({ME}) Problems starting JACK ')
             sys.exit()
 
-        # (i) Importing core.py needs JACK to be running
-        import share.services.preamp_mod.core as core
-
     if mode in ('all', 'scripts'):
         # Running USER SCRIPTS
         run_scripts()
 
     if mode in ('all'):
-        # BRUTEFIR
+
+        # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
+        import share.services.preamp_mod.core as core
+
+        # - BRUTEFIR
         core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
                                               'pre_in_loop:output_2'] )
-        # RESTORE settings
+        # - RESTORE on_init config settings
         core.init_audio_settings()
-        # PREAMP  --> MONITORS
+
+        # - PREAMP  --> MONITORS
         core.connect_monitors()
-        # RESTORE source
-        core.init_source()
+
+        del core
+
 
     if mode in ('all', 'server'):
         # Will update Brutefir EQ graph for the web page
         if CONFIG["web_config"]["show_graphs"]:
             update_bfeq_graph()
 
+    # The 'peaudiosys' service always runs, so that we can do basic operation
+    manage_server(mode='start')
+
     if mode in ('all'):
         # OPTIONAL USER MACRO
         if 'run_macro' in CONFIG:
             mname = CONFIG["run_macro"]
-            print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
-            send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
+            if mname:
+                print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
+                send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
 
     # END

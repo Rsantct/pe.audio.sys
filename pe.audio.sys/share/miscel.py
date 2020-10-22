@@ -216,7 +216,8 @@ def wait4ports(pattern):
 
 
 # Send a command to a peaudiosys server
-def send_cmd(cmd, sender='', verbose=False, timeout=60):
+def send_cmd( cmd, sender='', verbose=False, timeout=60,
+              host=SRV_HOST, port=SRV_PORT ):
     """ send commands to a pe.audio.sys server
     """
     # (i) socket timeout 60 because Brutefir can need some time
@@ -226,12 +227,12 @@ def send_cmd(cmd, sender='', verbose=False, timeout=60):
         sender = 'share.miscel'
 
     # Default answer: "no answer from ...."
-    ans = f'no answer from {SRV_HOST}:{SRV_PORT}'
+    ans = f'no answer from {host}:{port}'
 
     # (i) We prefer high-level socket function 'create_connection()',
     #     rather than low level 'settimeout() + connect()'
     try:
-        with socket.create_connection( (SRV_HOST, SRV_PORT), timeout=timeout ) as s:
+        with socket.create_connection( (host, port), timeout=timeout ) as s:
             s.send( cmd.encode() )
             if verbose:
                 print( f'{Fmt.BLUE}({sender}) Tx: \'{cmd}\'{Fmt.END}' )
@@ -247,7 +248,7 @@ def send_cmd(cmd, sender='', verbose=False, timeout=60):
 
     except Exception as e:
         if verbose:
-            print( f'{Fmt.RED}({sender}) {SRV_HOST}:{SRV_PORT} {e} {Fmt.END}' )
+            print( f'{Fmt.RED}({sender}) {host}:{port} {e} {Fmt.END}' )
 
     return ans
 
@@ -278,18 +279,90 @@ def check_Mplayer_config_file(profile='istreams'):
 
 
 # Auxiliary to detect the Spotify Client in use: desktop or librespot
-def detect_spotify_client():
-    cname = ''
-    # Check if a desktop client is running:
+def detect_spotify_client(timeout=10):
+    """ the timeout will wait some seconds for the client to be running
+    """
+    result = ''
+
+    # early return if no Spotify script is used:
+    if not any( 'spo' in x.lower() for x in CONFIG['scripts'] ):
+        return result
+
+    tries = timeout
+    while tries:
+        try:
+            sp.check_output( 'pgrep -f Spotify'.split() )
+            result = 'desktop'
+        except:
+            pass
+        try:
+            sp.check_output( 'pgrep -f librespot'.split() )
+            result = 'librespot'
+        except:
+            pass
+        if result:
+            return result
+        else:
+            tries -= 1
+            sleep(1)
+
+    return result
+
+
+# Kill previous instaces of a process
+def kill_bill(pid=0):
+    """ Killing previous instances of a process as per its <pid>.
+        This is mainly used from start.py.
+    """
+
+    if not pid:
+        print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() needs <pid> '
+               f'(process own pid) as argument{Fmt.END}' )
+        return
+
+    # Retrieving the process string that identifies the given pid
+    tmp = ''
     try:
-        sp.check_output( 'pgrep -f Spotify'.split() )
-        cname = 'desktop'
+        tmp = sp.check_output( f'ps -p {pid} -o command='.split() ).decode()
     except:
-        pass
-    # Check if 'librespot' (a Spotify Connect daemon) is running:
+        print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() cannot found pid: {pid} ' )
+        return
+    processString = tmp.replace('python3', '').strip()
+
+    # List processes like this one
+    rawpids = []
+    cmd =   f'ps -eo etimes,pid,cmd' + \
+            f' | grep "{processString}"' + \
+            f' | grep -v grep'
     try:
-        sp.check_output( 'pgrep -f librespot'.split() )
-        cname = 'librespot'
-    except:
+        rawpids = sp.check_output(cmd, shell=True).decode().split('\n')
+    except sp.CalledProcessError:
         pass
-    return cname
+    # Discard blanks and strip spaces:
+    rawpids = [ x.strip().replace('\n', '') for x in rawpids if x ]
+    # A 'rawpid' element has 3 fields 1st:etimes 2nd:pid 3th:comand_string
+
+    # Removing the own pid
+    for rawpid in rawpids:
+        if rawpid.split()[1] == str(pid):
+            rawpids.remove(rawpid)
+
+    # Just display the processes to be killed, if any.
+    print('-' * 21 + f' (miscel) killing \'{processString}\' running before me ' \
+           + '-' * 21)
+    for rawpid in rawpids:
+        print(rawpid)
+    print('-' * 80)
+
+    if not rawpids:
+        return
+
+    # Extracting just the 'pid' at 2ndfield [1]:
+    pids = [ x.split()[1] for x in rawpids ]
+
+    # Killing the remaining pids, if any:
+    for pid in pids:
+        print(f'(miscel) killing old \'{processString}\' processes:', pid)
+        sp.Popen(f'kill -KILL {pid}'.split())
+        sleep(.1)
+    sleep(.5)

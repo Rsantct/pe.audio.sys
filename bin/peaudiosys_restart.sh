@@ -10,7 +10,13 @@
 export JACK_NO_AUDIO_RESERVATION=1
 
 if [[ $1 == 'stop' ]]; then
+    echo '(i) STOPPING pe.audio.sys'
     $HOME/pe.audio.sys/start.py stop
-else
+
+elif [[ ! $1 || $1 == *'start' ]]; then
+    echo '(i) RESTARTING pe.audio.sys (all printouts redirected to /dev/null)'
     $HOME/pe.audio.sys/start.py all 1>/dev/null 2>&1 &
+
+else
+    echo 'USAGE:   peaudiosys_restart.sh [stop]'
 fi
