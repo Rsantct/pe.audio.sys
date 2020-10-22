@@ -71,7 +71,7 @@ def read_config():
     """ reads outputsMap, coeffs, filters_at_start
     """
     global outputsMap, coeffs, filters_at_start
-    global sampling_rate, filter_length, float_bits, dither, init_delays
+    global sampling_rate, filter_length, float_bits, dither, init_delays, maxdelay
 
     with open(BRUTEFIR_CONFIG_PATH, 'r') as f:
         lineas = f.readlines()
@@ -89,11 +89,12 @@ def read_config():
     filterIndex = -1
     filterIniciado = False
 
-    sampling_rate   = None
-    filter_length   = None
-    float_bits      = None
-    dither          = None
-    delay           = None
+    sampling_rate   = ''
+    filter_length   = ''
+    float_bits      = ''
+    dither          = ''
+    delay           = ''
+    maxdelay        = '(as needed)'
 
     # Loops reading lines in brutefir.config (skip lines commented out)
     for linea in [x for x in lineas if (x.strip() and x.strip()[0] != '#') ]:
@@ -110,9 +111,11 @@ def read_config():
         if 'dither' in linea:
             dither = linea.strip().split(':')[-1].strip()
 
-        if 'delay' in linea:
+        if linea.strip().split()[0] == 'delay:':
             init_delays = linea.strip().split(':')[-1].strip()
 
+        if linea.strip().split()[0] == 'maxdelay:':
+            maxdelay = linea.strip().split()[1].strip()
 
 
         #######################
@@ -323,12 +326,13 @@ if __name__ == "__main__" :
         print( output[0].ljust(10), '-->   ', output[1] )
 
     print()
-    print( f'sampling_rate:  {sampling_rate}')
-    print( f'filter_length:  {filter_length}')
-    print( f'float_bits:     {float_bits}')
-    print( f'output_dither:  {dither}')
-    print( f'outputs_delays: {init_delays}   (at init)')
-    print( color.BOLD + f'                {curr_delays};   (CURRENT)' + color.END)
+    print( f'sampling_rate:    {sampling_rate}')
+    print( f'filter_length:    {filter_length}')
+    print( f'float_bits:       {float_bits}')
+    print( f'output_dither:    {dither}')
+    print( f'output_maxdelay:  {maxdelay}')
+    print( f'outputs_delays:   {init_delays}   (at init)')
+    print( color.BOLD + f'                  {curr_delays};   (CURRENT)' + color.END)
 
     print()
     print( "--- Coeff available:" )
