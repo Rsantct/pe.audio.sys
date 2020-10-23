@@ -30,7 +30,7 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 # Some nice ANSI formats for printouts
-# (KEEP THIS class AT THE VERY BEGINNING)
+# (PLEASE KEEP THIS class AT THE VERY BEGINNING)
 class Fmt:
     """
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
