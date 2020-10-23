@@ -21,7 +21,6 @@ import server
 from subprocess import Popen
 from time import sleep, time
 import socket
-import json
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
