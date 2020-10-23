@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
     # Detecting remote listening clients
     remoteClients = detect_remotes()
-    print( f'\nDetected remote listening machines: {remoteClients}' )
+    print( f'(remote_volume) Detected remote listening machines: {remoteClients}' )
 
 
     # Will observe for changes in <.state.yml> under <pe.audio.sys> folder:
@@ -174,10 +174,10 @@ if __name__ == "__main__":
                        path=f'{UHOME}/pe.audio.sys',
                        recursive=False )
     observer.start()
-    print( f'Forwarding relative level changes to remotes ...' )
+    print( f'(remote_volume) Forwarding relative level changes to remotes ...' )
 
     # A server that listen for new remote listening clients to emerge
-    print( f'Keep listening for new remmotes ...' )
+    print( f'(remote_volume) Keep listening for new remmotes ...' )
     server.SERVICE = 'remote_volume'
     server.MODULE = __import__(__name__)
     server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5,
