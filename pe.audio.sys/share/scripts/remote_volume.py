@@ -16,10 +16,15 @@ from time import sleep, time
 import socket
 import json
 import threading
-# This module is based on monitoring file changes under the pe.audio.sys folder
-#   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+
+# ------------- USER CONFIG --------------
+# x.x.x.RANGE
+REMOTES_ADDR_RANGE = range(230, 240)
+# ----------------------------------------
+
 
 
 # Handler class to do actions when a file change occurs.
@@ -47,62 +52,56 @@ class files_event_handler(FileSystemEventHandler):
                 manage_volume()
 
 
-def read_last_line(fname=''):
-    # source:
-    # https://stackoverflow.com/questions/46258499/read-the-last-line-of-a-file-in-python
-    # For large files it would be more efficient to seek to the end of the file,
-    # and move backwards to find a newline.
-    # Note that the file has to be opened in binary mode, otherwise,
-    # it will be impossible to seek from the end.
-
-    if not fname:
-        return ''
-
-    try:
-        with open(fname, 'rb') as f:
-            f.seek(-2, os.SEEK_END)
-            while f.read(1) != b'\n':
-                f.seek(-2, os.SEEK_CUR)
-            last_line = f.readline().decode()
-        return last_line.strip()
-
-    except:
-        return ''
-
-
-def manage_volume():
+def manage_volume(purge=False):
     """ Read the last command, if it was about relative level change
         then forward it to remotes listeners.
     """
-    cmd = read_last_line( peaudiosys_log )
-    cmd = cmd.split(';')[1].strip()
+    global remoteClients
+
+    # Retrieving the last 'level X add' command
+    tmp = miscel.read_last_line( peaudiosys_log )
+    # e.g.: "2020/10/23 17:16:43; level -1 add; done"
+    cmd = tmp.split(';')[1].strip()
+
+    # Early return if not a relative level change
     if 'level' not in cmd or 'add' not in cmd:
         return
+
+    # Forwarding it to remotes
     for cli_addr in remoteClients:
-        miscel.send_cmd( cmd, host=cli_addr, verbose=True )
+
+        # checking if still listening to us
+        if 'remote' in miscel.get_source_from_remote(cli_addr):
+            print( f'remote {cli_addr} sending \'{cmd}\'' )
+            miscel.send_cmd( cmd, host=cli_addr, verbose=False )
+
+        else:
+            print( f'remote {cli_addr} not listening by now :-/' )
+            if purge:
+                remoteClients.remove( cli_addr )
+                print( f'Updated remote listening machines: {remoteClients}' )
 
 
 def detect_remotes():
-    print('\nDetecting remote listening machines: ', end='')
-    remoteClients = []
-    nrange=range(233, 240)
+    """ list of remote IPs listening to a source named *remote*
+    """
+    clients = []
+
+    nrange = REMOTES_ADDR_RANGE
+
     for n in nrange:
-        addr = f'192.168.1.{str(n)}'
+
+        addr_list = my_ip.split('.')
+        addr_list[-1] = str(n)
+        addr = '.'.join( addr_list )
+
         if addr == my_ip:
             continue
-        ans = miscel.send_cmd('state', timeout=.5, host=addr)
 
-        if 'no answer' in ans:
-            continue
+        if 'remote' in miscel.get_source_from_remote(addr):
+            clients.append(addr)
 
-        source = ''
-        try:
-            source = json.loads(ans)["input"]
-        except:
-            pass
-        if 'remote' in source:
-            remoteClients.append(addr)
-    return remoteClients
+    return clients
 
 
 def killme():
@@ -131,7 +130,7 @@ def do(argv):
 
 if __name__ == "__main__":
 
-
+    # Reading command line
     for opc in sys.argv[1:]:
         if opc == 'stop':
             killme()
@@ -141,15 +140,17 @@ if __name__ == "__main__":
             print(__doc__)
             sys.exit()
 
-
+    # Retrieving basic data to this to work
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
     peaudiosys_log  = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
 
     # Detecting remote listening clients
     remoteClients = detect_remotes()
-    print(remoteClients)
+    print( f'\nDetected remote listening machines: {remoteClients}' )
 
+
+    # Will observe for changes in <.state.yml> under <pe.audio.sys> folder:
     # Starts a WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/18599339/
@@ -157,19 +158,17 @@ if __name__ == "__main__":
     #   Use recursive=True to observe also subfolders
     #   Even observing recursively the CPU load is negligible,
     #   but we prefer to observe to a single folder.
-
-    # Will observe for changes in <.state.yml> under <pe.audio.sys> folder:
     observer = Observer()
     observer.schedule( files_event_handler( wanted_path=peaudiosys_log,
                                             antibound=True ),
                        path=f'{UHOME}/pe.audio.sys',
                        recursive=False )
     observer.start()
+    print( f'Forwarding relative level changes to remotes ...' )
 
     # A server that listen for new remote listening clients to emerge
+    print( f'Keep listening for new remmotes ...' )
     server.SERVICE = 'remote_volume'
     server.MODULE = __import__(__name__)
-    server.run_server('0.0.0.0', 9995, verbose=True)
-
-    # main program will wait for <observer> thread to finish
-    observer.join()
+    server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5,
+                       verbose=False)
