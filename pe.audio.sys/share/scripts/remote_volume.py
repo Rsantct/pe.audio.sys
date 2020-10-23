@@ -9,11 +9,13 @@ import os
 UHOME = os.path.expanduser("~")
 sys.path.append( f'{UHOME}/pe.audio.sys/share' )
 import miscel
+import server
 
 from subprocess import Popen
 from time import sleep, time
 import socket
 import json
+import threading
 # This module is based on monitoring file changes under the pe.audio.sys folder
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
@@ -39,10 +41,10 @@ class files_event_handler(FileSystemEventHandler):
         if event.src_path == self.wanted_path:
             if self.antibound:
                 if (time() - self.ts) > .1:
-                    main_do()
+                    manage_volume()
                 self.ts = time()
             else:
-                main_do()
+                manage_volume()
 
 
 def read_last_line(fname=''):
@@ -68,7 +70,7 @@ def read_last_line(fname=''):
         return ''
 
 
-def main_do():
+def manage_volume():
     """ Read the last command, if it was about relative level change
         then forward it to remotes listeners.
     """
@@ -76,13 +78,52 @@ def main_do():
     cmd = cmd.split(';')[1].strip()
     if 'level' not in cmd or 'add' not in cmd:
         return
-    for cli_addr in zitaclients:
+    for cli_addr in remoteClients:
         miscel.send_cmd( cmd, host=cli_addr, verbose=True )
+
+
+def detect_remotes():
+    print('\nDetecting remote listening machines: ', end='')
+    remoteClients = []
+    nrange=range(233, 240)
+    for n in nrange:
+        addr = f'192.168.1.{str(n)}'
+        if addr == my_ip:
+            continue
+        ans = miscel.send_cmd('state', timeout=.5, host=addr)
+
+        if 'no answer' in ans:
+            continue
+
+        source = ''
+        try:
+            source = json.loads(ans)["input"]
+        except:
+            pass
+        if 'remote' in source:
+            remoteClients.append(addr)
+    return remoteClients
 
 
 def killme():
     Popen( f'pkill -f "scripts/remote_volume.py start"', shell=True )
     sys.exit()
+
+
+# This is the 'standard' function called from server.py to process Rx messages,
+# so we have offered this module to server.py in order to use this do().
+# (see the 'server.MODULE=...' sentece below)
+def do(argv):
+    global remoteClients
+    if argv == 'hello':
+        print(f'Received hello from: {server.CLIADDR}')
+        cli_addr = server.CLIADDR[0]
+        if cli_addr not in remoteClients:
+            remoteClients.append(cli_addr)
+            print(f'Updated remote listening machines: {remoteClients}')
+        return 'ack'
+    else:
+        return 'nack'
 
 
 if __name__ == "__main__":
@@ -102,28 +143,9 @@ if __name__ == "__main__":
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
     peaudiosys_log  = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
 
-    zitaclients=[]
-
-    print('Looking for remote listening machines')
-    nrange=range(233, 240)
-    for n in nrange:
-        addr = f'192.168.1.{str(n)}'
-        if addr == my_ip:
-            continue
-        ans = miscel.send_cmd('state', timeout=.5, host=addr)
-
-        if 'no answer' in ans:
-            continue
-
-        source = ''
-        try:
-            source = json.loads(ans)["input"]
-        except:
-            pass
-        if 'remote' in source:
-            zitaclients.append(addr)
-
-    print(zitaclients)
+    # Detecting remote listening clients
+    remoteClients = detect_remotes()
+    print(remoteClients)
 
     # Starts a WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
@@ -140,4 +162,11 @@ if __name__ == "__main__":
                        path=f'{UHOME}/pe.audio.sys',
                        recursive=False )
     observer.start()
+
+    # A server that listen for new remote listening clients to emerge
+    server.SERVICE = 'remote_volume'
+    server.MODULE = __import__(__name__)
+    server.run_server('0.0.0.0', 9995, verbose=True)
+
+    # main program will wait for <observer> thread to finish
     observer.join()
