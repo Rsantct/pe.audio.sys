@@ -87,9 +87,7 @@ def detect_remotes():
     """
     clients = []
 
-    nrange = REMOTES_ADDR_RANGE
-
-    for n in nrange:
+    for n in REMOTES_ADDR_RANGE:
 
         addr_list = my_ip.split('.')
         addr_list[-1] = str(n)
