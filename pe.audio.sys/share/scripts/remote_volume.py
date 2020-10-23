@@ -116,11 +116,12 @@ def killme():
 # This is the 'standard' function called from server.py to process Rx messages,
 # so we have offered this module to server.py in order to use this do().
 # (See the 'server.MODULE=...' sentece below)
-def do(argv):
+def do(cmd):
 
     global remoteClients
 
-    if argv == 'hello':
+    # Only 'hello' command is processed
+    if cmd == 'hello':
         print( f'Received hello from: {server.CLIADDR}' )
         cli_addr = server.CLIADDR[0]
         if cli_addr not in remoteClients:
@@ -128,6 +129,7 @@ def do(argv):
             print( f'Updated remote listening machines: {remoteClients}' )
         return 'ack'
 
+    # Ignoring any else different from 'hello'
     else:
         return 'nack'
 
