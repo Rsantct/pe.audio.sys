@@ -366,3 +366,42 @@ def kill_bill(pid=0):
         sp.Popen(f'kill -KILL {pid}'.split())
         sleep(.1)
     sleep(.5)
+
+
+# Gets the selected source from a pe.audio.sys server at <addr>
+def get_source_from_remote(addr):
+    """ Gets the selected source from a pe.audio.sys server at <addr>
+    """
+    source = ''
+    ans = send_cmd('state', timeout=.5, host=addr)
+    if 'no answer' in ans:
+        return source
+    try:
+        source = json_loads(ans)["input"]
+    except:
+        pass
+    return source
+
+
+# Read the last line from a large file, efficiently.
+def read_last_line(filename=''):
+    # source:
+    # https://stackoverflow.com/questions/46258499/read-the-last-line-of-a-file-in-python
+    # For large files it would be more efficient to seek to the end of the file,
+    # and move backwards to find a newline.
+    # Note that the file has to be opened in binary mode, otherwise,
+    # it will be impossible to seek from the end.
+
+    if not filename:
+        return ''
+
+    try:
+        with open(filename, 'rb') as f:
+            f.seek(-2, os.SEEK_END)
+            while f.read(1) != b'\n':
+                f.seek(-2, os.SEEK_CUR)
+            last_line = f.readline().decode()
+        return last_line.strip()
+
+    except:
+        return ''
