@@ -575,6 +575,8 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
         (i) Notice that Brutefir inputs can have sources
         other than 'pre_in_loop'
     """
+    warnings=''
+
     # Restarts Brutefir
     os.chdir(LSPK_FOLDER)
     Popen('brutefir brutefir_config'.split())
@@ -603,7 +605,7 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
         sleep(.5)
     print()
     if not tries:
-        return 'PROBLEM RUNNING BRUTEFIR :-('
+        warnings += ' PROBLEM RUNNING BRUTEFIR :-('
 
     # Wait for Brutefir:input ports to be available
     tries = 50      # ~ 10 sec
@@ -615,14 +617,21 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
             tries -= 1
             sleep(.2)
     if not tries:
-        return 'Brutefir ERROR restoring input connections'
-    sleep(1)  # to avoid early connections tries
+        warnings += ' Brutefir ERROR getting jack ports available.'
+
+    # A safe wait to avoid early connections failures
+    sleep(.5)
 
     # Restore input connections
     for a, b in zip(bf_sources, bf_in_ports):
-        jack_connect(a, b)
+        res = jack_connect(a, b)
+        if res != 'done':
+            warnings += f' {res}'
 
-    return 'done'
+    if not warnings:
+        return 'done'
+    else:
+        return warnings
 
 
 # JACK MANAGEMENT: =============================================================
@@ -634,23 +643,20 @@ def jack_connect(p1, p2, mode='connect', wait=1):
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
 
+    wait = int(wait)
     # will retry every second
-    while wait:
+    while wait > 0 :
         try:
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
                 JCLI.connect(p1, p2)
-            break
+            return 'done'
         except jack.JackError as e:
             print( f'(core.jack_connect) Exception: {e}' )
+            return e
         wait -= 1
         sleep(1)
-
-    if wait:
-        return True
-    else:
-        return False
 
 
 def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
