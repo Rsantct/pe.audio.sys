@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-    Listen for relative volume changes, then forward them
-    to remote listening machines.
+    A daemon that listen for relative volume changes,
+    then forward them to all remote listener pe.audio.sys.
+
+    Usage:      remote_volume.py   start|stop
+
+    NOTE:
+    A newcoming remote listener machine will need to send 'hello'
+    to this daemon at port <peaudiosys_port> + 5 (usually 9995)
+
 """
 
 import sys
@@ -129,14 +136,18 @@ def do(argv):
 if __name__ == "__main__":
 
     # Reading command line
-    for opc in sys.argv[1:]:
-        if opc == 'stop':
+    if sys.argv[1:]:
+        if sys.argv[1] == 'stop':
             killme()
-        elif opc == 'start':
+        elif sys.argv[1] == 'start':
             pass
         else:
             print(__doc__)
             sys.exit()
+    else:
+        print(__doc__)
+        sys.exit()
+
 
     # Retrieving basic data to this to work
     my_hostname     = socket.gethostname()
