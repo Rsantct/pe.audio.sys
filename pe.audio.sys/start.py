@@ -83,7 +83,7 @@ def run_jloops():
     """ Jack loops launcher
     """
     # Jack loops launcher external daemon
-    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py')
+    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py', shell=True)
 
 
 def check_jloops():
