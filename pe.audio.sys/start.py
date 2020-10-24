@@ -187,7 +187,7 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}({ME}) stopping \'server.py peaudiosys\'{Fmt.END}')
-        sp.Popen(f'pkill -KILL -f "server.py peaudiosys" \
+        sp.Popen( f'pkill -KILL -f "server.py peaudiosys" \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
@@ -198,9 +198,11 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
                                                     f' {address} {port}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
-                sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
+                sp.Popen( cmd, shell=True, stdout=fnull,
+                                           stderr=fnull )
         else:
-            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+            sp.Popen( cmd, shell=True, stdout=sys.stdout,
+                                       stderr=sys.stderr )
 
     else:
         raise Exception(f'usage: manage_server(start|stop)')
@@ -356,7 +358,7 @@ if __name__ == "__main__":
         # Starting JACK, EXTERNAL_CARDS and JLOOPS
         jack_stuff = start_jack_stuff()
         if  jack_stuff != 'done':
-            print(f'({ME}) Problems starting JACK: {jack_stuff}')
+            print(f'{Fmt.BOLD}({ME}) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
 
     if mode in ('all', 'scripts'):
@@ -367,14 +369,15 @@ if __name__ == "__main__":
 
         # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
         import share.services.preamp_mod.core as core
+        print(f'{Fmt.MAGENTA}({ME}) Managing a temporary \'core\' instance.{Fmt.END}')
 
         # - BRUTEFIR
-        bfstate = core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
+        bfstart = core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
                                                         'pre_in_loop:output_2'] )
-        if bfstate == 'done':
+        if bfstart == 'done':
             print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) BRUTEFIR STARTED.{Fmt.END}')
         else:
-            print(f'({Fmt.BOLD}{ME}) Problems starting BRUTEFIR: {bfstate}')
+            print(f'({Fmt.BOLD}{ME}) Problems starting BRUTEFIR: {bfstart}')
             sys.exit()
 
         # - RESTORE ON_INIT AUDIO settings
@@ -384,6 +387,7 @@ if __name__ == "__main__":
         core.connect_monitors()
 
         del core
+        print(f'{Fmt.MAGENTA}({ME}) Closing the temporary \'core\' instance.{Fmt.END}')
 
 
     if mode in ('all', 'server'):
@@ -397,9 +401,11 @@ if __name__ == "__main__":
     if mode in ('all'):
         # OPTIONAL USER MACRO
         if 'run_macro' in CONFIG:
+            # wait a bit for server.py to be ready before running any macro
+            sleep(1)
             mname = CONFIG["run_macro"]
             if mname:
                 print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
-                send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
+                sp.Popen( f'{MAINFOLDER}/macros/{mname}'.split() )
 
     # END
