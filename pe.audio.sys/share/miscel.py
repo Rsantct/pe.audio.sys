@@ -324,10 +324,15 @@ def kill_bill(pid=0):
     tmp = ''
     try:
         tmp = sp.check_output( f'ps -p {pid} -o command='.split() ).decode()
+        # e.g. "python3 pe.audio.sys/start.py all"
     except:
         print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() cannot found pid: {pid} ' )
         return
-    processString = tmp.replace('python3', '').strip()
+
+    # As per this is always used from python3 programs, will remove python3
+    # and arguments
+    # e.g. "python3 pe.audio.sys/start.py all"  -->  "pe.audio.sys/start.py"
+    processString = tmp.replace('python3', '').strip().split()[0]
 
     # List processes like this one
     rawpids = []
