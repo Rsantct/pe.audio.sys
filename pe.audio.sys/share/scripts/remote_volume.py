@@ -108,11 +108,6 @@ def detect_remotes():
     return clients
 
 
-def killme():
-    Popen( f'pkill -f "scripts/remote_volume.py start"', shell=True )
-    sys.exit()
-
-
 # This is the 'standard' function called from server.py to process Rx messages,
 # so we have offered this module to server.py in order to use this do().
 # (See the 'server.MODULE=...' sentece below)
@@ -120,18 +115,28 @@ def do(cmd):
 
     global remoteClients
 
+    cli_addr = server.CLIADDR[0]
+    result = 'nack'
+
     # Only 'hello' command is processed
     if cmd == 'hello':
-        print( f'Received hello from: {server.CLIADDR}' )
-        cli_addr = server.CLIADDR[0]
-        if cli_addr not in remoteClients:
-            remoteClients.append(cli_addr)
-            print( f'Updated remote listening machines: {remoteClients}' )
-        return 'ack'
+        if cli_addr != my_ip and '127.0.' not in cli_addr:
+            print( f'(remote_volume) Received hello from: {cli_addr}' )
+            if cli_addr not in remoteClients:
+                remoteClients.append(cli_addr)
+                print( f'(remote_volume) Updated remote listening machines: '
+                       f'{remoteClients}' )
+            result = 'ack'
+        else:
+            print( f'(remote_volume) Tas tonto: received \'hello\' '
+                   f'from MY SELF ({cli_addr})' )
 
-    # Ignoring any else different from 'hello'
-    else:
-        return 'nack'
+    return result
+
+
+def killme():
+    Popen( f'pkill -f "scripts/remote_volume.py start"', shell=True )
+    sys.exit()
 
 
 if __name__ == "__main__":
@@ -157,7 +162,8 @@ if __name__ == "__main__":
 
     # Detecting remote listening clients
     remoteClients = detect_remotes()
-    print( f'(remote_volume) Detected remote listening machines: {remoteClients}' )
+    print( f'(remote_volume) Detected {len(remoteClients)} '
+           f'remote listening machines: {remoteClients}' )
 
 
     # Will observe for changes in <.state.yml> under <pe.audio.sys> folder:
