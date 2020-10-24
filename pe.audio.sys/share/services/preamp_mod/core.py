@@ -573,41 +573,50 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
         then check Brutefir spawn connections to system ports,
         then reconnects Brutefir inputs.
         (i) Notice that Brutefir inputs can have sources
-        other than 'pre_in_loop'
+            other than 'pre_in_loop:...'
     """
     warnings=''
 
-    # Restarts Brutefir
+    # Restarts Brutefir (external process)
     os.chdir(LSPK_FOLDER)
-    Popen('brutefir brutefir_config'.split())
+    Popen('brutefir brutefir_config', shell=True)
     os.chdir(UHOME)
+    sleep(1)  # wait a bit for Brutefir to be running
 
-    # Wait for Brutefir:out ports to be autoconnected to system ports
+    # Wait for Brutefir to autoconnect its :out_X ports to system: ports
     tries = 120     # ~ 60 sec
     while tries:
-        # showing progress every 3 sec
+
+        # Showing progress every 3 sec
         if tries % 6 == 0:
             print(  f'{Fmt.BLUE}(core) waiting for Brutefir ports '
                     f'{"."*int((120-tries)/6)}{Fmt.END}')
+
+        # Getting the bf out ports list
         bf_out_ports = JCLI.get_ports('brutefir', is_output=True)
-        # Ensures ports are available
+
+        # Ensuring that ports are available
         if len(bf_out_ports) < 2:
             sleep(.5)
             tries -= 1  # do not forget this decrement before 'continue'
             continue
-        count = 0
-        for bfop in bf_out_ports:
-            conns = JCLI.get_all_connections(bfop)
-            count += len(conns)
-        if count == len(bf_out_ports):
+
+        # Counting if all bf_out_ports are properly bonded to system ports
+        n = 0
+        for p in bf_out_ports:
+            conns = JCLI.get_all_connections(p)
+            n += len(conns)
+        if n == len(bf_out_ports):
+            # We are done ;-)
             break
+
         tries -= 1
         sleep(.5)
-    print()
+
     if not tries:
         warnings += ' PROBLEM RUNNING BRUTEFIR :-('
 
-    # Wait for Brutefir:input ports to be available
+    # Wait for brutefir input ports to be available
     tries = 50      # ~ 10 sec
     while tries:
         bf_in_ports = JCLI.get_ports('brutefir', is_input=True)
