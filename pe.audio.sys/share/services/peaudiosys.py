@@ -180,12 +180,17 @@ def process_aux( cmd, arg='' ):
     # As per LOUD_MON_CTRL_FILE is a namedpipe (FIFO), it is needed that
     # 'loudness_monitor.py' was alive in order to release any write to it.
     # If not alive, any f.write() to LOUD_MON_CTRL_FILE will HANG UP.
-    def check_lu_monitor():
+    def lu_ctrl_write(string):
         try:
             sp.check_output('pgrep -fla loudness_monitor.py'.split())
-            return True
         except:
-            return False
+            return 'ERROR loudness_monitor.py NOT running'
+        try:
+            with open(LOUD_MON_CTRL_FILE, 'w') as f:
+                f.write(string)
+            return 'tried'
+        except:
+            return 'unknown ERROR writing .loudness_control FIFO'
 
 
     # BEGIN of process_aux
@@ -247,27 +252,14 @@ def process_aux( cmd, arg='' ):
             result = f'bad: {arg}'
 
     # RESET the LOUDNESS MONITOR DAEMON:
-    elif cmd == 'loudness_monitor_reset' or cmd.lower() == 'lu_monitor_reset':
-        if not check_lu_monitor():
-            return 'ERROR: loudness_monitor.py NOT running'
-        try:
-            with open(LOUD_MON_CTRL_FILE, 'w') as f:
-                f.write('reset')
-            result = 'done'
-        except:
-            result = 'error'
+    elif cmd == 'loudness_monitor_reset' or \
+         cmd.lower() == 'lu_monitor_reset':
+        return lu_ctrl_write('reset')
 
     # Set the LOUDNESS MONITOR SCOPE:
     elif cmd == 'set_loudness_monitor_scope' or \
-            cmd.lower() == 'set_lu_monitor_scope':
-        if not check_lu_monitor():
-            return 'ERROR: loudness_monitor.py NOT running'
-        try:
-            with open(LOUD_MON_CTRL_FILE, 'w') as f:
-                f.write(f'scope={arg}')
-            result = 'done'
-        except:
-            result = 'error'
+         cmd.lower() == 'set_lu_monitor_scope':
+        return lu_ctrl_write(f'scope={arg}')
 
     # Get the LOUDNESS MONITOR VALUE from the
     # loudness monitor daemon's output file:
