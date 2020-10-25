@@ -83,7 +83,7 @@ def run_jloops():
     """ Jack loops launcher
     """
     # Jack loops launcher external daemon
-    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py')
+    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py', shell=True)
 
 
 def check_jloops():
@@ -118,16 +118,18 @@ def check_jloops():
         tries -= 1
     jcli.close()
     if tries:
-        print(f'({ME}) JACK LOOPS STARTED')
+        print(f'{Fmt.BLUE}({ME}) JACK LOOPS STARTED{Fmt.END}')
         return True
     else:
-        print(f'({ME}) JACK LOOPS FAILED')
+        print(f'{Fmt.BOLD}({ME}) JACK LOOPS FAILED{Fmt.END}')
         return False
 
 
-def start_jackd():
-    """ runs jack with configured options
+def start_jack_stuff():
+    """ runs jackd with configured options, jack loops and extrernal cards ports
     """
+    warnings = ''
+
     jack_backend_options = CONFIG["jack_backend_options"] \
                     .replace('$autoCard', CONFIG["system_card"]) \
                     .replace('$autoFS', str(get_Bfir_sample_rate()))
@@ -144,7 +146,7 @@ def start_jackd():
                                        shell=True).decode():
         cmdlist = ['pasuspender', '--'] + cmdlist
 
-    # Launch jackd process
+    # Launch JACKD process
     sp.Popen(cmdlist, stdout=sys.stdout, stderr=sys.stderr)
     sleep(1)
 
@@ -152,28 +154,31 @@ def start_jackd():
     tries = 10
     while tries:
         if jack_is_running():
-            print(f'({ME}) JACKD STARTED')
+            print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) JACKD STARTED{Fmt.END}')
             break
         print(f'({ME}) waiting for jackd ' + '.' * tries)
         sleep(.5)
         tries -= 1
     # Still will wait a few, convenient for fast CPUs
-    sleep(.2)
+    sleep(.5)
 
-    if tries:
+    if not tries:
+        # JACK FAILED :-/
+        warnings += ' JACKD FAILED.'
 
-        # ADDIGN EXTRA SOUND CARDS RESAMPLED INTO JACK ('external_cards:')
+    else:
+        # Adding EXTRA SOUND CARDS resampled into jack, aka 'external_cards'
         prepare_extra_cards()
 
-        # Emerging jack_loops (external daemon)
+        # Emerging JACKLOOPS (external daemon)
         run_jloops()
-        if check_jloops():
-            return True
-        else:
-            return False
+        if not check_jloops():
+            warnings += ' JACKLOOPS FAILED.'
+
+    if warnings:
+        return warnings.strip()
     else:
-        # JACK FAILED
-        return False
+        return 'done'
 
 
 def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
@@ -182,7 +187,7 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}({ME}) stopping \'server.py peaudiosys\'{Fmt.END}')
-        sp.Popen(f'pkill -KILL -f "server.py peaudiosys" \
+        sp.Popen( f'pkill -KILL -f "server.py peaudiosys" \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
@@ -193,9 +198,11 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
                                                     f' {address} {port}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
-                sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
+                sp.Popen( cmd, shell=True, stdout=fnull,
+                                           stderr=fnull )
         else:
-            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+            sp.Popen( cmd, shell=True, stdout=sys.stdout,
+                                       stderr=sys.stderr )
 
     else:
         raise Exception(f'usage: manage_server(start|stop)')
@@ -332,24 +339,26 @@ if __name__ == "__main__":
         sys.stdout = flog
         sys.stderr = flog
 
-    # Lets check .state.yml
+    # Lets check STATE FILE '.state.yml'
     check_state_file()
 
-    # STOPPING
+    # STOPPING:
     stop_processes(mode)
 
     if mode in ('stop', 'shutdown'):
         print(f'({ME}) Bye!')
         sys.exit()
 
+    # STARTING:
     if mode in ('all'):
-        # If necessary will prepare drc graphs for the web page
+        # If necessary will prepare DRC GRAPHS for the web page
         if CONFIG["web_config"]["show_graphs"]:
             prepare_drc_graphs()
 
-        # START JACK
-        if not start_jackd():
-            print(f'({ME}) Problems starting JACK ')
+        # Starting JACK, EXTERNAL_CARDS and JLOOPS
+        jack_stuff = start_jack_stuff()
+        if  jack_stuff != 'done':
+            print(f'{Fmt.BOLD}({ME}) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
 
     if mode in ('all', 'scripts'):
@@ -360,17 +369,25 @@ if __name__ == "__main__":
 
         # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
         import share.services.preamp_mod.core as core
+        print(f'{Fmt.MAGENTA}({ME}) Managing a temporary \'core\' instance.{Fmt.END}')
 
         # - BRUTEFIR
-        core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
-                                              'pre_in_loop:output_2'] )
-        # - RESTORE on_init config settings
+        bfstart = core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
+                                                        'pre_in_loop:output_2'] )
+        if bfstart == 'done':
+            print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) BRUTEFIR STARTED.{Fmt.END}')
+        else:
+            print(f'({Fmt.BOLD}{ME}) Problems starting BRUTEFIR: {bfstart}')
+            sys.exit()
+
+        # - RESTORE ON_INIT AUDIO settings
         core.init_audio_settings()
 
-        # - PREAMP  --> MONITORS
+        # - PREAMP  -->  MONITORS
         core.connect_monitors()
 
         del core
+        print(f'{Fmt.MAGENTA}({ME}) Closing the temporary \'core\' instance.{Fmt.END}')
 
 
     if mode in ('all', 'server'):
@@ -378,15 +395,17 @@ if __name__ == "__main__":
         if CONFIG["web_config"]["show_graphs"]:
             update_bfeq_graph()
 
-    # The 'peaudiosys' service always runs, so that we can do basic operation
+    # The 'peaudiosys' SERVER always runs, so that we can do basic operation
     manage_server(mode='start')
 
     if mode in ('all'):
         # OPTIONAL USER MACRO
         if 'run_macro' in CONFIG:
+            # wait a bit for server.py to be ready before running any macro
+            sleep(1)
             mname = CONFIG["run_macro"]
             if mname:
                 print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
-                send_cmd( f'aux run_macro {mname}', sender='start.py', verbose=True )
+                sp.Popen( f'{MAINFOLDER}/macros/{mname}'.split() )
 
     # END

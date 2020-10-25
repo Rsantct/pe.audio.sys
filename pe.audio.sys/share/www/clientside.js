@@ -49,7 +49,6 @@ var metablank = {                   // A player's metadata blank dict
     }
 var last_loudspeaker = ''           // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
-var mFnames = [];                   // User macros
 var macro_button_list = [];
 var hold_tmp_msg = 0;               // A counter to keep tmp_msg during updates
 var tmp_msg = '';                   // A temporary message
@@ -68,6 +67,7 @@ try{
                      };
 }
 var main_selector = web_config.main_selector;
+var mFnames = web_config.user_macros;   // User macros
 
 // SERVER SIDE COMMUNICATION
 function control_cmd( cmd ) {
@@ -644,9 +644,6 @@ function fill_in_main_as_inputs() {
 // MAIN SELECTOR manages macros
 function fill_in_main_as_macros() {
 
-    // getting macros
-    var mFnames = web_config['user_macros'];
-
     // clearing selector options
     select_clear_options(ElementId="mainSelector");
 
@@ -664,9 +661,6 @@ function fill_in_main_as_macros() {
 
 // Filling in the user's macro buttons
 function fill_in_macro_buttons() {
-
-    // getting macros
-    var mFnames = web_config['user_macros'];
 
     // If empty macros list, do nothing
     if ( mFnames.length == 0 ){
