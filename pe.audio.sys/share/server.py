@@ -30,6 +30,9 @@ import socket
 import sys
 import os
 
+# You can use these properties when importing this module:
+SERVICE = ''
+CLIADDR = ('', 0)
 
 def run_server(host, port, verbose=False):
     """ Inside this simple server, it is called the desired PROCESSING MODULE to
@@ -54,30 +57,32 @@ def run_server(host, port, verbose=False):
     # The backlog option allows to limit the number of future connections
     srv.listen(10)
 
+    global CLIADDR, SERVICE
     # Main loop to accept, process and close connections.
     # This loop has a blocking stage when calling accept() below
     while True:
         # The connection (the 2nd socket)
-        con, address = srv.accept()  # calling accept() is blocking
+        # NOTICE: calling accept() is blocking
+        con, CLIADDR = srv.accept()
         # The 'with' context will close 'con' on exiting from 'with'
         with con:
             # Receiving a command phrase
             cmd = con.recv(1024).decode()
             if verbose:
-                print( f'(server.py-{service}) Rx: {cmd.strip()}' )
+                print( f'(server.py-{SERVICE}) Rx: {cmd.strip()}' )
             # PROCESSING the command through by the plugged MODULE:
             result = MODULE.do( cmd.strip() )
             # Sending back the command processing result:
             con.sendall( result.encode() )
             if verbose:
-                print( f'(server.py-{service}) Tx: {result}' )
+                print( f'(server.py-{SERVICE}) Tx: {result}' )
 
 
 if __name__ == "__main__":
 
     # Mandatory: address and port from command line
     try:
-        service, addr, port  = sys.argv[1:4]
+        SERVICE, addr, port  = sys.argv[1:4]
     except:
         print(__doc__)
         sys.exit(-1)
@@ -94,8 +99,8 @@ if __name__ == "__main__":
 
     # Importing the service module
     # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
-    MODULE = __import__(service)
-    print( f'(server.py) will run \'{service}\' module at {addr}:{port} ...' )
+    MODULE = __import__(SERVICE)
+    print( f'(server.py) will run \'{SERVICE}\' module at {addr}:{port} ...' )
 
     # Runing the server with the MODULE.do() interface
     run_server( host=addr, port=int(port), verbose=verbose )
