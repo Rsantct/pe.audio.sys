@@ -32,7 +32,7 @@ import players
 
 import yaml
 import json
-from subprocess import Popen
+from subprocess import Popen, check_output
 from time import sleep, strftime
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
@@ -177,6 +177,17 @@ def process_aux( cmd, arg='' ):
             return False
 
 
+    # As per LOUD_MON_CTRL_FILE is a namedpipe (FIFO), it is needed that
+    # 'loudness_monitor.py' was alive in order to release any write to it.
+    # If not alive, any f.write() to LOUD_MON_CTRL_FILE will HANG UP.
+    def check_lu_monitor():
+        try:
+            sp.check_output('pgrep -fla loudness_monitor.py'.split())
+            return True
+        except:
+            return False
+
+
     # BEGIN of process_aux
     result = 'bad command'
 
@@ -237,6 +248,8 @@ def process_aux( cmd, arg='' ):
 
     # RESET the LOUDNESS MONITOR DAEMON:
     elif cmd == 'loudness_monitor_reset' or cmd.lower() == 'lu_monitor_reset':
+        if not check_lu_monitor():
+            return 'ERROR: loudness_monitor.py NOT running'
         try:
             with open(LOUD_MON_CTRL_FILE, 'w') as f:
                 f.write('reset')
@@ -246,7 +259,9 @@ def process_aux( cmd, arg='' ):
 
     # Set the LOUDNESS MONITOR SCOPE:
     elif cmd == 'set_loudness_monitor_scope' or \
-         cmd.lower() == 'set_lu_monitor_scope':
+            cmd.lower() == 'set_lu_monitor_scope':
+        if not check_lu_monitor():
+            return 'ERROR: loudness_monitor.py NOT running'
         try:
             with open(LOUD_MON_CTRL_FILE, 'w') as f:
                 f.write(f'scope={arg}')
