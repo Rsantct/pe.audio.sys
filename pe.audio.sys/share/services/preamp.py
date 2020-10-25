@@ -115,7 +115,7 @@ def process_commands( full_command ):
 
     def print_help(*dummy):
         Popen( f'cat {UHOME}/pe.audio.sys/doc/peaudiosys.hlp', shell=True)
-        return 'help has been printed to stdout, also available on ' \
+        return 'help has been printed to stdout, also available in ' \
                 '\'~/pe.audio.sys/doc/peaudiosys.hlp\''
 
 
