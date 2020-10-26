@@ -14,7 +14,7 @@ from subprocess import Popen
 # DEFAULT CONFIG: intended to be modified when importing this module
 #                 from a real user macro N_xxxxxxx
 
-mplayer_profile = 'dvb'    # choose an Mplayer profile: "istreams", "dvb"
+mplayer_profile = 'istreams'    # choose an Mplayer profile: "istreams", "dvb"
 preset          = 1
 loud_ref        = 9
 loudness_comp   = 'off'
