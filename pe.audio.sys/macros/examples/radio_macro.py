@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-    A macro template to tune a Mplayer radio station and listen to it.
+    A module to tune a Mplayer radio station and listen to it.
 """
 from os.path import expanduser
 import sys
