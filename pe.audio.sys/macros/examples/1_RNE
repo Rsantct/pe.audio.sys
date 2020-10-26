@@ -1,71 +1,14 @@
 #!/usr/bin/env python3
-"""
-    A macro template to tune a Mplayer radio station and listen to it.
-"""
 
-# --- EDIT USER CONFIG HERE: ---
-mplayer_profile = 'istreams'    # choose an Mplayer profile: "istreams", "dvb"
-preset          = 1             # choose the right one from your <profile>.yml
-loud_ref        = 9             # compensate the intrinsic level reference from this station.
-loudness_comp   = ''            # choose 'on', 'off' for loudness compensation
-xo_pattern      = 'mp'
-drc_pattern     = 'mp'
+print('Importing examples/radio_macro.py ...')
+import examples.radio_macro as rm
 
 
-# --- Below is common use code, DO NOT EDIT ---
-from os.path import expanduser
-import sys
-UHOME = expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import *
-from time import sleep
-from subprocess import Popen
+rm.mplayer_profile = 'dvb'      # choose an Mplayer profile: "istreams", "dvb"
+rm.preset          = 1          # your DVB or istreams preset number here
+rm.loud_ref        = 9         
+rm.loudness_comp   = 'off'
+rm.xo_pattern      = 'mp'
+rm.drc_pattern     = 'mp'
 
-if __name__ == "__main__":
-
-    ME = __file__.split('/')[-1]
-
-    # Prepare to use the proper share/scripts/xxxx.py and preamp input
-    if mplayer_profile == 'dvb':
-        script   = 'DVB-T.py'
-        preinput = 'tdt'
-    elif mplayer_profile == 'istreams':
-        script   = 'istreams.py'
-        preinput = 'istreams'
-    else:
-        print( f'{Fmt.RED}(macros) Bad Mplayer profile \'{mplayer_profile}\'{Fmt.END}' )
-        sys.exit()
-
-    # Pausing the current player
-    send_cmd( f'player pause', sender=ME, verbose=True )
-
-    # Tune the radio station (Mplayer jack ports will dissapear for a while)
-    Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} preset {str(preset)}'
-            .split() )
-
-    # Wait a bit to Mplayer ports to dissapear from jack while loading a new stream.
-    sleep(2)
-
-    # Waiting for mplayer ports to re-emerge
-    if not wait4ports( f'mplayer_{mplayer_profile}' ):
-        print(f'{Fmt.RED}(macros) ERROR jack ports \'mplayer_{mplayer_profile}\' not found, '
-              f'bye :-/{Fmt.RED}')
-        sys.exit(-1)
-
-    # Switching the preamp input
-    send_cmd( f'input {preinput}', sender=ME, verbose=True )
-
-    # LU level compensation reference
-    send_cmd( f'loudness_ref {loud_ref}', sender=ME, verbose=True )
-
-    # Loudness compensation on|off
-    send_cmd( f'loudness_track {loudness_comp}', sender=ME, verbose=True )
-
-    # XO
-    if xo_pattern:
-        set_as_pattern('xo', xo_pattern, sender=ME, verbose=True)
-
-    # DRC
-    if drc_pattern:
-        set_as_pattern('drc', drc_pattern, sender=ME, verbose=True)
-
+rm.main()
