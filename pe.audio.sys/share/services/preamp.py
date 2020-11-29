@@ -114,9 +114,7 @@ def process_commands( full_command ):
         return result
 
     def print_help(*dummy):
-        Popen( f'cat {UHOME}/pe.audio.sys/doc/peaudiosys.hlp', shell=True)
-        return 'help has been printed to stdout, also available in ' \
-                '\'~/pe.audio.sys/doc/peaudiosys.hlp\''
+        return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
 
 
     # HERE BEGINS THE COMMAND PROCESSING:
