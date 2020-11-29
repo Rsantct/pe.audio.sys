@@ -80,6 +80,3 @@ All commands prefixed with 'aux':
     set_LU_monitor_scope  album | track     Choose the LU-I measured scope
 
     restart                                 Restarts pe.audio.sys
-
-
-
