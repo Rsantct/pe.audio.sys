@@ -249,7 +249,7 @@ def send_cmd(cmd, service):
 
 
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
-def mplayer_control(cmd, service):
+def mplayer_control(cmd, arg='', service=''):
     """ Sends a command to Mplayer trough by its input fifo
         input:  a command string
         result: a result string: 'play' | 'stop' | 'pause' | ''
@@ -263,6 +263,7 @@ def mplayer_control(cmd, service):
                             'previous',
                             'rew',
                             'ff',
+                            'play_track',
                             'eject'     )
 
     # (i) pe.audio.sys scripts redirects Mplayer stdout & stderr
@@ -344,12 +345,12 @@ def mplayer_control(cmd, service):
                 else:
                     cmd = ''
 
-        elif cmd.startswith('play_track_'):
+        elif cmd == 'play_track':
             # Loading disc if necessary
             if not cdda_is_loaded():
                 cdda_load()
-            if cmd[11:].isdigit():
-                curr_track = int( cmd[11:] )
+            if arg.isdigit():
+                curr_track = int( arg )
                 chapter = int(curr_track) - 1
                 cmd = f'seek_chapter {str(chapter)} 1'  # 1: absolute seek
             else:
