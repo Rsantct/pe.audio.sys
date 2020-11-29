@@ -18,6 +18,7 @@ sys.path.append( f'{UHOME}/pe.audio.sys/share' )
 import miscel
 import server
 
+import yaml
 from subprocess import Popen
 from time import sleep, time
 import socket
@@ -33,7 +34,8 @@ REMOTES_ADDR_RANGE = range(230, 240)
 
 
 
-# Handler class to do actions when a file change occurs.
+# Handler class to do actions (manage levels) when a
+# file change occurs (a command has been issued inside the commands log file)
 class files_event_handler(FileSystemEventHandler):
     """ will do something when <wanted_path> file changes
     """
@@ -52,15 +54,16 @@ class files_event_handler(FileSystemEventHandler):
         if event.src_path == self.wanted_path:
             if self.antibound:
                 if (time() - self.ts) > .1:
-                    manage_volume()
+                    manage_levels()
                 self.ts = time()
             else:
-                manage_volume()
+                manage_levels()
 
 
-def manage_volume(purge=False):
+def manage_levels(purge=False):
     """ Read the last command, if it was about relative level change
         then forward it to remotes listeners.
+        Also updates the current LU offset.
     """
     global remoteClients
 
@@ -69,8 +72,16 @@ def manage_volume(purge=False):
     # e.g.: "2020/10/23 17:16:43; level -1 add; done"
     cmd = tmp.split(';')[1].strip()
 
-    # Early return if not a relative level change
-    if 'level' not in cmd or 'add' not in cmd:
+    # Filtering relative level or loudness_ref commands
+    rel_level_cmd = ''
+    lu_offset_cmd = ''
+    if 'level' in cmd and 'add' in cmd:
+        rel_level_cmd = cmd
+    if 'loudness_ref' in cmd:
+        lu_offset_cmd = cmd
+
+    # Early return if not relative level or loudness_ref
+    if not rel_level_cmd and not lu_offset_cmd:
         return
 
     # Forwarding it to remotes
@@ -78,14 +89,38 @@ def manage_volume(purge=False):
 
         # checking if still listening to us
         if 'remote' in miscel.get_source_from_remote(cli_addr):
-            print( f'remote {cli_addr} sending \'{cmd}\'' )
-            miscel.send_cmd( cmd, host=cli_addr, verbose=False )
 
+            # Updates relative VOLUME event to remotes
+            if rel_level_cmd:
+                manage_volume(cli_addr, rel_level_cmd)
+            # Updates LU OFFSET to remotes
+            if lu_offset_cmd:
+                manage_LU_offset(cli_addr)
+
+        # if not listening anymore
         else:
             print( f'remote {cli_addr} not listening by now :-/' )
             if purge:
                 remoteClients.remove( cli_addr )
                 print( f'Updated remote listening machines: {remoteClients}' )
+
+
+def manage_volume(cli_addr, rel_level_cmd):
+    """ simply sends the relative level change to remote
+    """
+    print( f'remote {cli_addr} sending \'{rel_level_cmd}\'' )
+    miscel.send_cmd( rel_level_cmd, host=cli_addr, verbose=False )
+
+
+def manage_LU_offset(cli_addr):
+    """ updates the current LU offset to remote
+    """
+    # retrieve current LU offset
+    curr_state = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/.state.yml', 'r') )
+    # sending to remote
+    cmd = f'loudness_ref {curr_state["loudness_ref"]}'
+    print( f'remote {cli_addr} sending \'{cmd}\'' )
+    miscel.send_cmd( cmd, host=cli_addr, verbose=False )
 
 
 def detect_remotes():
@@ -102,7 +137,7 @@ def detect_remotes():
         if addr == my_ip:
             continue
 
-        if 'remote' in miscel.get_source_from_remote(addr):
+        if 'remote' in miscel.get_source_from_remote(addr).lower():
             clients.append(addr)
 
     return clients
@@ -123,9 +158,12 @@ def do(cmd):
         if cli_addr != my_ip and '127.0.' not in cli_addr:
             print( f'(remote_volume) Received hello from: {cli_addr}' )
             if cli_addr not in remoteClients:
+                # updating new client into remote clients list
                 remoteClients.append(cli_addr)
                 print( f'(remote_volume) Updated remote listening machines: '
                        f'{remoteClients}' )
+                # set the current LU offset into remote
+                manage_LU_offset(cli_addr)
             result = 'ack'
         else:
             print( f'(remote_volume) Tas tonto: received \'hello\' '
@@ -187,4 +225,4 @@ if __name__ == "__main__":
     server.SERVICE = 'remote_volume'
     server.MODULE = __import__(__name__)
     server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5,
-                       verbose=False)
+                       verbose=True)
