@@ -29,7 +29,8 @@ import matplotlib
 # (i) Agg is a SAFE backend to avoid "tkinter.TclError: couldn't connect to display"
 #     under certain circumstances.
 #     https://matplotlib.org/faq/usage_faq.html#what-is-a-backend
-#     Comment out this line if you want to test plotting under your standard backend
+#     https://matplotlib.org/faq/howto_faq.html#working-with-threads
+# Comment out this line if you want to test plotting under your standard backend
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 

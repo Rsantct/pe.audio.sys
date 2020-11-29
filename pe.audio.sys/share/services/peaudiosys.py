@@ -32,7 +32,7 @@ import players
 
 import yaml
 import json
-from subprocess import Popen
+from subprocess import Popen, check_output
 from time import sleep, strftime
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers import Observer
@@ -150,9 +150,18 @@ def process_players( cmd, arg='' ):
 
 # Main function for AUX commands processing
 def process_aux( cmd, arg='' ):
-    """ input:  a tuple (prefix, command, arg)
-        output: a result string
+    """ input:  command [, arg]
+        output: an execution result string
     """
+
+    # On line command list helper
+    def aux_cmd_list():
+        cmd_list = 'amp_switch, get_macros, get_last_macro, run_macro, play, ' + \
+                   'loudness_monitor_reset, lu_monitor_reset, ' + \
+                   'set_loudness_monitor_scope, set_lu_monitor_scope, ' + \
+                   'get_loudness_monitor, get_lu_monitor, ' + \
+                   'restart, get_aux_info, info, add_delay'
+        return cmd_list
 
     # Aux for playing an url stream
     def play_istream(url):
@@ -177,7 +186,25 @@ def process_aux( cmd, arg='' ):
             return False
 
 
+    # As per LOUD_MON_CTRL_FILE is a namedpipe (FIFO), it is needed that
+    # 'loudness_monitor.py' was alive in order to release any write to it.
+    # If not alive, any f.write() to LOUD_MON_CTRL_FILE will HANG UP
+    # :-(
+    def lu_ctrl_write(string):
+        try:
+            sp.check_output('pgrep -fla loudness_monitor.py'.split())
+        except:
+            return 'ERROR loudness_monitor.py NOT running'
+        try:
+            with open(LOUD_MON_CTRL_FILE, 'w') as f:
+                f.write(string)
+            return 'tried'
+        except:
+            return 'unknown ERROR writing .loudness_control FIFO'
+
+
     # BEGIN of process_aux
+    cmd = cmd.lower()
     result = 'bad command'
 
     # AMPLIFIER SWITCHING
@@ -236,27 +263,19 @@ def process_aux( cmd, arg='' ):
             result = f'bad: {arg}'
 
     # RESET the LOUDNESS MONITOR DAEMON:
-    elif cmd == 'loudness_monitor_reset' or cmd.lower() == 'lu_monitor_reset':
-        try:
-            with open(LOUD_MON_CTRL_FILE, 'w') as f:
-                f.write('reset')
-            result = 'done'
-        except:
-            result = 'error'
+    elif cmd == 'loudness_monitor_reset' or \
+         cmd == 'lu_monitor_reset':
+        return lu_ctrl_write('reset')
 
     # Set the LOUDNESS MONITOR SCOPE:
     elif cmd == 'set_loudness_monitor_scope' or \
-         cmd.lower() == 'set_lu_monitor_scope':
-        try:
-            with open(LOUD_MON_CTRL_FILE, 'w') as f:
-                f.write(f'scope={arg}')
-            result = 'done'
-        except:
-            result = 'error'
+         cmd == 'set_lu_monitor_scope':
+        return lu_ctrl_write(f'scope={arg}')
 
     # Get the LOUDNESS MONITOR VALUE from the
     # loudness monitor daemon's output file:
-    elif cmd == 'get_loudness_monitor' or cmd.lower() == 'get_lu_monitor':
+    elif cmd == 'get_loudness_monitor' or \
+         cmd == 'get_lu_monitor':
         try:
             with open(LOUD_MON_VAL_FILE, 'r') as f:
                 result = json.loads( f.read() )
@@ -290,9 +309,9 @@ def process_aux( cmd, arg='' ):
         result = 'tried'
 
     # HELP
-    elif '-h' in cmd:
-        print(__doc__)
-        result =  'done'
+    elif cmd == 'help':
+        result = aux_cmd_list()
+
 
     return result
 
@@ -419,6 +438,7 @@ def do( cmd_phrase ):
 
         return pfx, cmd, arg
 
+
     result = 'nothing done'
     cmd_phrase = cmd_phrase.strip()
 
@@ -431,13 +451,11 @@ def do( cmd_phrase ):
 
         pfx, cmd, arg = read_cmd_phrase( cmd_phrase )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
-        if cmd == 'help':
-            Popen( f'cat {MAINFOLDER}/doc/peaudiosys.hlp', shell=True)
-            return 'help has been printed to stdout, also available on ' \
-                    '\'~/pe.audio.sys/doc/peaudiosys.hlp\''
+
         result = {  'preamp':   process_preamp,
                     'player':   process_players,
                     'aux':      process_aux }[ pfx ]( cmd, arg )
+
         if type(result) != str:
             result = json.dumps(result)
 

@@ -58,7 +58,7 @@ All commands prefixed with 'player':
 
     state                                   Gets the playback state: play, pause or stop.
 
-    stop | pause | play | play_track_NN
+    stop | pause | play | play_track NN
     next | previous | rew | ff              Controls the playback
 
     eject                                   Ejects the CD tray
@@ -72,14 +72,11 @@ All commands prefixed with 'aux':
     play http://url                         Listen an internet audio stream
 
     amp_switch   on | off                   Switch an amplifier
-    
+
     LU_monitor_reset                        Force to reset the LU-I measure
 
     get_LU_monitor                          Gets the monitored LU-I value and scope
-    
+
     set_LU_monitor_scope  album | track     Choose the LU-I measured scope
 
     restart                                 Restarts pe.audio.sys
-
-
-
