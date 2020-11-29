@@ -30,18 +30,16 @@
 
 import sys
 from os.path import expanduser, exists, getsize
+
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
+from share.miscel import Fmt, CONFIG
 
-from share.miscel import Fmt
+from preamp_mod.core import Preamp, Convolver
 import json
 import yaml
 from time import strftime
-from preamp_mod.core import Preamp, Convolver
-
-
-# pe.audio.sys CONFIG
-CONFIG  = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
+from subprocess import Popen
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -116,8 +114,8 @@ def process_commands( full_command ):
         return result
 
     def print_help(*dummy):
-        with open( f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r') as f:
-            print(f.read())
+        return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
+
 
     # HERE BEGINS THE COMMAND PROCESSING:
     result  = 'nothing has been done'

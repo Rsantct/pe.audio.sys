@@ -563,7 +563,7 @@ function update_player_info() {
 function select_track() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
-        control_cmd( 'player play_track_' + tracknum );
+        control_cmd( 'player play_track ' + tracknum );
     }
 }
 
