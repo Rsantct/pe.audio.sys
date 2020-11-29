@@ -182,7 +182,7 @@ def player_control(cmd, arg=''):
 
     # CDDA.py
     elif source == 'cd':
-        result = mplayer_control(cmd=cmd, service='cdda')
+        result = mplayer_control(cmd=cmd, arg=arg, service='cdda')
 
     # A generic source without a player module
     else:
@@ -260,12 +260,12 @@ def do(cmd_phrase):
         result = player_control( cmd )
 
     # Special command for DISK TRACK playback
-    elif cmd.startswith('play_track_'):
-        result = player_control( cmd )
+    elif cmd == 'play_track':
+        result = player_control( cmd, arg )
 
     # EJECTS unconditionally the CD tray
     elif cmd == 'eject':
-        result = mplayer_control('eject', 'cdda')
+        result = mplayer_control('eject', service='cdda')
 
     if type(result) != str:
         result = json.dumps(result)
