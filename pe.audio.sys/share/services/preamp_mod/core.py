@@ -1130,7 +1130,11 @@ class Preamp(object):
 
 
     def set_solo(self, value, *dummy):
-        if value.lower() in ('off', 'l', 'r'):
+        if value.lower() in ('off', 'l', 'left', 'r', 'right'):
+            if value.lower() == 'left':
+                value = 'l'
+            if value.lower() == 'right':
+                value = 'r'
             self.state["solo"] = value.lower()
             bf_set_gains( self.state )
             return 'done'
