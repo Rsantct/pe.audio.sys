@@ -179,8 +179,8 @@ function onHttpReq( httpReq, httpRes ){
             // Will use timeout when connecting as a client to the pe.audio.sys server
             // (i) It is a must to ending the socket if timeout happens
             //     https://nodejs.org/api/net.html#net_socket_settimeout_timeout_callback
-            //     As per this is local connection, it is enough about 50 ms
-            client.setTimeout(50);
+            //     As per this is a local connection, it is enough about 100 ms
+            client.setTimeout(100);
             client.on('timeout', () => {
               console.log( '(node) client socket timeout to pe.audio.sys at '
                            + PAS_ADDR + ':' + PAS_PORT );
