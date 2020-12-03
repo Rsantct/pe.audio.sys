@@ -442,7 +442,7 @@ def do( cmd_phrase ):
     result = 'nothing done'
     cmd_phrase = cmd_phrase.strip()
 
-    if cmd_phrase.strip():
+    if cmd_phrase:
 
         # cmd_phrase log
         if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
