@@ -219,7 +219,7 @@ def calc_gain( state ):
     """
 
     gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
-                             - state["loudness_ref"]
+                             - state["lu_offset"]
 
     # Adding here the specific source gain:
     if state["input"] != 'none':
@@ -747,7 +747,7 @@ def init_audio_settings():
                 'treble':           preamp.set_treble,
                 'balance':          preamp.set_balance,
                 'loudness_track':   preamp.set_loud_track,
-                'loudness_ref':     preamp.set_loud_ref,
+                'lu_offset':        preamp.set_lu_offset,
                 'midside':          preamp.set_midside,
                 'polarity':         preamp.set_polarity,
                 'solo':             preamp.set_solo
@@ -828,7 +828,7 @@ class Preamp(object):
             set_balance
             set_bass
             set_treble
-            set_loud_ref
+            set_lu_offset
             set_loud_track
             set_target
             set_solo
@@ -1087,14 +1087,14 @@ class Preamp(object):
             return 'too much'
 
 
-    def set_loud_ref(self, value, relative=False):
+    def set_lu_offset(self, value, relative=False):
         candidate = self.state.copy()
         # this try if intended just to validate the given value
         try:
             if relative:
-                candidate["loudness_ref"] += round(float(value), 2)
+                candidate["lu_offset"] += round(float(value), 2)
             else:
-                candidate["loudness_ref"] =  round(float(value), 2)
+                candidate["lu_offset"] =  round(float(value), 2)
             return self._validate( candidate )
         except:
             return 'bad value'
@@ -1258,10 +1258,10 @@ class Preamp(object):
                 self.switch_convolver('on')
             candidate = on_change_input_behavior(candidate)
             # Some source specific audio settings overrides global settings
-            # Loudness_ref
-            if 'loudness_ref' in CONFIG["sources"][source]:
-                candidate["loudness_ref"] = \
-                               CONFIG["sources"][source]["loudness_ref"]
+            # LU offset
+            if 'lu_offset' in CONFIG["sources"][source]:
+                candidate["lu_offset"] = \
+                               CONFIG["sources"][source]["lu_offset"]
             # Target eq curve
             if 'target' in CONFIG["sources"][source]:
                 candidate["target"] = CONFIG["sources"][source]["target"]
