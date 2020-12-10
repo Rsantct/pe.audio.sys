@@ -153,7 +153,7 @@ def process_commands( full_command ):
             'bass':             preamp.set_bass,
             'loudness':         preamp.set_loud_track,
             'loudness_track':   preamp.set_loud_track,
-            'loudness_ref':     preamp.set_loud_ref,
+            'lu_offset':        preamp.set_lu_offset,
             'set_target':       preamp.set_target,
 
             'set_drc':          set_drc,
@@ -166,7 +166,7 @@ def process_commands( full_command ):
 
             'help':             print_help
 
-            } [ command ] ( arg, add )
+            } [ command.lower() ] ( arg, add )
 
     except KeyError:
         result = f'(preamp) unknown command: {command}'
