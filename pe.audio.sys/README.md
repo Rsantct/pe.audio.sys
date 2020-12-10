@@ -87,8 +87,8 @@ All commands prefixed with `preamp`. This prexix can be omited.
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
-    loudness_ref    xx [add]
-    loudness | loudness_track     on | off | toggle   Loudness compensation
+    lu_offset       xx [add]
+    loudness | loudness_track     on | off | toggle   Loudness contour compensation
     set_target       <name>                           Selects a target curve
 
 ### Convolver stages:
@@ -168,7 +168,7 @@ An auto reset will occur when **changing the preamp input**. In addition, the LU
 To compensate for high LU-Integrated values on your listening audio program, we provide some options:
 
 - The control web offers a 'LU offset' slider for you to compensate the displayed LU monitor value: simply adjust the slider as per the displayed bar span. For convenience, the adjusted value steps in 3 dB from 0 to 12 dB.
-- You can preset an estimated 'loudness_reference' value under your favourite sources inside `config.yml`
+- You can preset an estimated 'lu_offset' value under your favourite sources inside `config.yml`
 - You can prepare your own macros (linked to control web buttons). For instance you can set 0 dB for classical radio stations, or say about 9 dB for pop & rock radio stations.
 
 
@@ -291,7 +291,7 @@ Here you are an uncommented bare example of `config.yml`:
     bfeq_linear_phase: false
 
     loudspeaker:    SeasFlat
-    refSPL:         77
+    refSPL:         83
     ref_level_gain: -10.0
 
     on_init:
@@ -305,7 +305,7 @@ Here you are an uncommented bare example of `config.yml`:
         treble:             0
         balance:            0
         loudness_track:     true
-        loudness_ref:       6.0     # most records suffers loudness war mastering
+        lu_offset:          6.0     # most records suffers loudness war mastering
         midside:            'off'
         solo:               'off'
         input:              'mpd'
@@ -316,7 +316,7 @@ Here you are an uncommented bare example of `config.yml`:
         bass:               0.0
         treble:             0.0
         loudness_track:     True
-        loudness_ref:       6.0     # most records suffers loudness war mastering
+        lu_offset:          6.0     # most records suffers loudness war mastering
         midside:           'off'
         solo:              'off'
 
