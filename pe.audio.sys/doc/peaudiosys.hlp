@@ -35,8 +35,8 @@ All commands prefixed with 'preamp':
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
-    loudness_ref    xx [add]
-    loudness | loudness_track     on | off | toggle   Loudness compensation
+    lu_offset       xx [add]
+    loudness | loudness_track     on | off | toggle   Loudness contour compensation
     set_target       <name>                           Select a target curve
 
 
