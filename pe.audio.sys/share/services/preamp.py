@@ -171,8 +171,8 @@ def process_commands( full_command ):
     except KeyError:
         result = f'(preamp) unknown command: {command}'
 
-    except:
-        result = f'(preamp) problems processing command: {command}'
+    except Exception as e:
+        result = f'(preamp) {command} ERROR: {e}'
 
     return result
 
