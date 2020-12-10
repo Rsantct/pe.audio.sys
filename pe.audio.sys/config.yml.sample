@@ -65,6 +65,9 @@ bfeq_linear_phase: false
 # Put here your loudspeaker folder name
 loudspeaker: full_range_example
 
+# Estimated perceived reference SPL at listening point
+refSPL:         83
+
 # Gain dBFS at convolver output to obtain the reference SPL (level = 0.0):
 ref_level_gain: -10.0
 
