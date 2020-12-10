@@ -57,7 +57,7 @@ Excerpt from [soundandsound article](https://www.soundonsound.com/techniques/est
 
     ```
     level:          -20
-    loudness_ref:   0
+    lu_offset:      0
     loudness_trak:  off
     drc:            none, or the one you have prepared (*)
     bass:           0
@@ -125,6 +125,7 @@ So from the loudness compensation curves provided under the `pe.audio.sys/share/
 *Although this may seem inconsistent with your calibrated 76 dBC system, that's fine. This is because the subjective room volume compensation applied will cause you to perceive the standard reference SPL as if you were inside a large venue, as explained above.*
  
 When your level control is properly calibrated, you'll find that you can safely keep loudness compensation activated in pe.audio.sys. Then, when you listen to some ""loudness war"" recording, you don't need to readjust your level control, instead you can adjust the LU offset control to compensate for that strong recording.
+
 
 
 
