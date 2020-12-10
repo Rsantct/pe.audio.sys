@@ -72,15 +72,15 @@ def manage_levels(purge=False):
     # e.g.: "2020/10/23 17:16:43; level -1 add; done"
     cmd = tmp.split(';')[1].strip()
 
-    # Filtering relative level or loudness_ref commands
+    # Filtering relative level or lu_offset commands
     rel_level_cmd = ''
     lu_offset_cmd = ''
     if 'level' in cmd and 'add' in cmd:
         rel_level_cmd = cmd
-    if 'loudness_ref' in cmd:
+    if 'lu_offset' in cmd:
         lu_offset_cmd = cmd
 
-    # Early return if not relative level or loudness_ref
+    # Early return if not relative level or lu_offset
     if not rel_level_cmd and not lu_offset_cmd:
         return
 
@@ -118,7 +118,7 @@ def manage_LU_offset(cli_addr):
     # retrieve current LU offset
     curr_state = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/.state.yml', 'r') )
     # sending to remote
-    cmd = f'loudness_ref {curr_state["loudness_ref"]}'
+    cmd = f'lu_offset {curr_state["lu_offset"]}'
     print( f'remote {cli_addr} sending \'{cmd}\'' )
     miscel.send_cmd( cmd, host=cli_addr, verbose=False )
 
