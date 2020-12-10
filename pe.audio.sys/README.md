@@ -290,7 +290,8 @@ Here you are an uncommented bare example of `config.yml`:
     loud_ceil:      false
     bfeq_linear_phase: false
 
-    loudspeaker: SeasFlat
+    loudspeaker:    SeasFlat
+    refSPL:         77
     ref_level_gain: -10.0
 
     on_init:
@@ -382,20 +383,18 @@ Here you are an uncommented bare example of `config.yml`:
 
 This folder contains the set of curves that will be used to apply "soft" EQ to the system, i.e.: tone, loudness compensation and psychoacoustic room dimension equalization (aka 'target').
 
-(i) The curves will be rendered under the EQ stage on Brutefir, so your `brutefir_config` file must have an `"eq"` section properly configured with the same frequency bands as the contained into your xxxxxxxfreq.dat file. More info: https://torger.se/anders/brutefir.html#bflogic_eq
+(i) The curves will be rendered under the EQ stage on Brutefir, so your `brutefir_config` file must have an `"eq"` section properly configured with the same frequency bands as the contained into your `freq.dat` file. More info: https://torger.se/anders/brutefir.html#bflogic_eq
 
 Similar to the loudspeaker folder, some rules here must be observed when naming files:
 
-- Frequencies: `xxxxxxfreq.dat`
-- Tone: `xxxxxxbass_mag.dat xxxxxxbass_pha.dat xxxxxxtreble_mag.dat xxxxxxtreble_pha.dat` 
-- Loudness: `xxxxxxloudness_mag.dat xxxxxxloudness_pha.dat`
-- Target: `yyyyyytarget_mag.dat yyyyyytarget_pha.dat` ... ...
+- Frequencies: `freq.dat`
+- Tone:        `bass_mag.dat bass_pha.dat treble_mag.dat treble_pha.dat` 
+- Loudness:    `ref_XX_loudness_mag.dat ref_XX_loudness_pha.dat` (as many as refSPLs you want to use)
+- Target:      `+X.X-Y.Y_target_mag.dat +X.X-Y.Y_target_pha.dat` ... ...
 
-On freq, tone and loudness files the xxxxxx part is optional.
+On target files '+X.X-Y.Y_' is also optional but neccessary if more than one target set is desired to be available to be switched.
 
-On target files yyyyyyy is also optional but neccessary if more than one target set is desired.
-
-You can issue the commands **`get_target_sets`** and **`set_target yyyyyytarget`** to manage the target eq.
+You can issue the commands **`get_target_sets`** and **`set_target +X.X-Y.Y_target`** to manage the target eq.
 
 A sets of tone, loudness and target curves are provided on this distro:
 
@@ -403,7 +402,7 @@ A sets of tone, loudness and target curves are provided on this distro:
 
 - `share/eq.sample.R20_ext/` from the `FIRtro` and `pre.di.c` projects by the pioneer @rripio. Loudness contour curves here span from 70 to 90 phon. Tone curves and room gain house curve have a 2nd order slope.
 
-Optionally, you can make your own EQ curves by running the tools provided here:
+You can make your own EQ curves by running the tools provided here:
 
 https://github.com/AudioHumLab/audiotools/tree/master/brutefir_eq
 
