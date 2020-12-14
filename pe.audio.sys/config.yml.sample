@@ -54,8 +54,8 @@ balance_max:   6.0
 # Max gain authorised at convolver output
 gain_max:    0.0
 
-# Loudness EQ compensation ceiled at your reference SPL
-eq_loud_ceil: false
+# Equal loudness curves ceiled above the reference SPL
+eq_loud_ceil: true
 
 # Should Brutefir EQ stage to be linear phase?
 bfeq_linear_phase: false
