@@ -63,7 +63,7 @@ def main():
     sleep(.5)
 
     # Loudness compensation on|off
-    send_cmd( f'loudness_track {loudness_comp}', sender=ME, verbose=True )
+    send_cmd( f'loudness {loudness_comp}', sender=ME, verbose=True )
     sleep(.5)
 
     # XO
