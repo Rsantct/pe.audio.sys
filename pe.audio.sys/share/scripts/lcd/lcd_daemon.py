@@ -191,7 +191,7 @@ def update_lcd_state(scr='scr_1'):
 
         ws = Widgets()
 
-        global loudness_track
+        global equal_loudness
 
         for key, value in data.items():
 
@@ -208,19 +208,19 @@ def update_lcd_state(scr='scr_1'):
             pos = ws.state[key]['pos']  # pos ~> position
             lbl = ws.state[key]['val']  # lbl ~> label
 
-            # When booleans (loudness_track, muted)
+            # When booleans (equal_loudness, muted)
             # will leave the defalul widget value or will supress it
             if type(value) == bool:
                 if not value:
                     lbl = ''
                 # Update global to be accesible outside from auxiliary
-                if key == 'loudness_track':
-                    loudness_track = value
+                if key == 'equal_loudness':
+                    equal_loudness = value
 
             # Special case: lu_offset will be rounded to integer
-            #               or void if no loudness_track
+            #               or void if no equal_loudness
             elif key == 'lu_offset':
-                if data['loudness_track']:
+                if data['equal_loudness']:
                     lbl += str( int( round(value, 0) ) ).rjust(3)
                 else:
                     lbl = 'LOUDc off'
