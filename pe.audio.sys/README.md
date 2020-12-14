@@ -304,7 +304,7 @@ Here you are an uncommented bare example of `config.yml`:
         bass:               0
         treble:             0
         balance:            0
-        loudness_track:     true
+        equal_loudness:     true
         lu_offset:          6.0     # most records suffers loudness war mastering
         midside:            'off'
         solo:               'off'
@@ -315,7 +315,7 @@ Here you are an uncommented bare example of `config.yml`:
     on_change_input:
         bass:               0.0
         treble:             0.0
-        loudness_track:     True
+        equal_loudness:     True
         lu_offset:          6.0     # most records suffers loudness war mastering
         midside:           'off'
         solo:              'off'
