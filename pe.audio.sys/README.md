@@ -88,8 +88,8 @@ All commands prefixed with `preamp`. This prexix can be omited.
     treble          xx [add]
     bass            xx [add]
     lu_offset       xx [add]
-    loudness | loudness_track     on | off | toggle   Loudness contour compensation
-    set_target       <name>                           Selects a target curve
+    loudness        on | off | toggle       Equal loudness contour correction
+    set_target       <name>                 Selects a target curve
 
 ### Convolver stages:
 
