@@ -55,7 +55,7 @@ balance_max:   6.0
 gain_max:    0.0
 
 # Loudness EQ compensation ceiled at your reference SPL
-loud_ceil: false
+eq_loud_ceil: false
 
 # Should Brutefir EQ stage to be linear phase?
 bfeq_linear_phase: false
@@ -97,7 +97,7 @@ on_init:
     bass:               0
     treble:             0
     balance:            0
-    loudness_track:     true
+    equal_loudness:     true
     lu_offset:          6.0     # most records suffers loudness war mastering
     midside:            'off'
     polarity:           '++'
@@ -117,7 +117,7 @@ run_macro:              '7_mpd_play_mylist'
 on_change_input:
     bass:               0.0
     treble:             0.0
-    loudness_track:     true
+    equal_loudness:     true
     lu_offset:          6.0     # most records suffers loudness war mastering
     midside:            'off'
     solo:               'off'
@@ -236,7 +236,7 @@ scripts:
     ## Controls the volume by a mouse
     #- mouse_volume_daemon.py
     
-    ## A daemon that monitorizes the EBU R128 Loudness Integrated
+    ## A daemon that monitorizes the EBU R128 LU-I Loudness Integrated
     #- loudness_monitor.py
 
     ## The LCDd server and lcd_daemon.py
