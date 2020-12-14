@@ -824,14 +824,12 @@ function buttonMonoHighlight(){
     }
 }
 function buttonLoudHighlight(){
-    if ( state.loudness_track == true ) {
+    if ( state.equal_loudness == true ) {
         document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
         document.getElementById("buttonLoud").style.color = "white";
-        document.getElementById("buttonLoud").innerText = 'LC';
     } else {
         document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
         document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
-        document.getElementById("buttonLoud").innerText = 'LC';
     }
 }
 
@@ -859,10 +857,10 @@ function mute_toggle() {
     buttonMuteHighlight();
     control_cmd( 'mute toggle' );
 }
-function loudness_toggle() {
-    state.loudness_track = ! state.loudness_track;
+function equal_loudness_toggle() {
+    state.equal_loudness = ! state.equal_loudness;
     buttonLoudHighlight();
-    control_cmd( 'loudness_track toggle' );
+    control_cmd( 'equal_loudness toggle' );
 }
 function mono_toggle() {
     if (state.midside == "mid" || state.midside == "side"){
