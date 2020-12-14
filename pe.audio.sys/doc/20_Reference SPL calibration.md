@@ -111,18 +111,18 @@ Regarding this, pe.audio.sys provides the "LU offset" control slider, for you to
 
 All discussed above refers to normal (reference) listening volume.
 
-For low volume listening, the **LOUDNESS control** switch will help you.
+For low volume listening, the **`LOUDNESS`** control switch will help you.
 
-In order apply an adequate loudness contour compensation curve, you'll need to adjust properly the **LU offset** control slider as discussed above.
+In order apply an adequate loudness contour compensation curve, you'll need to adjust properly the **`LU offset`** control slider as discussed above.
 
 The default `config.yml` file indicates:
 
     # Estimated perceived reference SPL at listening point
     refSPL:         83
 
-So that, from the loudness compensation curves provided under `pe.audio.sys/share/eq`, it will be used the ones named **`ref_83_loudness...`**.
+So that, from the loudness compensation curves provided under `pe.audio.sys/share/eq`, it will be used the ones named `ref_83_loudness...`
 
 *Although this may seem inconsistent with your calibrated 76 dBC system, that's fine. This is because the subjective room volume compensation applied will cause you to perceive the standard reference SPL as if you were inside a large venue, as explained above.*
  
-When your level control is properly calibrated, you'll find that you can safely keep activated the **LOUDNESS control**. Then, when you listen to some ""loudness war"" recording, you don't need to readjust your level control, rather you may adjust the **LU offset control** to compensate for that newcoming strong recording.
+When your level control is properly calibrated, you'll find that you can safely keep activated the **`LOUDNESS`** control. Then, when you listen to some ""loudness war"" recording, you don't need to readjust your level control, rather you may adjust the **`LU offset`** control to compensate for that newcoming strong recording.
 
