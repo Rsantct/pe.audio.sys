@@ -105,16 +105,16 @@ def get_eq_curve(cname, state):
         index = int(round(state["treble"])) + treble_center_index
 
     # Using the previously detected flat curve index and
-    # also limiting as per the loud_ceil boolean inside config.yml
+    # also limiting as per the eq_loud_ceil boolean inside config.yml
     elif cname == 'loud':
 
         index_max   = EQ_CURVES["loud_mag"].shape[0] - 1
         index_flat  = CONFIG['refSPL']
         index_min   = 0
-        if CONFIG["loud_ceil"]:
+        if CONFIG["eq_loud_ceil"]:
             index_max = index_flat
 
-        if state["loudness_track"]:
+        if state["equal_loudness"]:
             index = CONFIG['refSPL'] + state["level"]
         else:
             index = index_flat
@@ -200,13 +200,13 @@ def calc_eq( state ):
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
     # Compose
-    eq_mag = targ_mag + loud_mag * state["loudness_track"] \
+    eq_mag = targ_mag + loud_mag * state["equal_loudness"] \
                                                 + bass_mag + treb_mag
 
     if CONFIG["bfeq_linear_phase"]:
         eq_pha = zeros
     else:
-        eq_pha = targ_pha + loud_pha * state["loudness_track"] \
+        eq_pha = targ_pha + loud_pha * state["equal_loudness"] \
                  + bass_pha + treb_pha
 
     return eq_mag, eq_pha
@@ -746,7 +746,7 @@ def init_audio_settings():
                 'bass':             preamp.set_bass,
                 'treble':           preamp.set_treble,
                 'balance':          preamp.set_balance,
-                'loudness_track':   preamp.set_loud_track,
+                'equal_loudness':   preamp.set_equal_loudness,
                 'lu_offset':        preamp.set_lu_offset,
                 'midside':          preamp.set_midside,
                 'polarity':         preamp.set_polarity,
@@ -829,7 +829,7 @@ class Preamp(object):
             set_bass
             set_treble
             set_lu_offset
-            set_loud_track
+            set_equal_loudness
             set_target
             set_solo
             set_mute
@@ -1100,7 +1100,7 @@ class Preamp(object):
             return 'bad value'
 
 
-    def set_loud_track(self, value, *dummy):
+    def set_equal_loudness(self, value, *dummy):
         candidate = self.state.copy()
         if type(value) == bool:
             value = str(value)
@@ -1108,9 +1108,9 @@ class Preamp(object):
             value = { 'on': True , 'off': False,
                       'true': True, 'false': False,
                       'toggle': {True: False, False: True
-                                 }[self.state["loudness_track"]]
+                                 }[self.state["equal_loudness"]]
                      } [ value.lower() ]
-            candidate["loudness_track"] = value
+            candidate["equal_loudness"] = value
             return self._validate( candidate )
         except:
             return 'bad option'
