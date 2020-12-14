@@ -147,13 +147,13 @@ An LCD service is provided to plug a LCD display to show the system status as we
 
 You can also use the above getting info commands, through by a TCP connection.
 
-## Monitorig the EBU R128 Integrated Loudness of the audio signal
+## Monitorig the EBU R128 LU-I Integrated Loudness of the audio signal
 
 Most music rock and pop kind of records from 80's onwards have been mastered under the 'loudness war' age.
 
 To deal with this, you can load an optional script `loudness_monitor.py` under your `config.yml` preferences.
 
-This script will automatically measure the EBU R128 Integrated Loudness of the current preamp source.
+This script will automatically measure the EBU R128 LU-I Integrated Loudness of the current preamp source.
 
 The monitored value will be available in several flavours:
 
@@ -285,9 +285,9 @@ Here you are an uncommented bare example of `config.yml`:
     jack_backend_options:   -d $autoCard -r $autoFS -P -o 6
 
 
-    balance_max:    6.0
-    gain_max:       0.0
-    loud_ceil:      false
+    balance_max:       6.0
+    gain_max:          0.0
+    eq_loud_ceil:      false
     bfeq_linear_phase: false
 
     loudspeaker:    SeasFlat
@@ -389,7 +389,7 @@ Similar to the loudspeaker folder, some rules here must be observed when naming 
 
 - Frequencies: `freq.dat`
 - Tone:        `bass_mag.dat bass_pha.dat treble_mag.dat treble_pha.dat` 
-- Loudness:    `ref_XX_loudness_mag.dat ref_XX_loudness_pha.dat` (as many as refSPLs you want to use)
+- Loudness:    `ref_XX_loudness_mag.dat ref_XX_loudness_pha.dat` (as many as reference SPL you want to manage)
 - Target:      `+X.X-Y.Y_target_mag.dat +X.X-Y.Y_target_pha.dat` ... ...
 
 On target files '+X.X-Y.Y_' is also optional but neccessary if more than one target set is desired to be available to be switched.
