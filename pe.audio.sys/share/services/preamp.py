@@ -151,8 +151,9 @@ def process_commands( full_command ):
             'balance':          preamp.set_balance,
             'treble':           preamp.set_treble,
             'bass':             preamp.set_bass,
-            'loudness':         preamp.set_loud_track,
-            'loudness_track':   preamp.set_loud_track,
+            'loudness':         preamp.set_equal_loudness,
+            'eq_loudness':      preamp.set_equal_loudness,
+            'equal_loudness':   preamp.set_equal_loudness,
             'lu_offset':        preamp.set_lu_offset,
             'set_target':       preamp.set_target,
 
