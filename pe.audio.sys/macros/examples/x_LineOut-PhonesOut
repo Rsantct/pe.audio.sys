@@ -33,7 +33,7 @@ def set_flat_EQ():
         Popen( f'{ctrl} balance        0.0'.split()  , stdout=fnull)
         Popen( f'{ctrl} set_drc        none'.split() , stdout=fnull)
         Popen( f'{ctrl} set_target     none'.split() , stdout=fnull)
-        #Popen( f'{ctrl} loudness_track off'.split() , stdout=fnull)
+        #Popen( f'{ctrl} loudness off'.split() , stdout=fnull)
 
 def restore_EQ():
     with open(f'{UHOME}/pe.audio.sys/.state.yml.lineOut','r') as f:
@@ -50,7 +50,7 @@ def restore_EQ():
                 stdout=fnull )
         Popen( f'{ctrl} set_target     {st["target"]}        '.split(),
                 stdout=fnull )
-        #Popen( f'{ctrl} loudness_track {st["loudness_track"]}'.split(),
+        #Popen( f'{ctrl} loudness {st["equal_loudness"]}'.split(),
         #        stdout=fnull )
 
 if __name__ == '__main__':
