@@ -397,7 +397,7 @@ The files of the eq curves itself, `..._mag.dat` for magnitude and `..._pha.dat`
 - `ref_XX_loudness_mag.dat`, `ref_XX_loudness_pha.dat` (as many as reference SPL you want to manage)
 - `xxxx_target_mag.dat xxxx_target_pha.dat` (as many sets as you consider)
 
-The 'xxxx' prefix for target files is optional. The system will always include the `none` target set name, to not apply eq.
+The `xxxx` prefix for target files is optional. Also, the system will always include the `none` target set name.
 
 A sets of tone, loudness and target curves are provided on this distro:
 
