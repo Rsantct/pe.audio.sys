@@ -381,32 +381,36 @@ Here you are an uncommented bare example of `config.yml`:
 
 # The share/eq folder
 
-This folder contains the set of curves that will be used to apply "soft" EQ to the system, i.e.: tone, loudness compensation and psychoacoustic room dimension equalization (aka 'target').
+This folder contains the set of curves that will be used to apply "smooth EQ" to the system, i.e.: tone, loudness compensation and psychoacoustic room dimension equalization (aka 'target').
 
 (i) The curves will be rendered under the EQ stage on Brutefir, so your `brutefir_config` file must have an `"eq"` section properly configured with the same frequency bands as the contained into your `freq.dat` file. More info: https://torger.se/anders/brutefir.html#bflogic_eq
 
-Similar to the loudspeaker folder, some rules here must be observed when naming files:
+Similar to the loudspeaker folder, some rules here must be observed when naming files.
 
-- Frequencies: `freq.dat`
-- Tone:        `bass_mag.dat bass_pha.dat treble_mag.dat treble_pha.dat` 
-- Loudness:    `ref_XX_loudness_mag.dat ref_XX_loudness_pha.dat` (as many as reference SPL you want to manage)
-- Target:      `+X.X-Y.Y_target_mag.dat +X.X-Y.Y_target_pha.dat` ... ...
+The file of the frequencies where to apply the smooth eq:
 
-On target files '+X.X-Y.Y_' is also optional but neccessary if more than one target set is desired to be available to be switched.
+- `freq.dat`
 
-You can issue the commands **`get_target_sets`** and **`set_target +X.X-Y.Y_target`** to manage the target eq.
+The files of the eq curves itself, `..._mag.dat` for magnitude and `..._pha.dat` for phase:
+
+- `bass_mag.dat`, `bass_pha.dat`, `treble_mag.dat`, `treble_pha.dat` 
+- `ref_XX_loudness_mag.dat`, `ref_XX_loudness_pha.dat` (as many as reference SPL you want to manage)
+- `xxxx_target_mag.dat xxxx_target_pha.dat` (as many sets as you consider)
+
+The 'xxxx' prefix for target files is optional. The system will always include the `none` target set name, to not apply eq.
 
 A sets of tone, loudness and target curves are provided on this distro:
 
 - `share/eq.sample.R20_audiotools/` from the `audiotools` project. Loudness contour curves here span from 0 to 90 phon. Tone curves and room gain house curve have a 1st order slope.
 
-- `share/eq.sample.R20_ext/` from the `FIRtro` and `pre.di.c` projects by the pioneer @rripio. Loudness contour curves here span from 70 to 90 phon. Tone curves and room gain house curve have a 2nd order slope.
+- `share/eq.sample.R20_ext/` from the `FIRtro` and `pre.di.c` projects by the pioneer @rripio. Loudness contour curves here span from 70 to 90 phon. Tone curves and room gain house curves have a 2nd order slope.
 
 You can make your own EQ curves by running the tools provided here:
 
 https://github.com/AudioHumLab/audiotools/tree/master/brutefir_eq
 
-You can easily visualize the system available curves under `share/eq` by using the command line tool `peaudiosys_plot_eq_curves.py`
+You can easily plot the system available curves under `share/eq` by using the command line tool `peaudiosys_plot_eq_curves.py`
+
 
 ### Optional share/eq files
 
