@@ -261,7 +261,9 @@ Brutefir is the last element and the only one that interfaces with the sound car
 
 # The loudspeaker
 
-Loudspeaker config files kind of are leaved, only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
+Loudspeaker config files kind of from the pre.di.c project have been leaved
+
+Only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
 
 ( for more info on `brutefir_config` please see `doc/Configuration.md` )
 
