@@ -61,16 +61,26 @@ if not tries:
 
 # AUX and FILES MANAGEMENT: ====================================================
 def find_target_sets():
-    """ Returns the uniques target filenames w/o the suffix
-        _mag.dat or _pha.dat.
-        Also will add 'none' as an additional set.
     """
+        Retrieves the sets of available target curves under the share/eq folder.
+
+                            file name:              returned set name:
+        minimal name        'target_mag.dat'        'target'
+        a more usual name   'xxxx_target_mag.dat'   'xxxx'
+
+        A 'none' set name is added as default for no target eq to be applied.
+    """
+
     result = ['none']
+
     files = os.listdir( EQ_FOLDER )
-    tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
-    for x in tmp:
-        if not x[:-8] in result:
-            result.append( x[:-8] )
+    tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
+
+    for x in tfiles:
+        set_name = x[:-8].replace('_target', '')
+        if not set_name in result:
+            result.append( set_name )
+
     return result
 
 
@@ -196,6 +206,8 @@ def calc_eq( state ):
         targ_mag = zeros
         targ_pha = zeros
     else:
+        if target_name != 'target':     # see doc string from find_target_sets()
+            target_name += '_target'
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
@@ -1114,6 +1126,7 @@ class Preamp(object):
             return self._validate( candidate )
         except:
             return 'bad option'
+
 
     def set_target(self, value, *dummy):
         candidate = self.state.copy()
