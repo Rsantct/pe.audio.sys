@@ -43,3 +43,7 @@ The system core is mainly based on:
     - DRC FIR filtering (digital room correction)
     - EQ: bass, treble, dynamic loudness compensation curves, in-room target eq curves.
     - LEVEL control.
+
+# Documentation
+
+Please refer to the **`doc/`** folder
