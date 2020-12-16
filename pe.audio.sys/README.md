@@ -428,7 +428,7 @@ From the `audiotools` project, **these ones are the default for you to dump insi
 - Loudness contour curves span from 0 to 90 phon 
 - Bass, treble and target curves have a 1st order slope
 
-Equal loudness compensation will be applied even when listenibg below 70 phon.
+Equal loudness compensation will be applied even when listening below 70 phon (dBSPL).
 
 
 ### Make your own EQ curves
