@@ -11,7 +11,7 @@ https://github.com/AudioHumLab/pe.audio.sys/tree/master/pe.audio.sys/doc/60_syst
 
 **IMPORTANT:**
 
-The `"eq"` section on your `brutefir_config` file **must match** the same frequency bands as inside the `share/eq/freq.dat` file.
+The `"eq"` section on your `brutefir_config` file __**must match**__ the same frequency bands as inside the `share/eq/freq.dat` file.
 
 A simple tool is available here:
 
