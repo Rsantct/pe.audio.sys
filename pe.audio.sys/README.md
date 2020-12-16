@@ -406,19 +406,11 @@ The files of the eq curves itself, `..._mag.dat` for magnitude and `..._pha.dat`
 
 - `bass_mag.dat`, `bass_pha.dat`, `treble_mag.dat`, `treble_pha.dat` 
 - `ref_XX_loudness_mag.dat`, `ref_XX_loudness_pha.dat` (as many as reference SPL you want to manage)
-- `xxxx_target_mag.dat xxxx_target_pha.dat` (as many sets as you consider)
+- `xxxxxtarget_mag.dat xxxxxxtarget_pha.dat` (as many sets as you consider)
 
-The `xxxx_` prefix for target files is optional. Also, the system will always include the `none` target set name.
+The `xxxxx` prefix for target files is optional. Also, the system will always include the `none` target set name.
 
-Files for bass, treble and loudness contains a set of curves (array), in order to be able to apply a certain amount of eq. The file for target does contain only one curve.
-
-
-### Default curves `share/eq.sample.R20_audiotools`
-
-From the `audiotools` project, **these ones are the default for you to dump inside** `share/eq/`
-
-- Loudness contour curves span from 0 to 90 phon
-- Bass, treble and target curves have a 1st order slope
+Files for bass, treble and loudness contains an array of curves in order to be able to apply a certain amount of the desired eq. The files for target does contain only one curve per file.
 
 
 ### Former curves `share/eq.sample.R20_ext`
@@ -427,6 +419,16 @@ From the `FIRtro` and `pre.di.c` projects by the pioneer @rripio.
 
 - Loudness contour curves span from 70 to 90 phon 
 - Bass, treble and target curves have a 2nd order slope
+
+
+### Default curves `share/eq.sample.R20_audiotools`
+
+From the `audiotools` project, **these ones are the default for you to dump inside** `share/eq/`
+
+- Loudness contour curves span from 0 to 90 phon 
+- Bass, treble and target curves have a 1st order slope
+
+Equal loudness compensation will be applied even when listenibg below 70 phon.
 
 
 ### Make your own EQ curves
