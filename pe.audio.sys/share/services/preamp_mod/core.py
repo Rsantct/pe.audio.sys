@@ -70,14 +70,31 @@ def find_target_sets():
 
         A 'none' set name is added as default for no target eq to be applied.
     """
+    def extract(x):
+        """ Aux to extract a meaningful set name, examples:
+                'xxxx_target_mag.dat'   will return 'xxxx'
+                'target_mag.dat'        will return 'target'
+        """
+
+        if x[:6] == 'target':
+            return 'target'
+        else:
+            x = x[:-14]
+
+        # strip trailing unions if used
+        for c in ('.', '-', '_'):
+            if x[-1] == c:
+                x = x[:-1]
+
+        return x
 
     result = ['none']
 
     files = os.listdir( EQ_FOLDER )
     tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
 
-    for x in tfiles:
-        set_name = x[:-8].replace('_target', '')
+    for fname in tfiles:
+        set_name = extract(fname)
         if not set_name in result:
             result.append( set_name )
 
