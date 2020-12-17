@@ -299,6 +299,7 @@ function page_update() {
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
+
     // Delete level info if convolver off
     if (state.convolver_runs == false){
         document.getElementById("levelInfo").innerHTML  = '--';
@@ -339,6 +340,7 @@ function page_update() {
     buttonMuteHighlight()
     buttonMonoHighlight()
     buttonLoudHighlight()
+    buttonsToneBalanceHighlight()
 
     // Updates metadata player info
     update_player_info()
@@ -774,7 +776,39 @@ function clear_highlighted(){
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
 
-// Highlights the MUTE, MONO and LOUDNESS BUTTONS:
+// Highlights the BASS, TREBLE, BALANCE, MUTE, MONO and LOUDNESS BUTTONS:
+function buttonsToneBalanceHighlight(){
+    if ( state.bass < 0 ){
+        document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bass+").style.border = "2px solid rgb(100, 100, 100)";
+    }else if ( state.bass > 0 ){
+        document.getElementById("bass-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bass+").style.border = "3px solid rgb(160, 160, 160)";
+    }else{
+        document.getElementById("bass-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bass+").style.border = "2px solid rgb(100, 100, 100)";
+    }
+    if ( state.treble < 0 ){
+        document.getElementById("treb-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("treb+").style.border = "2px solid rgb(100, 100, 100)";
+    }else if ( state.treble > 0 ){
+        document.getElementById("treb-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("treb+").style.border = "3px solid rgb(160, 160, 160)";
+    }else{
+        document.getElementById("treb-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("treb+").style.border = "2px solid rgb(100, 100, 100)";
+    }
+    if ( state.balance < 0 ){
+        document.getElementById("bal-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
+    }else if ( state.balance > 0 ){
+        document.getElementById("bal-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bal+").style.border = "3px solid rgb(160, 160, 160)";
+    }else{
+        document.getElementById("bal-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
+    }
+}
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
