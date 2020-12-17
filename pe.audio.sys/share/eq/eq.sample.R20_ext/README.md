@@ -1,3 +1,13 @@
+### Former curves `share/eq.sample.R20_ext`
+
+From the `FIRtro` and `pre.di.c` projects by the pioneer @rripio.
+
+- Bass, treble and target curves have a 2nd order slope, and spans from -6 dB to +6 dB
+
+- Loudness contour curves spans from 70 to 90 phon, and are referenced to 83 dbSPL.
+
+
+## About the new .dat format
 
 Original file names were:
 
