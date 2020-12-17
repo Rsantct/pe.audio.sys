@@ -214,18 +214,16 @@ Files for bass, treble and loudness contains an array of curves in order to be a
 
 From the `FIRtro` and `pre.di.c` projects by the pioneer @rripio.
 
-- Loudness contour curves span from 70 to 90 phon 
 - Bass, treble and target curves have a 2nd order slope
+- Loudness contour curves span from 70 to 90 phon 
 
 
 ### Default curves `share/eq.sample.R20_audiotools`
 
 From the `audiotools` project, **these ones are the default for you to dump inside** `share/eq/`
 
-- Loudness contour curves span from 0 to 90 phon 
 - Bass, treble and target curves have a 1st order slope
-
-Equal loudness compensation will be applied even when listening below 70 phon (dBSPL).
+- Loudness contour curves spans from 0 to 90 phon, so that loudness compensation will be applied even when listening below 70 dBSPL (i.e. below level -13 dB, aka volume)
 
 
 ### Make your own EQ curves
