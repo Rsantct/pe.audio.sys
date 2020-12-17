@@ -17,6 +17,7 @@ from matplotlib import pyplot as plt
 UHOME       = os.path.expanduser("~")
 EQ_FOLDER   = f'{UHOME}/pe.audio.sys/share/eq'
 
+
 def get_curve_files(fpattern):
 
     mag_files = [x for x in EQ_FILES if (fpattern in x) and ('mag.dat' in x) ]
@@ -44,6 +45,7 @@ def get_freq_file():
 
 if __name__ == '__main__':
 
+    # Read command line
     pha = False
     if not sys.argv[1:]:
         print(__doc__)
@@ -61,10 +63,11 @@ if __name__ == '__main__':
 
     EQ_FILES = os.listdir(EQ_FOLDER)
 
-    # Read the filenames set for the given pattern
+    # Read the filename for the given pattern
     freq_fname              = get_freq_file()
     mag_fname, pha_fname    = get_curve_files( fpattern )
 
+    # Load data from files
     freq = np.loadtxt( f'{EQ_FOLDER}/{freq_fname}' )
     mags = np.loadtxt( f'{EQ_FOLDER}/{mag_fname}'  )
     phas = np.loadtxt( f'{EQ_FOLDER}/{pha_fname}'  )
@@ -78,6 +81,7 @@ if __name__ == '__main__':
         ax2 = fig.add_subplot(2, 1, 2)
         fig.subplots_adjust(hspace=.4)
 
+    # Plot curves
     for curve in mags:
         ax1.semilogx ( freq, curve )
 
