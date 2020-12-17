@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
     Plots the available curves for the Brutefir smooth EQ module,
-    by default located under the 'pe.audio.sys/share/eq' folder
+    by default located under the 'pe.audio.sys/share/eq' folder.
 
     usage:
 
