@@ -3,7 +3,7 @@
     Plots the available curves for the Brutefir smooth EQ module,
     by default located under the 'pe.audio.sys/share/eq' folder.
 
-    usage:
+    Usage:
 
     peaudiosys_plot_eq_curves.py <pattern> [/path/to/folder] [-pha]
 
@@ -74,27 +74,27 @@ if __name__ == '__main__':
 
     # Auto transpose if needed
     if mags.shape[1] != freq.shape[0]:
-        print(f'(i) array of curves have the former Matlab arrangement')
+        print(f'(i) The array of curves have the former Matlab arrangement')
         print(f'    freq: {freq.shape}')
         print(f'    mag:  {mags.shape}')
         mags = mags.transpose()
         phas = phas.transpose()
 
     # Prepare the plot
-    fig = plt.figure()
-    if not pha:
-        ax1 = fig.add_subplot(1, 1, 1)
-    else:
-        ax1 = fig.add_subplot(2, 1, 1)
-        ax2 = fig.add_subplot(2, 1, 2)
-        fig.subplots_adjust(hspace=.4)
+    fig, (axMag, axPha) = plt.subplots(2, 1, figsize=(6,6))
+    fig.subplots_adjust(hspace=.4)
+    axMag.set_title(mag_fname)
+    axPha.set_title(pha_fname)
+    axMag.set_ylabel('dB')
+    axPha.set_ylabel('deg')
+    axPha.set_ylim(-45,45)
 
     # Plot curves
     for curve in mags:
-        ax1.semilogx ( freq, curve )
+        axMag.semilogx ( freq, curve )
 
     if pha:
         for curve in phas:
-            ax2.semilogx ( freq, curve )
+            axPha.semilogx ( freq, curve )
 
     plt.show()
