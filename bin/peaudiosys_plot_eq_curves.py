@@ -91,7 +91,8 @@ if __name__ == '__main__':
 
     axMag.set_title(mag_fname)
     axMag.set_ylabel('dB')
-    if 'target' in mag_fname:
+    # A reduced dB span for single curves (e.g: target curves)
+    if not any([x in mag_fname for x in ('bass', 'treb', 'loud')]):
         axMag.set_ylim(-12, 12)
 
     axPha.set_ylabel('deg')
