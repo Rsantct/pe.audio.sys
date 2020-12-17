@@ -72,6 +72,14 @@ if __name__ == '__main__':
     mags = np.loadtxt( f'{EQ_FOLDER}/{mag_fname}'  )
     phas = np.loadtxt( f'{EQ_FOLDER}/{pha_fname}'  )
 
+    # Auto transpose if needed
+    if mags.shape[1] != freq.shape[0]:
+        print(f'(i) array of curves have the former Matlab arrangement')
+        print(f'    freq: {freq.shape}')
+        print(f'    mag:  {mags.shape}')
+        mags = mags.transpose()
+        phas = phas.transpose()
+
     # Prepare the plot
     fig = plt.figure()
     if not pha:
