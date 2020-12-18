@@ -35,13 +35,13 @@ remotes:
             00 2d 6d 2d 39 ab b9 6d fb: input cd                        # mode
             00 2d 6d 2d 39 69 ad 3b ff: input mpd                       # ant
 
-            00 2d 6d 2d a9 3b 6d b9 ff: loudness_ref 0                  #  1
-            00 2d 6d 2d 39 2d 6d 6d ff: loudness_ref 3                  #  2
-            00 2d 6d 2d 69 2d 6b 6d ff: loudness_ref 6                  #  3
-            00 2d 6d 2d b9 39 69 6d ff: loudness_ref 9                  #  4
+            00 2d 6d 2d a9 3b 6d b9 ff: lu_offset 0                     #  1
+            00 2d 6d 2d 39 2d 6d 6d ff: lu_offset 3                     #  2
+            00 2d 6d 2d 69 2d 6b 6d ff: lu_offset 6                     #  3
+            00 2d 6d 2d b9 39 69 6d ff: lu_offset 9                     #  4
 
-            00 2d 6d 2d 29 2b 3b bb ff: loudness_track on               #  5
-            00 2d 6d 2d 39 3b b9 b9 fb: loudness_track off              #  6
+            00 2d 6d 2d 29 2b 3b bb ff: loudness on                     #  5
+            00 2d 6d 2d 39 3b b9 b9 fb: loudness off                    #  6
             00 2d 6d 2d 69 3b ad b9 fb:                                 #  7
             00 2d 6d 2d 39 2b 2d bb ff:                                 #  8
 

@@ -16,7 +16,7 @@ from subprocess import Popen
 
 mplayer_profile = 'istreams'    # choose an Mplayer profile: "istreams", "dvb"
 preset          = 1
-loud_ref        = 9
+lu_offset       = 9
 loudness_comp   = 'off'
 xo_pattern      = 'mp'
 drc_pattern     = 'mp'
@@ -59,11 +59,11 @@ def main():
     sleep(.5)
 
     # LU level compensation reference
-    send_cmd( f'loudness_ref {loud_ref}', sender=ME, verbose=True )
+    send_cmd( f'lu_offset {lu_offset}', sender=ME, verbose=True )
     sleep(.5)
 
     # Loudness compensation on|off
-    send_cmd( f'loudness_track {loudness_comp}', sender=ME, verbose=True )
+    send_cmd( f'loudness {loudness_comp}', sender=ME, verbose=True )
     sleep(.5)
 
     # XO
@@ -75,4 +75,3 @@ def main():
     if drc_pattern:
         set_as_pattern('drc', drc_pattern, sender=ME, verbose=True)
         sleep(.5)
-

@@ -5,18 +5,18 @@
 --- Preamp control:
 
 All commands prefixed with 'preamp':
-(this prexix can be omited)
+(this prefix can be omited)
 
 
   - Getting info:
 
-    state | status | get_state  Returns the whole system status parameters,
-                                as per stored in .state.yml
-    get_inputs                  List of available inputs
-    get_eq                      Returns the current Brutefir EQ stage (freq, mag ,pha)
-    get_target_sets             List of target curves sets available under the eq folder
-    get_drc_sets                List of drc sets available under the loudspeaker folder
-    get_xo_sets                 List of xover sets available under the loudspeaker folder
+    state | status | get_state              Returns the whole system status parameters,
+                                            as per stored in .state.yml
+    get_inputs                              List of available inputs
+    get_eq                                  Returns the current Brutefir EQ stage (freq, mag ,pha)
+    get_target_sets                         List of target curves sets available under the eq folder
+    get_drc_sets                            List of drc sets available under the loudspeaker folder
+    get_xo_sets                             List of xover sets available under the loudspeaker folder
 
 
   - Selector stage:
@@ -31,19 +31,19 @@ All commands prefixed with 'preamp':
 
   - Gain and Eq stage:
 
-    level           xx [add]               'xx' in dB, use 'add' for a relative adjustment
+    level           xx [add]                'xx' in dB, use 'add' for a relative adjustment
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
-    loudness_ref    xx [add]
-    loudness | loudness_track     on | off | toggle   Loudness compensation
-    set_target       <name>                           Select a target curve
+    lu_offset       xx [add]
+    loudness        on | off | toggle       Equal loudness contour correction
+    set_target      <name>                  Selects a target curve
 
 
   - Convolver stages:
 
-    set_drc | drc    <name>                 Select a DRC FIR set
-    set_xo  | xo     <name>                 Select a XOVER FIR set
+    set_drc | drc    <name>                 Selects a DRC FIR set
+    set_xo  | xo     <name>                 Selects a XOVER FIR set
 
 
   - Energy saving:
