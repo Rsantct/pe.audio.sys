@@ -1,17 +1,18 @@
 
 ## December 18, 2020: version 1.0 released
 
-- `share/eq/*.dat` files has changed its internal arrangement
+- `share/eq/*.dat` files has changed its internal arrangement.
 - Equal loudness related commands and parameters has changed
 
 See the `doc/` folder for detailed information about this.
 
+**PLEASE UPDATE:**
 
-- PLEASE UPDATE your `share/eq/*.dat` files with the new ones
+- your `share/eq/*.dat` files with the new ones
   provided under `share/eq/eq.sample.R20_audiotools/`
 
 
-- PLEASE UPDATE your `config.yml`:
+- your `config.yml`:
 
     ```
                         refSPL=XX       (new item)
@@ -19,11 +20,11 @@ See the `doc/` folder for detailed information about this.
     loudness_track  --> equal_loudness
     ```
 
-- PLEASE UPDATE your `.state.yml`:
+- your `.state.yml`:
 
     ```
     loudness_track:  --> equal_loudness: true|false
     loudness_ref:    --> lu_offset: XX
     ```
 
-- PLEASE UPDATE your macros if them issue any loudness command.
+- your `macros/` files if them issue any loudness command
