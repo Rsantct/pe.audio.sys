@@ -1,17 +1,25 @@
 
 ## December 18, 2020: version 1.0 released
 
-- `share/eq/*.dat` files has changed its internal arrangement
+- `share/eq/*.dat` multicurve files has changed its internal arrangement
 - Equal loudness related commands and parameters has changed
 
 See the `doc/` folder for detailed information about this.
 
 **PLEASE UPDATE:**
 
-- your `share/eq/*.dat` files with the new ones
+- your `share/eq/*.dat` multicurve files with the new ones
   provided under `share/eq/eq.sample.R20_audiotools/`
 
-
+    ```
+    bass_mag.dat
+    bass_pha.dat
+    treble_mag.dat
+    treble_pha.dat
+    ref_XX_loudness_mag.dat
+    ref_XX_loudness_pha.dat
+    ```
+    
 - your `config.yml`:
 
     ```
