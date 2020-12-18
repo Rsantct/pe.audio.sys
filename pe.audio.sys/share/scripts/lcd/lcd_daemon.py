@@ -104,7 +104,7 @@ class Widgets(object):
                 'muted'             : { 'pos':'1  1',    'val':'(MUTED) '   },
                 'bass'              : { 'pos':'1  2',    'val':'b:'         },
                 'treble'            : { 'pos':'6  2',    'val':'t:'         },
-                'loudness_ref'      : { 'pos':'12 3',    'val':'LUref:'     },
+                'lu_offset'         : { 'pos':'12 3',    'val':'LUref:'     },
                 'xo_set'            : { 'pos':'0  0',    'val':'xo:'        },
                 'drc_set'           : { 'pos':'0  0',    'val':'drc:'       },
                 'peq_set'           : { 'pos':'0  0',    'val':'peq:'       },
@@ -191,7 +191,7 @@ def update_lcd_state(scr='scr_1'):
 
         ws = Widgets()
 
-        global loudness_track
+        global equal_loudness
 
         for key, value in data.items():
 
@@ -208,19 +208,19 @@ def update_lcd_state(scr='scr_1'):
             pos = ws.state[key]['pos']  # pos ~> position
             lbl = ws.state[key]['val']  # lbl ~> label
 
-            # When booleans (loudness_track, muted)
+            # When booleans (equal_loudness, muted)
             # will leave the defalul widget value or will supress it
             if type(value) == bool:
                 if not value:
                     lbl = ''
                 # Update global to be accesible outside from auxiliary
-                if key == 'loudness_track':
-                    loudness_track = value
+                if key == 'equal_loudness':
+                    equal_loudness = value
 
-            # Special case: loudness_ref will be rounded to integer
-            #               or void if no loudness_track
-            elif key == 'loudness_ref':
-                if data['loudness_track']:
+            # Special case: lu_offset will be rounded to integer
+            #               or void if no equal_loudness
+            elif key == 'lu_offset':
+                if data['equal_loudness']:
                     lbl += str( int( round(value, 0) ) ).rjust(3)
                 else:
                     lbl = 'LOUDc off'
@@ -263,8 +263,8 @@ def update_lcd_state(scr='scr_1'):
             # refresh state items
             show_state( _state )
             # also refreshing the LU monitor bar if needed
-            if LCD_CONFIG["LUmon_bar"] and 'loudness_ref' in _last_state:
-                if _state["loudness_ref"] != _last_state["loudness_ref"]:
+            if LCD_CONFIG["LUmon_bar"] and 'lu_offset' in _last_state:
+                if _state["lu_offset"] != _last_state["lu_offset"]:
                     update_lcd_loudness_monitor()
             _last_state = _state
 
@@ -316,13 +316,13 @@ def update_lcd_loudness_monitor(scr='scr_1'):
 
         # LU reference offset (usually in the range from 0 to 12)
         # (it can be found in the global _state)
-        lu_ref = int(round(_state["loudness_ref"]))
+        lu_offset = int(round(_state["lu_offset"]))
 
         # The LU meter bar length:
         barLen = int( round( lu_I * 20 / 12.0 ) )
 
         # The marker bar position for the LU reference offset value:
-        p = int( round( lu_ref * 20 / 12.0 ) )
+        p = int( round( lu_offset * 20 / 12.0 ) )
         # Clamped from 0 to 19
         p = max(min(p, 19), 0)
 

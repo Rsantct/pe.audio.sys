@@ -299,15 +299,16 @@ function page_update() {
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
+
     // Delete level info if convolver off
     if (state.convolver_runs == false){
         document.getElementById("levelInfo").innerHTML  = '--';
     }
 
     // Updates the Integrated LU monitor and the LU offset slider
-    document.getElementById("LU_slider").value           =   state.loudness_ref;
+    document.getElementById("LU_slider").value           =   state.lu_offset;
     document.getElementById("LU_offset_value").innerText =
-                                        'LU offset: ' + -1 * state.loudness_ref;
+                                        'LU offset: ' + -1 * state.lu_offset;
     try{
         const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
         const LU_I = LU_mon_dict.LU_I
@@ -339,6 +340,7 @@ function page_update() {
     buttonMuteHighlight()
     buttonMonoHighlight()
     buttonLoudHighlight()
+    buttonsToneBalanceHighlight()
 
     // Updates metadata player info
     update_player_info()
@@ -752,7 +754,7 @@ function run_macro(mFname){
 
 // Manages the LU_offset slider
 function LU_slider_action(slider_value){
-    control_cmd( 'loudness_ref ' + slider_value )
+    control_cmd( 'lu_offset ' + slider_value )
 }
 
 
@@ -774,7 +776,39 @@ function clear_highlighted(){
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
 
-// Highlights the MUTE, MONO and LOUDNESS BUTTONS:
+// Highlights the BASS, TREBLE, BALANCE, MUTE, MONO and LOUDNESS BUTTONS:
+function buttonsToneBalanceHighlight(){
+    if ( state.bass < 0 ){
+        document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bass+").style.border = "2px solid rgb(100, 100, 100)";
+    }else if ( state.bass > 0 ){
+        document.getElementById("bass-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bass+").style.border = "3px solid rgb(160, 160, 160)";
+    }else{
+        document.getElementById("bass-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bass+").style.border = "2px solid rgb(100, 100, 100)";
+    }
+    if ( state.treble < 0 ){
+        document.getElementById("treb-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("treb+").style.border = "2px solid rgb(100, 100, 100)";
+    }else if ( state.treble > 0 ){
+        document.getElementById("treb-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("treb+").style.border = "3px solid rgb(160, 160, 160)";
+    }else{
+        document.getElementById("treb-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("treb+").style.border = "2px solid rgb(100, 100, 100)";
+    }
+    if ( state.balance < 0 ){
+        document.getElementById("bal-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
+    }else if ( state.balance > 0 ){
+        document.getElementById("bal-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bal+").style.border = "3px solid rgb(160, 160, 160)";
+    }else{
+        document.getElementById("bal-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
+    }
+}
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
@@ -824,14 +858,12 @@ function buttonMonoHighlight(){
     }
 }
 function buttonLoudHighlight(){
-    if ( state.loudness_track == true ) {
+    if ( state.equal_loudness == true ) {
         document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
         document.getElementById("buttonLoud").style.color = "white";
-        document.getElementById("buttonLoud").innerText = 'LC';
     } else {
         document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
         document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
-        document.getElementById("buttonLoud").innerText = 'LC';
     }
 }
 
@@ -859,10 +891,10 @@ function mute_toggle() {
     buttonMuteHighlight();
     control_cmd( 'mute toggle' );
 }
-function loudness_toggle() {
-    state.loudness_track = ! state.loudness_track;
+function equal_loudness_toggle() {
+    state.equal_loudness = ! state.equal_loudness;
     buttonLoudHighlight();
-    control_cmd( 'loudness_track toggle' );
+    control_cmd( 'equal_loudness toggle' );
 }
 function mono_toggle() {
     if (state.midside == "mid" || state.midside == "side"){

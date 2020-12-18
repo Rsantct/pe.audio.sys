@@ -32,11 +32,24 @@ LCDFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/lcd'
 
 
 def start():
-    # The server that manages the LCD display Linux driver.
-    Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
-    sleep(3)
-    # The daemon to display pe.audio.sys info on the LCD
-    Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
+    # wait 10 s for the pe.audio.sys server to be listening at :9990
+    n = 10
+    while n:
+        tmp = check_output( ['ss', '-tl', 'sport == :9990'] ).decode()
+        if ':9990' in tmp:
+            break
+        n -= 1
+        sleep(1)
+    if n:
+        print('(scripts/lcd) launching lcd daemon...')
+        sleep(1)
+        # The server that manages the LCD display Linux driver.
+        Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
+        sleep(3)
+        # The daemon to display pe.audio.sys info on the LCD
+        Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
+    else:
+        print('(scripts/lcd) TIMEOUT: pe.audio.sys server not detected')
 
 
 def stop():

@@ -249,7 +249,7 @@
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud"
-                        title="Loudness Contour" onmousedown="loudness_toggle()">LC</button>
+                        title="Loudness Contour" onmousedown="equal_loudness_toggle()">LC</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -364,25 +364,25 @@
       <table>
         <tr>
             <td id="treble">
-                <button type="button"                 onmousedown="audio_change('treble', -1)"  >-</button>
+                <button type="button"   id='treb-'    onmousedown="audio_change('treble', -1)"  >-</button>
                 <span id="trebleInfo">treble</span>
-                <button type="button"                 onmousedown="audio_change('treble', +1)"  >+</button>
+                <button type="button"   id='treb+'    onmousedown="audio_change('treble', +1)"  >+</button>
             </td>
             <td id="balance">
-                <button type="button"                 onmousedown="audio_change('balance', -1)"  >-</button>
+                <button type="button"   id='bal-'     onmousedown="audio_change('balance', -1)"  >-</button>
                 <span id="balInfo">BAL</span>
-                <button type="button"                 onmousedown="audio_change('balance', +1)"  >+</button>
+                <button type="button"   id='bal+'     onmousedown="audio_change('balance', +1)"  >+</button>
             </td>
         </tr>
         <tr>
             <td id="bass">
-                <button type="button"                 onmousedown="audio_change('bass', -1)"  >-</button>
+                <button type="button"   id='bass-'    onmousedown="audio_change('bass', -1)"  >-</button>
                 <span id="bassInfo">bass</span>
-                <button type="button"                 onmousedown="audio_change('bass', +1)"  >+</button>
+                <button type="button"   id='bass+'    onmousedown="audio_change('bass', +1)"  >+</button>
             </td>
             <td id="target">
                 <span>
-                <select id="targetSelector"  onchange="target_select(this.value)" ></select>
+                target c.&nbsp;<select id="targetSelector"  onchange="target_select(this.value)" ></select>
                 </span>
             </td>
         </tr>

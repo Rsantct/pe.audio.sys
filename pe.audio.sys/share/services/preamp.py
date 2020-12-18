@@ -151,9 +151,10 @@ def process_commands( full_command ):
             'balance':          preamp.set_balance,
             'treble':           preamp.set_treble,
             'bass':             preamp.set_bass,
-            'loudness':         preamp.set_loud_track,
-            'loudness_track':   preamp.set_loud_track,
-            'loudness_ref':     preamp.set_loud_ref,
+            'loudness':         preamp.set_equal_loudness,
+            'eq_loudness':      preamp.set_equal_loudness,
+            'equal_loudness':   preamp.set_equal_loudness,
+            'lu_offset':        preamp.set_lu_offset,
             'set_target':       preamp.set_target,
 
             'set_drc':          set_drc,
@@ -166,13 +167,13 @@ def process_commands( full_command ):
 
             'help':             print_help
 
-            } [ command ] ( arg, add )
+            } [ command.lower() ] ( arg, add )
 
     except KeyError:
         result = f'(preamp) unknown command: {command}'
 
-    except:
-        result = f'(preamp) problems processing command: {command}'
+    except Exception as e:
+        result = f'(preamp) {command} ERROR: {e}'
 
     return result
 

@@ -54,8 +54,8 @@ balance_max:   6.0
 # Max gain authorised at convolver output
 gain_max:    0.0
 
-# Loudness EQ compensation ceiled at your reference SPL
-loud_ceil: false
+# Equal loudness curves ceiled above the reference SPL
+eq_loud_ceil: true
 
 # Should Brutefir EQ stage to be linear phase?
 bfeq_linear_phase: false
@@ -64,6 +64,9 @@ bfeq_linear_phase: false
 
 # Put here your loudspeaker folder name
 loudspeaker: full_range_example
+
+# Estimated perceived reference SPL at listening point
+refSPL:         83
 
 # Gain dBFS at convolver output to obtain the reference SPL (level = 0.0):
 ref_level_gain: -10.0
@@ -94,8 +97,8 @@ on_init:
     bass:               0
     treble:             0
     balance:            0
-    loudness_track:     true
-    loudness_ref:       6.0     # most records suffers loudness war mastering
+    equal_loudness:     true
+    lu_offset:          6.0     # most records suffers loudness war mastering
     midside:            'off'
     polarity:           '++'
     solo:               'off'
@@ -114,8 +117,8 @@ run_macro:              '7_mpd_play_mylist'
 on_change_input:
     bass:               0.0
     treble:             0.0
-    loudness_track:     true
-    loudness_ref:       6.0     # most records suffers loudness war mastering
+    equal_loudness:     true
+    lu_offset:          6.0     # most records suffers loudness war mastering
     midside:            'off'
     solo:               'off'
 
@@ -128,7 +131,7 @@ on_change_input:
 #
 #     - xo, drc fields are optional, you may want minimum phase FIRs for video.
 #
-#     - loudness_ref field is optional and overrides the on_change_input behavior.
+#     - lu_offset field is optional and overrides the on_change_input behavior.
 #
 #     - If a source is named "remotexxx", will try to get metada from its
 #       address field, a port field can also be specified (defaults to 9990)
@@ -233,7 +236,7 @@ scripts:
     ## Controls the volume by a mouse
     #- mouse_volume_daemon.py
     
-    ## A daemon that monitorizes the EBU R128 Loudness Integrated
+    ## A daemon that monitorizes the EBU R128 LU-I Loudness Integrated
     #- loudness_monitor.py
 
     ## The LCDd server and lcd_daemon.py

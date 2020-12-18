@@ -61,16 +61,43 @@ if not tries:
 
 # AUX and FILES MANAGEMENT: ====================================================
 def find_target_sets():
-    """ Returns the uniques target filenames w/o the suffix
-        _mag.dat or _pha.dat.
-        Also will add 'none' as an additional set.
     """
+        Retrieves the sets of available target curves under the share/eq folder.
+
+                            file name:              returned set name:
+        minimal name        'target_mag.dat'        'target'
+        a more usual name   'xxxx_target_mag.dat'   'xxxx'
+
+        A 'none' set name is added as default for no target eq to be applied.
+    """
+    def extract(x):
+        """ Aux to extract a meaningful set name, examples:
+                'xxxx_target_mag.dat'   will return 'xxxx'
+                'target_mag.dat'        will return 'target'
+        """
+
+        if x[:6] == 'target':
+            return 'target'
+        else:
+            x = x[:-14]
+
+        # strip trailing unions if used
+        for c in ('.', '-', '_'):
+            if x[-1] == c:
+                x = x[:-1]
+
+        return x
+
     result = ['none']
+
     files = os.listdir( EQ_FOLDER )
-    tmp = [ x for x in files if x[-14:-7] == 'target_'  ]
-    for x in tmp:
-        if not x[:-8] in result:
-            result.append( x[:-8] )
+    tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
+
+    for fname in tfiles:
+        set_name = extract(fname)
+        if not set_name in result:
+            result.append( set_name )
+
     return result
 
 
@@ -84,40 +111,38 @@ def get_peq_in_use():
     return 'none'
 
 
-def get_eq_curve(curv, state):
+def get_eq_curve(cname, state):
     """ Retrieves the tone or loudness curve.
         Tone curves depens on state bass & treble.
-        Loudness compensation curve depens on the target level dBrefSPL.
+        Loudness compensation curve depens on the configured refSPL.
     """
-    # Tone eq curves are provided in reverse order [+6...0...-6]
-    if curv == 'bass':
+    # (i) Former FIRtro curves array files xxx.dat were stored in Matlab way,
+    #     so when reading them with numpy.loadtxt() it was needed to transpose
+    #     and flipud in order to access to the curves data in a natural way.
+    #     Currently the curves are stored in pythonic way, so numpy.loadtxt()
+    #     will read directly usable data.
 
-        bass_center_index = EQ_CURVES["bass_mag"].shape[1] // 2
-        index =  bass_center_index - int(round(state["bass"]))
+    # Tone eq curves are given [-span...0...-span]
+    if cname == 'bass':
+        bass_center_index = (EQ_CURVES["bass_mag"].shape[0] - 1) // 2
+        index = int(round(state["bass"]))   + bass_center_index
 
-    elif curv == 'treb':
-
-        treble_center_index = EQ_CURVES["treb_mag"].shape[1] // 2
-        index = treble_center_index - int(round(state["treble"]))
+    elif cname == 'treb':
+        treble_center_index = (EQ_CURVES["treb_mag"].shape[0] - 1) // 2
+        index = int(round(state["treble"])) + treble_center_index
 
     # Using the previously detected flat curve index and
-    # also limiting as per the loud_ceil boolean inside config.yml
-    elif curv == 'loud':
+    # also limiting as per the eq_loud_ceil boolean inside config.yml
+    elif cname == 'loud':
 
-        # (i)
-        #  Former FIRtro curves indexes have a reverse order, that is:
-        #  Curves at index above the flat one are applied to compensate
-        #  when level is below ref SPL (level 0.0), and vice versa,
-        #  curves at index below the flat one are for levels above reference.
-        index_max   = EQ_CURVES["loud_mag"].shape[1] - 1
-        index_flat  = LOUD_FLAT_CURVE_INDEX
-        if CONFIG["loud_ceil"]:
-            index_min = index_flat
-        else:
-            index_min   = 0
+        index_max   = EQ_CURVES["loud_mag"].shape[0] - 1
+        index_flat  = CONFIG['refSPL']
+        index_min   = 0
+        if CONFIG["eq_loud_ceil"]:
+            index_max = index_flat
 
-        if state["loudness_track"]:
-            index = index_flat - state["level"]
+        if state["equal_loudness"]:
+            index = CONFIG['refSPL'] + state["level"]
         else:
             index = index_flat
         index = int(round(index))
@@ -125,8 +150,8 @@ def get_eq_curve(curv, state):
         # Clamp index to the available "loudness deepness" curves set
         index = max( min(index, index_max), index_min )
 
-    return EQ_CURVES[f'{curv}_mag'][ : , index], \
-           EQ_CURVES[f'{curv}_pha'][ : , index]
+    return EQ_CURVES[f'{cname}_mag'][index], \
+           EQ_CURVES[f'{cname}_pha'][index]
 
 
 def find_eq_curves():
@@ -136,10 +161,12 @@ def find_eq_curves():
     EQ_CURVES = {}
     eq_files = os.listdir(EQ_FOLDER)
 
+    # file names ( 2x loud + 4x tones + freq = total 7 curves)
     fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
                 'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
                 'freq.dat' )
 
+    # map dict to get the curve name from the file name
     cnames = {  'loudness_mag.dat'  : 'loud_mag',
                 'bass_mag.dat'      : 'bass_mag',
                 'treble_mag.dat'    : 'treb_mag',
@@ -148,13 +175,19 @@ def find_eq_curves():
                 'treble_pha.dat'    : 'treb_pha',
                 'freq.dat'          : 'freqs'     }
 
-    # pendings curves to find ( freq + 2x loud + 4x tones = 7 )
-    pendings = len(fnames)
+    pendings = len(fnames)  # 7 curves
     for fname in fnames:
 
         # Only one file named as <fname> must be found
-        files = [ x for x in eq_files if fname in x]
+
+        if 'loudness' in fname:
+            prefixedfname = f'ref_{CONFIG["refSPL"]}_{fname}'
+            files = [ x for x in eq_files if prefixedfname in x]
+        else:
+            files = [ x for x in eq_files if fname in x]
+
         if files:
+
             if len (files) == 1:
                 EQ_CURVES[ cnames[fname] ] = \
                          np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
@@ -166,22 +199,11 @@ def find_eq_curves():
             print(f'(core) ERROR finding a \'...{fname}\' '
                    'file under share/eq/')
 
-    if not pendings:
+    #if not pendings:
+    if pendings == 0:
         return EQ_CURVES
     else:
         return {}
-
-
-def find_loudness_flat_curve_index():
-    """ find flat curve inside xxx_loudness_mag.dat
-    """
-    index_max   = EQ_CURVES["loud_mag"].shape[1] - 1
-    index_flat = -1
-    for i in range(index_max):
-        if np.sum( abs(EQ_CURVES["loud_mag"][ : , i]) ) <= 0.1:
-            index_flat = i
-            break
-    return index_flat
 
 
 def calc_eq( state ):
@@ -201,17 +223,19 @@ def calc_eq( state ):
         targ_mag = zeros
         targ_pha = zeros
     else:
+        if target_name != 'target':     # see doc string from find_target_sets()
+            target_name += '_target'
         targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
 
     # Compose
-    eq_mag = targ_mag + loud_mag * state["loudness_track"] \
+    eq_mag = targ_mag + loud_mag * state["equal_loudness"] \
                                                 + bass_mag + treb_mag
 
     if CONFIG["bfeq_linear_phase"]:
         eq_pha = zeros
     else:
-        eq_pha = targ_pha + loud_pha * state["loudness_track"] \
+        eq_pha = targ_pha + loud_pha * state["equal_loudness"] \
                  + bass_pha + treb_pha
 
     return eq_mag, eq_pha
@@ -224,7 +248,7 @@ def calc_gain( state ):
     """
 
     gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
-                             - state["loudness_ref"]
+                             - state["lu_offset"]
 
     # Adding here the specific source gain:
     if state["input"] != 'none':
@@ -442,6 +466,7 @@ def bf_set_eq( eq_mag, eq_pha ):
         i += 1
     mag_str = ', '.join(mag_pairs)
     pha_str = ', '.join(pha_pairs)
+
     bf_cli('lmc eq "c.eq" mag '   + mag_str)
     bf_cli('lmc eq "c.eq" phase ' + pha_str)
 
@@ -750,8 +775,8 @@ def init_audio_settings():
                 'bass':             preamp.set_bass,
                 'treble':           preamp.set_treble,
                 'balance':          preamp.set_balance,
-                'loudness_track':   preamp.set_loud_track,
-                'loudness_ref':     preamp.set_loud_ref,
+                'equal_loudness':   preamp.set_equal_loudness,
+                'lu_offset':        preamp.set_lu_offset,
                 'midside':          preamp.set_midside,
                 'polarity':         preamp.set_polarity,
                 'solo':             preamp.set_solo
@@ -832,8 +857,8 @@ class Preamp(object):
             set_balance
             set_bass
             set_treble
-            set_loud_ref
-            set_loud_track
+            set_lu_offset
+            set_equal_loudness
             set_target
             set_solo
             set_mute
@@ -859,13 +884,14 @@ class Preamp(object):
         self.state["convolver_runs"] = brutefir_is_running()
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
+        self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
         self.state["peq_set"] = get_peq_in_use()
         self.state["fs"] = JCLI.samplerate
         # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
         # The available span for tone curves
-        self.bass_span   = int( (EQ_CURVES["bass_mag"].shape[1] - 1) / 2 )
-        self.treble_span = int( (EQ_CURVES["treb_mag"].shape[1] - 1) / 2 )
+        self.bass_span   = int( (EQ_CURVES["bass_mag"].shape[0] - 1) / 2 )
+        self.treble_span = int( (EQ_CURVES["treb_mag"].shape[0] - 1) / 2 )
         # Max authorised gain
         self.gain_max    = float(CONFIG["gain_max"])
         # Max authorised balance
@@ -997,7 +1023,6 @@ class Preamp(object):
         """ Validates that the given 'candidate' (new state dictionary)
             does not exceed gain limits
         """
-
         gmax            = self.gain_max
         gain            = calc_gain( candidate )
         eq_mag, eq_pha  = calc_eq( candidate )
@@ -1091,20 +1116,20 @@ class Preamp(object):
             return 'too much'
 
 
-    def set_loud_ref(self, value, relative=False):
+    def set_lu_offset(self, value, relative=False):
         candidate = self.state.copy()
         # this try if intended just to validate the given value
         try:
             if relative:
-                candidate["loudness_ref"] += round(float(value), 2)
+                candidate["lu_offset"] += round(float(value), 2)
             else:
-                candidate["loudness_ref"] =  round(float(value), 2)
+                candidate["lu_offset"] =  round(float(value), 2)
             return self._validate( candidate )
         except:
             return 'bad value'
 
 
-    def set_loud_track(self, value, *dummy):
+    def set_equal_loudness(self, value, *dummy):
         candidate = self.state.copy()
         if type(value) == bool:
             value = str(value)
@@ -1112,9 +1137,9 @@ class Preamp(object):
             value = { 'on': True , 'off': False,
                       'true': True, 'false': False,
                       'toggle': {True: False, False: True
-                                 }[self.state["loudness_track"]]
+                                 }[self.state["equal_loudness"]]
                      } [ value.lower() ]
-            candidate["loudness_track"] = value
+            candidate["equal_loudness"] = value
             return self._validate( candidate )
         except:
             return 'bad option'
@@ -1263,10 +1288,10 @@ class Preamp(object):
                 self.switch_convolver('on')
             candidate = on_change_input_behavior(candidate)
             # Some source specific audio settings overrides global settings
-            # Loudness_ref
-            if 'loudness_ref' in CONFIG["sources"][source]:
-                candidate["loudness_ref"] = \
-                               CONFIG["sources"][source]["loudness_ref"]
+            # LU offset
+            if 'lu_offset' in CONFIG["sources"][source]:
+                candidate["lu_offset"] = \
+                               CONFIG["sources"][source]["lu_offset"]
             # Target eq curve
             if 'target' in CONFIG["sources"][source]:
                 candidate["target"] = CONFIG["sources"][source]["target"]
@@ -1386,11 +1411,6 @@ EQ_FOLDER   = f'{MAINFOLDER}/share/eq'
 EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
-    sys.exit()
-
-LOUD_FLAT_CURVE_INDEX = find_loudness_flat_curve_index()
-if LOUD_FLAT_CURVE_INDEX < 0:
-    print( f'(core) MISSING FLAT LOUDNESS CURVE. BYE :-/' )
     sys.exit()
 
 # Aux global to avoid dumping magnitude graph if no changed
