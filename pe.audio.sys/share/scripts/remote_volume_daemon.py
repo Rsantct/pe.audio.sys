@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-    A daemon that listen for local relative volume changes,
-    then forward them to all remote pe.audio.sys listeners.
+    A daemon that listen for relative volume changes,
+    then forward them to all remote listener pe.audio.sys.
 
     Usage:      remote_volume.py   start|stop
 
@@ -54,13 +54,13 @@ class files_event_handler(FileSystemEventHandler):
         if event.src_path == self.wanted_path:
             if self.antibound:
                 if (time() - self.ts) > .1:
-                    manage_levels()
+                    detect_level_changes()
                 self.ts = time()
             else:
-                manage_levels()
+                detect_level_changes()
 
 
-def manage_levels(purge=False):
+def detect_level_changes(purge=False):
     """ Read the last command, if it was about relative level change
         then forward it to remotes listeners.
         Also updates the current LU offset.
@@ -92,10 +92,10 @@ def manage_levels(purge=False):
 
             # Updates relative VOLUME event to remotes
             if rel_level_cmd:
-                manage_volume(cli_addr, rel_level_cmd)
+                remote_level(cli_addr, rel_level_cmd)
             # Updates LU OFFSET to remotes
             if lu_offset_cmd:
-                manage_LU_offset(cli_addr)
+                remote_LU_offset(cli_addr)
 
         # if not listening anymore
         else:
@@ -105,14 +105,14 @@ def manage_levels(purge=False):
                 print( f'Updated remote listening machines: {remoteClients}' )
 
 
-def manage_volume(cli_addr, rel_level_cmd):
+def remote_level(cli_addr, rel_level_cmd):
     """ simply sends the relative level change to remote
     """
     print( f'remote {cli_addr} sending \'{rel_level_cmd}\'' )
     miscel.send_cmd( rel_level_cmd, host=cli_addr, verbose=False )
 
 
-def manage_LU_offset(cli_addr):
+def remote_LU_offset(cli_addr):
     """ updates the current LU offset to remote
     """
     # retrieve current LU offset
@@ -162,8 +162,8 @@ def do(cmd):
                 remoteClients.append(cli_addr)
                 print( f'(remote_volume) Updated remote listening machines: '
                        f'{remoteClients}' )
-                # set the current LU offset into remote
-                manage_LU_offset(cli_addr)
+                # set the current LU offset in the remote listener
+                remote_LU_offset(cli_addr)
             result = 'ack'
         else:
             print( f'(remote_volume) Tas tonto: received \'hello\' '
@@ -173,7 +173,7 @@ def do(cmd):
 
 
 def killme():
-    Popen( f'pkill -f "scripts/remote_volume.py start"', shell=True )
+    Popen( f'pkill -f "scripts/remote_volume_daemon.py start"', shell=True )
     sys.exit()
 
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
         sys.exit()
 
 
-    # Retrieving the basic data for this to work
+    # Retrieving basic data to this to work
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
     peaudiosys_log  = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
     # A server that listen for new remote listening clients to emerge
     print( f'(remote_volume) Keep listening for new remmotes ...' )
-    server.SERVICE = 'remote_volume'
+    server.SERVICE = 'remote_volume_daemon'
     server.MODULE = __import__(__name__)
     server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5,
                        verbose=True)
