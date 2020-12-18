@@ -1,7 +1,7 @@
 
 ## December 18, 2020: version 1.0 released
 
-- `share/eq/*.dat` files has changed its internal arrangement.
+- `share/eq/*.dat` files has changed its internal arrangement
 - Equal loudness related commands and parameters has changed
 
 See the `doc/` folder for detailed information about this.
