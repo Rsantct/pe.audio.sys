@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-    A daemon that listen for relative volume changes,
-    then forward them to all remote listener pe.audio.sys.
+    A daemon that listen for local relative volume changes,
+    then forward them to all remote pe.audio.sys listeners.
 
     Usage:      remote_volume.py   start|stop
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
         sys.exit()
 
 
-    # Retrieving basic data to this to work
+    # Retrieving the basic data for this to work
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
     peaudiosys_log  = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
