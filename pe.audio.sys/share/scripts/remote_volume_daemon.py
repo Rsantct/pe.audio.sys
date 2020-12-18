@@ -3,7 +3,7 @@
     A daemon that listen for relative volume changes,
     then forward them to all remote listener pe.audio.sys.
 
-    Usage:      remote_volume.py   start|stop
+    Usage:      remote_volume_daemon.py   start|stop
 
     NOTE:
     A newcoming remote listener machine will need to send 'hello'
