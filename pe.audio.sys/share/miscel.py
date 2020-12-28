@@ -17,6 +17,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 import socket
+import ipaddress
 import os
 import jack
 from json import loads as json_loads
@@ -410,3 +411,11 @@ def read_last_line(filename=''):
 
     except:
         return ''
+
+# Validate if a given string is a valid IP address
+def is_IP(s):
+    try:
+        ipaddress.ip_address(s)
+        return True
+    except:
+        return False
