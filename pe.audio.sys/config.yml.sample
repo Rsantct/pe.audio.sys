@@ -226,11 +226,8 @@ scripts:
     ## Plays audio streamed from AirPlay sources
     #- shairport-sync.py
     
-    ## A LAN multicast audio receiver
-    #- zita-n2j_mcast.py
-    
-    ## A LAN multicast audio sender (network BW ~ 1.7 Mb/s 2ch 44100 16bit)
-    #- zita-j2n_mcast.py
+    ## A LAN audio receiver
+    #- zita-n2j.py
     
     ## Controls the volume by a mouse
     #- mouse_volume_daemon.py
