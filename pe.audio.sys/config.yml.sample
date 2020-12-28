@@ -166,10 +166,9 @@ sources:
         target:         none                # maybe preferred for movie dialogue
 
     remote:
-        capture_port:   zita-n2j
-        gain:           0.0
-        xo:             
-        address:        localhost
+        capture_port:   192.168.1.234       # remote Ip: used by the script
+        gain:           0.0                 #            'zita-n2j' and by
+        xo:                                 #            players to get metadata
 
 
 # ========================== SOURCE MONITOR PORTS ==============================
