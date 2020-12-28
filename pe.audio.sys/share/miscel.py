@@ -412,6 +412,7 @@ def read_last_line(filename=''):
     except:
         return ''
 
+
 # Validate if a given string is a valid IP address
 def is_IP(s):
     try:
@@ -419,3 +420,12 @@ def is_IP(s):
         return True
     except:
         return False
+
+
+# Aux to get my own IP address
+def get_my_ip():
+    try:
+        tmp = sp.check_output( 'hostname --all-ip-addresses'.split() ).decode()
+        return tmp.split()[0]
+    except:
+        return ''
