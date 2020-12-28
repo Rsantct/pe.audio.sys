@@ -134,15 +134,15 @@ def player_get_meta():
         md = mplayer_meta(md, service='cdda')
 
     elif source.startswith('remote'):
-        if 'address' in SOURCES[source]:
-            host = SOURCES[source]["address"]
-            port = 9990
-            if 'port' in SOURCES[source]:
-                port = SOURCES[source]["port"]
-            try:
-                md = remote_get_meta( host, port )
-            except:
-                pass
+        # For a 'remote.....' named source, it is expected to have
+        # an IP address kind of in its capture_port field:
+        #   capture_port:  X.X.X.X
+        # so this way we can query metadata from the remote address.
+        host = SOURCES[source]["capture_port"]
+        port = 9900
+        if is_IP(host):
+            md = remote_get_meta( host, port )
+
 
     return md
 
