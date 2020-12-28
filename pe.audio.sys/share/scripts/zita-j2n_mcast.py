@@ -9,9 +9,17 @@
         sound cards of the systems using it
 
     usage:    zita-j2n_mcast.py   start | stop
-    
-    NOTICE: 2 ch 44100 Hz 16 bit will use about ~ 1.7 Mb/s network bandwidth
-            (UDP packets)
+
+
+    (!) NOTICE:
+
+    2ch 44100Hz 16bit will use about ~ 1.7 Mb/s network bandwidth (UDP packets)
+
+    *** Multicast UDP must be used in a dedicated wired Ethernet LAN ***
+
+    If your LAN uses WiFi, please do not use this script, you can use
+    the new script 'zita-n2j.py' instead, just in the receiver side, the
+    sender side zita-j2n will be automagically triggered from the receiver.
 
 """
 import sys
