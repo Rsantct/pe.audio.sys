@@ -137,10 +137,9 @@ Here you are an uncommented bare example of `config.yml`:
             xo:             mp                  # low latency filtering
             target:         +0.0-0.0_target     # preferred for movie dialogue
         remote:
-            capture_port:   zita-n2j
+            capture_port:   192.168.1.234       # remote zita-j2n sender
             gain:           0.0
             xo:             lp
-            address:        192.168.1.234
 
     source_monitors:
 
@@ -150,7 +149,7 @@ Here you are an uncommented bare example of `config.yml`:
         - istreams.py
         - pulseaudio-jack-sink.py
         - librespot.py
-        - zita-n2j_mcast.py
+        - zita-n2j.py
 
     peaudiosys_address:     localhost
     peaudiosys_port:        9990
