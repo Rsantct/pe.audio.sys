@@ -149,7 +149,7 @@ Here you are an uncommented bare example of `config.yml`:
         - istreams.py
         - pulseaudio-jack-sink.py
         - librespot.py
-        - zita-n2j.py
+        - zita_link.py
 
     peaudiosys_address:     localhost
     peaudiosys_port:        9990
