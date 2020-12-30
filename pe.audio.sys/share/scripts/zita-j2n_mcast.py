@@ -18,7 +18,7 @@
     *** Multicast UDP must be used in a dedicated wired Ethernet LAN ***
 
     If your LAN uses WiFi, please do not use this script, you can use
-    the new script 'zita-n2j.py' instead, just in the receiver side, the
+    the new script 'zita_link.py' instead, just in the receiver side, the
     sender side zita-j2n will be automagically triggered from the receiver.
 
 """
