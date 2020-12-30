@@ -84,6 +84,8 @@ So now you can symlink it to run the new version:
 
 ## About zita-j2n (JACK-NETWORK BRIDGE) network usage
 
+https://kokkinizita.linuxaudio.org/linuxaudio/
+
 For a typical setting of 2 ch 44100 Hz 16 bit, the used BW is about 1.7 Mb/s over your LAN.
 
 If you use **`scripts/zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously to ALL hosts in your LAN.
