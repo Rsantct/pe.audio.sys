@@ -17,7 +17,7 @@
     *** Multicast UDP must be used in a dedicated wired Ethernet LAN ***
 
     If your LAN uses WiFi, please do not use this script, you can use
-    the new script 'zita-n2j.py' instead.
+    the new script 'zita_link.py' instead.
 
 """
 import sys
