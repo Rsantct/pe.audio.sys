@@ -90,7 +90,7 @@ If you use **`scripts/zita-n2j_mcast.py`**, then UDP multicast packets will be s
 
 So, you can use MULTICAST only in a dedicated wired Ethernet LAN.
 
-If you have a **WiFied LAN, do not use multicast**. It is preferred to use the new client side **`scripts/zita-n2j.py`**. This script automagically triggers the sender system to run a one-to-one `zita-j2n` process.
+If you have a **WiFied LAN, do not use multicast**. It is preferred to use the new client side **`scripts/zita_link.py`**. This script automagically triggers the sender system to run a one-to-one `zita-j2n` process.
 
 
 ## How to tune DVB-T channels
