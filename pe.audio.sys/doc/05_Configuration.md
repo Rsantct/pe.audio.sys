@@ -110,9 +110,9 @@ Then relogin.
 
 ## [ ] 1st time start up the system
 
-Be sure you have set the DUMMY backend for jack, then run:
+Be sure you have set the DUMMY backend for jack, then run in backgound:
 
-  **`pe.audio.sys/start.py all`**
+  **`pe.audio.sys/start.py all &`**
 
 The provided tool `bin/peaudiosys_view_brutefir.py` will help you on mapping outputs, delays, coeefs, filters running, polarity and gains.
 
