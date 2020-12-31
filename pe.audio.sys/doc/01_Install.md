@@ -48,8 +48,7 @@ You can access to the control web from some LAN computer or smartphone.
 
 You need to install the Node.js package, 
 
-    sudo apt install nodejs
-    sudo apt install node-js-yaml
+    sudo apt install nodejs node-js-yaml
 
 then login as your regular user and run:
 
