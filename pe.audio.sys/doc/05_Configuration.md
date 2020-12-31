@@ -78,7 +78,7 @@ Once your `brutefir_config` file is ready, you can test it:
 - Run Brutefir
     
         cd pe.audio.sys/loudspeakers/YOURLOUDSPEAKERFOLDER
-        brutefir brutefir_config &.  # this takes a while
+        brutefir brutefir_config &.                         # (!) this 1st time will take a while
 
 - Check Brutefir running process:
 
