@@ -1,9 +1,9 @@
 balance: 0.0
 bass: 0.0
 drc_set: sample
+equal_loudness: true
 input: none
 level: -20.0
-loudness_track: true
 loudspeaker: full_range_example
 lu_offset: 0.0
 midside: 'off'
@@ -11,6 +11,6 @@ muted: false
 peq_set: none
 polarity: +
 solo: 'off'
-target: +3.0-1.5_target
+target: none
 treble: 0.0
 xo_set: none
