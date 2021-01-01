@@ -62,9 +62,9 @@ To test the server, login as your regular user and run:
 
 then browse http://yourIP:8080
 
-##### Running the server at start up:
+##### Running the Node.js server at start up:
 
-Please add this under your `scripts:` section inside `confi.yml`
+Please add this under your `scripts:` section inside `config.yml`
 
     # Launchs the pe.audio.sys web page Node.js server
     - node_web_server.py
