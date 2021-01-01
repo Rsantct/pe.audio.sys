@@ -84,4 +84,18 @@ If so, you can set it by running **`EDITOR=nano sudo visudo`**, then add the fol
     # 'myUSER' user can reboot the machine:
     myUSER          ALL=NOPASSWD:/sbin/reboot
 
+## Tuning your editor
+
+Please use spaces for tab indenting:
+
+    $ sudo nano /etc/nanorc
+
+        ## Use smooth scrolling as the default.
+        set smooth
+
+        ## Use this tab size instead of the default; it must be greater than 0.
+        set tabsize 4
+
+        ## Convert typed tabs to spaces.
+        set tabstospaces
 
