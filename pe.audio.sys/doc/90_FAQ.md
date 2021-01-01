@@ -54,7 +54,13 @@ Unfortunately, librestpot only provides the current song title, nor artist neith
     
  #### Raspberry Pi
  
- There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
+There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
+
+Please, after installing it, disable the default raspotify service
+
+    sudo systemctl stop raspotify.service 
+    sudo systemctl disable raspotify.service 
+
 
 ## Can I run Brutefir compiled from source rather than my distro version
 
