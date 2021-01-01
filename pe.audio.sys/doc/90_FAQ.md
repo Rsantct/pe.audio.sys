@@ -52,7 +52,7 @@ Don't worry about the --backend option because by default will use Rodio that wo
 
 Unfortunately, librestpot only provides the current song title, nor artist neither album info.
     
- #### Raspberry Pi
+#### Raspberry Pi
  
 There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
 
@@ -60,6 +60,10 @@ Please, after installing it, disable the default raspotify service
 
     sudo systemctl stop raspotify.service 
     sudo systemctl disable raspotify.service 
+
+#### Running headless Spotify
+
+Simply add `- librespot.py` under the `scripts:` section inside `pe.audio.sys/config.yml`.
 
 
 ## Can I run Brutefir compiled from source rather than my distro version
