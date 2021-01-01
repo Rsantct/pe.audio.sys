@@ -3,9 +3,6 @@
 # switch on your amplifier:
 su -l YOURUSER -c "/home/YOURUSER/bin/ampli.sh on"
 
-# Node.js http server
-su -l YOURUSER -c "/usr/bin/node /home/YOURUSER/pe.audio.sys/share/www/peasys_node.js &"
-
 # starts pe.audio.sys
 su -l YOURUSER -c "python3 /home/YOURUSER/pe.audio.sys/start.py all --log &"
 
