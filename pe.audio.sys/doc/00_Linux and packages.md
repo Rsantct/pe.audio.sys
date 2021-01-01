@@ -99,3 +99,8 @@ Please use spaces for tab indenting:
         ## Convert typed tabs to spaces.
         set tabstospaces
 
+        ## Snip whitespace at the end of lines when justifying or hard-wrapping.
+        set trimblanks
+
+The last one will trim blank spaces at line endings when you justify (Ctrl-J or ESC-J)
+
