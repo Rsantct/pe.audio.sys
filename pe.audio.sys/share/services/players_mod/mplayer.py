@@ -227,15 +227,22 @@ def pre_connect(mode, pname=cdda.CD_CAPTURE_PORT):
 
 # Aux to query Mplayer if paused or playing
 def playing_status(service='cdda'):
+    """ Mplayer status: play or pause
+    """
+    result = 'play'
+
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( 'pausing_keep_force get_property pause\n' )
+
     sleep(.1)
+
     with open(f'{MAINFOLDER}/.{service}_events', 'r') as f:
         tmp = f.read().split('\n')
     for line in tmp[-2:]:
         if 'ANS_pause=yes' in line:
-            return 'pause'
-    return 'play'
+            result = 'pause'
+
+    return result
 
 
 # Aux to send Mplayer commands through by the corresponding fifo
@@ -273,7 +280,7 @@ def mplayer_control(cmd, arg='', service=''):
     #     a Mplayer command has been issued.
     #     Available commands: http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
-    status = playing_status()
+    status = playing_status(service)
 
     # Early return if SLAVE GETTING INFO commands:
     if cmd.startswith('get_'):
@@ -291,7 +298,7 @@ def mplayer_control(cmd, arg='', service=''):
             f.write( json.dumps( cdda.cdda_info_template() ) )
         # Flush Mplayer playlist
         send_cmd('stop', service)
-        return playing_status()
+        return playing_status(service)
 
     # Processing ACTION commands (playback control)
     if service == 'istreams':
@@ -360,7 +367,7 @@ def mplayer_control(cmd, arg='', service=''):
         if cmd:
             send_cmd(cmd, service)
 
-        status = playing_status()
+        status = playing_status(service)
 
         if status == 'play':
             pre_connect('on')
