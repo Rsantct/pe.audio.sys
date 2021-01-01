@@ -35,6 +35,10 @@ from subprocess import Popen, check_output
 from time import sleep
 
 UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+from miscel import CONFIG
+
+ctrlport = CONFIG['peaudiosys_port']
 
 cmdline = f'node {UHOME}/pe.audio.sys/share/www/peasys_node.js'
 
@@ -45,20 +49,20 @@ def stop():
 
 
 def start():
-    # wait 10 s for pe.audio.sys server to be listening at :9990
-    n = 10
+    # wait 60 s for pe.audio.sys server to be listening at :9990
+    n = 60
     while n:
-        tmp = check_output( ['ss', '-tl', 'sport == :9990'] ).decode()
-        if ':9990' in tmp:
+        tmp = check_output( ['ss', '-tl', f'sport == :{ctrlport}'] ).decode()
+        if f':{ctrlport}' in tmp:
             break
         n -= 1
         sleep(1)
     if n:
         print('(scripts/node_web_server) launching node web server...')
         sleep(1)
-        Popen( f'{cmdline} 1>/dev/null 2>&1', shell=True)
+        Popen(f'{cmdline} 1>/dev/null 2>&1', shell=True)
     else:
-        print('(scripts/node_web_server) TIMEOUT server not detected')
+        print(f'(scripts/node_web_server) TIMEOUT server not detected on :{ctrlport}')
 
 
 if __name__ == '__main__':
