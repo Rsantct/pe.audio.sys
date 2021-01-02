@@ -86,7 +86,7 @@ on_init:
     # ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
     drc:    sample
 
-    # Put here just a target <ID> w/o the filename sufix 'ID_target_mag.dat'
+    # Put here just a target <ID> w/o the filename suffix 'ID_target_mag.dat'
     target: B&K
 
     # Others settings: (if any max_level will override level)
