@@ -86,9 +86,8 @@ on_init:
     # ie: drc.L.IDSTRING.pcm  drc.R.IDSTRING.pcm
     drc:    sample
 
-    # Put here just whatever the target filename prefix,
-    # w/o '_mag.dat' neither '_pha.dat'
-    target: +3.0-1.5_target
+    # Put here just a target <ID> w/o the filename sufix 'ID_target_mag.dat'
+    target: B&K
 
     # Others settings: (if any max_level will override level)
     level:              
