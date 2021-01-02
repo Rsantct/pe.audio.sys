@@ -992,6 +992,7 @@ class Preamp(object):
         result = 'nothing done'
 
         if mode == 'off':
+
             if brutefir_is_running():
                 self.bf_sources = bf_get_in_connections()
                 Popen(f'pkill -f brutefir', shell=True)
@@ -1000,7 +1001,12 @@ class Preamp(object):
                 result = 'done'
 
         elif mode == 'on':
+
             if not brutefir_is_running():
+
+                if self.state["powersave"] == True:
+                    return 'must disable powersave before setting convolver on manually'
+
                 result = restart_and_reconnect_brutefir(self.bf_sources)
                 if result == 'done':
                     self._validate( self.state ) # this includes mute
@@ -1009,7 +1015,7 @@ class Preamp(object):
                     c.set_drc( self.state["drc_set"] )
                     del( c )
                 else:
-                    result = 'PANIC: ' + result
+                    result = f'PANIC: {result}'
 
         else:
             result = 'bad option'
