@@ -94,7 +94,7 @@ Here you are an uncommented bare example of `config.yml`:
     on_init:
         xo:                 mp
         drc:                mp_multipV1
-        target:             +4.0-2.0_target
+        target:             B&K
         level:              
         max_level:          -20
         muted:              false
@@ -135,7 +135,7 @@ Here you are an uncommented bare example of `config.yml`:
             capture_port:   system
             gain:           +6.0                # low level source
             xo:             mp                  # low latency filtering
-            target:         +0.0-0.0_target     # preferred for movie dialogue
+            target:         none                # preferred for movie dialogue
         remote:
             capture_port:   192.168.1.234       # remote zita-j2n sender
             gain:           0.0
