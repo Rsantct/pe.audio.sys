@@ -108,7 +108,7 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
 ### Listening to BT devices
 
-Please copy `macros/examples/x_BT` for example to `macros/9_BT`
+Please copy **`macros/examples/x_BT`** for example to `macros/9_BT`
 
 Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
 
