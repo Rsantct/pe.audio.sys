@@ -14,6 +14,8 @@
 ### Adding your user to the `bluetooth` group
 
     sudo adduser YOURUSERNAME audio bluetooth
+    
+    (relogin is needed)
 
 
 ### Pairing and trusting your BT devices
