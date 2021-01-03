@@ -18,7 +18,7 @@
     (relogin is needed)
 
 
-### Pairing and trusting your BT devices
+### Pairing and trusting a BT device
 
     Commands you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone) 
 
@@ -78,3 +78,28 @@
 
     arecord  -D bluealsa:DEV=80:82:23:AA:BB:CC,PROFILE=a2dp  --vumeter=stereo  -f cd  /dev/null 
     
+
+### Configure pe.audio.sys `config.yml`
+
+    # ============================  SOURCES  =======================================
+    sources:
+        ...
+        ...
+        BT:
+            gain: 0
+            capture_port:   alsa_loop
+
+    # ========================= MISCEL CONFIGURATIONS ==============================
+    ...
+    ...
+    # BT devices MAC addresses enabled to stream audio to pe.audio.sys
+    BT_devices: 80:82:23:AA:BB:CC, D4:61:DA:DD:EE:FF
+
+
+### Listening to BT devices
+
+Please copy `macros/examples/x_BT` for example to `macros/9_BT`
+
+Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
+
+Run the macro to toggle to listening to BT devices, by command line or by using the control web page.
