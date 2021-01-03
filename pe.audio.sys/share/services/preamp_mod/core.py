@@ -1003,10 +1003,6 @@ class Preamp(object):
         elif mode == 'on':
 
             if not brutefir_is_running():
-
-                if self.state["powersave"] == True:
-                    return 'must disable powersave before setting convolver on manually'
-
                 result = restart_and_reconnect_brutefir(self.bf_sources)
                 if result == 'done':
                     self._validate( self.state ) # this includes mute
