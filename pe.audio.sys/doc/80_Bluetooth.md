@@ -1,10 +1,20 @@
 ## Streaming audio from a BT device
 
-### Software needed:
+Although we prefer to avoid using BT audio sources, you can enable pe.audio.sys to receive audio from any BT device.
+
+### Requirements
+
+A BT receiver, on-board or an usb BT dongle.
+
+Install BT standard software:
 
     sudo apt install bluez bluetooth pi-bluetooth bluealsa
 
-### Enable bluetooth audio sink profile:
+The key package is `bluealsa`, a Bluetooth to ALSA bridge. This is intended to be used in a 'headless' pe.audio.sys machine.
+
+For a 'desktop' machine, you can go to Pulseaudio bluetooth plugins. This is not covered here.
+
+### Enable bluetooth audio sink profile (receiver):
     
     sudo nano /lib/systemd/system/bluealsa.service
           ExecStart=/usr/bin/bluealsa --profile=a2dp-sink
@@ -20,7 +30,7 @@
 
 ### Pairing and trusting a BT device
 
-    Commands you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone) 
+Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone) 
 
     ~ $ bluetoothctl
     Agent registered
