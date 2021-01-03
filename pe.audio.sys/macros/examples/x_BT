@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""
+    Toggles  preamp to listen to BT_devices configured inside config.sys
+
+    (i) In addition to BT_devices, you will need to declare a BT source:
+
+    sources:
+        ...
+        ...
+        BT:
+            gain: 0
+            capture_port:   alsa_loop
+
+"""
+
+from subprocess import Popen, check_output
+from json import loads as json_loads
+import sys
+import os
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import CONFIG, send_cmd
+
+
+def btdevices_set_maxvolume():
+    try:
+        tmp = check_output('amixer -D bluealsa scontrols'.split()).decode()
+        # e.g:
+        #    Simple mixer control 'iPad_de_Pepeillo - A2DP',0
+        #    Simple mixer control 'iphone_de_Joselito - A2DP',0
+    except:
+        tmp = ''
+
+    if not tmp:
+        return
+
+    tmp = tmp.strip().split('\n')
+    scontrols = [x.split("'")[1].split(',')[0] for x in tmp]
+    # ['iPad_de_Pepeillo - A2DP', 'iphone_de_Joselito - A2DP']
+
+    if scontrols:
+        for scontrol in scontrols:
+            cmd = f"amixer -D bluealsa sset '{scontrol}' 100%"
+            print (f'(macros/9_BT) querying: {cmd}')
+            Popen( f'{cmd} >/dev/null 2>&1', shell=True )
+
+
+if __name__ == "__main__":
+
+    # Print help
+    if sys.argv[1:] and '-h' in sys.argv[1]:
+        print(__doc__)
+        sys.exit()
+
+
+    # Looking for configured BT devices
+    try:
+        btdevices = CONFIG['BT_devices'].replace(',',' ').split()
+    except:
+        btdevices = []
+    if not btdevices:
+        print('(macros/9_BT) missing bt_devices under config.yml')
+        sys.exit()
+
+    # Toogle preamp input: BT <> none
+    currinput = json_loads( send_cmd('state') )['input']
+    if currinput == 'BT':
+        newinput = 'none'
+    else:
+        newinput = 'BT'
+
+    # Running BT capture audio
+    if newinput == 'BT':
+
+        for btdevice in btdevices:
+            cmd = f'arecord -D bluealsa:DEV={btdevice},PROFILE=a2dp -fcd | aplay -D aloop'
+            print(f'(macros/9_BT) capturing audio from BT device {btdevice}')
+            Popen(cmd, shell=True)
+
+        send_cmd('preamp input BT')
+
+        btdevices_set_maxvolume()
+
+    else:
+
+        print('(macros/9_BT) stopping capturing audio from BT devices')
+        Popen( f'pkill -KILL arecord'.split() )
+        send_cmd('preamp input none')
