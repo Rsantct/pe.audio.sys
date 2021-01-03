@@ -8,6 +8,7 @@
 
 from subprocess import Popen, check_output
 from json import loads as json_loads
+from time import sleep
 import sys
 import os
 UHOME = os.path.expanduser("~")
@@ -16,7 +17,13 @@ sys.path.append(f'{UHOME}/pe.audio.sys')
 from share.miscel import CONFIG, send_cmd
 
 
-def btdevices_set_maxvolume():
+# EXPERIMETAL alsaloop latency in milliseconds (normally 500 ms):
+latencyms = 500
+
+
+def bluealsa_devices_set_maxvolume():
+    """ bluealsa emerges one amixer control for each connected device
+    """
     try:
         tmp = check_output('amixer -D bluealsa scontrols'.split()).decode()
         # e.g:
@@ -56,28 +63,36 @@ if __name__ == "__main__":
         print('(macros/9_BT) missing bt_devices under config.yml')
         sys.exit()
 
-    # Toogle preamp input: BT <> none
+
+    # Toogle preamp input: BT <--> none
     currinput = json_loads( send_cmd('state') )['input']
     if currinput == 'BT':
         newinput = 'none'
     else:
         newinput = 'BT'
 
-    # Running BT capture audio, listen to it.
+    # Running BT capture audio, and listen to it.
     if newinput == 'BT':
 
+        usec = latencyms * 1000
+
         for btdevice in btdevices:
-            cmd = f'arecord -D bluealsa:DEV={btdevice},PROFILE=a2dp -fcd | aplay -D aloop'
+
+            # ALSALOOP process
+            capdev = f'bluealsa:DEV={btdevice},PROFILE=a2dp'
+            cmd = f'alsaloop -C {capdev} -P aloop --sync=auto -t {usec} --samplerate=auto'
+
             print(f'(macros/9_BT) capturing audio from BT device {btdevice}')
-            Popen(cmd, shell=True)
+            Popen( cmd.split() )
 
         send_cmd('preamp input BT')
 
-        btdevices_set_maxvolume()
+        sleep(1)
+        bluealsa_devices_set_maxvolume()
 
     # Stopping BT capture audio, clearing preamp source.
     else:
 
         print('(macros/9_BT) stopping capturing audio from BT devices')
-        Popen( f'pkill -KILL arecord'.split() )
+        Popen( f'pkill -KILL alsaloop'.split() )
         send_cmd('preamp input none')
