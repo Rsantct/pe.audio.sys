@@ -1,0 +1,78 @@
+## Streaming audio from a BT device
+
+### Software needed:
+
+    sudo apt install bluez bluetooth pi-bluetooth bluealsa
+
+### Enable bluetooth audio sink profile:
+    
+    sudo nano /lib/systemd/system/bluealsa.service
+          ExecStart=/usr/bin/bluealsa --profile=a2dp-sink
+
+    sudo systemctl reboot
+
+### Adding your user to the `bluetooth` group
+
+    sudo adduser YOURUSERNAME audio bluetooth
+
+
+### Pairing and trusting your BT devices
+
+    Commands you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone) 
+
+    ~ $ bluetoothctl
+    Agent registered
+    [bluetooth]# agent on
+    Agent is already registered
+
+    [bluetooth]# scan on
+    Discovery started
+    [CHG] Controller B8:27:EB:28:42:EE Discovering: yes
+    ...
+    ...
+    [NEW] Device 80:82:23:AA:BB:CC my_iphone
+    ...
+    ...
+    [bluetooth]# scan off
+    [CHG] Controller B8:27:EB:28:42:EE Discovering: no
+    Discovery stopped
+
+    [bluetooth]# pair 80:82:23:AA:BB:CC
+    Attempting to pair with 80:82:23:AA:BB:CC
+    [CHG] Device 80:82:23:AA:BB:CC Connected: yes
+    Request confirmation
+
+        *** now confirm pairing on your device ***
+        *** then say 'yes' below
+        
+    [agent] Confirm passkey 090582 (yes/no): yes
+    [CHG] Device 80:82:23:AA:BB:CC Modalias: bluetooth:v004Cp710000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00000000-deca-fade-deca-deaf00000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00001000-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 0000110a-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 0000110c-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 0000110e-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00001116-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 0000111f-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 0000112f-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00001132-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00001200-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00001801-0000-1000-8000-008000000000
+    [CHG] Device 80:82:23:AA:BB:CC UUIDs: 02030302-1d19-415f-86f2-22a210000000
+    [CHG] Device 80:82:23:AA:BB:CC ServicesResolved: yes
+    [CHG] Device 80:82:23:AA:BB:CC Paired: yes
+    Pairing successful
+    [CHG] Device 80:82:23:AA:BB:CC ServicesResolved: no
+    [CHG] Device 80:82:23:AA:BB:CC Connected: no
+
+    [bluetooth]# trust 80:82:23:AA:BB:CC
+    [CHG] Device 80:82:23:AA:BB:CC Trusted: yes
+    Changing 80:82:23:AA:BB:CC trust succeeded
+    [bluetooth]# exit
+    ~ $ 
+
+
+### Testing
+
+    arecord  -D bluealsa:DEV=80:82:23:AA:BB:CC,PROFILE=a2dp  --vumeter=stereo  -f cd  /dev/null 
+    
