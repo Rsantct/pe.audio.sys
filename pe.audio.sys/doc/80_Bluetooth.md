@@ -89,7 +89,14 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
     arecord  -D bluealsa:DEV=80:82:23:AA:BB:CC,PROFILE=a2dp  --vumeter=stereo  -f cd  /dev/null 
     
 
-### Configure pe.audio.sys `config.yml`
+### Configure pe.audio.sys 
+
+#### `~/.asoundrc`
+
+Please use the provided `.asoundrc.sample` file in order to enable the ALSA to JACK plugin.
+
+
+#### `~/pe.audio.sys/config.yml`
 
     # ============================  SOURCES  =======================================
     sources:
