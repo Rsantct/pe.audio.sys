@@ -63,7 +63,7 @@ if __name__ == "__main__":
     else:
         newinput = 'BT'
 
-    # Running BT capture audio
+    # Running BT capture audio, listen to it.
     if newinput == 'BT':
 
         for btdevice in btdevices:
@@ -75,6 +75,7 @@ if __name__ == "__main__":
 
         btdevices_set_maxvolume()
 
+    # Stopping BT capture audio, clearing preamp source.
     else:
 
         print('(macros/9_BT) stopping capturing audio from BT devices')
