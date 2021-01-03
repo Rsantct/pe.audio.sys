@@ -121,3 +121,7 @@ w_scan notes:
 
 More info: http://linuxtv.org/wiki/index.php/W_scan
 
+
+## About Bluetooth sources
+
+Please refer to **`doc/80_Bluetooth.md`**.
