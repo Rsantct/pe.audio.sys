@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 """
-    Toggles  preamp to listen to BT_devices configured inside config.sys
+    Toggles preamp to listen to BT_devices configured inside config.sys
 
-    (i) In addition to BT_devices, you will need to declare a BT source:
-
-    sources:
-        ...
-        ...
-        BT:
-            gain: 0
-            capture_port:   alsa_loop
+    (i) Please refer to   -->  doc/80_Bluetooth
 
 """
 
