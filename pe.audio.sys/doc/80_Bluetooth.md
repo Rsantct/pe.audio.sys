@@ -14,18 +14,20 @@ The key package is `bluealsa`, a Bluetooth to ALSA bridge. This is intended to b
 
 For a 'desktop' machine, you can go to Pulseaudio bluetooth plugins. This is not covered here.
 
-### Enable bluetooth audio sink profile (receiver):
-    
-    sudo nano /lib/systemd/system/bluealsa.service
-          ExecStart=/usr/bin/bluealsa --profile=a2dp-sink
-
-    sudo systemctl reboot
 
 ### Adding your user to the `bluetooth` group
 
     sudo adduser YOURUSERNAME bluetooth
     
     (relogin is needed)
+
+
+### Enable bluetooth audio sink profile (receiver):
+    
+    sudo nano /lib/systemd/system/bluealsa.service
+          ExecStart=/usr/bin/bluealsa --profile=a2dp-sink
+
+    sudo systemctl reboot
 
 
 ### Pairing and trusting a BT device
