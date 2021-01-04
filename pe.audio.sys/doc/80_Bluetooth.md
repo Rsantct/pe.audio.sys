@@ -8,7 +8,7 @@ Although we prefer to avoid using BT audio sources, you can enable pe.audio.sys 
 
 - Install BT standard software:
 
-    sudo apt install bluez bluetooth pi-bluetooth bluealsa
+    ```sudo apt install bluez bluetooth pi-bluetooth bluealsa```
 
 The key package is `bluealsa`, a Bluetooth to ALSA bridge. This is intended to be used in a 'headless' pe.audio.sys machine.
 
