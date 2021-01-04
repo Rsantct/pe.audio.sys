@@ -20,7 +20,9 @@ from share.miscel import CONFIG, send_cmd
 ################################################################################
 # ALSALOOP SETTINGS (TUNE IT AS PER YOUR CPU POWER)
 
-# latency in milliseconds (normally 500 ms):
+# latency in milliseconds
+# (usable 500ms latency, good CPU usage, superb xrun prevention)
+# (superb 1ms latency, but heavy CPU usage)
 latencyms = 500
 
 # libsamplerate quality:
