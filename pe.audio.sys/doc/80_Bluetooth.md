@@ -23,7 +23,7 @@ For a 'desktop' machine, you can go to Pulseaudio bluetooth plugins. This is not
 
 ### Adding your user to the `bluetooth` group
 
-    sudo adduser YOURUSERNAME audio bluetooth
+    sudo adduser YOURUSERNAME bluetooth
     
     (relogin is needed)
 
