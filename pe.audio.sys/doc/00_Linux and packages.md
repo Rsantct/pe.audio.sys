@@ -55,9 +55,11 @@ Enable your user to access the sound card under the dbus system enviroment:
 
 Also install the following packages on your linux installation:
 
-    sudo apt install alsa-utils libjack-jackd2-dev libasound2-dev libasound2-plugins jackd2 \
-                     brutefir ecasound ecatools python-ecasound mpd mpc gmpc ncmpcpp mplayer cdtool \
-                     ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
+    sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins  \
+                     libjack-jackd2-dev libsamplerate0 libsamplerate0-dev  \
+                     mpd mpc gmpc ncmpcpp mplayer cdtool  \
+                     ecasound ecatools python-ecasound ladspa-sdk  \
+                     fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
 
 Disable default MPD setup:
