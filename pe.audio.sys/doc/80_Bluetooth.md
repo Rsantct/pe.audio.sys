@@ -4,9 +4,9 @@ Although we prefer to avoid using BT audio sources, you can enable pe.audio.sys 
 
 ### Requirements
 
-A BT receiver, on-board or an usb BT dongle.
+- A BT receiver, on-board or an usb BT dongle.
 
-Install BT standard software:
+- Install BT standard software:
 
     sudo apt install bluez bluetooth pi-bluetooth bluealsa
 
