@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
             # ALSALOOP process
             capdev = f'bluealsa:DEV={btdevice},PROFILE=a2dp'
-            cmd = f'alsaloop -C {capdev} -P aloop --sync=simple -t {usec} --samplerate={srQ}'
+            cmd = f'alsaloop -C {capdev} -P aloop --sync=none -t {usec} --samplerate={srQ}'
 
             print(f'(macros/9_BT) capturing audio from BT device {btdevice}')
             with open('/dev/null', 'w') as devnull:
