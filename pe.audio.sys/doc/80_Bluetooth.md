@@ -90,6 +90,8 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
     arecord  -D bluealsa:DEV=80:82:23:AA:BB:CC,PROFILE=a2dp  --vumeter=stereo  -f cd  /dev/null 
     
+(if it doesn't seem to detect any levels, check your mobile device volume)
+
 
 ### Configure pe.audio.sys 
 
