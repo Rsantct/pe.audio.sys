@@ -124,3 +124,12 @@ Please copy **`macros/examples/x_BT`** for example to `macros/9_BT`
 Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
 
 Run the macro to toggle to listening to BT devices, by command line or by using the control web page.
+
+
+### alsaloop high CPU%
+
+    top -p $(pidof alsaloop)
+
+If you experience high CPU% loading from the `alsaloop` process when running the BT macro, try to adjust -n 3 (--nperiods 3) or -p (--period) value for jackd (under `pe.audio.sys/config.yml`)
+
+
