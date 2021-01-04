@@ -17,8 +17,19 @@ sys.path.append(f'{UHOME}/pe.audio.sys')
 from share.miscel import CONFIG, send_cmd
 
 
-# EXPERIMETAL alsaloop latency in milliseconds (normally 500 ms):
+################################################################################
+# ALSALOOP SETTINGS (TUNE IT AS PER YOUR CPU POWER)
+
+# latency in milliseconds (normally 500 ms):
 latencyms = 500
+
+# libsamplerate quality:
+#        0 or sincbest     - best quality
+#        1 or sincmedium   - medium quality
+#        2 or sincfastest  - lowest quality
+srQ = 'sincfastest'
+
+################################################################################
 
 
 def bluealsa_devices_set_maxvolume():
@@ -80,10 +91,11 @@ if __name__ == "__main__":
 
             # ALSALOOP process
             capdev = f'bluealsa:DEV={btdevice},PROFILE=a2dp'
-            cmd = f'alsaloop -C {capdev} -P aloop --sync=auto -t {usec} --samplerate=auto'
+            cmd = f'alsaloop -C {capdev} -P aloop --sync=simple -t {usec} --samplerate={srQ}'
 
             print(f'(macros/9_BT) capturing audio from BT device {btdevice}')
-            Popen( cmd.split() )
+            with open('/dev/null', 'w') as devnull:
+                Popen( cmd.split(), stdout=devnull, stderr=devnull )
 
         send_cmd('preamp input BT')
 
