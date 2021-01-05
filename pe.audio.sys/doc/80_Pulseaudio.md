@@ -37,23 +37,20 @@ A desktop machine already have Pulseaudio installed, you'll need just some modul
 
 - Enable the Pulseaudio to Jack bridge under `pe.audio.sys/config.yml`
 
-    ```
-    scripts:
-        ...
-        ...
-        ## Set Pulseaudio apps to sound through by JACK:
-        - pulseaudio-jack-sink.py
-        ## Enables Pulseaudio to get sound from paired BT devices:
-        - pulseaudio-BT.py
-    ```
+        scripts:
+            ...
+            ...
+            ## Set Pulseaudio apps to sound through by JACK:
+            - pulseaudio-jack-sink.py
+            ## Enables Pulseaudio to get sound from paired BT devices:
+            - pulseaudio-BT.py
 
 - Now your Pulseaudio sources will be available under Jack at ports:
 
-    ```
-    $ jack_lsp pulse
-    pulse_sink:front-left
-    pulse_sink:front-right
-    ```
+        $ jack_lsp pulse
+        pulse_sink:front-left
+        pulse_sink:front-right
+
 
 ## Tools:
 
