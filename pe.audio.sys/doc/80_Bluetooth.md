@@ -91,6 +91,8 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
 ## The PULSEAUDIO option (preferred)
 
+Pulseaudio provides an easy to use interface to BT devives with a very low latency.
+
 Please refer to **`doc/80_Pulseaudio`**
 
 #### `~/pe.audio.sys/config.yml`
@@ -131,7 +133,9 @@ Select the **BT** input or run the macro to listening to BT devices, by command 
 
 ## The ALSA option
 
-    ```sudo apt bluealsa        # a Bluetooth to ALSA bridge```   
+    ```sudo apt bluealsa```  
+
+Bluealsa provides a Bluetooth to ALSA bridge, but its performance can be limited on SoC based systems as for example a Raspberry Pi >=3.
 
 
 #### `~/.asoundrc`
@@ -169,6 +173,6 @@ Run the macro to toggle to listening to BT devices, by command line or by using 
 
     top -p $(pidof alsaloop)
 
-If you experience high CPU% loading from the `alsaloop` process when running the BT macro, try to adjust -n 3 (--nperiods 3) or -p (--period) value for jackd (under `pe.audio.sys/config.yml`)
+If you experience high CPU% loading from the `alsaloop` process when running the BT macro, try to adjust -n (--nperiods) or -p (--period) value for jackd (under `pe.audio.sys/config.yml`)
 
 
