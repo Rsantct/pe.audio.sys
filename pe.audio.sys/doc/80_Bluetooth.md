@@ -95,7 +95,7 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
 ## The PULSEAUDIO option (preferred)
 
-### Configure pe.audio.sys `~/pe.audio.sys/config.yml`
+### `~/pe.audio.sys/config.yml`
 
     # ============================  SOURCES  =======================================
     sources:
@@ -114,14 +114,12 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
 ## The ALSA option
 
-### Configure pe.audio.sys 
-
-#### `~/.asoundrc`
+### `~/.asoundrc`
 
 Please use the provided `.asoundrc.sample` file in order to enable the ALSA to JACK plugin.
 
 
-#### `~/pe.audio.sys/config.yml`
+### `~/pe.audio.sys/config.yml`
 
     # ============================  SOURCES  =======================================
     sources:
