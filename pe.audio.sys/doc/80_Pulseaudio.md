@@ -1,32 +1,37 @@
 
-### Install Pulseaudio
+## Install Pulseaudio
+
+### Desktop system
+
+A desktop machine already have Pulseaudio installed, you'll need just some modules:
+
+    sudo apt install    pulseaudio-module-jack pulseaudio-module-bluetooth
+
+### Headless system:
 
     sudo apt install    pulseaudio pulseaudio-utils pavucontrol \
                         pulseaudio-module-jack pulseaudio-module-bluetooth
 
 
-### Checking sound cards usage:
+#### Configuring Pulseaudio services (systemd)
 
-    sudo fuser -v /dev/snd/*
+- Check systemd services (normally disabled after installation):
 
-### Checking Pulseaudio services (systemd)
-
-    systemctl        status pulseaudio      # system wide scope
-    systemctl --user status pulseaudio      # user scope
+        systemctl        status pulseaudio      # system wide scope
+        systemctl --user status pulseaudio      # user scope
 
 - Enable Pulseadio for your user:
 
-    ```
-    systemctl --user enable pulseaudio
-    systemctl --user start pulseaudio
-    ```
-    
+        systemctl --user enable pulseaudio
+        systemctl --user start pulseaudio
+
+
 - Disable the system wide service if necessary
     
-    ```
-    systemctl  stop    pulseaudio
-    systemctl  disable pulseaudio
-    ```
+        systemctl  stop    pulseaudio
+        systemctl  disable pulseaudio
+
+### pe.audio.sys
 
 - **pe.audio.sys** will automatically ask Pulseaudio to release the sound card to run Jack properly.
 
@@ -49,3 +54,10 @@
     pulse_sink:front-left
     pulse_sink:front-right
     ```
+
+## Tools:
+
+Checking sound cards usage:
+
+    sudo fuser -v /dev/snd/*
+
