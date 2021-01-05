@@ -133,9 +133,9 @@ Select the **BT** input or run the macro to listening to BT devices, by command 
 
 ## The ALSA option
 
-    sudo apt bluealsa
+    sudo apt install bluealsa
 
-Bluealsa provides a Bluetooth to ALSA bridge, but its performance can be limited on SoC based systems as for example a Raspberry Pi >=3.
+Bluealsa provides a Bluetooth to ALSA bridge, but its performance can be limited on SoC based systems such a Raspberry Pi 3.
 
 
 #### `~/.asoundrc`
