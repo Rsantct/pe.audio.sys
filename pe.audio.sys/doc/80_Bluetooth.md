@@ -8,11 +8,7 @@ Although we prefer to avoid using BT audio sources, you can enable pe.audio.sys 
 
 - Install BT standard software:
 
-    ```sudo apt install bluez bluetooth pi-bluetooth bluealsa```
-
-The key package is `bluealsa`, a Bluetooth to ALSA bridge. This is intended to be used in a 'headless' pe.audio.sys machine.
-
-For a 'desktop' machine, you can go to Pulseaudio bluetooth plugins. This is not covered here.
+    ```sudo apt install bluez bluetooth pi-bluetooth # pi-bluetooth if you use a Raspberry Pi machine```   
 
 
 ### Adding your user to the `bluetooth` group
@@ -95,6 +91,8 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
 ## The PULSEAUDIO option (preferred)
 
+Please refer to **`doc/80_Pulseaudio`**
+
 #### `~/pe.audio.sys/config.yml`
 
     # ============================  SOURCES  =======================================
@@ -111,8 +109,19 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
     # BT devices MAC addresses enabled to stream audio to pe.audio.sys
     BT_devices: 80:82:23:AA:BB:CC, D4:61:DA:DD:EE:FF
 
+### Listening to BT devices
+
+Please copy **`macros/examples/x_BT_pulse`** for example to `macros/9_BT`
+
+Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
+
+Select the **BT** input or run the macro to listening to BT devices, by command line or by using the control web page.
+
 
 ## The ALSA option
+
+    ```sudo apt bluealsa        # a Bluetooth to ALSA bridge```   
+
 
 #### `~/.asoundrc`
 
@@ -138,7 +147,7 @@ Please use the provided `.asoundrc.sample` file in order to enable the ALSA to J
 
 ### Listening to BT devices
 
-Please copy **`macros/examples/x_BT`** for example to `macros/9_BT`
+Please copy **`macros/examples/x_BT_alsa`** for example to `macros/9_BT`
 
 Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
 
