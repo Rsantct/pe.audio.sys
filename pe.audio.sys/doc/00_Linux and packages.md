@@ -47,9 +47,8 @@ Enable your user to access the sound card under the dbus system enviroment:
             </policy>
         </busconfig>
     
-    
     sudo service dbus restart
-
+    
 
 ## Main packages
 
