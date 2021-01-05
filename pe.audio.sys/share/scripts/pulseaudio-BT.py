@@ -45,8 +45,6 @@ def stop():
 
 if __name__ == '__main__':
 
-    enable_bt_devices()
-
     if sys.argv[1:]:
         if sys.argv[1] == 'stop':
             stop()
