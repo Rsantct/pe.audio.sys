@@ -2,7 +2,7 @@
 ### Install Pulseaudio
 
     sudo apt install    pulseaudio pulseaudio-utils pavucontrol \
-                        pulseaudio-module-bluetooth pulseaudio-module-jack
+                        pulseaudio-module-jack pulseaudio-module-bluetooth
 
 
 ### Checking sound cards usage:
@@ -11,10 +11,8 @@
 
 ### Checking Pulseaudio services (systemd)
 
-    ```
     systemctl        status pulseaudio      # system wide scope
     systemctl --user status pulseaudio      # user scope
-    ```
 
 - Enable Pulseadio for your user:
 
@@ -30,7 +28,7 @@
     systemctl  disable pulseaudio
     ```
 
-- pe.audio.sys will automatically ask Pulseaudio to release the sound card to run Jack properly.
+- **pe.audio.sys** will automatically ask Pulseaudio to release the sound card to run Jack properly.
 
 - Enable the Pulseaudio to Jack bridge under `pe.audio.sys/config.yml`
 
