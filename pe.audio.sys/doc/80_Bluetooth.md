@@ -93,6 +93,27 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 (if it doesn't seem to detect any levels, check your mobile device volume)
 
 
+## The PULSEAUDIO option (preferred)
+
+### Configure pe.audio.sys `~/pe.audio.sys/config.yml`
+
+    # ============================  SOURCES  =======================================
+    sources:
+        ...
+        ...
+        BT:
+            gain: 0
+            capture_port:   pulse_sink
+
+    # ========================= MISCEL CONFIGURATIONS ==============================
+    ...
+    ...
+    # BT devices MAC addresses enabled to stream audio to pe.audio.sys
+    BT_devices: 80:82:23:AA:BB:CC, D4:61:DA:DD:EE:FF
+
+
+## The ALSA option
+
 ### Configure pe.audio.sys 
 
 #### `~/.asoundrc`
