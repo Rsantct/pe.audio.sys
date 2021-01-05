@@ -126,7 +126,7 @@ Please refer to **`doc/80_Pulseaudio`**
 
 Please copy **`macros/examples/x_BT_pulse`** for example to `macros/9_BT`
 
-Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
+Go to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
 
 Select the **BT** input or run the macro to listening to BT devices, by command line or by using the control web page.
 
@@ -164,7 +164,7 @@ Please use the provided `.asoundrc.sample` file in order to enable the ALSA to J
 
 Please copy **`macros/examples/x_BT_alsa`** for example to `macros/9_BT`
 
-Got to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
+Go to your device bluetooth settings, then connect it to your hostname pe.audio.sys machine.
 
 Run the macro to toggle to listening to BT devices, by command line or by using the control web page.
 
