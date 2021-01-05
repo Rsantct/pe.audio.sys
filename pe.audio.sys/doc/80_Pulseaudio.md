@@ -1,6 +1,10 @@
 
 ## Install Pulseaudio
 
+Pulseadio is the standard sound server on Linux desktops.
+
+Anyway it is interesting for a headless system based in JACK, because some music sources works well through by Pulseaudio instead of Jack.
+
 ### Desktop system
 
 A desktop machine already have Pulseaudio installed, you'll need just some modules:
