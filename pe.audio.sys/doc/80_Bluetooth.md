@@ -95,6 +95,16 @@ Please refer to **`doc/80_Pulseaudio`**
 
 #### `~/pe.audio.sys/config.yml`
 
+    # ============================= SCRIPTS =======================================
+    scripts:
+        ...
+        ...
+        ## Set Pulseaudio apps to sound through by JACK:
+        - pulseaudio-jack-sink.py
+        ## Enables Pulseaudio to get sound from paired BT devices:
+        - pulseaudio-BT.py
+
+
     # ============================  SOURCES  =======================================
     sources:
         ...
@@ -108,6 +118,7 @@ Please refer to **`doc/80_Pulseaudio`**
     ...
     # BT devices MAC addresses enabled to stream audio to pe.audio.sys
     BT_devices: 80:82:23:AA:BB:CC, D4:61:DA:DD:EE:FF
+
 
 ### Listening to BT devices
 
