@@ -40,8 +40,8 @@ LOUDNESSMON_file = f'{WATCHED_DIR}/.loudness_monitor'
 PLAYER_META_file = f'{WATCHED_DIR}/.player_metadata'
 
 ## Auxiliary globals
-_state      = {}
-_last_state = {}
+_state      = { 'lu_offset': 0 }
+_last_state = { 'lu_offset': 0 }
 _last_md    = {}
 
 # Reading the LCD SETTINGS:

@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+# Copyright (c) 2019 Rafael Sánchez
+# This file is part of 'pe.audio.sys', a PC based personal audio system.
+#
+# 'pe.audio.sys' is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# 'pe.audio.sys' is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
+
 """
     A LAN multicast audio receiver, from Fons Adriaensen's zita-njbridge.
 
@@ -9,6 +25,16 @@
         sound cards of the systems using it
 
     usage:    zita-n2j_mcast.py   start | stop
+
+    (!) NOTICE:
+
+    2ch 44100Hz 16bit will use about ~ 1.7 Mb/s network bandwidth (UDP packets)
+
+    *** Multicast UDP must be used in a dedicated wired Ethernet LAN ***
+
+    If your LAN uses WiFi, please do not use this script, you can use
+    the new script 'zita_link.py' instead.
+
 """
 import sys
 import subprocess as sp

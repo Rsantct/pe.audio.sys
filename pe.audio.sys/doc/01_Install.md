@@ -48,16 +48,26 @@ You can access to the control web from some LAN computer or smartphone.
 
 You need to install the Node.js package, 
 
-    sudo apt install nodejs
-    sudo apt install node-js-yaml
+    sudo apt install nodejs node-js-yaml
 
-then login as your regular user and run:
+
+The only needed configuration is the `URL_PREXIX` under `share/www/clientside.js` so that the web page runs when served from our Node.js server.
+
+(i) Anyway the script `tmp/update_peaudiosy.sh` will auto configure this properly when updating your system.
+
+
+To test the server, login as your regular user and run:
 
     node /home/YourUser/pe.audio.sys/share/www/peasys_node.js &
 
-Configure the `URL_PREXIX` under `share/www/clientside.js` so that the web page. 
+then browse http://yourIP:8080
 
-When updating your system, the script `tmp/update_peaudiosy.sh` will auto configure it properly.
+##### Running the Node.js server at start up:
+
+Please add this under your `scripts:` section inside `config.yml`
+
+    # Launchs the pe.audio.sys web page Node.js server
+    - node_web_server.py
 
 
 #### Apache + PHP (system wide service)

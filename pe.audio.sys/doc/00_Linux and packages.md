@@ -26,6 +26,27 @@ https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-
 Unlike `FIRtro` or `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories. So, no special user profile is needed here.
 
 
+## Tuning your editor
+
+Please use spaces for tab indenting:
+
+    $ sudo nano /etc/nanorc
+
+        ## Use smooth scrolling as the default.
+        set smooth
+
+        ## Use this tab size instead of the default; it must be greater than 0.
+        set tabsize 4
+
+        ## Convert typed tabs to spaces.
+        set tabstospaces
+
+        ## Snip whitespace at the end of lines when justifying or hard-wrapping.
+        set trimblanks
+
+The last one will trim blank spaces at line endings when you justify (Ctrl-J or ESC-J)
+
+
 ## Headless machine:
 
 Update your `~/.profile`:
@@ -47,17 +68,20 @@ Enable your user to access the sound card under the dbus system enviroment:
             </policy>
         </busconfig>
     
-    
     sudo service dbus restart
-
+    
 
 ## Main packages
 
 Also install the following packages on your linux installation:
 
-    sudo apt install alsa-utils libjack-jackd2-dev libasound2-dev libasound2-plugins
-    sudo apt install jackd2 brutefir ecasound ecatools python-ecasound mpd mpc mplayer cdtool
-    sudo apt install ladspa-sdk fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
+    sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins  \
+                     libjack-jackd2-dev libsamplerate0 libsamplerate0-dev  \
+                     mpd mpc gmpc ncmpcpp mplayer cdtool  mc \
+                     ecasound ecatools python-ecasound ladspa-sdk  \
+                     fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
+
+(i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser.
 
 
 Disable default MPD setup:
@@ -83,5 +107,4 @@ If so, you can set it by running **`EDITOR=nano sudo visudo`**, then add the fol
 
     # 'myUSER' user can reboot the machine:
     myUSER          ALL=NOPASSWD:/sbin/reboot
-
 

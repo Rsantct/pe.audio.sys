@@ -1,7 +1,5 @@
-# DUMMY MARK TO CHECK IF THE UPDATER KEEPS THIS FILE
-
 # This PLUGIN is intended to be used from alsa players,
-# it is associated to pre.di.c alsa_loop jack ports
+# it is associated to the "alsa_loop" jack ports
 pcm.aloop {
     type plug
     slave { pcm "Rjaloop" }
@@ -11,11 +9,11 @@ pcm.aloop {
 }
 
 # This PLUGIN is intended to be used from alsa players
-# that directly want to play to pre.di.c bypassing the inputs selector,
+# that directly want to bypass the inputs selector,
 # e.g. the high volume beep alert from the mouse_volume_daemon.py
-pcm.brutefir {
+pcm.preamp {
     type plug
-    slave { pcm "Rjbfir" }
+    slave { pcm "Rjpreamp" }
     hint {
         description "Plugin to jack-brutefir"
     }
@@ -34,14 +32,14 @@ pcm.Rjaloop {
 }
 
 # a RAW pcm (PLEASE name it shortly)
-pcm.Rjbfir {
+pcm.Rjpreamp {
     type jack
     playback_ports {
-        0 brutefir:in.L
-        1 brutefir:in.R
+        0 pre_in_loop:input_1
+        1 pre_in_loop:input_2
     }
     hint {
-        description "Raw to jack-brutefir"
+        description "Raw to jack-preamp"
     }
 }
 

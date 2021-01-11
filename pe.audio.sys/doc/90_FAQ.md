@@ -52,9 +52,19 @@ Don't worry about the --backend option because by default will use Rodio that wo
 
 Unfortunately, librestpot only provides the current song title, nor artist neither album info.
     
- #### Raspberry Pi
+#### Raspberry Pi
  
- There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
+There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
+
+Please, after installing it, disable the default raspotify service
+
+    sudo systemctl stop raspotify.service 
+    sudo systemctl disable raspotify.service 
+
+#### Running headless Spotify
+
+Simply add `- librespot.py` under the `scripts:` section inside `pe.audio.sys/config.yml`.
+
 
 ## Can I run Brutefir compiled from source rather than my distro version
 
@@ -81,11 +91,18 @@ So now you can symlink it to run the new version:
 
     ln -s /usr/local/bin/brutefir $HOME/bin/brutefir
     
-## How much network bandwidth does consume zita-j2n (JACK to NETWORK) 
 
-If you use the script **`zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously.
+## About zita-j2n (JACK-NETWORK BRIDGE) network usage
+
+https://kokkinizita.linuxaudio.org/linuxaudio/
 
 For a typical setting of 2 ch 44100 Hz 16 bit, the used BW is about 1.7 Mb/s over your LAN.
+
+If you use **`scripts/zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously to ALL hosts in your LAN.
+
+So, you can use MULTICAST only in a dedicated wired Ethernet LAN.
+
+If you have a **WiFied LAN, do not use multicast**. It is preferred to use the new client side **`scripts/zita_link.py`**. This script automagically triggers the sender pe.audio.sys system to run a one-to-one `zita-j2n` process.
 
 
 ## How to tune DVB-T channels
@@ -104,3 +121,7 @@ w_scan notes:
 
 More info: http://linuxtv.org/wiki/index.php/W_scan
 
+
+## About Bluetooth sources
+
+Please refer to **`doc/80_Bluetooth.md`**.
