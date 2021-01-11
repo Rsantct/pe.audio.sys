@@ -1003,6 +1003,10 @@ class Preamp(object):
         elif mode == 'on':
 
             if not brutefir_is_running():
+
+                # This avoids that powersave loop kills Brutefir
+                self.ps_reset_elapsed.set()
+
                 result = restart_and_reconnect_brutefir(self.bf_sources)
                 if result == 'done':
                     self._validate( self.state ) # this includes mute
