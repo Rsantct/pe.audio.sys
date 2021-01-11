@@ -170,8 +170,8 @@ Here you are an uncommented bare example of `config.yml`:
     cdrom_device:  /dev/cdrom
 
     powersave:              true
-    powersave_noise_floor:  -70
-    powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
+    powersave_noise_floor:   -70
+    powersave_minutes:        10  # Time in minutes before shutting down Brutefir
 
     spotify_playlists_file: spotify_plists.yml
 
