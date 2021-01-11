@@ -1,6 +1,7 @@
-# LCD for pre.di.c
+# LCD for pe.audio.sys
 
-<a href="url"><img src="https://github.com/Rsantct/pre.di.c/blob/master/pre.di.c/clients/lcd/images/lcd%20display%20v0.1.jpg" align="center" width="340" ></a>
+<a href="url"><img src="https://github.com/AudioHumLab/pe.audio.sys/blob/master/pe.audio.sys/doc/images/lcd%20display%20v0.1.jpg" align="center" width="340" ></a>
+
 
 # Get the LCD hardware
 
@@ -20,7 +21,7 @@ https://sourceforge.net/projects/lcdproc/files/
     make
     sudo make install
 
-Above will install lcdproc under `/usr/local` then you need to point to that location under `pre.di.c/clients/lcd/LCD.conf`:
+Above will install lcdproc under `/usr/local` then you need to point to that location under `pe.audio.sys/share/scripts/lcd/LCDd.conf`:
 
     DriverPath=/usr/local/lib/lcdproc/
 
@@ -41,11 +42,11 @@ And include your user into the `dialout` group:
 
 (i) Please edit and uncomment the appropiate driver line for your machine arch:
 
-    $ nano pre.di.c/clients/lcd/LCDd.conf
+    $ nano pe.audio.sys/share/scripts/lcd/LCDd.conf
 
 Try to start the server:
 
-    $ LCDd -c pre.di.c/clients/lcd/LCDd.conf
+    $ LCDd -c pe.audio.sys/share/scripts/lcd/LCDd.conf
 
 Test the standard packaged client:
 
@@ -53,6 +54,6 @@ Test the standard packaged client:
     
     $ killall lcdproc      # to stop the show
 
-## Enabling pre.di.c info on the LDC display
+## Enabling pe.audio.sys info to be displayed on the LDC
 
-Enable a `lcd` line into the init scripts configuration file `config/init`.
+Enable a `- lcd.py` under the `scripts` section at `config.yml`.
