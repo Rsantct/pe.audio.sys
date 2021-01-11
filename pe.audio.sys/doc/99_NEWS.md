@@ -39,8 +39,15 @@ See the `doc/` folder for detailed information about this.
 
 ## Jan 2021, version 1.0a
 
-- New script `zita_link.py`, a LAN one-to-one audio receiver based on zita-njbridge from Fons Adriaensen.
-- New bluetooth receiver.
-- Some fixes
+- New script `zita_link.py`, a LAN one-to-one audio receiver based on zita-njbridge from Fons Adriaensen, replaces former zita multicast versions, for 'remote' sources usage.
+
+- New Bluetooth receiver.
+
+- New `script/node_web_server.py` replaces calling node from /etc/rc.local
+
+- New script `pulseaudio-BT.py` and related doc/ and macros to listen to Bluetooth sources.
+
+- Some fixes and documentation.
+
 
 
