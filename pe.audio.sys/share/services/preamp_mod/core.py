@@ -309,8 +309,8 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
     # CONFIG values overrides:
     if "powersave_noise_floor" in CONFIG:
         NOISE_FLOOR = CONFIG["powersave_noise_floor"]
-    if "powersave_max_wait" in CONFIG:
-        MAX_WAIT = CONFIG["powersave_max_wait"]
+    if "powersave_minutes" in CONFIG:
+        MAX_WAIT = CONFIG["powersave_minutes"] * 60
 
     # Using a level meter, loudness_monitor.py is preferred,
     # if not available will use level_meter.py
