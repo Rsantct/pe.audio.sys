@@ -30,6 +30,8 @@ from share.miscel import *
 import preamp
 import players
 
+import ipaddress
+import jack
 import yaml
 import json
 from subprocess import Popen, check_output
@@ -51,6 +53,48 @@ logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
 if os.path.exists(logFname) and os.path.getsize(logFname) > 2e6:
     print ( f"{Fmt.RED}(peaudiosys) log file exceeds ~ 2 MB '{logFname}'{Fmt.END}" )
 print ( f"{Fmt.BLUE}(peaudiosys) logging commands in '{logFname}'{Fmt.END}" )
+
+# Sends audio to a zita-njbridge client
+def send_zita(argvs):
+
+    addr = ''
+    stop = False
+
+    # Reading arguments
+    for argv in argvs.split(' '):
+        if is_IP(argv):
+            addr = argv
+        elif argv == 'stop':
+            stop = True
+
+    # Bad address
+    if not addr:
+        return 'bad address'
+
+    jcli        = jack.Client(name='zitatmp', no_start_server=True)
+    udpport     = addr.split('.')[-1]
+    zitajname   = f'zita-{udpport}'
+
+    # if stop
+    if stop:
+        Popen( f'pkill -KILL -f {zitajname}'.split() )
+        return f'{zitajname} killed'
+
+    jports = jcli.get_ports()
+    if not [x for x in jports if zitajname in x.name]:
+        zitacmd     = f'zita-j2n --jname {zitajname} {addr} 65{udpport}'
+        Popen( zitacmd.split() )
+        sleep(1)
+
+    try:
+        jcli.connect( 'pre_in_loop:output_1', f'zita-{udpport}:in_1' )
+        jcli.connect( 'pre_in_loop:output_2', f'zita-{udpport}:in_2' )
+    except:
+        pass
+
+    jcli.close()
+
+    return 'done'
 
 
 # Read the amplifier state file, if it exists:
@@ -286,6 +330,21 @@ def process_aux( cmd, arg='' ):
             else:
                 result = {'LU_I': 0.0, 'LU_M':0.0, 'scope': 'album'}
 
+    # Get the AUX_INFO dict
+    elif cmd == 'get_aux_info' or cmd == 'info':
+        return AUX_INFO
+
+    # Add outputs delay, can be useful for multiroom listening
+    elif cmd == 'add_delay':
+        print(f'({ME}) ordering adding {arg} ms of delay.')
+        Popen(f'{UHOME}/bin/peaudiosys_add_delay.py {arg}'.split())
+        result = 'tried'
+
+    # Send zita-j2n to a client (multiroom)
+    elif cmd == 'zita_client':
+        result = send_zita(arg)
+
+
     # RESTART
     elif cmd == 'restart':
         try:
@@ -297,16 +356,6 @@ def process_aux( cmd, arg='' ):
             Popen( f'{restart_cmd}'.split() )
         except:
             print( f'({ME}) Problems running \'{restart_cmd}\'' )
-
-    # Get the AUX_INFO dict
-    elif cmd == 'get_aux_info' or cmd == 'info':
-        return AUX_INFO
-
-    # Add outputs delay, can be useful for multiroom listening
-    elif cmd == 'add_delay':
-        print(f'({ME}) ordering adding {arg} ms of delay.')
-        Popen(f'{UHOME}/bin/peaudiosys_add_delay.py {arg}'.split())
-        result = 'tried'
 
     # HELP
     elif cmd == 'help':

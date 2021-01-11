@@ -309,8 +309,8 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
     # CONFIG values overrides:
     if "powersave_noise_floor" in CONFIG:
         NOISE_FLOOR = CONFIG["powersave_noise_floor"]
-    if "powersave_max_wait" in CONFIG:
-        MAX_WAIT = CONFIG["powersave_max_wait"]
+    if "powersave_minutes" in CONFIG:
+        MAX_WAIT = CONFIG["powersave_minutes"] * 60
 
     # Using a level meter, loudness_monitor.py is preferred,
     # if not available will use level_meter.py
@@ -992,6 +992,7 @@ class Preamp(object):
         result = 'nothing done'
 
         if mode == 'off':
+
             if brutefir_is_running():
                 self.bf_sources = bf_get_in_connections()
                 Popen(f'pkill -f brutefir', shell=True)
@@ -1000,7 +1001,12 @@ class Preamp(object):
                 result = 'done'
 
         elif mode == 'on':
+
             if not brutefir_is_running():
+
+                # This avoids that powersave loop kills Brutefir
+                self.ps_reset_elapsed.set()
+
                 result = restart_and_reconnect_brutefir(self.bf_sources)
                 if result == 'done':
                     self._validate( self.state ) # this includes mute
@@ -1009,7 +1015,7 @@ class Preamp(object):
                     c.set_drc( self.state["drc_set"] )
                     del( c )
                 else:
-                    result = 'PANIC: ' + result
+                    result = f'PANIC: {result}'
 
         else:
             result = 'bad option'

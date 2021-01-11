@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""
+    Toggles preamp to listen to BT_devices configured inside config.sys
+
+    (i) Please refer to   -->  doc/80_Bluetooth
+
+"""
+
+from subprocess import Popen, check_output
+from json import loads as json_loads
+from time import sleep
+import sys
+import os
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import CONFIG, send_cmd
+
+
+################################################################################
+# ALSALOOP SETTINGS (TUNE IT AS PER YOUR CPU POWER)
+
+# latency in milliseconds
+# (usable 500ms latency, good CPU usage, superb xrun prevention)
+# (superb 1ms latency, but heavy CPU usage)
+latencyms = 500
+
+# libsamplerate quality:
+#        0 or sincbest     - best quality
+#        1 or sincmedium   - medium quality
+#        2 or sincfastest  - lowest quality
+srQ = 'sincfastest'
+
+################################################################################
+
+
+def bluealsa_devices_set_maxvolume():
+    """ bluealsa emerges one amixer control for each connected device
+    """
+    try:
+        tmp = check_output('amixer -D bluealsa scontrols'.split()).decode()
+        # e.g:
+        #    Simple mixer control 'iPad_de_Pepeillo - A2DP',0
+        #    Simple mixer control 'iphone_de_Joselito - A2DP',0
+    except:
+        tmp = ''
+
+    if not tmp:
+        return
+
+    tmp = tmp.strip().split('\n')
+    scontrols = [x.split("'")[1].split(',')[0] for x in tmp]
+    # ['iPad_de_Pepeillo - A2DP', 'iphone_de_Joselito - A2DP']
+
+    if scontrols:
+        for scontrol in scontrols:
+            cmd = f"amixer -D bluealsa sset '{scontrol}' 100%"
+            print (f'(macros/9_BT) querying: {cmd}')
+            Popen( f'{cmd} >/dev/null 2>&1', shell=True )
+
+
+if __name__ == "__main__":
+
+    # Print help
+    if sys.argv[1:] and '-h' in sys.argv[1]:
+        print(__doc__)
+        sys.exit()
+
+
+    # Looking for configured BT devices
+    try:
+        btdevices = CONFIG['BT_devices'].replace(',',' ').split()
+    except:
+        btdevices = []
+    if not btdevices:
+        print('(macros/9_BT) missing bt_devices under config.yml')
+        sys.exit()
+
+
+    # Toogle preamp input: BT <--> none
+    currinput = json_loads( send_cmd('state') )['input']
+    if currinput == 'BT':
+        newinput = 'none'
+    else:
+        newinput = 'BT'
+
+    # Running BT capture audio, and listen to it.
+    if newinput == 'BT':
+
+        usec = latencyms * 1000
+
+        for btdevice in btdevices:
+
+            # ALSALOOP process
+            capdev = f'bluealsa:DEV={btdevice},PROFILE=a2dp'
+            cmd = f'alsaloop -C {capdev} -P aloop --sync=none -t {usec} --samplerate={srQ}'
+
+            print(f'(macros/9_BT) capturing audio from BT device {btdevice}')
+            with open('/dev/null', 'w') as devnull:
+                Popen( cmd.split(), stdout=devnull, stderr=devnull )
+
+        send_cmd('preamp input BT')
+
+        sleep(1)
+        bluealsa_devices_set_maxvolume()
+
+    # Stopping BT capture audio, clearing preamp source.
+    else:
+
+        print('(macros/9_BT) stopping capturing audio from BT devices')
+        Popen( f'pkill -KILL alsaloop'.split() )
+        send_cmd('preamp input none')

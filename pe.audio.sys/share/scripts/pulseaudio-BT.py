@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2019 Rafael Sánchez
+# Copyright (c) 2020 Rafael Sánchez
 # This file is part of 'pe.audio.sys', a PC based personal audio system.
 #
 # 'pe.audio.sys' is free software: you can redistribute it and/or modify
@@ -17,39 +17,39 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    Loads the pulseaudio sink, in order to
-    Pulseaudio apps to default sound through by JACK.
+    Enables Pulseaudio to get sound from paired BT devices.
 
-    usage:  pulseaudio-jack-sink.py   start|stop
+    usage:  pulseaudio-BT.py   start|stop
 
-    NEEDED PACKAGE: pulseaudio-module-jack
+    (i) Needs Pulseaudio BT module (install it if necesssary)
+
+            pulseaudio-module-bluetooth
+
 """
-
-import sys
 from subprocess import Popen
-from time import sleep
+import sys
+
+PAmodules = ['module-bluetooth-discover', 'module-bluetooth-policy']
 
 
 def start():
-    tmp = "pactl load-module module-jack-sink channels=2 " + \
-          "client_name=pulse_sink connect=False"
-    Popen( tmp.split() )
-    sleep(.2)
-    tmp = "pacmd set-default-sink jack_out"
-    Popen( tmp.split() )
+    # Enable PA BT modules
+    for m in PAmodules:
+        Popen( f'pactl load-module {m}'.split() )
 
 
 def stop():
-    tmp = "pactl unload-module module-jack-sink"
-    Popen( tmp.split() )
+    for m in modules:
+        Popen( f'pactl unload-module {m}'.split() )
 
 
-if sys.argv[1:]:
+if __name__ == '__main__':
 
-    if sys.argv[1] in ['stop', 'unload']:
-        stop()
-    elif sys.argv[1] in ['start', 'load']:
-        start()
-    else:
-        print(__doc__)
-        sys.exit()
+    if sys.argv[1:]:
+        if sys.argv[1] == 'stop':
+            stop()
+        elif sys.argv[1] == 'start':
+            start()
+        else:
+            print(__doc__)
+            sys.exit()

@@ -24,7 +24,7 @@
 
 import sys
 import os
-from subprocess import Popen
+from subprocess import Popen, check_output
 from time import sleep
 
 UHOME = os.path.expanduser("~")
@@ -65,7 +65,7 @@ if sys.argv[1:]:
                     'stop'  : stop
                   }[ sys.argv[1] ]()
     except:
-        print( '(scripts/lcd.py) an error occoured' )
+        print( '(scripts/lcd.py) internal error :-/' )
 
 else:
     print(__doc__)

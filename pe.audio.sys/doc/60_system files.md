@@ -94,7 +94,7 @@ Here you are an uncommented bare example of `config.yml`:
     on_init:
         xo:                 mp
         drc:                mp_multipV1
-        target:             +4.0-2.0_target
+        target:             B&K
         level:              
         max_level:          -20
         muted:              false
@@ -135,12 +135,11 @@ Here you are an uncommented bare example of `config.yml`:
             capture_port:   system
             gain:           +6.0                # low level source
             xo:             mp                  # low latency filtering
-            target:         +0.0-0.0_target     # preferred for movie dialogue
+            target:         none                # preferred for movie dialogue
         remote:
-            capture_port:   zita-n2j
+            capture_port:   192.168.1.234       # remote zita-j2n sender
             gain:           0.0
             xo:             lp
-            address:        192.168.1.234
 
     source_monitors:
 
@@ -150,7 +149,7 @@ Here you are an uncommented bare example of `config.yml`:
         - istreams.py
         - pulseaudio-jack-sink.py
         - librespot.py
-        - zita-n2j_mcast.py
+        - zita_link.py
 
     peaudiosys_address:     localhost
     peaudiosys_port:        9990
@@ -171,8 +170,8 @@ Here you are an uncommented bare example of `config.yml`:
     cdrom_device:  /dev/cdrom
 
     powersave:              true
-    powersave_noise_floor:  -70
-    powersave_max_wait:     180  # Time in seconds before shutting down Brutefir
+    powersave_noise_floor:   -70
+    powersave_minutes:        10  # Time in minutes before shutting down Brutefir
 
     spotify_playlists_file: spotify_plists.yml
 
