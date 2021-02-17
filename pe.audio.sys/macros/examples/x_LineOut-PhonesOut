@@ -10,7 +10,7 @@ import yaml
 UHOME = expanduser("~")
 
 def get_control_switch(control):
-    tmp = check_output(['amixer','cget',f'name={control} Switch'])
+    tmp = check_output(['amixer','-c','RPiCirrus','cget',f'name={control} Switch'])
     tmp = tmp.decode()
     tmp = [x.strip() for x in tmp.split('\n') if x]
     result = tmp[-1].split('=')[-1].split(',')
@@ -18,7 +18,7 @@ def get_control_switch(control):
 
 def set_control_switch(control, mode='on'):
     with open('/dev/null','w') as fnull:
-        Popen( ['amixer','cset',f'name={control} Switch', f'{mode},{mode}'],
+        Popen( ['amixer','-c','RPiCirrus','cset',f'name={control} Switch', f'{mode},{mode}'],
                 stdout=fnull)
 
 def store_EQ():
