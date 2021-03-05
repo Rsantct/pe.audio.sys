@@ -995,7 +995,10 @@ class Preamp(object):
 
             if brutefir_is_running():
                 self.bf_sources = bf_get_in_connections()
-                Popen(f'pkill -f brutefir', shell=True)
+                # Allows other Brutefir, kills just our.
+                Popen(f'pkill -f  "brutefir\ brutefir_config"', shell=True)
+                # Brutefir 1.0m process is 'brutefir.real'
+                Popen(f'pkill -f  "brutefir.real\ brutefir_config"', shell=True)
                 sleep(2)
                 print(f'(core) STOOPING BRUTEFIR (!)')
                 result = 'done'
