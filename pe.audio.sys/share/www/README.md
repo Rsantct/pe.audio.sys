@@ -47,9 +47,13 @@ Last, the **HTTP port** needs to be configured, as appropriate:
 
 If you use **Apache + PHP**, you need to set properly a `sites-available/` file under your system wide Apache2 configuration. See [FIRtro's Wiki](https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-de-SW#6-página-web-de-control-remoto-opcional-pero-recomendable).
 
-If you prefer to run **Node.js** as server side backend, you can run Node.js under your user space, for instance you can launch it at startup through by adding a line inside `/etc/rc.local` as follows:
+If you prefer to run **Node.js** as server side backend, you need to run Node.js under your user space:
 
-    su -l YourUser -c "node /home/YourUser/pe.audio.sys/share/www/peasys_node.js"
+- Add `- node_web_server.py` under the `scripts:` section inside `config.yml`
+
+- Or you can launch Node.js at startup through by adding a line inside your system `/etc/rc.local` file as follows:
+
+    `su -l YourUser -c "node /home/YourUser/pe.audio.sys/share/www/peasys_node.js"`
 
 
 ## Screenshots
