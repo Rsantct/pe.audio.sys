@@ -33,10 +33,11 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
 // SOME GLOBALS
-var state = {loudspeaker:"not connected"};
-var show_advanced = false;          // defaults for display advanced controls
-var show_graphs   = false;          // defaults for show graphs
-var metablank = {                   // A player's metadata blank dict
+var state               = {};           // The main state dictionary
+var server_available    = false;
+var show_advanced       = false;        // defaults for display advanced controls
+var show_graphs         = false;        // defaults for show graphs
+var metablank = {                       // A player's metadata blank dict
     'player':       '',
     'time_pos':     '',
     'time_tot':     '',
@@ -47,11 +48,11 @@ var metablank = {                   // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
-var last_loudspeaker = ''           // Will detect if audio processes has beeen
-                                    // restarted with new loudspeaker configuration.
-var macro_button_list = [];
-var hold_tmp_msg = 0;               // A counter to keep tmp_msg during updates
-var tmp_msg = '';                   // A temporary message
+var last_loudspeaker    = ''            // Will detect if audio processes has beeen
+                                        // restarted with new loudspeaker configuration.
+var macro_button_list   = [];
+var hold_tmp_msg        = 0;            // A counter to keep tmp_msg during updates
+var tmp_msg             = '';           // A temporary message
 
 // STATIC WEB CONFIGURATION
 try{
@@ -69,7 +70,8 @@ try{
 var main_selector = web_config.main_selector;
 var mFnames = web_config.user_macros;   // User macros
 
-// SERVER SIDE COMMUNICATION
+
+// SERVER SIDE COMMUNICATION (updates <server_available>)
 function control_cmd( cmd ) {
     /*
     We need synchronous mode (async=false), althougt it is deprecated
@@ -95,8 +97,10 @@ function control_cmd( cmd ) {
     //console.log('httpRX: ' + ans);
 
     if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
+        server_available = true;
         return ans;
     }else{
+        server_available = false;
         return '';
     }
 }
@@ -104,8 +108,10 @@ function control_cmd( cmd ) {
 
 //////// PAGE MANAGEMENT ////////
 
-// Page INITIATE
+// PAGE INITIATE
 function page_initiate(){
+
+    state_update();
 
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
@@ -132,7 +138,7 @@ function page_initiate(){
 }
 
 
-// Page STATIC ITEMS (HEADER and SELECTORS)
+// PAGE STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
 
 
@@ -252,13 +258,8 @@ function fill_in_page_statics(){
 }
 
 
-// Page UPDATE (RUNTIME VARIABLE ITEMS):
-function page_update() {
-
-    // Amplifier switching (aux service always runs)
-    update_ampli_switch();
-
-    // Getting the current STATUS
+// STATE DICT. UPDATE by queriyng the server
+function state_update() {
     try{
         state = control_cmd('get_state');
         // console.log('Rx state:', state); # debug
@@ -280,6 +281,17 @@ function page_update() {
         console.log( 'not connected', e.name, e.message );
         state = {loudspeaker:'not connected'};
     }
+}
+
+
+// PAGE UPDATE (RUNTIME VARIABLE ITEMS):
+function page_update() {
+
+    // Amplifier switching (aux service always runs)
+    ampli_switch_update();
+
+    // Getting the current STATUS
+    state_update();
 
     // Refresh static stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
@@ -288,7 +300,7 @@ function page_update() {
     }
 
     // Cancel updating if not connected
-    if (state.loudspeaker == 'not connected'){
+    if (!server_available){
         document.getElementById("levelInfo").innerHTML  = '--';
         return;
     }
@@ -343,10 +355,10 @@ function page_update() {
     buttonsToneBalanceHighlight()
 
     // Updates metadata player info
-    update_player_info()
+    player_info_update()
 
     // Highlights player controls when activated
-    update_player_controls()
+    player_controls_update()
 
     // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
     if ( show_graphs == true ) {
@@ -456,7 +468,7 @@ function playerCtrl(action) {
 }
 
 // Updates the player control buttons, hightlights the corresponding button to the playback state
-function update_player_controls() {
+function player_controls_update() {
 
     try{
         var playerState = control_cmd( 'player state' );
@@ -494,7 +506,7 @@ function update_player_controls() {
 }
 
 // Shows the playing info metadata
-function update_player_info() {
+function player_info_update() {
     try{
         var tmp = control_cmd( 'player get_meta' );
         if (tmp == "null"){
@@ -602,7 +614,7 @@ function ampli(mode) {
 }
 
 // Queries the remote amplifier switch state
-function update_ampli_switch() {
+function ampli_switch_update() {
     try{
         var amp_state = control_cmd( 'aux amp_switch state' )
                            .replace('\n','');
@@ -867,24 +879,29 @@ function buttonLoudHighlight(){
     }
 }
 
-// Send preamp changes and display new values w/o waiting for the autoupdate
+// Send preamp changes and display new values
 function audio_change(param, value) {
+    state[param] += value;
     if ( param == 'level') {
-        document.getElementById('levelInfo').innerHTML =
-                                    (state[param] + value).toFixed(1);
-    }else if( param == 'bass'){
-        document.getElementById('bassInfo').innerHTML =
-                         'BASS: ' + (state[param] + value).toFixed(0);
-    }else if( param == 'treble'){
-        document.getElementById('trebleInfo').innerHTML =
-                         'TREB: ' + (state[param] + value).toFixed(0);
-    }else if( param == 'balance'){
-        document.getElementById('balInfo').innerHTML =
-                         'BAL: ' + (state[param] + value).toFixed(0);
-    }else{
+        document.getElementById( 'levelInfo'  ).innerHTML =
+                                    state[param].toFixed(1);
+    }
+    else if( param == 'bass'){
+        document.getElementById( 'bassInfo'   ).innerHTML =
+                         'BASS: ' + state[param].toFixed(0);
+    }
+    else if( param == 'treble'){
+        document.getElementById( 'trebleInfo' ).innerHTML =
+                         'TREB: ' + state[param].toFixed(0);
+    }
+    else if( param == 'balance'){
+        document.getElementById( 'balInfo'    ).innerHTML =
+                         'BAL: '  + state[param].toFixed(0);
+    }
+    else{
         return;
     }
-    control_cmd( param + ' ' + value + ' add' );
+    control_cmd( param + ' ' + state[param] );
 }
 function mute_toggle() {
     state.muted = ! state.muted;
