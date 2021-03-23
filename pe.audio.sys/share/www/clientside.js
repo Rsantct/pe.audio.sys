@@ -901,7 +901,7 @@ function audio_change(param, value) {
     else{
         return;
     }
-    control_cmd( param + ' ' + state[param] );
+    control_cmd( param + ' ' + value + ' ' + 'add' );
 }
 function mute_toggle() {
     state.muted = ! state.muted;
