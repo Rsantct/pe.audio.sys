@@ -18,36 +18,53 @@
 
 """ A Spotify Desktop client interface module for players.py
 """
+
 import os
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+
+import logging
+LOGFNAME    = f'{MAINFOLDER}/.spotify_desktop.py.log'
+logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
 from time import sleep
 from subprocess import check_output
 import yaml
 from pydbus import SessionBus
 
-# The dbus interface of the Spotify Desktop client.
-# You can browse it also by command line tool:
-#   $ mdbus2 org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2
-bus = SessionBus()
-try:
-    spotibus = bus.get( 'org.mpris.MediaPlayer2.spotify',
-                        '/org/mpris/MediaPlayer2' )
-except:
-    spotibus = None
-
-# bitrate HARDWIRED pending on how to retrieve it from the desktop client.
+# BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE   = '320'
 
-# User playlists
+
+# The DBUS INTERFACE with the Spotify Desktop client.
+# You can browse it also by command line tool:
+#   $ mdbus2 org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2
+bus      = SessionBus()
+spotibus = None
+tries = 5
+while tries:
+    try:
+        spotibus = bus.get( 'org.mpris.MediaPlayer2.spotify',
+                            '/org/mpris/MediaPlayer2' )
+        logging.info(f'spotibus OK')
+        tries = 0
+    except Exception as e:
+        logging.info(f'spotibus FAILED: {e}')
+        tries -=1
+        sleep(1)
+
+# USER PLAYLISTS
 plist_file = f'{MAINFOLDER}/spotify_plists.yml'
 PLAYLISTS = {}
 if os.path.exists(plist_file):
     try:
         PLAYLISTS = yaml.safe_load(open(plist_file, 'r'))
+        tmp = f'READ \'{plist_file}\''
     except:
-        print(f'(spotify_desktop.py) ERROR reading \'{plist_file}\'')
+        tmp = f'ERROR reading \'{plist_file}\''
+        print(f'(spotify_desktop.py) {tmp}')
+    logging.info(tmp)
+
 
 # Auxiliary function to format hh:mm:ss
 def timeFmt(x):
@@ -68,6 +85,11 @@ def spotify_control(cmd, arg=''):
         input:  a command string
         output: the resulting status string
     """
+
+    result = 'stop'
+
+    if not spotibus:
+        return result
 
     if   cmd == 'state':
         pass
@@ -97,9 +119,11 @@ def spotify_control(cmd, arg=''):
         return list( PLAYLISTS.keys() )
 
     sleep(.25)
-    return {'Playing':  'play',
-            'Paused':   'pause',
-            'Stopped':  'stop' }[spotibus.PlaybackStatus]
+    result = {  'Playing':  'play',
+                'Paused':   'pause',
+                'Stopped':  'stop' } [spotibus.PlaybackStatus]
+
+    return result
 
 
 # Spotify Desktop metadata
