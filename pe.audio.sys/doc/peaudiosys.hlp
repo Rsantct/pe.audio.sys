@@ -31,7 +31,7 @@ All commands prefixed with 'preamp':
 
   - Gain and Eq stage:
 
-    level           xx [add]                'xx' in dB, use 'add' for a relative adjustment
+    level | volume  xx [add]                'xx' in dB, use 'add' for a relative adjustment
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
