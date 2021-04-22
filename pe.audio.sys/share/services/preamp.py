@@ -148,6 +148,7 @@ def process_commands( full_command ):
             'mute':             preamp.set_mute,
 
             'level':            preamp.set_level,
+            'volume':           preamp.set_level,
             'balance':          preamp.set_balance,
             'treble':           preamp.set_treble,
             'bass':             preamp.set_bass,
