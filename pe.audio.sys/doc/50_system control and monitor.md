@@ -13,7 +13,7 @@ Some commands have aliases to keep backwards compatibility from FIRtro or pre.di
 All commands prefixed with `preamp`. This prexix can be omited.
 
 ### Geeting help
- 
+
     help                        This help
 
 ### Getting info:
@@ -37,7 +37,7 @@ All commands prefixed with `preamp`. This prexix can be omited.
 
 ### Gain and Eq stage:
 
-    level           xx [add]               'xx' in dB, use 'add' for a relative adjustment
+    level | volume  xx [add]               'xx' in dB, use 'add' for a relative adjustment
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
@@ -64,32 +64,32 @@ All commands prefixed with `player`:
 
     stop | pause | play | play_track_NN
     next | previous | rew | ff              Controls the playback
-    
+
     eject                                   Ejects the CD tray
-    
+
     http://url                              Plays the internet audio stream from a given url
-    
+
     load_playlist  <plist_name>             Tells the current player to load a playlist
 
     get_playlists                           Gets the available playlist from the current player
-    
-    get_meta                                Gets metadata info from current player if available 
-    
+
+    get_meta                                Gets metadata info from current player if available
+
 
 ## Miscel controls
 
 All commands prefixed with `aux`:
 
     amp_switch   on | off                   Switch an amplifier
-    
+
     LU_monitor_reset                        Force to reset the LU-I measure
 
     get_LU_monitor                          Gets the monitored LU-I value and scope
-    
+
     set_LU_monitor_scope  album | track     Choose the LU-I metering scope
 
     restart                                 Restarts pe.audio.sys
-    
+
     add_delay   xx                          Delays xx ms the sound card outputs, e.g for multiroom listening
 
 
@@ -127,7 +127,7 @@ To compensate for high LU-Integrated values on your listening audio program, we 
 
 
 This way, the loudness compensation feature of the calibrated volume control of pe.audio.sys will apply the appropriate contour curve when you listen below your reference SPL (level = 0 dBSPL).
- 
+
 It is planned to provide a servo feature for tracking the monitored LU then auto adjust the LU offset compensation.
 
 <a href="url"><img src="https://github.com/AudioHumLab/pe.audio.sys/raw/master/pe.audio.sys/doc/images/LU_monitor.png" align="center" width="400" ></a>
