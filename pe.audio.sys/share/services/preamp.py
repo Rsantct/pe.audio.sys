@@ -37,7 +37,6 @@ from share.miscel import Fmt, CONFIG
 
 from preamp_mod.core import Preamp, Convolver
 import json
-import yaml
 from time import strftime
 from subprocess import Popen
 
