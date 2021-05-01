@@ -23,7 +23,7 @@
 
     NOTE:
     A newcoming remote listener machine will need to send 'hello'
-    to this daemon at port <peaudiosys_port> + 5 (usually 9995)
+    to this daemon at port <peaudiosys_base_port> + 5 (usually 9995)
 
 """
 
