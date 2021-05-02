@@ -131,6 +131,7 @@ def remote_LU_offset(cli_addr):
     print( f'(remote_volume) remote {cli_addr} sending \'{cmd}\'' )
     miscel.send_cmd( cmd, host=cli_addr, verbose=True )
 
+
 # Action for observer1
 def cmd_log_file_changed():
     """ Read the last command from <peaudiosys.log>
