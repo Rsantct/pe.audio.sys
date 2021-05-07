@@ -23,14 +23,18 @@
 
     NOTE:
     A newcoming remote listener machine will need to send 'hello'
-    to this daemon at port <peaudiosys_port> + 5 (usually 9995)
+    to this daemon at port <peaudiosys_base_port> + 5 (usually 9995)
 
 """
 
 import sys
 import os
-UHOME = os.path.expanduser("~")
-sys.path.append( f'{UHOME}/pe.audio.sys/share' )
+UHOME           = os.path.expanduser("~")
+BASEDIR         = f'{UHOME}/pe.audio.sys'
+CMD_LOG_PATH    = f'{BASEDIR}/.peaudiosys_cmd.log'
+STATE_PATH      = f'{BASEDIR}/.state.yml'
+
+sys.path.append( f'{BASEDIR}/share' )
 import miscel
 import server
 
@@ -51,23 +55,23 @@ REMOTES_ADDR_RANGE = range(230, 240)
 
 # Generic handler from 'watchdog' for doing actions when a file change occurs
 class file_event_handler(FileSystemEventHandler):
-    """ will do something when <wanted_path> file changes
+    """ Will do something when a <fname> change occurs
     """
     # (i) This is an inherited class from the imported one 'FileSystemEventHandler',
     #     which provides the 'event' propiertie.
     #     Here we expand the class with our custom parameters:
-    #     'observed_file' and 'wanted_action'
+    #     'fname' and wanted 'action'
 
-    def __init__(self, filepath, action, antibound=True):
-        self.filepath = filepath
-        self.action = action
-        self.antibound = antibound
-        self.ts = time()
+    def __init__(self, fname, action, antibound=True):
+        self.fname      = fname
+        self.action     = action
+        self.antibound  = antibound
+        self.ts         = time()
 
     def on_modified(self, event):
         # DEBUG
         #print( f'(i) event type: {event.event_type}, file: {event.src_path}' )
-        if event.src_path == self.filepath:
+        if event.src_path == self.fname:
             if self.antibound:
                 if (time() - self.ts) > .1:
                     globals()[self.action]()
@@ -77,7 +81,22 @@ class file_event_handler(FileSystemEventHandler):
 
 
 def get_curr_state():
-    return yaml.safe_load( open( f'{UHOME}/pe.audio.sys/.state.yml','r') )
+
+    state = {'lu_offset': 0}
+
+    # Avoid a possible loading of a blank .state.yml
+    tries = 3
+    while tries:
+        try:
+            tmp = yaml.safe_load( open( f'{BASEDIR}/.state.yml','r') )
+            if tmp:
+                state = tmp
+                break
+        except:
+            sleep(.1)
+            tries -= 1
+
+    return state
 
 
 def detect_remotes():
@@ -101,7 +120,7 @@ def detect_remotes():
 
 
 def remote_relat_level(cli_addr, rel_level_cmd):
-    print( f'remote {cli_addr} sending \'{rel_level_cmd}\'' )
+    print( f'(remote_volume) remote {cli_addr} sending \'{rel_level_cmd}\'' )
     miscel.send_cmd( rel_level_cmd, host=cli_addr, verbose=False )
 
 
@@ -109,33 +128,30 @@ def remote_LU_offset(cli_addr):
     """ updates the current LU offset to remote
     """
     cmd = f'lu_offset { get_curr_state()["lu_offset"] }'
-    print( f'remote {cli_addr} sending \'{cmd}\'' )
-    miscel.send_cmd( cmd, host=cli_addr, verbose=False )
+    print( f'(remote_volume) remote {cli_addr} sending \'{cmd}\'' )
+    miscel.send_cmd( cmd, host=cli_addr, verbose=True )
+
 
 # Action for observer1
-def detect_level_changes():
+def cmd_log_file_changed():
     """ Read the last command from <peaudiosys.log>
         If it was about a relative level change,
-        then forward it to remotes listeners.
-        Also will forward the current LU offset.
+        then forwards it to the remotes listeners.
     """
     global remoteClients
 
     # Retrieving the last 'level X add' command
-    tmp = miscel.read_last_line( cmd_log_path )
+    tmp = miscel.read_last_line( CMD_LOG_PATH )
     # e.g.: "2020/10/23 17:16:43; level -1 add; done"
     cmd = tmp.split(';')[1].strip()
 
     # Filtering <relative level> or <lu_offset> commands
     rel_level_cmd = ''
-    lu_offset_cmd = ''
     if 'level' in cmd and 'add' in cmd:
         rel_level_cmd = cmd
-    if 'lu_offset' in cmd:
-        lu_offset_cmd = cmd
 
     # Early return
-    if not rel_level_cmd and not lu_offset_cmd:
+    if not rel_level_cmd:
         return
 
     # Forwarding commands to remotes
@@ -147,9 +163,6 @@ def detect_level_changes():
             # Updates relative VOLUME event to remote
             if rel_level_cmd:
                 remote_relat_level(rem_addr, rel_level_cmd)
-            # Also updates LU OFFSET to remote
-            if lu_offset_cmd:
-                remote_LU_offset(rem_addr)
 
         # purge from remotes list if not listening anymore
         else:
@@ -159,13 +172,18 @@ def detect_level_changes():
 
 
 # Action for observer2
-def all_remotes_LU_offset():
+def state_file_changed():
+    all_remotes_LU_offset()
+
+
+# Broadcast LU_offset to all remote machines
+def all_remotes_LU_offset(force=False):
 
     global last_lu_offset, remoteClients
 
     curr_lu_offset = get_curr_state()["lu_offset"]
 
-    if curr_lu_offset != last_lu_offset:
+    if (curr_lu_offset != last_lu_offset) or force:
 
         last_lu_offset = curr_lu_offset
 
@@ -233,8 +251,6 @@ if __name__ == "__main__":
     # Retrieving basic data to this to work
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
-    cmd_log_path    = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
-    state_path      = f'{UHOME}/pe.audio.sys/.state.yml'
     last_lu_offset  = get_curr_state()["lu_offset"]
 
     # Detecting remote listening clients
@@ -251,18 +267,22 @@ if __name__ == "__main__":
     #   but we prefer to observe to a single folder.
     observer1 = Observer()
     observer2 = Observer()
-    observer1.schedule( file_event_handler( filepath=cmd_log_path,
-                                            action='detect_level_changes',
+    observer1.schedule( file_event_handler( fname=CMD_LOG_PATH,
+                                            action='cmd_log_file_changed',
                                             antibound=True ),
-                        path=f'{UHOME}/pe.audio.sys',
-                        recursive=False )
-    observer2.schedule( file_event_handler( filepath=state_path,
-                                            action='all_remotes_LU_offset',
+                                            path=f'{BASEDIR}',
+                                            recursive=False )
+    observer2.schedule( file_event_handler( fname=STATE_PATH,
+                                            action='state_file_changed',
                                             antibound=True ),
-                        path=f'{UHOME}/pe.audio.sys',
-                        recursive=False )
+                                            path=f'{BASEDIR}',
+                                            recursive=False )
     observer1.start()
     observer2.start()
+
+    print( f'(remote_volume) Balancing LU_offset on remotes ...' )
+    all_remotes_LU_offset(force=True)
+
     print( f'(remote_volume) Forwarding relative level changes to remotes ...' )
 
     # A server that listen for new remote listening clients to emerge

@@ -37,7 +37,6 @@ from share.miscel import Fmt, CONFIG
 
 from preamp_mod.core import Preamp, Convolver
 import json
-import yaml
 from time import strftime
 from subprocess import Popen
 
@@ -148,6 +147,7 @@ def process_commands( full_command ):
             'mute':             preamp.set_mute,
 
             'level':            preamp.set_level,
+            'volume':           preamp.set_level,
             'balance':          preamp.set_balance,
             'treble':           preamp.set_treble,
             'bass':             preamp.set_bass,

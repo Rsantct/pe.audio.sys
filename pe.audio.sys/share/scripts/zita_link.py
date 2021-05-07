@@ -31,8 +31,12 @@
 
     This script replaces the former 'zita-xxx_mcast.py' versions.
 
-    It works just from the receiver side. The sender side zita-j2n process
+    It runs just from the receiver side. The sender side zita-j2n process
     will be automagically triggered on demand from here.
+
+    For easy usage, please customize the provided macros/examples/XX_RemoteSource
+
+    Further info at doc/80_Remote_pe.audio.sys.md
 
 """
 from subprocess import Popen
@@ -77,14 +81,24 @@ def get_remote():
     # an IP address kind of in its capture_port field:
     #   capture_port:  X.X.X.X
     # so this way we can query the remote sender to run 'zita-j2n'
+
     remote_addr = ''
     remote_port = 9990
+
     for source in CONFIG["sources"]:
         if 'remote' in source:
             cport = CONFIG["sources"][source]["capture_port"]
             if is_IP(cport):
                 remote_addr = cport
                 break
+
+    if not remote_addr:
+        print(f'(zita-n2j) Cannot get remote address from configured sources')
+        sys.exit()
+    if not is_IP(remote_addr):
+        print(f'(zita-n2j) source: \'{source}\' address: \'{remote_addr}\' not valid')
+        sys.exit()
+
     return source, remote_addr, remote_port
 
 
@@ -95,13 +109,6 @@ if __name__ == '__main__':
         sys.exit()
 
     source, remote_addr, remote_port = get_remote()
-
-    if not remote_addr:
-        print(f'(zita-n2j) Cannot get remote address from configured sources')
-        sys.exit()
-    if not is_IP(remote_addr):
-        print(f'(zita-n2j) source: \'{source}\' address: \'{remote_addr}\' not valid')
-        sys.exit()
 
     # The zita UDP port is derived from the last octet of my IP
     my_ip       = get_my_ip()

@@ -32,7 +32,6 @@ import players
 
 import ipaddress
 import jack
-import yaml
 import json
 from subprocess import Popen, check_output
 from time import sleep, strftime

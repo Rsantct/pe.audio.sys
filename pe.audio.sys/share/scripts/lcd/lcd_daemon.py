@@ -340,24 +340,26 @@ def update_lcd_metadata(scr='scr_1'):
     """ Reads the metadata dict then updates the LCD display marquee """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
+    global _last_md
+    _last_md = {}
+    md       = {}
+
+    # Composes a string by joining artist+album+title
     def compose_marquee(md):
-        # Will compose a satring by joining artist+album+title
         tmp = ''
         for k, v in md.items():
             if k in ('artist', 'album', 'title') and v != '-':
                 tmp += k[:2] + ':' + str(v).replace('"', '\\"') + ' '
         return tmp[:-1]
 
-    # Read metadata file
-    global _last_md
-    md = {}
-    with open(PLAYER_META_file, 'r') as f:
-        md = json.loads( f.read() )
-
-    if md == _last_md:
+    # Trying to read the metadata file, or early return if failed
+    try:
+        with open(PLAYER_META_file, 'r') as f:
+            md = json.loads( f.read() )
+            _last_md = md
+    except:
+        md = _last_md
         return
-    else:
-        _last_md = md
 
     # Modify the metadata dict to have a new field 'composed_marquue'
     # with artist+album+title to be displayed on the LCD bottom line marquee.

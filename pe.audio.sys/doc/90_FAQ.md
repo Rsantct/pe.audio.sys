@@ -6,7 +6,7 @@
 
 ### Check for services using your sound card.
 
-It is known in some scenarios, for instance after a raspbian upgrading distro, there can be some system service that uses the sound card:
+It is known in some scenarios, for instance after a Debian/Raspbian/Ubuntu distro upgrade, there can be some system service that uses the sound card:
 
     $ sudo fuser -v /dev/snd/*
                          USER        PID ACCESS COMMAND
@@ -14,10 +14,19 @@ It is known in some scenarios, for instance after a raspbian upgrading distro, t
     /dev/snd/pcmC0D0p:   timidity    573 F.... timidity
     /dev/snd/seq:        timidity    573 F.... timidity
 
-Timidity is a sound synthesizer, we don't need it at all:
+Some users reported the ALSA card was weirdly used by Pulseaudio instead of Timidity:
+
+    $ sudo fuser -v /dev/snd/*
+                         USER        PID ACCESS COMMAND
+    /dev/snd/controlC0:  root       1234 f.... pulseaudio
+
+But this is still a Timidity issue even if `pulseaudio` is indicated by `fuser`.
+
+Timidity is a sound synthesizer, we don't need it at all, so let's disable it:
 
     $ sudo systemctl stop timidity.service 
     $ sudo systemctl disable timidity.service 
+    
 
 ## Web page does not work.
 

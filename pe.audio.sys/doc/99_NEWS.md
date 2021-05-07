@@ -47,3 +47,8 @@ See the `doc/` folder for detailed information about this.
 - New `script/node_web_server.py` replaces calling node from /etc/rc.local
 
 - Some fixes and documentation.
+
+
+## May 2021, version 1.0b
+
+- New documentation for remote pe.audio.sys sources listening.

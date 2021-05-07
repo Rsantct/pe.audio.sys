@@ -14,9 +14,17 @@ if [[ $1 == 'stop' ]]; then
     $HOME/pe.audio.sys/start.py stop
 
 elif [[ ! $1 || $1 == *'start' ]]; then
-    echo '(i) RESTARTING pe.audio.sys (all printouts redirected to /dev/null)'
-    $HOME/pe.audio.sys/start.py all 1>/dev/null 2>&1 &
+    echo '(i) RESTARTING pe.audio.sys (all printouts hidden to /dev/null)'
+    echo '    Startup process logged in <pe.audio.sys/start.log>'
+    $HOME/pe.audio.sys/start.py all --log 1>/dev/null 2>&1 &
 
 else
+    echo
     echo 'USAGE:   peaudiosys_restart.sh [stop]'
+    echo
+    echo '         Startup process will be logged in <pe.audio.sys/start.log>'
+    echo '         For further debugging run manually from a terminal:'
+    echo '             peaudio.sys/start.py all & '
+    echo
+
 fi
