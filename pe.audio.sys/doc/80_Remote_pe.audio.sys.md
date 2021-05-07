@@ -1,20 +1,9 @@
-## Remote pe.audio.sys as local source
+## Listen to a remote pe.audio.sys
 
 The file `share/scripts/zita_link.py` allows you to receive the listening source from a ***remote*** pe.audio.sys
 
 #### Needed configuration inside the **RECEIVER** `config.yml`:
 
-- Define the remote system as a local source. The source name must include the '**remote**' keyword, also use the *remote_IP* or *remote_hostname* for the `capture_port:` field:
-
-    ```
-    sources:
-        ...
-        ...
-        remoteRemoteName:
-            gain: 0
-            capture_port:   192.168.1.123
-    ```
-    
 - Include `zita_link.py` under the `scripts:` section:
 
     ```
@@ -25,6 +14,18 @@ The file `share/scripts/zita_link.py` allows you to receive the listening source
         - zita_link.py
     ```
 
+- Define the remote system as a local source. The source name must include the '***remote***' keyword, also use the ***remote_IP*** or ***remote_hostname*** for the `capture_port:` field:
+
+    ```
+    sources:
+        ...
+        ...
+        remoteLivingRoom:
+            gain: 0
+            capture_port:   192.168.1.123
+    ```
+    
+The `zita_link.py` script will autospawn a new jack port named `192.168.1.123`
 
 #### Optional configuration inside the **SENDER** `config.yml`:
 
