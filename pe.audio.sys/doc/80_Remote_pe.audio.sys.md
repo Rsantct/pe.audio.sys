@@ -40,7 +40,7 @@ The file `share/scripts/zita_link.py` allows you to receive the listening source
 
 ### Using a macro to balance delays for simultaneous listening
 
-Just copy the the provided `macros/examples/X_remote_source.py` under your `macros/` folder.
+Just copy the the provided `macros/examples/X_RemoteSource.py` under your `macros/` folder.
 
 Then customize the needed delays and filtering for the **local** and/or **remote** pe.audio.sys systems.
 
