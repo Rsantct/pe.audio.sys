@@ -39,11 +39,13 @@ The `zita_link.py` script will autospawn a new jack port named `192.168.1.123`
         - remote_volume_daemon.py
     ```
 
-### Using a macro to balance delays for simultaneous listening
+### Using a macro to balance latencies for simultaneous listening
+
+Depending on the processing latency on both the local and the remote pe.audio.sys systems, you may want to customize added delays and/or filtering options.
 
 Just copy the the provided `macros/examples/X_RemoteSource.py` under your `macros/` folder.
 
-Then customize the needed delays and filtering for the **local** and/or **remote** pe.audio.sys systems.
+Then customize the macro with the needed delays and filtering alternatives for the **local** and/or **remote** pe.audio.sys systems.
 
 TIP: you can use any name for the macro file so that it will be meaningfully displayed in the web control page macro buttons, for instance:
 
