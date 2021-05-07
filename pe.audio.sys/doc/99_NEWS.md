@@ -47,5 +47,9 @@ See the `doc/` folder for detailed information about this.
 
 - Some fixes and documentation.
 
+## May 2021, version 1.0b
+
+- New documentation for remote pe.audio.sys sources listening.
+
 
 
