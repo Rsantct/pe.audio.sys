@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-    A helper macro to listen for a remote pe.audio.sys machine.
+    A helper macro to listen to a remote pe.audio.sys machine.
 
     For further details see
 
