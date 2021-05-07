@@ -37,6 +37,7 @@ See the `doc/` folder for detailed information about this.
 
 - your `macros/` files if them issue any loudness command
 
+
 ## Jan 2021, version 1.0a
 
 - New script `zita_link.py`, a LAN one-to-one audio receiver based on zita-njbridge from Fons Adriaensen, replaces former zita multicast versions, for 'remote' sources usage.
@@ -47,9 +48,7 @@ See the `doc/` folder for detailed information about this.
 
 - Some fixes and documentation.
 
+
 ## May 2021, version 1.0b
 
 - New documentation for remote pe.audio.sys sources listening.
-
-
-
