@@ -29,6 +29,7 @@ import os
 import yaml
 import json
 import threading
+from time import sleep
 
 UHOME = os.path.expanduser("~")
 
@@ -255,10 +256,18 @@ def update_lcd_state(scr='scr_1'):
         pass
 
     # Reading state
-    with open(STATE_file, 'r') as f:
-        new_state = yaml.safe_load(f)
-        if not new_state:
-            return
+    tries = 3
+    while tries:
+        with open(STATE_file, 'r') as f:
+            new_state = yaml.safe_load(f)
+            if new_state:
+                break
+            else:
+                sleep(.1)
+                tries -=1
+    if not tries:
+        return
+
 
     # If changed
     if new_state != state:
@@ -285,12 +294,18 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     """
 
     # Reading LU-I monitored value
-    try:
-        with open(LOUDNESSMON_file, 'r') as f:
-            # e.g. {'LU_I': -6.0, 'scope': 'album'}
-            lu_dict = json.loads( f.read() )
-            lu_I = lu_dict["LU_I"]
-    except:
+    tries = 3
+    while tries:
+        try:
+            with open(LOUDNESSMON_file, 'r') as f:
+                # e.g. {'LU_I': -6.0, 'scope': 'album'}
+                lu_dict = json.loads( f.read() )
+                lu_I = lu_dict["LU_I"]
+                break
+        except:
+            sleep(.1)
+            tries -= 1
+    if not tries:
         lu_I = None
 
 
@@ -356,10 +371,16 @@ def update_lcd_metadata(scr='scr_1'):
 
 
     # Trying to read the metadata file, or early return if failed
-    try:
-        with open(PLAYER_META_file, 'r') as f:
-            md = json.loads( f.read() )
-    except:
+    tries = 3
+    while tries:
+        try:
+            with open(PLAYER_META_file, 'r') as f:
+                md = json.loads( f.read() )
+            break
+        except:
+            sleep(.1)
+            tries -= 1
+    if not tries:
         return
 
     # Modify the metadata dict to have a new field 'composed_marquue'
