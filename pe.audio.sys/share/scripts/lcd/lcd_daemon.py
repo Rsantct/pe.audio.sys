@@ -39,10 +39,8 @@ STATE_file       = f'{WATCHED_DIR}/.state.yml'
 LOUDNESSMON_file = f'{WATCHED_DIR}/.loudness_monitor'
 PLAYER_META_file = f'{WATCHED_DIR}/.player_metadata'
 
-## Auxiliary globals
-_state      = { 'lu_offset': 0 }
-_last_state = { 'lu_offset': 0 }
-_last_md    = {}
+## Auxiliary global
+state = { 'lu_offset': 0 }
 
 # Reading the LCD SETTINGS:
 try:
@@ -185,15 +183,15 @@ def update_lcd_state(scr='scr_1'):
     """ Reads system .state.yml then updates the LCD """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
-    global _state, _last_state
+    global state
 
-    def show_state(data, priority="info"):
+    def show_state(priority="info"):
 
         ws = Widgets()
 
         global equal_loudness
 
-        for key, value in data.items():
+        for key, value in state.items():
 
             # The LU bar disables displaying bass and treble
             if LCD_CONFIG["LUmon_bar"]:
@@ -220,7 +218,7 @@ def update_lcd_state(scr='scr_1'):
             # Special case: lu_offset will be rounded to integer
             #               or void if no equal_loudness
             elif key == 'lu_offset':
-                if data['equal_loudness']:
+                if state['equal_loudness']:
                     lbl += str( int( round(value, 0) ) ).rjust(3)
                 else:
                     lbl = 'LOUDc off'
@@ -231,16 +229,16 @@ def update_lcd_state(scr='scr_1'):
 
             # Special case: midside (formerly 'mono')
             elif key == 'midside':
-                if data['midside'] == 'off':
+                if state['midside'] == 'off':
                     lbl = '>ST<'
-                elif data['midside'] == 'mid':
+                elif state['midside'] == 'mid':
                     lbl = 'MONO'
-                elif data['midside'] == 'side':
+                elif state['midside'] == 'side':
                     lbl = 'SIDE'
                 else:
                     lbl = ''
                 # Special usage mono label to display if convolver is off
-                if 'convolver_runs' in data and not data['convolver_runs']:
+                if 'convolver_runs' in state and not state['convolver_runs']:
                     lbl = ' zzz' # brutefir is sleeping
 
             # Any else key:
@@ -253,20 +251,27 @@ def update_lcd_state(scr='scr_1'):
             LCD.send( cmd )
 
         # The big screen to display the level value
-        #lcdbig.show_level( str(data['level']) )
+        #lcdbig.show_level( str(state['level']) )
         pass
 
+    # Reading state
     with open(STATE_file, 'r') as f:
-        _state = yaml.safe_load(f)
-        # avoid if reading an empty file:
-        if _state and _state != _last_state:
-            # refresh state items
-            show_state( _state )
-            # also refreshing the LU monitor bar if needed
-            if LCD_CONFIG["LUmon_bar"] and 'lu_offset' in _last_state:
-                if _state["lu_offset"] != _last_state["lu_offset"]:
-                    update_lcd_loudness_monitor()
-            _last_state = _state
+        new_state = yaml.safe_load(f)
+        if not new_state:
+            return
+
+    # If changed
+    if new_state != state:
+
+        # update global state
+        state = new_state
+
+        # refreshing the LU monitor bar in LCD if needed
+        if LCD_CONFIG["LUmon_bar"]:
+            update_lcd_loudness_monitor()
+
+        # refresh state items in LCD
+        show_state()
 
 
 def update_lcd_loudness_monitor(scr='scr_1'):
@@ -315,8 +320,8 @@ def update_lcd_loudness_monitor(scr='scr_1'):
             lu_I = 0
 
         # LU reference offset (usually in the range from 0 to 12)
-        # (it can be found in the global _state)
-        lu_offset = int(round(_state["lu_offset"]))
+        # (it is found in the state global variable)
+        lu_offset = int(round(state["lu_offset"]))
 
         # The LU meter bar length:
         barLen = int( round( lu_I * 20 / 12.0 ) )
@@ -340,9 +345,6 @@ def update_lcd_metadata(scr='scr_1'):
     """ Reads the metadata dict then updates the LCD display marquee """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
-    global _last_md
-    _last_md = {}
-    md       = {}
 
     # Composes a string by joining artist+album+title
     def compose_marquee(md):
@@ -352,13 +354,12 @@ def update_lcd_metadata(scr='scr_1'):
                 tmp += k[:2] + ':' + str(v).replace('"', '\\"') + ' '
         return tmp[:-1]
 
+
     # Trying to read the metadata file, or early return if failed
     try:
         with open(PLAYER_META_file, 'r') as f:
             md = json.loads( f.read() )
-            _last_md = md
     except:
-        md = _last_md
         return
 
     # Modify the metadata dict to have a new field 'composed_marquue'
