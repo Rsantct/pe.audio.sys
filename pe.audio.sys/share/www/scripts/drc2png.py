@@ -5,19 +5,19 @@
 import sys
 import os
 UHOME = os.path.expanduser("~")
-import numpy as np
-from scipy import signal
-from matplotlib import pyplot as plt
-import yaml
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import CONFIG, LOUDSPEAKER, LSPK_FOLDER
+
+import  numpy as np
+from    scipy       import signal
+from    matplotlib  import pyplot as plt
+import  yaml
 
 webColor = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
 # https://matplotlib.org/2.0.2/examples/color/named_colors.html
 lineRED  = 'indianred'
 lineBLUE = 'steelblue'
-
-CONFIG      = yaml.safe_load(open(f'{UHOME}/pe.audio.sys/config.yml','r'))
-LSPK        = CONFIG["loudspeaker"]
-LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPK}'
 
 
 def get_Bfir_sample_rate():
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     for drc_set in drc_sets:
 
         if verbose:
-            print( f'(drc2png) working: {LSPK} - {drc_set} ... .. .' )
+            print( f'(drc2png) working: {LOUDSPEAKER} - {drc_set} ... .. .' )
 
         fig, ax = plt.subplots()
         fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
