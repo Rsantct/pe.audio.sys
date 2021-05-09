@@ -25,41 +25,38 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+# IMPORTS  =====================================================================
+import sys
 import os
 UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-import sys
-from socket import socket
+from share.miscel import MAINFOLDER, CONFIG, LSPK_FOLDER, STATE_PATH, EQ_FOLDER, \
+                         LDMON_PATH, bf_cli, find_eq_curves, Fmt
+
 from subprocess import Popen, check_output
 import yaml
-import jack
 import numpy as np
 from time import sleep
 import threading
+import jack
 
-sys.path.append(MAINFOLDER)
-from share.miscel import Fmt
-
-
-# JCLI: the client interface to the JACK server ================================
-tries = 15 #  15 * 1/5 s = 3 s
-print( f'{Fmt.BOLD}(core) connecting to JACK ', end='' )
-while tries:
-    try:
-        JCLI = jack.Client('core', no_start_server=True)
-        break
-    except:
-        print( f'.', end='' )
-    tries -=1
-    sleep(.2)
-print(Fmt.END)
-if not tries:
-    # BYE :-/
-    raise ValueError( '(core) ERROR cannot commuticate to the JACK SOUND SERVER')
+if CONFIG["web_config"]["show_graphs"]:
+    sys.path.append ( os.path.dirname(__file__) )
+    import bfeq2png
 
 
-# AUX and FILES MANAGEMENT: ====================================================
+# EQ CURVES FOR TONE AND LOUDNESS CONTOUR: =====================================
+EQ_CURVES   = find_eq_curves()
+if not EQ_CURVES:
+    print( '(core) ERROR loading EQ_CURVES from share/eq/' )
+    sys.exit()
+
+# Global to avoid dumping EQ magnitude png graph if not changed
+last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
+
+
+# AUX and FILES MANAGEMENT  ====================================================
 def find_target_sets():
     """
         Retrieves the sets of available target curves under the share/eq folder.
@@ -154,58 +151,6 @@ def get_eq_curve(cname, state):
            EQ_CURVES[f'{cname}_pha'][index]
 
 
-def find_eq_curves():
-    """ Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage in Brutefir
-    """
-    EQ_CURVES = {}
-    eq_files = os.listdir(EQ_FOLDER)
-
-    # file names ( 2x loud + 4x tones + freq = total 7 curves)
-    fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
-                'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
-                'freq.dat' )
-
-    # map dict to get the curve name from the file name
-    cnames = {  'loudness_mag.dat'  : 'loud_mag',
-                'bass_mag.dat'      : 'bass_mag',
-                'treble_mag.dat'    : 'treb_mag',
-                'loudness_pha.dat'  : 'loud_pha',
-                'bass_pha.dat'      : 'bass_pha',
-                'treble_pha.dat'    : 'treb_pha',
-                'freq.dat'          : 'freqs'     }
-
-    pendings = len(fnames)  # 7 curves
-    for fname in fnames:
-
-        # Only one file named as <fname> must be found
-
-        if 'loudness' in fname:
-            prefixedfname = f'ref_{CONFIG["refSPL"]}_{fname}'
-            files = [ x for x in eq_files if prefixedfname in x]
-        else:
-            files = [ x for x in eq_files if fname in x]
-
-        if files:
-
-            if len (files) == 1:
-                EQ_CURVES[ cnames[fname] ] = \
-                         np.loadtxt( f'{EQ_FOLDER}/{files[0]}' )
-                pendings -= 1
-            else:
-                print(f'(core) too much \'...{fname}\' '
-                       'files under share/eq/')
-        else:
-            print(f'(core) ERROR finding a \'...{fname}\' '
-                   'file under share/eq/')
-
-    #if not pendings:
-    if pendings == 0:
-        return EQ_CURVES
-    else:
-        return {}
-
-
 def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
         as per the provided dictionary of state values.
@@ -282,7 +227,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
     def read_loudness_monitor():
         # Lets use LU_M (LU Momentary) from .loudness_monitor
         try:
-            with open(f'{MAINFOLDER}/.loudness_monitor', 'r') as f:
+            with open(LDMON_PATH, 'r') as f:
                 d = yaml.safe_load( f )
                 LU_M = d["LU_M"]
         except:
@@ -363,27 +308,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
         sleep(1)
 
 
-# BRUTEFIR MANAGEMENT: =========================================================
-def bf_cli(cmd):
-    """ queries commands to Brutefir
-    """
-    # using 'with' will disconnect the socket when done
-    ans = ''
-    with socket() as s:
-        try:
-            s.connect( ('localhost', 3000) )
-            s.send( f'{cmd}; quit;\n'.encode() )
-            while True:
-                tmp = s.recv(1024).decode()
-                if not tmp:
-                    break
-                ans += tmp
-            s.close()
-        except:
-            print( f'(core) unable to connect to Brutefir:3000' )
-    return ans
-
-
+# BRUTEFIR MANAGEMENT  =========================================================
 def bf_set_gains( state ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
@@ -452,7 +377,7 @@ def bf_set_gains( state ):
 
 def bf_set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module,
-        also will dump an EQ graph
+        also will dump an EQ graph png file
     """
     global last_eq_mag
 
@@ -609,7 +534,7 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
     sleep(1)  # wait a bit for Brutefir to be running
 
     # Wait for Brutefir to autoconnect its :out_X ports to system: ports
-    tries = 120     # ~ 60 sec
+    tries = 20     # ~ 60 sec
     while tries:
 
         # Showing progress every 3 sec
@@ -668,7 +593,7 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
         return warnings
 
 
-# JACK MANAGEMENT: =============================================================
+# JACK CONNECTIONS  ============================================================
 def jack_connect(p1, p2, mode='connect', wait=1):
     """ Low level tool to connect / disconnect a pair of ports,
         by retriyng for a while
@@ -1404,23 +1329,20 @@ class Convolver(object):
     def get_xo_sets(self, *dummy):
         return self.xo_sets
 
+# JACK client  =================================================================
+tries = 15 #  15 * 1/5 s = 3 s
+while tries:
+    try:
+        JCLI = jack.Client('pe.audio.sys', no_start_server=True)
+        print( f'{Fmt.BOLD}(core) connected to JACK ', end='' )
+        break
+    except:
+        print( f'.', end='' )
+    tries -=1
+    sleep(.2)
+print(Fmt.END)
+if not tries:
+    # BYE :-/
+    raise ValueError( '(core) ERROR cannot commuticate to the JACK SOUND SERVER')
 
-# COMMON USE VARIABLES: ========================================================
-CONFIG_PATH = f'{MAINFOLDER}/config.yml'
-CONFIG      = yaml.safe_load(open(CONFIG_PATH, 'r'))
 
-if CONFIG["web_config"]["show_graphs"]:
-    sys.path.append ( os.path.dirname(__file__) )
-    import bfeq2png
-
-LSPK_FOLDER = f'{MAINFOLDER}/loudspeakers/{CONFIG["loudspeaker"]}'
-STATE_PATH  = f'{MAINFOLDER}/.state.yml'
-EQ_FOLDER   = f'{MAINFOLDER}/share/eq'
-
-EQ_CURVES   = find_eq_curves()
-if not EQ_CURVES:
-    print( '(core) ERROR loading EQ_CURVES from share/eq/' )
-    sys.exit()
-
-# Aux global to avoid dumping magnitude graph if no changed
-last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
