@@ -28,11 +28,6 @@
 # IMPORTS  =====================================================================
 import sys
 import os
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-
-from share.miscel import *
-
 from subprocess import Popen, check_output
 import yaml
 import numpy as np
@@ -40,11 +35,18 @@ from time import sleep
 import threading
 import jack
 
-JCLI = jack.Client('pe.audio.sys', no_start_server=True)
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import *
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
     import bfeq2png
+
+
+# JACK client interface ========================================================
+JCLI = jack.Client('pe.audio.sys', no_start_server=True)
 
 
 # AUX and FILES MANAGEMENT  ====================================================
