@@ -132,8 +132,7 @@ on_change_input:
 #
 #     - lu_offset field is optional and overrides the on_change_input behavior.
 #
-#     - If a source is named "remotexxx", will try to get metada from its
-#       address field, a port field can also be specified (defaults to 9990)
+#     - A remote peaudiosys system can be defined as source, see documentation.
 
 
 sources:
@@ -164,10 +163,10 @@ sources:
         xo:                                 # min-pha if available for low latency
         target:         none                # maybe preferred for movie dialogue
 
-    remote:
-        capture_port:   192.168.1.234       # remote Ip: used by the script
-        gain:           0.0                 #            'zita-n2j' and by
-        xo:                                 #            players to get metadata
+    remoteLivingRoom:
+        capture_port:   192.168.1.234       # remote pe.audio.sys IP (see documentation)
+        gain:           0.0
+        xo:
 
 
 # ========================== SOURCE MONITOR PORTS ==============================

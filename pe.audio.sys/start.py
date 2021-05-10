@@ -132,7 +132,7 @@ def start_jack_stuff():
 
     jack_backend_options = CONFIG["jack_backend_options"] \
                     .replace('$autoCard', CONFIG["system_card"]) \
-                    .replace('$autoFS', str(get_Bfir_sample_rate()))
+                    .replace('$autoFS', str(bf_get_sample_rate()))
 
     cmdlist = ['jackd']
 
