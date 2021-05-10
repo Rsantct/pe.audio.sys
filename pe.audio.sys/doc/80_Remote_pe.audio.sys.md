@@ -14,7 +14,7 @@ The file `share/scripts/zita_link.py` allows you to receive the listening source
         - zita_link.py
     ```
 
-- Define the remote system as a local source. The source name must include the '***remote***' keyword, also use the ***remote_IP*** or ***remote_hostname*** for the `capture_port:` field:
+- Define the remote system as a local source. The source name must include the '***remote***' keyword, and also put the remote ***IP:HOST*** in the `capture_port:` field:
 
     ```
     sources:
@@ -22,7 +22,7 @@ The file `share/scripts/zita_link.py` allows you to receive the listening source
         ...
         remoteLivingRoom:
             gain: 0
-            capture_port:   192.168.1.123
+            capture_port:   192.168.1.123:9990
     ```
     
 The `zita_link.py` script will autospawn a new jack port named `192.168.1.123`
