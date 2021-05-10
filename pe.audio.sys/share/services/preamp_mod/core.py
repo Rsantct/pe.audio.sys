@@ -535,7 +535,8 @@ def restart_and_reconnect_brutefir(bf_sources=[]):
     sleep(1)  # wait a bit for Brutefir to be running
 
     # Wait for Brutefir to autoconnect its :out_X ports to system: ports
-    tries = 20     # ~ 60 sec
+    # (this can take a while in some machines as Raspberry Pi)
+    tries = 120     # ~ 60 sec
     while tries:
 
         # Showing progress every 3 sec
