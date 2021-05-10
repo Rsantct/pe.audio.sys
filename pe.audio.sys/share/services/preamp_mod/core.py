@@ -31,8 +31,7 @@ import os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, CONFIG, LSPK_FOLDER, STATE_PATH, EQ_FOLDER, \
-                         LDMON_PATH, bf_cli, find_eq_curves, Fmt
+from share.miscel import *
 
 from subprocess import Popen, check_output
 import yaml
@@ -41,12 +40,16 @@ from time import sleep
 import threading
 import jack
 
+JCLI = jack.Client('pe.audio.sys', no_start_server=True)
+
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
     import bfeq2png
 
 
-# EQ CURVES FOR TONE AND LOUDNESS CONTOUR: =====================================
+# AUX and FILES MANAGEMENT  ====================================================
+
+# EQ curves for tone and loudness contour
 EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
@@ -55,8 +58,6 @@ if not EQ_CURVES:
 # Global to avoid dumping EQ magnitude png graph if not changed
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
-
-# AUX and FILES MANAGEMENT  ====================================================
 def find_target_sets():
     """
         Retrieves the sets of available target curves under the share/eq folder.
@@ -1328,21 +1329,4 @@ class Convolver(object):
 
     def get_xo_sets(self, *dummy):
         return self.xo_sets
-
-# JACK client  =================================================================
-tries = 15 #  15 * 1/5 s = 3 s
-while tries:
-    try:
-        JCLI = jack.Client('pe.audio.sys', no_start_server=True)
-        print( f'{Fmt.BOLD}(core) connected to JACK ', end='' )
-        break
-    except:
-        print( f'.', end='' )
-    tries -=1
-    sleep(.2)
-print(Fmt.END)
-if not tries:
-    # BYE :-/
-    raise ValueError( '(core) ERROR cannot commuticate to the JACK SOUND SERVER')
-
 
