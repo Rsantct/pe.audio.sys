@@ -1154,9 +1154,9 @@ class Preamp(object):
             jack_clear_preamp()
 
             # connecting the new SOURCE to PREAMP input
-            current_source = self.state['input']
-            res = jack_connect_bypattern(CONFIG["sources"][source]["capture_port"],
-                                         'pre_in')
+            # (i) Special case 'remoteXXX' source name can have a ':port' suffix
+            jport = CONFIG["sources"][source]["capture_port"].split(':')[0]
+            res = jack_connect_bypattern(jport, 'pre_in')
 
             if res != 'ordered':
                 w += res
