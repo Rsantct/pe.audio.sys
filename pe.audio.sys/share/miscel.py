@@ -457,6 +457,7 @@ def send_cmd( cmd, sender='', verbose=False, timeout=60,
             s.close()
 
     except Exception as e:
+        ans = e
         if verbose:
             print( f'{Fmt.RED}({sender}) {host}:{port} {e} {Fmt.END}' )
 
@@ -638,3 +639,42 @@ def get_my_ip():
         return tmp.split()[0]
     except:
         return ''
+
+# Gets data from a remoteXXXXX defined source
+def get_remote_source_info():
+    ''' Retrieves the remoteXXXXXX source found under the 'sources:' section
+        inside config.yml.
+
+        input:  --
+        output: srcName, srcIp, srcPort:
+    '''
+    # Retrieving the remote sender address from 'config.yml'.
+    # For a 'remote.....' named source, it is expected to have
+    # an IP address kind of in its capture_port field:
+    #   capture_port:  X.X.X.X
+    # so this way we can query the remote sender to run 'zita-j2n'
+
+    remote_addr = ''
+    remote_port = 9990
+
+    for source in CONFIG["sources"]:
+        if 'remote' in source:
+            tmp = CONFIG["sources"][source]["capture_port"]
+            tmp_addr = tmp.split(':')[0]
+            tmp_port = tmp.split(':')[-1]
+            if is_IP(tmp_addr):
+                remote_addr = tmp_addr
+                if tmp_port.isdigit():
+                    remote_port = int(tmp_port)
+                break
+
+    if not remote_addr:
+        print(f'(zita-n2j) Cannot get remote address from configured sources')
+        sys.exit()
+    if not is_IP(remote_addr):
+        print(f'(zita-n2j) source: \'{source}\' address: \'{remote_addr}\' not valid')
+        sys.exit()
+
+    return source, remote_addr, remote_port
+
+
