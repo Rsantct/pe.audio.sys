@@ -20,7 +20,7 @@ import os
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
-from    socket import socket
+import  socket              # (i) do not use from socket import socket see below
 import  ipaddress
 from    json import loads as json_loads
 from    time import sleep
@@ -28,6 +28,30 @@ import  subprocess as sp
 import  yaml
 from    numpy import loadtxt as np_loadtxt
 import  configparser
+import  jack
+
+
+# Config, server addressing and common usage paths and variables
+with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+    CONFIG = yaml.safe_load(f)
+try:
+    SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
+except:
+    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
+          f'\'config.yml\'{Fmt.END}')
+    exit()
+
+if 'amp_manager' in CONFIG:
+    AMP_MANAGER = CONFIG['amp_manager']
+else:
+    AMP_MANAGER = ''
+LOUDSPEAKER     = CONFIG['loudspeaker']
+LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+STATE_PATH      = f'{MAINFOLDER}/.state.yml'
+EQ_FOLDER       = f'{MAINFOLDER}/share/eq'
+LDMON_PATH      = f'{MAINFOLDER}/.loudness_monitor'
+BFCFG_PATH      = f'{LSPK_FOLDER}/brutefir_config'
+BFDEF_PATH      = f'{UHOME}/.brutefir_defaults'
 
 
 # Some nice ANSI formats for printouts
@@ -111,29 +135,6 @@ class Fmt:
     END             = '\033[0m'
 
 
-# Config, server addressing and common usage paths and variables
-with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-    CONFIG = yaml.safe_load(f)
-try:
-    SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
-except:
-    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
-          f'\'config.yml\'{Fmt.END}')
-    exit()
-
-if 'amp_manager' in CONFIG:
-    AMP_MANAGER = CONFIG['amp_manager']
-else:
-    AMP_MANAGER = ''
-LOUDSPEAKER     = CONFIG['loudspeaker']
-LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-STATE_PATH      = f'{MAINFOLDER}/.state.yml'
-EQ_FOLDER       = f'{MAINFOLDER}/share/eq'
-LDMON_PATH      = f'{MAINFOLDER}/.loudness_monitor'
-BFCFG_PATH      = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH      = f'{UHOME}/.brutefir_defaults'
-
-
 # Jack: checks for jackd process to be running
 def jack_is_running():
     try:
@@ -149,7 +150,7 @@ def bf_cli(cmd):
     """
     # using 'with' will disconnect the socket when done
     ans = ''
-    with socket() as s:
+    with socket.socket() as s:
         try:
             s.connect( ('localhost', 3000) )
             s.send( f'{cmd}; quit;\n'.encode() )
@@ -408,19 +409,20 @@ def set_as_pattern(param, pattern, sender='miscel', verbose=False):
 
 
 # Waiting for jack ports to be available
-def wait4ports(pattern):
-    """ Waits for jack ports to be available
+def wait4ports( pattern ):
+    """ Waits for jack client ports with name *pattern* to be available
     """
-    n = 20  # 10 sec
-    while n:
-        if len( JCLI.get_ports( pattern ) ) >= 2:
-            break
-        n -= 1
-        sleep(0.5)
-    if n:
-        return True
-    else:
-        return False
+    with jack.Client(name='w4p', no_start_server=True) as jcli:
+        n = 20  # 10 sec
+        while n:
+            if len( jcli.get_ports( pattern ) ) >= 2:
+                break
+            n -= 1
+            sleep(0.5)
+        if n:
+            return True
+        else:
+            return False
 
 
 # Send a command to a peaudiosys server
