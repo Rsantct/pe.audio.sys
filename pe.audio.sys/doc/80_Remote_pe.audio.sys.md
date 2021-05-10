@@ -14,7 +14,7 @@ The file `share/scripts/zita_link.py` allows you to receive the listening source
         - zita_link.py
     ```
 
-- Define the remote system as a local source. The source name must include the '***remote***' keyword, also use the ***remote_IP*** or ***remote_hostname*** for the `capture_port:` field:
+- Define the remote system as a local source. The source name must include the '***remote***' keyword, and also put the remote ***IP*** (or *IP:PORT*, default port is 9990) in the `capture_port:` field:
 
     ```
     sources:

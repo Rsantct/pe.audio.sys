@@ -74,15 +74,14 @@ METATEMPLATE = {
 
 # Gets metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
-    ans = ''
+    md = ''
     md = METATEMPLATE.copy()
+    ans = send_cmd( cmd='player get_meta',
+                    host=host, port=port, timeout=3)
     try:
-        ans = send_cmd( cmd='player get_meta',
-                        host=host, port=port, timeout=3)
+        md = json.loads(ans)
     except:
         pass
-    if ans:
-        md = json.loads(ans)
     return md
 
 
@@ -136,11 +135,15 @@ def player_get_meta():
     elif source.startswith('remote'):
         # For a 'remote.....' named source, it is expected to have
         # an IP address kind of in its capture_port field:
-        #   capture_port:  X.X.X.X
+        #   capture_port:  X.X.X.X:PPPP
         # so this way we can query metadata from the remote address.
-        host = SOURCES[source]["capture_port"]
-        port = 9900
+        host = SOURCES[source]["capture_port"].split(':')[0]
+        port = SOURCES[source]["capture_port"].split(':')[-1]
+
+        # (i) we assume that the remote pe.audio.sys listen at standard 9990 port
         if is_IP(host):
+            if not port.isdigit():
+                port = 9990
             md = remote_get_meta( host, port )
 
 
@@ -209,7 +212,7 @@ def init():
         while True:
             md = player_get_meta()
             with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
-                f.write( json.dumps(md ))
+                f.write( json.dumps( md ))
             sleep(timer)
     # Loop storing metadata
     meta_timer = 2

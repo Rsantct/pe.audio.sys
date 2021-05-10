@@ -336,13 +336,11 @@ def process_aux( cmd, arg='' ):
     # Add outputs delay, can be useful for multiroom listening
     elif cmd == 'add_delay':
         print(f'({ME}) ordering adding {arg} ms of delay.')
-        Popen(f'{UHOME}/bin/peaudiosys_add_delay.py {arg}'.split())
-        result = 'tried'
+        result = bf_add_delay(float(arg))
 
     # Send zita-j2n to a client (multiroom)
     elif cmd == 'zita_client':
         result = send_zita(arg)
-
 
     # RESTART
     elif cmd == 'restart':

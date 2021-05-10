@@ -18,13 +18,11 @@ import os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-
-from miscel import send_cmd, get_my_ip
-import scripts.zita_link as zl
+from miscel import send_cmd, get_my_ip, get_remote_source_info
 
 
 # Getting remote source parameters
-source, remote_addr, remote_port  = zl.get_remote()
+source, remote_addr, remote_port  = get_remote_source_info()
 
 
 # Restarting zita process on sender side (sender will do only if needed)
