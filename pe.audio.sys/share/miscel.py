@@ -151,7 +151,7 @@ def calc_eq( state ):
         targ_mag = zeros
         targ_pha = zeros
     else:
-        if target_name != 'target':     # see doc string from find_target_sets()
+        if target_name != 'target':     # see doc string on find_target_sets()
             target_name += '_target'
         targ_mag = np_loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
         targ_pha = np_loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
@@ -465,6 +465,59 @@ def find_eq_curves():
         return {}
 
 
+# Retrieves the sets of available target curves under the share/eq folder.
+def find_target_sets():
+    """
+        Retrieves the sets of available target curves under the share/eq folder.
+
+                            file name:              returned set name:
+        minimal name        'target_mag.dat'        'target'
+        a more usual name   'xxxx_target_mag.dat'   'xxxx'
+
+        A 'none' set name is added as default for no target eq to be applied.
+    """
+    def extract(x):
+        """ Aux to extract a meaningful set name, examples:
+                'xxxx_target_mag.dat'   will return 'xxxx'
+                'target_mag.dat'        will return 'target'
+        """
+
+        if x[:6] == 'target':
+            return 'target'
+        else:
+            x = x[:-14]
+
+        # strip trailing unions if used
+        for c in ('.', '-', '_'):
+            if x[-1] == c:
+                x = x[:-1]
+
+        return x
+
+    result = ['none']
+
+    files = os.listdir( EQ_FOLDER )
+    tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
+
+    for fname in tfiles:
+        set_name = extract(fname)
+        if not set_name in result:
+            result.append( set_name )
+
+    return result
+
+
+# Retreives an optional PEQ (parametic eq) Ecasound filename if configured
+def get_peq_in_use():
+    """ Finds out the PEQ (parametic eq) filename used by an inserted
+        Ecasound sound processor, if included inside config.yml scripts.
+    """
+    for item in CONFIG["scripts"]:
+        if type(item) == dict and 'ecasound_peq.py' in item.keys():
+            return item["ecasound_peq.py"].replace('.ecs', '')
+    return 'none'
+
+
 # Sets a peaudiosys parameter as per a given pattern, useful for user macros.
 def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     """ Sets a peaudiosys parameter as per a given pattern.
@@ -723,6 +776,7 @@ def get_my_ip():
     except:
         return ''
 
+
 # Gets data from a remoteXXXXX defined source
 def get_remote_source_info():
     ''' Retrieves the remoteXXXXXX source found under the 'sources:' section
@@ -762,6 +816,7 @@ def get_remote_source_info():
 
 
 # EQ curves for tone and loudness contour are mandatory
+# (i) kept last because it depends on the find_eq_curves() funtcion
 EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
