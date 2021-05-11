@@ -113,7 +113,7 @@ def detect_remotes():
         if addr == my_ip:
             continue
 
-        if 'remote' in miscel.get_source_from_remote(addr).lower():
+        if 'remote' in miscel.get_remote_selected_source(addr).lower():
             clients.append(addr)
 
     return clients
@@ -158,7 +158,7 @@ def cmd_log_file_changed():
     for rem_addr in remoteClients:
 
         # checking if remote is still listening to us
-        if 'remote' in miscel.get_source_from_remote(rem_addr):
+        if 'remote' in miscel.get_remote_selected_source(rem_addr):
 
             # Updates relative VOLUME event to remote
             if rel_level_cmd:
@@ -189,7 +189,7 @@ def all_remotes_LU_offset(force=False):
 
         for rem_addr in remoteClients:
 
-            if 'remote' in miscel.get_source_from_remote(rem_addr):
+            if 'remote' in miscel.get_remote_selected_source(rem_addr):
                 # Updates LU OFFSET to remotes
                 remote_LU_offset(rem_addr)
             else:
