@@ -41,8 +41,7 @@ UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from  share.miscel                  import  detect_spotify_client, wait4ports \
-                                            is_IP
+from  share.miscel                  import  *
 
 from  players_mod.mpd               import  mpd_control,                \
                                             mpd_meta
