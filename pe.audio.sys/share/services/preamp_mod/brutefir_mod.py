@@ -27,16 +27,18 @@
 
 import  os
 import  sys
-from    subprocess import Popen
-from    time import sleep
-from    numpy import zeros as np_zeros
+from    subprocess  import Popen
+from    time        import sleep
+from    numpy       import zeros as np_zeros
+from    socket      import socket
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.services.preamp_mod.jack_mod import *
-from share.miscel                       import CONFIG, LSPK_FOLDER, EQ_CURVES, \
-                                               calc_gain, bf_cli, Fmt
+from share.jack_mod import  *
+from share.miscel   import  CONFIG, LSPK_FOLDER, EQ_CURVES, \
+                            BFCFG_PATH, BFDEF_PATH, \
+                            get_bf_samplerate, calc_gain, Fmt
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
@@ -45,6 +47,27 @@ if CONFIG["web_config"]["show_graphs"]:
 
 # Global to avoid dumping EQ magnitude png graph if not changed
 last_eq_mag = np_zeros( EQ_CURVES["freqs"].shape[0] )
+
+
+
+def bf_cli(cmd):
+    """ A socket client that queries commands to Brutefir
+    """
+    # using 'with' will disconnect the socket when done
+    ans = ''
+    with socket() as s:
+        try:
+            s.connect( ('localhost', 3000) )
+            s.send( f'{cmd}; quit;\n'.encode() )
+            while True:
+                tmp = s.recv(1024).decode()
+                if not tmp:
+                    break
+                ans += tmp
+            s.close()
+        except:
+            print( f'(core) unable to connect to Brutefir:3000' )
+    return ans
 
 
 def bf_set_gains( state ):
@@ -335,3 +358,131 @@ def bf_restart_and_reconnect(bf_sources=[]):
         return warnings
 
 
+def bf_get_config_outputs():
+    """ Read outputs from 'brutefir_config' file, then gets a dictionary.
+    """
+    outputs = {}
+
+    with open(BFCFG_PATH, 'r') as f:
+        bfconfig = f.read().split('\n')
+
+    output_section = False
+
+    for line in bfconfig:
+
+        line = line.split('#')[0]
+        if not line:
+            continue
+
+        if   line.strip().startswith('logic') or \
+             line.strip().startswith('coeff') or \
+             line.strip().startswith('input') or \
+             line.strip().startswith('filter'):
+                output_section = False
+        elif line.strip().startswith('output'):
+                output_section = True
+
+        if not output_section:
+            continue
+
+        line = line.strip()
+
+        if line.startswith('output') and '{' in line:
+            output_section = True
+            if output_section:
+                outs = line.replace('output', '').replace('{', '').split(',')
+                outs = [ x.replace('"', '').strip() for x in outs ]
+
+        if line.startswith('delay:'):
+            i = 0
+            delays = line.replace('delay:', '').split(';')[0].strip().split(',')
+            delays = [ int(x.strip()) for x in delays ]
+            for oname, delay in zip(outs, delays):
+                outputs[str(i)] = {'name': oname, 'delay': delay}
+                i += 1
+
+        if line.startswith('maxdelay:'):
+            maxdelay = int( line.split(':')[1].replace(';', '').strip() )
+            outputs['maxdelay'] = maxdelay
+
+    return outputs
+
+
+def bf_get_current_outputs():
+    """ Read outputs from running Brutefir, then gets a dictionary.
+    """
+
+    lines = bf_cli('lo').split('\n')
+    outputs = {}
+
+    i = lines.index('> Output channels:') + 1
+
+    while True:
+
+        onum = lines[i].split(':')[0].strip()
+
+        outputs[str(onum)] = {
+            'name':  lines[i].split(':')[1].strip().split()[0].replace('"', ''),
+            'delay': int(lines[i].split()[-1].strip().replace(')', '').split(':')[0])
+        }
+
+        i += 1
+        if not lines[i] or lines[i] == '':
+            break
+
+    # Adding maxdelay info from config_file, because not available on runtime
+    outputs['maxdelay'] = bf_get_config_outputs()['maxdelay']
+
+    return outputs
+
+
+def bf_add_delay(ms):
+    """ Will add a delay to all outputs, relative to the  delay values
+        as configured under 'brutefir_config'.
+        Useful for multiroom simultaneous listening.
+    """
+
+    result  = 'nothing done'
+
+    outputs = bf_get_config_outputs()
+    FS      = int( get_bf_samplerate() )
+
+    # From ms to samples
+    delay = int( FS  * ms / 1e3)
+
+    cmd = ''
+    too_much = False
+    max_available    = outputs['maxdelay']
+    max_available_ms = max_available / FS * 1e3
+
+    for o in outputs:
+
+        # Skip non output number item (i.e. the  maxdelay item)
+        if not o.isdigit():
+            continue
+
+        cfg_delay = outputs[o]['delay']
+        new_delay = int(cfg_delay + delay)
+        if new_delay > outputs['maxdelay']:
+            too_much = True
+            max_available    = outputs['maxdelay'] - cfg_delay
+            max_available_ms = max_available / FS * 1e3
+        cmd += f'cod {o} {new_delay};'
+
+    # Issue new delay to Brutefir's outputs
+    if not too_much:
+        #print(cmd) # debug
+        result = bf_cli( cmd ).lower()
+        #print(result) # debug
+        if not 'unknown command' in result and \
+           not 'out of range' in result and \
+           not 'invalid' in result and \
+           not 'error' in result:
+                result = 'done'
+        else:
+                result = 'Brutefir error'
+    else:
+        print(f'(i) ERROR Brutefir\'s maxdelay is {int(max_available_ms)} ms')
+        result = f'max delay {int(max_available_ms)} ms exceeded'
+
+    return result
