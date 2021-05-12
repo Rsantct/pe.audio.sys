@@ -18,6 +18,8 @@
 
 """
     Plot the run-time EQ in a Brutefir running process
+
+    (Brutefir needs to be running)
 """
 import socket
 import numpy as np
