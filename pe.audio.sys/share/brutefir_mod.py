@@ -42,12 +42,11 @@ from share.miscel   import  CONFIG, LSPK_FOLDER, EQ_CURVES, \
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
-    import bfeq2png
+    import brutefir_eq2png
 
 
 # Global to avoid dumping EQ magnitude png graph if not changed
 last_eq_mag = np_zeros( EQ_CURVES["freqs"].shape[0] )
-
 
 
 def bf_cli(cmd):
@@ -161,8 +160,8 @@ def bf_set_eq( eq_mag, eq_pha ):
         last_eq_mag = eq_mag
         # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            bfeq2png.do_graph( freqs, eq_mag,
-                               is_lin_phase=CONFIG["bfeq_linear_phase"] )
+            brutefir_eq2png.do_graph( freqs, eq_mag,
+                                      is_lin_phase=CONFIG["bfeq_linear_phase"] )
 
 
 def bf_read_eq():
