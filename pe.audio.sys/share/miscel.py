@@ -25,6 +25,7 @@ import  yaml
 from    numpy import loadtxt as np_loadtxt, zeros as np_zeros
 import  configparser
 import  os
+import  sys
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
@@ -134,6 +135,38 @@ class Fmt:
     END             = '\033[0m'
 
 
+# Reads the FS to be used by Brutefir
+def get_bf_samplerate():
+    """ Retrieve loudspeaker's filters FS:
+            - from         brutefir_config'   loudspeaker file,
+            - or from   ~/.brutefir_defaults  default     file
+    """
+    FS = 0
+
+    for fname in ( BFCFG_PATH, BFDEF_PATH ):
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+        for l in lines:
+            if 'sampling_rate:' in l and l.strip()[0] != '#':
+                try:
+                    FS = int([x for x in l.replace(';', '').split()
+                                         if x.isdigit() ][0])
+                except:
+                    pass
+        if FS:
+            break   # stops searching if found under lskp folder
+
+    if not FS:
+        raise ValueError('unable to find Brutefir sample_rate')
+
+    if 'brutefir_defaults' in fname:
+        print(f'{Fmt.RED}{Fmt.BOLD}'
+              f'(miscel) *** USING .brutefir_defaults SAMPLE RATE ***'
+              f'{Fmt.END}')
+
+    return FS
+
+
 def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
         as per the provided dictionary of state values.
@@ -226,190 +259,6 @@ def get_eq_curve(cname, state):
 
     return EQ_CURVES[f'{cname}_mag'][index], \
            EQ_CURVES[f'{cname}_pha'][index]
-
-
-# Brutefir client socket function
-def bf_cli(cmd):
-    """ queries commands to Brutefir
-    """
-    # using 'with' will disconnect the socket when done
-    ans = ''
-    with socket.socket() as s:
-        try:
-            s.connect( ('localhost', 3000) )
-            s.send( f'{cmd}; quit;\n'.encode() )
-            while True:
-                tmp = s.recv(1024).decode()
-                if not tmp:
-                    break
-                ans += tmp
-            s.close()
-        except:
-            print( f'(core) unable to connect to Brutefir:3000' )
-    return ans
-
-
-# Brutefir: get configured outputs
-def bf_get_config_outputs():
-    """ Read outputs from 'brutefir_config' file, then gets a dictionary.
-    """
-    outputs = {}
-
-    with open(BFCFG_PATH, 'r') as f:
-        bfconfig = f.read().split('\n')
-
-    output_section = False
-
-    for line in bfconfig:
-
-        line = line.split('#')[0]
-        if not line:
-            continue
-
-        if   line.strip().startswith('logic') or \
-             line.strip().startswith('coeff') or \
-             line.strip().startswith('input') or \
-             line.strip().startswith('filter'):
-                output_section = False
-        elif line.strip().startswith('output'):
-                output_section = True
-
-        if not output_section:
-            continue
-
-        line = line.strip()
-
-        if line.startswith('output') and '{' in line:
-            output_section = True
-            if output_section:
-                outs = line.replace('output', '').replace('{', '').split(',')
-                outs = [ x.replace('"', '').strip() for x in outs ]
-
-        if line.startswith('delay:'):
-            i = 0
-            delays = line.replace('delay:', '').split(';')[0].strip().split(',')
-            delays = [ int(x.strip()) for x in delays ]
-            for oname, delay in zip(outs, delays):
-                outputs[str(i)] = {'name': oname, 'delay': delay}
-                i += 1
-
-        if line.startswith('maxdelay:'):
-            maxdelay = int( line.split(':')[1].replace(';', '').strip() )
-            outputs['maxdelay'] = maxdelay
-
-    return outputs
-
-
-# Brutefir: get current outputs
-def bf_get_current_outputs():
-    """ Read outputs from running Brutefir, then gets a dictionary.
-    """
-
-    lines = bf_cli('lo').split('\n')
-    outputs = {}
-
-    i = lines.index('> Output channels:') + 1
-
-    while True:
-
-        onum = lines[i].split(':')[0].strip()
-
-        outputs[str(onum)] = {
-            'name':  lines[i].split(':')[1].strip().split()[0].replace('"', ''),
-            'delay': int(lines[i].split()[-1].strip().replace(')', '').split(':')[0])
-        }
-
-        i += 1
-        if not lines[i] or lines[i] == '':
-            break
-
-    # Adding maxdelay info from config_file, because not available on runtime
-    outputs['maxdelay'] = bf_get_config_outputs()['maxdelay']
-
-    return outputs
-
-
-# Brutefir: get loudspeaker filters FS from brutefir config file
-def bf_get_sample_rate():
-    """ Retrieve loudspeaker's filters FS from its 'brutefir_config' file,
-        or from '.brutefir_defaults' file
-    """
-    FS = 0
-
-    for fname in ( BFCFG_PATH, BFDEF_PATH ):
-        with open(fname, 'r') as f:
-            lines = f.readlines()
-        for l in lines:
-            if 'sampling_rate:' in l and l.strip()[0] != '#':
-                try:
-                    FS = int([x for x in l.replace(';', '').split()
-                                         if x.isdigit() ][0])
-                except:
-                    pass
-        if FS:
-            break   # stops searching if found under lskp folder
-
-    if not FS:
-        raise ValueError('unable to find Brutefir sample_rate')
-
-    if 'brutefir_defaults' in fname:
-        print(f'{Fmt.RED}{Fmt.BOLD}'
-              f'(miscel) *** USING .brutefir_defaults SAMPLE RATE ***'
-              f'{Fmt.END}')
-
-    return FS
-
-
-# Brutefir: add delay to all outputs
-def bf_add_delay(ms):
-    """ Will add a delay to all outputs, relative to the  delay values
-        as configured under 'brutefir_config'.
-    """
-
-    result  = 'nothing done'
-
-    outputs = bf_get_config_outputs()
-    FS      = int( bf_get_sample_rate() )
-
-    # From ms to samples
-    delay = int( FS  * ms / 1e3)
-
-    cmd = ''
-    too_much = False
-    max_available    = outputs['maxdelay']
-    max_available_ms = max_available / FS * 1e3
-
-    for o in outputs:
-
-        # Skip non output number item (i.e. the  maxdelay item)
-        if not o.isdigit():
-            continue
-
-        cfg_delay = outputs[o]['delay']
-        new_delay = int(cfg_delay + delay)
-        if new_delay > outputs['maxdelay']:
-            too_much = True
-            max_available    = outputs['maxdelay'] - cfg_delay
-            max_available_ms = max_available / FS * 1e3
-        cmd += f'cod {o} {new_delay};'
-
-    # Issue new delay to Brutefir's outputs
-    if not too_much:
-        #print(cmd) # debug
-        result = bf_cli( cmd ).lower()
-        #print(result) # debug
-        if not 'unknown command' in result and \
-           not 'out of range' in result and \
-           not 'invalid' in result and \
-           not 'error' in result:
-                result = 'done'
-        else:
-                result = 'Brutefir error'
-    else:
-        print(f'(i) ERROR Brutefir\'s maxdelay is {int(max_available_ms)} ms')
-        result = f'max delay {int(max_available_ms)} ms exceeded'
-
-    return result
 
 
 # Retrieves EQ curves for tone and loudness countour
