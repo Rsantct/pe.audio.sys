@@ -317,7 +317,7 @@ def prepare_drc_graphs():
 
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
-    sp.Popen(['python3', f'{MAINFOLDER}/share/bfeq2png.py'])
+    sp.Popen(['python3', f'{MAINFOLDER}/share/brutefir_eq2png.py'])
 
 
 if __name__ == "__main__":
