@@ -37,9 +37,9 @@ import threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel                           import *
-from share.services.preamp_mod.jack_mod     import *
-from share.services.preamp_mod.brutefir_mod import *
+from share.miscel       import *
+from share.jack_mod     import *
+from share.brutefir_mod import *
 
 
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
