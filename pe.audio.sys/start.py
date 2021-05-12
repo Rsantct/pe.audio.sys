@@ -44,9 +44,11 @@ from   time import sleep, time, ctime
 import yaml
 import os
 import sys
+
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
-from   share.miscel import *
+
+from   share.miscel         import *
 
 
 ME = __file__.split('/')[-1]
@@ -139,7 +141,7 @@ def start_jack_stuff():
 
     jack_backend_options = CONFIG["jack_backend_options"] \
                     .replace('$autoCard', CONFIG["system_card"]) \
-                    .replace('$autoFS', str(bf_get_sample_rate()))
+                    .replace('$autoFS', str(get_bf_samplerate()))
 
     cmdlist = ['jackd']
 
@@ -315,7 +317,7 @@ def prepare_drc_graphs():
 
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
-    sp.Popen(['python3', f'{MAINFOLDER}/share/services/preamp_mod/bfeq2png.py'])
+    sp.Popen(['python3', f'{MAINFOLDER}/share/bfeq2png.py'])
 
 
 if __name__ == "__main__":
