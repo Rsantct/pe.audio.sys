@@ -329,6 +329,8 @@ def bf_restart_and_reconnect(bf_sources=[]):
 
     if not tries:
         warnings += ' PROBLEM RUNNING BRUTEFIR :-('
+    else:
+        print(  f'{Fmt.BLUE}(core) Brutefir ports are alive.{Fmt.END}')
 
     # Wait for brutefir input ports to be available
     tries = 50      # ~ 10 sec
