@@ -18,13 +18,14 @@
 """
     A module to dump an EQ stage graph to share/www/images/brutefir_eq.png
 
-    Command line usage: bfeq2png.py [--verbose]
+    Command line usage: brutefir_eq2png.py [--verbose]
 """
 import sys
 import os
 import yaml
 from socket import socket
 import numpy as np
+
 import matplotlib
 # (i) Agg is a SAFE backend to avoid "tkinter.TclError: couldn't connect to display"
 #     under certain circumstances.
@@ -40,6 +41,7 @@ RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 3
 lineColor   = 'grey'
 verbose     = False
 
+
 # Prepare pyplot
 plt.style.use('dark_background')
 plt.rcParams.update({'font.size': 6})
@@ -48,6 +50,7 @@ freq_labels = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
 figHeight   = 1.5   # min 1.5 if font.size = 6
 ypos_step   = 0     # try 15 dB, or 0 to disable
 yneg_step   = 0     # try 10 dB, or 0 to disable
+
 
 def get_bf_eq():
     """ Queries Brutefir TCP service to get the current EQ magnitudes
@@ -65,7 +68,7 @@ def get_bf_eq():
                 ans += tmp
             s.close()
         except:
-            print( f'(bfeq2png) unable to connect to Brutefir:3000' )
+            print( f'(brutefir_eq2png) unable to connect to Brutefir:3000' )
 
     for line in ans.split('\n'):
         if line.strip()[:5] == 'band:':
@@ -81,7 +84,7 @@ def do_graph(freqs, magdB, is_lin_phase=False):
     """ Dupms a graph to share/www/images/brutefir_eq.png
     """
     if verbose:
-        print( f'(bfeq2png) working ... .. .' )
+        print( f'(brutefir_eq2png) working ... .. .' )
 
     # Customize figure and axes
     fig, ax = plt.subplots()
@@ -114,7 +117,7 @@ def do_graph(freqs, magdB, is_lin_phase=False):
     fpng = f'{UHOME}/pe.audio.sys/share/www/images/brutefir_eq.png'
     plt.savefig( fpng, facecolor=RGBweb )
     if verbose:
-        print( f'(bfeq2png) saved: \'{fpng}\' ' )
+        print( f'(brutefir_eq2png) saved: \'{fpng}\' ' )
     #plt.show()  # (!) PLEASE comment out the safe backend Agg before using this
 
 
