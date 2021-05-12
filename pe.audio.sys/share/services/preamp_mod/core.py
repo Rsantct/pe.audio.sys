@@ -404,7 +404,7 @@ class Preamp(object):
                 # Brutefir 1.0m process is 'brutefir.real'
                 Popen(f'pkill -f  "brutefir.real\ brutefir_config"', shell=True)
                 sleep(2)
-                print(f'(core) STOOPING BRUTEFIR (!)')
+                print(f'{Fmt.BLUE}{Fmt.BOLD}(core) STOPPING BRUTEFIR (!){Fmt.END}')
                 result = 'done'
 
         elif mode == 'on':
@@ -416,6 +416,7 @@ class Preamp(object):
 
                 result = bf_restart_and_reconnect(self.bf_sources)
                 if result == 'done':
+                    print(f'{Fmt.BLUE}{Fmt.BOLD}(core) BRUTEFIR RESUMED{Fmt.END}')
                     self._validate( self.state ) # this includes mute
                     c = Convolver()
                     c.set_xo ( self.state["xo_set"]  )
