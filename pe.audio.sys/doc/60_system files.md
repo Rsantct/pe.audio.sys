@@ -25,7 +25,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- .asound.XXX         ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
     |
-    |-- start.py            This starts up or shutdown the whole system
+    |-- start.py            Startup or shutdown the whole system
     |
     |-- macros/             End user general purpose macro scripts (e.g. web interface buttons)
     |
@@ -37,7 +37,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |   |-- lspk2/
     |   |-- ...
     |
-    \-- share/              System folders
+    \-- share/              Main py files and system folders
         |
         |-- audiotools/     Auxiliary programs from the AudioHumLab/audiotools repository
         |
@@ -46,7 +46,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
         |-- services/       Services to manage the whole system
         |
         |-- scripts/        Additional scripts to launch at start up when issued at config.yml,
-        |                   advanced users can write their own here.
+        |                   (i) Advanced users can hold their own scripts here.
         |
         \-- www/            A web interface to control the system
 

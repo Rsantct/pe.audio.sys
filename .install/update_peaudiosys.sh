@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# (i) NOTICE:   When maintaining this script, do NOT edit it directly
+#               from ~/tmp/ because it will be modified on runtime.
+#               So edit it apart, copy to ~/tmp/ and test it.
+
 if [ -z $1 ] ; then
     echo usage by indicating a previously downloaded branch in tmp/
     echo "    download_peaudiosys.sh master|testing|xxx"
@@ -68,18 +72,18 @@ fi
 # WWW: does not contain any configurable file
 
 ########################################################################
-# CLEANING
+# CLEANING OLDIES
 ########################################################################
 cd "$HOME"
 if [ -d "pe.audio.sys" ]; then
     echo "(i) Removing old distro files"
     rm -rf  pe.audio.sys/doc/               >/dev/null 2>&1
     rm      pe.audio.sys/*BRANCH            >/dev/null 2>&1
-    
+
     # major updates moved some files, so let's clean them all
-    rm      pe.audio.sys/share/services/server.py       >/dev/null 2>&1
-    rm      pe.audio.sys/share/services/aux.py          >/dev/null 2>&1
-    rm      pe.audio.sys/share/services/pasysctrl.py    >/dev/null 2>&1
+    rm -rf  pe.audio.sys/share/services     >/dev/null 2>&1
+    rm -rf  pe.audio.sys/share/www          >/dev/null 2>&1
+    rm      pe.audio.sys/share/*.py         >/dev/null 2>&1
 fi
 
 ########################################################################
@@ -136,12 +140,12 @@ else
     cp config.sample            config
     cp channels.conf.sample     channels.conf
     echo "(i) .mplayer files has been updated"
-    
+
     # MPD
     cd "$HOME"
     cp .mpdconf.sample          .mpdconf
     echo "(i) .mpdconf has been updated"
-    
+
     # MAIN
     cd "$HOME"/pe.audio.sys
     cp .state.yml.sample         .state.yml

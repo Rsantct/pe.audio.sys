@@ -14,12 +14,14 @@
         https://torger.se/anders/brutefir.html#config_4
 
 """
-import sys
-import os
+import  sys
+import  os
+
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import *
+
+from    share.brutefir_mod  import *
+from    share.miscel        import send_cmd
 
 
 def print_delays():
@@ -45,6 +47,10 @@ def print_delays():
 
 if __name__ == '__main__':
 
+    # Resuming Brutefir from powesave
+    print( 'resuming Brutefir from powersave ...')
+    print( send_cmd('convolver on') )
+
     # Test if Brutefir is available
     test = bf_cli('')
     if not test:
@@ -65,5 +71,5 @@ if __name__ == '__main__':
 
         elif opc.isdigit():
             delay = float(sys.argv[1])
-            print( bf_add_delay(delay) )
+            print( 'adding delay: ', bf_add_delay(delay) )
 

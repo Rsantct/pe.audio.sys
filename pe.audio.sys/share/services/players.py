@@ -30,17 +30,19 @@
 
 from os.path import expanduser, exists, getsize
 import sys
-UHOME = expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
-
-from share.miscel import *
 import subprocess as sp
 import threading
 import yaml
 from time import sleep, strftime
 import json
 from socket import socket
+
+UHOME = expanduser("~")
+MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(MAINFOLDER)
+
+from  share.miscel                  import  *
+
 from  players_mod.mpd               import  mpd_control,                \
                                             mpd_meta
 from  players_mod.mplayer           import  mplayer_control,            \
@@ -77,7 +79,7 @@ def remote_get_meta(host, port=9990):
     md = ''
     md = METATEMPLATE.copy()
     ans = send_cmd( cmd='player get_meta',
-                    host=host, port=port, timeout=3)
+                    host=host, port=port, timeout=1)
     try:
         md = json.loads(ans)
     except:
