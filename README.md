@@ -18,6 +18,16 @@ Most of the system is written in Python3, and config files are YAML kind of, tha
 
 The control of the system is based on a tcp server architecture, thanks **@amr**.
 
+
+# pe.audio.sys
+
+A PC based personal audio system: preamp, digital crossover and media players management.
+
+Some *end user* and *user friendly* features has been added here.
+
+<a href="url"><img src="https://github.com/Rsantct/pre.di.c/blob/master/pre.di.c/clients/www/images/control%20web%20v2.0b.png" align="center" width="340" ></a>
+
+
 The system core is mainly based on:
 
 - JACK: the sound server (wiring audio streams and sound card interfacing)
@@ -29,14 +39,6 @@ The system core is mainly based on:
     - EQ: bass, treble, dynamic loudness compensation curves, in-room target eq curves.
     - LEVEL control.
 
-
-# pe.audio.sys
-
-A PC based personal audio system: preamp, digital crossover and media players management.
-
-Some *end user* and *user friendly* features has been added here.
-
-<a href="url"><img src="https://github.com/Rsantct/pre.di.c/blob/master/pre.di.c/clients/www/images/control%20web%20v2.0b.png" align="center" width="340" ></a>
 
 ## Highlights
 
