@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# (i) NOTICE:   When maintaining this script, do NOT edit directly from ~/tmp
-#               because it will be modified on runtime.
-#               So edit it apart, copy to ~/tmp and test it.
+# (i) NOTICE:   When maintaining this script, do NOT edit it directly
+#               from ~/tmp/ because it will be modified on runtime.
+#               So edit it apart, copy to ~/tmp/ and test it.
 
 if [ -z $1 ] ; then
     echo usage by indicating a previously downloaded branch in tmp/
