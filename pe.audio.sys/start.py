@@ -39,18 +39,19 @@
 
 """
 
+import subprocess as sp
+from   time import sleep, time, ctime
+import yaml
 import os
 import sys
+
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from    share.miscel import *
-import  subprocess as sp
-from    time import sleep, time, ctime
-import  yaml
-import  jack
+from   share.miscel         import *
 
-ME              = __file__.split('/')[-1]
+
+ME = __file__.split('/')[-1]
 
 
 def prepare_extra_cards(channels=2):
@@ -107,21 +108,29 @@ def check_jloops():
         return True
 
     # Waiting for all loops to be spawned
-    jcli = jack.Client(name='loop_check', no_start_server=True)
     tries = 10
     while tries:
         # The running ones
-        run_loops = [p.name for p in jcli.get_ports('loop')]
+        run_loops = sp.check_output(['jack_lsp', 'loop']).decode().split()
         if sorted(cfg_loops) == sorted(run_loops):
             break
         sleep(1)
         tries -= 1
-    jcli.close()
     if tries:
         print(f'{Fmt.BLUE}({ME}) JACK LOOPS STARTED{Fmt.END}')
         return True
     else:
         print(f'{Fmt.BOLD}({ME}) JACK LOOPS FAILED{Fmt.END}')
+        return False
+
+
+def jack_is_running():
+    ''' checks for jackd process to be running
+    '''
+    try:
+        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
+        return True
+    except sp.CalledProcessError:
         return False
 
 
@@ -132,7 +141,7 @@ def start_jack_stuff():
 
     jack_backend_options = CONFIG["jack_backend_options"] \
                     .replace('$autoCard', CONFIG["system_card"]) \
-                    .replace('$autoFS', str(bf_get_sample_rate()))
+                    .replace('$autoFS', str(get_bf_samplerate()))
 
     cmdlist = ['jackd']
 
@@ -308,7 +317,7 @@ def prepare_drc_graphs():
 
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
-    sp.Popen(['python3', f'{MAINFOLDER}/share/services/preamp_mod/bfeq2png.py'])
+    sp.Popen(['python3', f'{MAINFOLDER}/share/brutefir_eq2png.py'])
 
 
 if __name__ == "__main__":
@@ -372,8 +381,8 @@ if __name__ == "__main__":
         print(f'{Fmt.MAGENTA}({ME}) Managing a temporary \'core\' instance.{Fmt.END}')
 
         # - BRUTEFIR
-        bfstart = core.restart_and_reconnect_brutefir( ['pre_in_loop:output_1',
-                                                        'pre_in_loop:output_2'] )
+        bfstart = core.bf_restart_and_reconnect( ['pre_in_loop:output_1',
+                                                  'pre_in_loop:output_2'] )
         if bfstart == 'done':
             print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) BRUTEFIR STARTED.{Fmt.END}')
         else:

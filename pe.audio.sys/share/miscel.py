@@ -16,19 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-
 import  socket              # (i) do not use from socket import socket see below
 import  ipaddress
 from    json import loads as json_loads
 from    time import sleep
 import  subprocess as sp
 import  yaml
-from    numpy import loadtxt as np_loadtxt
+from    numpy import loadtxt as np_loadtxt, zeros as np_zeros
 import  configparser
-import  jack
+import  os
+import  sys
+
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
 # Config, server addressing and common usage paths and variables
@@ -135,120 +135,12 @@ class Fmt:
     END             = '\033[0m'
 
 
-# Jack: checks for jackd process to be running
-def jack_is_running():
-    try:
-        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
-        return True
-    except sp.CalledProcessError:
-        return False
-
-
-# Brutefir client socket function
-def bf_cli(cmd):
-    """ queries commands to Brutefir
-    """
-    # using 'with' will disconnect the socket when done
-    ans = ''
-    with socket.socket() as s:
-        try:
-            s.connect( ('localhost', 3000) )
-            s.send( f'{cmd}; quit;\n'.encode() )
-            while True:
-                tmp = s.recv(1024).decode()
-                if not tmp:
-                    break
-                ans += tmp
-            s.close()
-        except:
-            print( f'(core) unable to connect to Brutefir:3000' )
-    return ans
-
-
-# Brutefir: get configured outputs
-def bf_get_config_outputs():
-    """ Read outputs from 'brutefir_config' file, then gets a dictionary.
-    """
-    outputs = {}
-
-    with open(BFCFG_PATH, 'r') as f:
-        bfconfig = f.read().split('\n')
-
-    output_section = False
-
-    for line in bfconfig:
-
-        line = line.split('#')[0]
-        if not line:
-            continue
-
-        if   line.strip().startswith('logic') or \
-             line.strip().startswith('coeff') or \
-             line.strip().startswith('input') or \
-             line.strip().startswith('filter'):
-                output_section = False
-        elif line.strip().startswith('output'):
-                output_section = True
-
-        if not output_section:
-            continue
-
-        line = line.strip()
-
-        if line.startswith('output') and '{' in line:
-            output_section = True
-            if output_section:
-                outs = line.replace('output', '').replace('{', '').split(',')
-                outs = [ x.replace('"', '').strip() for x in outs ]
-
-        if line.startswith('delay:'):
-            i = 0
-            delays = line.replace('delay:', '').split(';')[0].strip().split(',')
-            delays = [ int(x.strip()) for x in delays ]
-            for oname, delay in zip(outs, delays):
-                outputs[str(i)] = {'name': oname, 'delay': delay}
-                i += 1
-
-        if line.startswith('maxdelay:'):
-            maxdelay = int( line.split(':')[1].replace(';', '').strip() )
-            outputs['maxdelay'] = maxdelay
-
-    return outputs
-
-
-# Brutefir: get current outputs
-def bf_get_current_outputs():
-    """ Read outputs from running Brutefir, then gets a dictionary.
-    """
-
-    lines = bf_cli('lo').split('\n')
-    outputs = {}
-
-    i = lines.index('> Output channels:') + 1
-
-    while True:
-
-        onum = lines[i].split(':')[0].strip()
-
-        outputs[str(onum)] = {
-            'name':  lines[i].split(':')[1].strip().split()[0].replace('"', ''),
-            'delay': int(lines[i].split()[-1].strip().replace(')', '').split(':')[0])
-        }
-
-        i += 1
-        if not lines[i] or lines[i] == '':
-            break
-
-    # Adding maxdelay info from config_file, because not available on runtime
-    outputs['maxdelay'] = bf_get_config_outputs()['maxdelay']
-
-    return outputs
-
-
-# Brutefir: get loudspeaker filters FS from brutefir config file
-def bf_get_sample_rate():
-    """ Retrieve loudspeaker's filters FS from its 'brutefir_config' file,
-        or from '.brutefir_defaults' file
+# Reads the FS to be used by Brutefir
+# (i) This function is intentionally kept here, to be used even before Brutefir runs.
+def get_bf_samplerate():
+    """ Retrieve loudspeaker's filters FS:
+            - from         brutefir_config'   loudspeaker file,
+            - or from   ~/.brutefir_defaults  default     file
     """
     FS = 0
 
@@ -276,56 +168,98 @@ def bf_get_sample_rate():
     return FS
 
 
-# Brutefir: add delay to all outputs
-def bf_add_delay(ms):
-    """ Will add a delay to all outputs, relative to the  delay values
-        as configured under 'brutefir_config'.
+def calc_eq( state ):
+    """ Calculate the eq curves to be applied in the Brutefir EQ module,
+        as per the provided dictionary of state values.
+    """
+    zeros = np_zeros( EQ_CURVES["freqs"].shape[0] )
+
+    # getting loudness and tones curves
+    loud_mag, loud_pha = get_eq_curve( 'loud', state )
+    bass_mag, bass_pha = get_eq_curve( 'bass', state )
+    treb_mag, treb_pha = get_eq_curve( 'treb', state )
+
+    # getting target curve
+    target_name = state["target"]
+    if target_name == 'none':
+        targ_mag = zeros
+        targ_pha = zeros
+    else:
+        if target_name != 'target':     # see doc string on find_target_sets()
+            target_name += '_target'
+        targ_mag = np_loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
+        targ_pha = np_loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
+
+    # Compose
+    eq_mag = targ_mag + loud_mag * state["equal_loudness"] \
+                                                + bass_mag + treb_mag
+
+    if CONFIG["bfeq_linear_phase"]:
+        eq_pha = zeros
+    else:
+        eq_pha = targ_pha + loud_pha * state["equal_loudness"] \
+                 + bass_pha + treb_pha
+
+    return eq_mag, eq_pha
+
+
+def calc_gain( state ):
+    """ Calculates the gain from:   level,
+                                    ref_level_gain
+                                    source gain offset
     """
 
-    result  = 'nothing done'
+    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
+                             - state["lu_offset"]
 
-    outputs = bf_get_config_outputs()
-    FS      = int( bf_get_sample_rate() )
+    # Adding here the specific source gain:
+    if state["input"] != 'none':
+        gain += float( CONFIG["sources"][state["input"]]["gain"] )
 
-    # From ms to samples
-    delay = int( FS  * ms / 1e3)
+    return gain
 
-    cmd = ''
-    too_much = False
-    max_available    = outputs['maxdelay']
-    max_available_ms = max_available / FS * 1e3
 
-    for o in outputs:
+def get_eq_curve(cname, state):
+    """ Retrieves the tone or loudness curve.
+        Tone curves depens on state bass & treble.
+        Loudness compensation curve depens on the configured refSPL.
+    """
+    # (i) Former FIRtro curves array files xxx.dat were stored in Matlab way,
+    #     so when reading them with numpy.loadtxt() it was needed to transpose
+    #     and flipud in order to access to the curves data in a natural way.
+    #     Currently the curves are stored in pythonic way, so numpy.loadtxt()
+    #     will read directly usable data.
 
-        # Skip non output number item (i.e. the  maxdelay item)
-        if not o.isdigit():
-            continue
+    # Tone eq curves are given [-span...0...-span]
+    if cname == 'bass':
+        bass_center_index = (EQ_CURVES["bass_mag"].shape[0] - 1) // 2
+        index = int(round(state["bass"]))   + bass_center_index
 
-        cfg_delay = outputs[o]['delay']
-        new_delay = int(cfg_delay + delay)
-        if new_delay > outputs['maxdelay']:
-            too_much = True
-            max_available    = outputs['maxdelay'] - cfg_delay
-            max_available_ms = max_available / FS * 1e3
-        cmd += f'cod {o} {new_delay};'
+    elif cname == 'treb':
+        treble_center_index = (EQ_CURVES["treb_mag"].shape[0] - 1) // 2
+        index = int(round(state["treble"])) + treble_center_index
 
-    # Issue new delay to Brutefir's outputs
-    if not too_much:
-        #print(cmd) # debug
-        result = bf_cli( cmd ).lower()
-        #print(result) # debug
-        if not 'unknown command' in result and \
-           not 'out of range' in result and \
-           not 'invalid' in result and \
-           not 'error' in result:
-                result = 'done'
+    # Using the previously detected flat curve index and
+    # also limiting as per the eq_loud_ceil boolean inside config.yml
+    elif cname == 'loud':
+
+        index_max   = EQ_CURVES["loud_mag"].shape[0] - 1
+        index_flat  = CONFIG['refSPL']
+        index_min   = 0
+        if CONFIG["eq_loud_ceil"]:
+            index_max = index_flat
+
+        if state["equal_loudness"]:
+            index = CONFIG['refSPL'] + state["level"]
         else:
-                result = 'Brutefir error'
-    else:
-        print(f'(i) ERROR Brutefir\'s maxdelay is {int(max_available_ms)} ms')
-        result = f'max delay {int(max_available_ms)} ms exceeded'
+            index = index_flat
+        index = int(round(index))
 
-    return result
+        # Clamp index to the available "loudness deepness" curves set
+        index = max( min(index, index_max), index_min )
+
+    return EQ_CURVES[f'{cname}_mag'][index], \
+           EQ_CURVES[f'{cname}_pha'][index]
 
 
 # Retrieves EQ curves for tone and loudness countour
@@ -381,6 +315,59 @@ def find_eq_curves():
         return {}
 
 
+# Retrieves the sets of available target curves under the share/eq folder.
+def find_target_sets():
+    """
+        Retrieves the sets of available target curves under the share/eq folder.
+
+                            file name:              returned set name:
+        minimal name        'target_mag.dat'        'target'
+        a more usual name   'xxxx_target_mag.dat'   'xxxx'
+
+        A 'none' set name is added as default for no target eq to be applied.
+    """
+    def extract(x):
+        """ Aux to extract a meaningful set name, examples:
+                'xxxx_target_mag.dat'   will return 'xxxx'
+                'target_mag.dat'        will return 'target'
+        """
+
+        if x[:6] == 'target':
+            return 'target'
+        else:
+            x = x[:-14]
+
+        # strip trailing unions if used
+        for c in ('.', '-', '_'):
+            if x[-1] == c:
+                x = x[:-1]
+
+        return x
+
+    result = ['none']
+
+    files = os.listdir( EQ_FOLDER )
+    tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
+
+    for fname in tfiles:
+        set_name = extract(fname)
+        if not set_name in result:
+            result.append( set_name )
+
+    return result
+
+
+# Retreives an optional PEQ (parametic eq) Ecasound filename if configured
+def get_peq_in_use():
+    """ Finds out the PEQ (parametic eq) filename used by an inserted
+        Ecasound sound processor, if included inside config.yml scripts.
+    """
+    for item in CONFIG["scripts"]:
+        if type(item) == dict and 'ecasound_peq.py' in item.keys():
+            return item["ecasound_peq.py"].replace('.ecs', '')
+    return 'none'
+
+
 # Sets a peaudiosys parameter as per a given pattern, useful for user macros.
 def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     """ Sets a peaudiosys parameter as per a given pattern.
@@ -408,21 +395,22 @@ def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     return result
 
 
-# Waiting for jack ports to be available
-def wait4ports( pattern ):
-    """ Waits for jack client ports with name *pattern* to be available
+# Waiting for jack ports with name *pattern* to be available
+def wait4ports( pattern, timeout=10 ):
+    """ Waits for jack ports with name *pattern* to be available.
+        Default timeout 10 s
     """
-    with jack.Client(name='w4p', no_start_server=True) as jcli:
-        n = 20  # 10 sec
-        while n:
-            if len( jcli.get_ports( pattern ) ) >= 2:
-                break
-            n -= 1
-            sleep(0.5)
-        if n:
-            return True
-        else:
-            return False
+    n = timeout * 2
+    while n:
+        tmp = sp.check_output(['jack_lsp', pattern]).decode().split()
+        if len( tmp ) >= 2:
+            break
+        n -= 1
+        sleep(0.5)
+    if n:
+        return True
+    else:
+        return False
 
 
 # Send a command to a peaudiosys server
@@ -585,13 +573,11 @@ def kill_bill(pid=0):
 
 
 # Gets the selected source from a pe.audio.sys server at <addr>
-def get_source_from_remote(addr):
-    """ Gets the selected source from a pe.audio.sys server at <addr>
+def get_remote_selected_source(addr, port=9990):
+    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
     """
     source = ''
-    ans = send_cmd('state', timeout=.5, host=addr)
-    if 'no answer' in ans:
-        return source
+    ans = send_cmd('state', host=addr, port=port, timeout=1)
     try:
         source = json_loads(ans)["input"]
     except:
@@ -640,6 +626,7 @@ def get_my_ip():
     except:
         return ''
 
+
 # Gets data from a remoteXXXXX defined source
 def get_remote_source_info():
     ''' Retrieves the remoteXXXXXX source found under the 'sources:' section
@@ -678,3 +665,9 @@ def get_remote_source_info():
     return source, remote_addr, remote_port
 
 
+# EQ curves for tone and loudness contour are mandatory
+# (i) kept last because it depends on the find_eq_curves() funtcion
+EQ_CURVES   = find_eq_curves()
+if not EQ_CURVES:
+    print( '(core) ERROR loading EQ_CURVES from share/eq/' )
+    sys.exit()

@@ -21,23 +21,25 @@
     This module is loaded by 'server.py'
 """
 
-import os
-import sys
+#   https://watchdog.readthedocs.io/en/latest/
+from watchdog.observers     import  Observer
+from watchdog.events        import  FileSystemEventHandler
+import  ipaddress
+import  jack
+import  json
+from    subprocess          import  Popen, check_output
+from    time                import  sleep, strftime
+import  os
+import  sys
+
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import *
-import preamp
-import players
+from    share.brutefir_mod  import  bf_add_delay, bf_is_running
+from    share.services      import  preamp
+from    share.services      import  players
+from    share.miscel        import  *
 
-import ipaddress
-import jack
-import json
-from subprocess import Popen, check_output
-from time import sleep, strftime
-#   https://watchdog.readthedocs.io/en/latest/
-from watchdog.observers import Observer
-from watchdog.events    import FileSystemEventHandler
 
 ME                  = __file__.split('/')[-1]
 MACROS_FOLDER       = f'{MAINFOLDER}/macros'
@@ -336,6 +338,9 @@ def process_aux( cmd, arg='' ):
     # Add outputs delay, can be useful for multiroom listening
     elif cmd == 'add_delay':
         print(f'({ME}) ordering adding {arg} ms of delay.')
+        # (i) Brutefir must be running
+        if not bf_is_running():
+            process_preamp('convolver', 'on')
         result = bf_add_delay(float(arg))
 
     # Send zita-j2n to a client (multiroom)
