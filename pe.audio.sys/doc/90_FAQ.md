@@ -136,3 +136,19 @@ More technical info: http://linuxtv.org/wiki/index.php/W_scan
 ## About Bluetooth sources
 
 Please refer to **`doc/80_Bluetooth.md`**.
+
+
+## Desktop session autologin
+
+Only recommended if you want to run an Spotify desktop client at startup. To enable it in Debian.
+
+    /etc/gdm3/daemon.conf
+        ...
+        ...
+        AutomaticLoginEnable = true
+        AutomaticLogin = paudio
+        ...
+        ...
+
+(!) If so, please consider REMOVE **`paudio`** from your machine **`sudo`** group.
+
