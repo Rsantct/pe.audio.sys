@@ -110,7 +110,7 @@ coeff "xo.lo.linpha" {
     attenuation: 0;
 };
 
-coeff "xo.minpha.mp" {
+coeff "xo.lo.minpha.mp" {
     filename:    "xo.lo.minpha.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
