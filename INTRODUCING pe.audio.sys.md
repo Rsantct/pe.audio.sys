@@ -121,7 +121,7 @@ In a desktop system, you can also use a Linux desktop Spotify application.
 
 ## Radio stations
 
-In current days, the best audio quality radio is available from the TV terrestial broadcast network (DVB-T). You will need a DVB-T USB dongle, see details under the `/doc` folder and `share/scripts/DVB-T.py`.
+In current days, the best audio quality radio is available from the TV terrestial broadcast network (DVB-T). You will need a DVB-T USB dongle, see details under the `/doc/90_FAQ.md` and `share/scripts/DVB-T.py`.
 
 In addition, you can listen to Internet Radio stations or audio streams without any extra hardware, see `share/scripts/istreams.py`.
 
