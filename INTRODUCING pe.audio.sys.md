@@ -43,7 +43,8 @@ Simple control from your smartphone or tablet.
 
 The whole system is **controlled by a lightweight single web page**:
 
-<a href="url"><img src="https://github.com/Rsantct/pre.di.c/blob/master/pre.di.c/clients/www/images/control%20web%20v2.0b.png" align="center" width="340" ></a>
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="400" ></a>
+
 
 Main control web features are:
 
