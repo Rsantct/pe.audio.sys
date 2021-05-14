@@ -128,7 +128,9 @@ w_scan notes:
     L = VLC xspf playlist (experimental)
     M = mplayer format, similar to X
 
-More info: http://linuxtv.org/wiki/index.php/W_scan
+More info here: https://github.com/AudioHumLab/FIRtro/wiki/815-DVB-T-Radio-(TDT)-con-mplayer
+
+More technical info: http://linuxtv.org/wiki/index.php/W_scan
 
 
 ## About Bluetooth sources
