@@ -1,25 +1,24 @@
 
 # Credits
 
-This is based on the former **FIRtro** and the current **pre.di.c** projects, as PC based digital preamplifier and crossover projects, designed by the pioneer **@rripio** and later alongside others contributors.
+This is based on the **FIRtro** and **pre.di.c** projects, as PC based digital preamplifier and crossover projects, designed by the pioneer **@rripio** and later alongside others contributors.
 
 
-**https://github.com/rripio/pre.di.c**
+https://github.com/rripio/pre.di.c
 
-**https://github.com/AudioHumLab/FIRtro/wiki**
+https://github.com/AudioHumLab/FIRtro/wiki
 
-The main software on which this project is based is the **Brutefir** convolver which incorporates a real time equalizer module.
+The main software on which this project is based:
 
-**https://torger.se/anders/brutefir.html**
+- The **Brutefir** convolver which incorporates a real time equalizer module https://torger.se/anders/brutefir.html
 
-Audio connections are based on **JACK https://jackaudio.org**
+- Audio connections are based on **JACK** https://jackaudio.org
 
-Networked audio are based on Fons Adriaensen utilities **https://kokkinizita.linuxaudio.org/linuxaudio/**
+- Networked audio are based on Fons Adriaensen utilities https://kokkinizita.linuxaudio.org/linuxaudio/
 
+Most of the system is written in Python3, and config files are YAML kind of, thanks @rripio.
 
-Most of the system is written in Python3, and config files are YAML kind of, thanks **@rripio**.
-
-The control of the system is based on a tcp server architecture, thanks **@amr**.
+The control of the system is based on a tcp server architecture, thanks @amr.
 
 
 # Introducing pe.audio.sys
@@ -103,7 +102,7 @@ An simple script will update the whole system from GitHub, without user interven
 See **`doc/`** folder and `90_FAQ.md`
 
 
-## Loudspeaker EQ filtering and multiway XOVER filtering
+## Loudspeaker EQ and multiway XOVER filtering
 
 **https://github.com/rripio/DSD** is a tool to design your own FIRs (loudspeaker EQ and XOVER), from the pioneer @rripio.
 
