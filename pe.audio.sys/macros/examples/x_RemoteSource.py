@@ -5,7 +5,7 @@
 
     For further details see
 
-        doc/80_Remote_pe.audio.sys.md
+        doc/80_Multiroom_pe.audio.sys.md
 
         share/scripts/zita_link.py
 '''

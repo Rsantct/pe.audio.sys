@@ -50,7 +50,7 @@ In addition, you can control unlimited audio sources:
     - Desktop apps (i.e: Youtube, etc )
 
 
-## EQ capabilities:
+## EQ capabilities
 
 - Loudspeaker anechoic correction
 - Digital Room Correction
@@ -61,9 +61,8 @@ In addition, you can control unlimited audio sources:
 
 ## System control
 
-Simple control from your smartphone or tablet.
+Simple control from your smartphone, tablet or desktop **web browser**.
 
-The whole system is **controlled by a lightweight single web page**:
 
 <a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="400" ></a>
 
@@ -135,7 +134,7 @@ pe.audio.sys is designed to be a **'black box'** headless system, no monitor key
 
 In addition, the system can be easily integrated in a **Linux Desktop with monitor, keyboard and mouse**, no special configurations are needed. This way you can listen to your favourite desktop applications as Spotify, Youtube, watching movies, etc...
 
-My preferred system configuration is a **'headless Desktop'**, because this way you can have Spotify Desktop to provide full metadata info to be displayed under the control web page or the optional LCD display, without needing an attached monitor. Anyway you can use your TV-hdmi as monitor when playing desktop movies.
+My preferred system configuration is a **'headless Desktop'**, because this way you can have a Spotify Desktop application running on background, which will provide full metadata info to be displayed under the control web page or the optional LCD display, without needing an attached monitor. Anyway you can use your TV-hdmi as monitor for pe.audio.sys.
 
 
 ## Hard Disk music files library
