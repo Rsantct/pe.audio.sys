@@ -29,7 +29,7 @@ import  os
 import  sys
 from    subprocess  import Popen
 from    time        import sleep
-from    numpy       import zeros as np_zeros
+import  numpy as np
 from    socket      import socket
 
 UHOME = os.path.expanduser("~")
@@ -46,7 +46,7 @@ if CONFIG["web_config"]["show_graphs"]:
 
 
 # Global to avoid dumping EQ magnitude png graph if not changed
-last_eq_mag = np_zeros( EQ_CURVES["freqs"].shape[0] )
+last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
 
 def bf_cli(cmd):
