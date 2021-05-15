@@ -1,8 +1,31 @@
 
+# Credits
+
+This is based on the former **FIRtro** and the current **pre.di.c** projects, as PC based digital preamplifier and crossover projects, designed by the pioneer **@rripio** and later alongside others contributors.
+
+
+**https://github.com/rripio/pre.di.c**
+
+**https://github.com/AudioHumLab/FIRtro/wiki**
+
+The main software on which this project is based is the **Brutefir** convolver which incorporates a real time equalizer module.
+
+**https://torger.se/anders/brutefir.html**
+
+Audio connections are based on **JACK https://jackaudio.org**
+
+Networked audio are based on Fons Adriaensen utilities **https://kokkinizita.linuxaudio.org/linuxaudio/**
+
+
+Most of the system is written in Python3, and config files are YAML kind of, thanks **@rripio**.
+
+The control of the system is based on a tcp server architecture, thanks **@amr**.
+
+
 # Introducing pe.audio.sys
 
 
-**pe.audio.sys** is a versatile and **fully customizable** PC based audio system.
+**pe.audio.sys** is a versatile, and **fully customizable Linux platform based audio system,** providing an **user friendly interface**.
 
 Its main feature is the management, filtering and EQ of a **multiway active
 loudspeaker system**. A regular passive loudspeakers can be used as well.
@@ -46,26 +69,28 @@ The whole system is **controlled by a lightweight single web page**:
 <a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="400" ></a>
 
 
-Main control web features are:
+- Main control web features are:
 
-- **Calibrated volume listening** supported by an EBU R128 Loudness monitor.
+    - **Calibrated volume listening** supported by an EBU R128 Loudness monitor.
 
-- Calibrated **equal loudness compensation curves** (ISO 226:2003 standard) for low SPL listening without loosing low and high bands perception
+    - Calibrated **equal loudness compensation curves** (ISO 226:2003 standard) for low SPL listening without loosing low and high bands perception
 
-- Hi-Fi preamp controls (volume, tone, balance, stereo/mono, mute, loudness, source selector, amplifier on/off)
+    - Hi-Fi preamp controls (volume, tone, balance, stereo/mono, mute, loudness, source selector, amplifier on/off)
 
-- User defined presets for EQ modes and xover FIR filtering
+    - User defined presets for EQ modes and xover FIR filtering
 
-- User defined macro buttons for easy listening to file playlist or Spotify playlists, preferred radio stations, etc...
+    - User defined macro buttons for easy listening to file playlist or Spotify playlists, preferred radio stations, etc...
 
-- Displays metadata, bitrate and time of playback sources.
+    - Displays metadata, bitrate and time of playback sources.
 
-- Playback control (pause, next, prev, etc) for integrated players (Spotify desktop, MPD daemon, CD).
+    - Playback control (pause, next, prev, etc) for integrated players (Spotify desktop, MPD daemon, CD).
 
 
-As an option, the system can be controlled by a **remote IR**, as well a standard 4 lines **LCD display** for basic information and playback metadata visualization.
+- Optional control by a **remote IR**
 
-A mouse attached to a pe.audio.sys 'black box' can be used as a easy-access volume/mute control.
+- Optional **LCD display** for basic information and playback metadata visualization.
+
+- A **mouse** attached to a pe.audio.sys 'black box' can be used as a easy-access **volume/mute control**.
 
 
 ## System maintenace
@@ -78,7 +103,31 @@ An simple script will update the whole system from GitHub, without user interven
 See **`doc/`** folder and `90_FAQ.md`
 
 
-# Some use cases
+## Loudspeaker EQ filtering and multiway XOVER filtering
+
+**https://github.com/rripio/DSD** is a tool to design your own FIRs (loudspeaker EQ and XOVER), from the pioneer @rripio.
+
+We also recommend **rePhase** for FIR design.
+
+## Room correction EQ (DRC)
+
+Regarding room correction EQ, you can use both IIR (parametric correction) or FIR (impulse correction).
+
+FIR DRC is supported under a reserver convolver stage on Brutefir.
+
+IIR DRC can be used through by the provided Ecasound add-on script, then bypassing the convolver stage above.
+
+The most popular software for room Eq is REW https://www.roomeqwizard.com
+
+As experimental FIR DRC correction software you could also consider:
+
+**https://github.com/rripio/DSC**
+
+**https://github.com/Rsantct/DRC**
+
+
+
+# Some sample use cases
 
 
 ## 'Black box' or 'Desktop' configuration
