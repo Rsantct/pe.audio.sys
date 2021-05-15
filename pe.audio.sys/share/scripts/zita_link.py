@@ -36,7 +36,7 @@
 
     For easy usage, please customize the provided macros/examples/XX_RemoteSource
 
-    Further info at doc/80_Remote_pe.audio.sys.md
+    Further info at doc/80_Multiroom_pe.audio.sys.md
 
 """
 from subprocess import Popen
