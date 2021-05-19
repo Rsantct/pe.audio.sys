@@ -1,0 +1,204 @@
+#
+#   A dummy "cpu convolution test" configuration, it simulates a 3 WAY XOVER
+#   and DRC convolution system over a simple stereo output sound card
+#
+#
+#                                               /--> f.hi.L >--\
+#                                              /                \
+#   --> in.L >----> f.eq.L >----> f.drc.L >---X----> f.mi.L >----X---> fr.L
+#                                              \                /
+#                                               \--> f.lo.L >--/
+#
+#   --> in.R >-- ... ... ... ... ... ... the same as L ... ... ... --> fr.R
+#
+#
+#   Check here for tuning number of partitions, bit depth and dither:
+#
+#       https://torger.se/anders/brutefir.html#tuning_5
+#       https://torger.se/anders/brutefir.html#tuning_6
+#
+#       https://torger.se/anders/brutefir.html#config_1
+#
+#   Play trial and error with JACK --period xxxx: choose power of 2, 
+#   and a value equal or smaller than the Brutefir partition size.
+#
+#
+#   ******************************************
+#   A system latency performance test example:
+#   ******************************************
+#
+#       $ cd pe.audio.sys/loudspeakers/3_way_test
+#       $ jackd       -R -L 1 -d alsa -d hw:0 -r 44100 --period 1024 -n 2 &
+#       $ brutefir    brutefir_config &
+#       $ jack        connect brutefir:fr.L loopback:playback_1
+#       $ jack_delay  -O brutefir:in.L   -I loopback:capture_1
+#              4096.002 frames   92.880 ms
+#              4096.000 frames   92.880 ms
+
+
+ 
+
+# --------- THE EQ & CLI MODULES --------
+logic:
+
+# The command line interface server, listening on a TCP port.
+"cli" { port: 3000; },
+
+# The eq module provides a filter coeff to render a run-time EQ.
+# (i) Bands here must match with the ones at your xxxxfreq.dat file.
+"eq" {
+    #debug_dump_filter: "/tmp/brutefir-rendered-%d";
+    {
+    coeff: "c.eq";
+    # using audiotools R20 bands
+    bands:
+    10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25, 28, 31.5,
+    35.5, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112,
+    125, 140, 160, 180, 200, 224, 250, 280, 315, 355,
+    400, 450, 500, 560, 630, 710, 800, 900, 1000,
+    1120, 1250, 1400, 1600, 1800, 2000, 2240, 2500,
+    2800, 3150, 3550, 4000, 4500, 5000, 5600, 6300,
+    7100, 8000, 9000, 10000, 11200, 12500, 14000, 16000,
+    18000, 20000;
+    };
+};
+
+
+# --------- GENERAL SETTINGS --------
+
+sampling_rate:      44100 ;
+filter_length:      2048,8 ;
+float_bits:         32 ;
+overflow_warnings:  true ;
+allow_poll_mode:    false ;
+monitor_rate:       true ;
+powersave:          -80 ;
+lock_memory:        true ;
+show_progress:      false ;
+
+
+# -------------  I/O: -------------
+
+input "in.L", "in.R" {
+    # does not connect inputs in jack:
+    device:   "jack" {  clientname: "brutefir";
+                        ports: ""/"in.L", ""/"in.R"; };
+    sample:   "AUTO";
+    channels: 2/0,1;
+};
+
+output "fr.L", "fr.R" {
+    # hardwire to jack sound card:
+    device: "jack" { ports:
+        "system:playback_1"/"fr.L", "system:playback_2"/"fr.R";
+    };
+    sample:   "AUTO";
+    channels: 2/0,1;
+    maxdelay: 1000;
+    dither:   false;
+    delay:    0, 0; # (samples)
+};
+
+# --------- COEFFs for EQ & LOUDNESS ---------
+# 1 block length is enough to smooth eq curves
+
+coeff "c.eq" {
+    filename: "dirac pulse";
+    shared_mem: true;
+    blocks: 1;
+};
+
+
+# -------  COEFFs for DRC and XO TEST: --------
+coeff "delta" {
+    filename:    "dirac pulse";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+};
+
+
+# ------------ CONVOLVER:  level filter  --------------
+# Not a filter just for level and channel routing purposes
+# (i) initial 50 dB atten for a safe startup
+
+filter "f.lev.L" {
+    from_inputs:  "in.L"/50.0/1, "in.R"//0;
+    to_filters:   "f.eq.L";
+    coeff:        -1;
+};
+
+filter "f.lev.R" {
+    from_inputs:  "in.L"//0, "in.R"/50.0/1;
+    to_filters:   "f.eq.R";
+    coeff:        -1;
+};
+
+
+# ------------ CONVOLVER:  EQ filters  ----------------
+
+filter "f.eq.L" {
+    from_filters: "f.lev.L";
+    to_filters:   "f.drc.L";
+    coeff:        "c.eq";
+};
+
+filter "f.eq.R" {
+    from_filters: "f.lev.R";
+    to_filters:   "f.drc.R";
+    coeff:        "c.eq";
+};
+
+# ------------ CONVOLVER: DRC filters -------------------
+
+filter "f.drc.L" {
+    from_filters: "f.eq.L";
+    to_filters:   "f.lo.L", "f.mi.L", "f.hi.L";
+    coeff:        "delta";
+};
+
+filter "f.drc.R" {
+    from_filters: "f.eq.R";
+    to_filters:   "f.lo.R", "f.mi.R", "f.hi.R";
+    coeff:        "delta";
+};
+
+
+# ------------ CONVOLVER: XOVER filters --------------------
+
+filter "f.lo.L" {
+    from_filters: "f.drc.L";
+    to_outputs:   "fr.L"/0.0/+1;
+    coeff:        "delta";
+};
+
+filter "f.mi.L" {
+    from_filters: "f.drc.L";
+    to_outputs:   "fr.L"/0.0/+1;
+    coeff:        "delta";
+};
+
+filter "f.hi.L" {
+    from_filters: "f.drc.L";
+    to_outputs:   "fr.L"/0.0/+1;
+    coeff:        "delta";
+};
+
+filter "f.lo.R" {
+    from_filters: "f.drc.R";
+    to_outputs:   "fr.R"/0.0/+1;
+    coeff:        "delta";
+};
+
+filter "f.mi.R" {
+    from_filters: "f.drc.R";
+    to_outputs:   "fr.R"/0.0/+1;
+    coeff:        "delta";
+};
+
+filter "f.hi.R" {
+    from_filters: "f.drc.R";
+    to_outputs:   "fr.R"/0.0/+1;
+    coeff:        "delta";
+};
+
