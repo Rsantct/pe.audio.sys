@@ -109,17 +109,9 @@ coeff "c.eq" {
 };
 
 
-# -------  COEFFs for TEST: --------
+# -------  COEFFs for DRC and XO TEST: --------
 coeff "delta" {
     filename:    "dirac pulse";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-};
-
-# (i) Same CPU load results as above "dirac pulse"
-coeff "test" {
-    filename:    "test_16k.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
