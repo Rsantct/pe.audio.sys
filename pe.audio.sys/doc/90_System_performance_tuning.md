@@ -49,7 +49,7 @@ See here for tuning number of partitions, bit depth and dither:
 
 Run JACK and Brutefir alone, without the whole pe.audio.sys scripts. 
 
-**(PLEASE switch-off your AMP)**
+***(PLEASE switch-off your AMPLIFIER or jack_disconnect system:playback_X)***
 
 <a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/testing_latency.png" align="center" width="600" ></a>
 
