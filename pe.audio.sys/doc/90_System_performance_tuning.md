@@ -31,7 +31,7 @@ See here for tuning number of partitions, bit depth and dither:
 
 **`htop`** displays %CPU usage:
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/htop.png" align="center" width="400" ></a>
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/htop.png" align="center" width="600" ></a>
 
 
 **Qjackctl** displays JACK RT real time index information:
