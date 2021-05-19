@@ -8,7 +8,7 @@ If you want watching movies and video with **minimal audio latency** (i.e. less 
 
 The file `loudspeaker/3_way_test/brutefir_config` is intended for you to test your system performance.
 
-It it simulates a 3 WAY XOVER and DRC convolution system over a simple stereo output sound card
+It simulates a 3 WAY XOVER and DRC convolution system over a simple stereo output sound card
 
 
                                                 /--> f.hi.L >--\
