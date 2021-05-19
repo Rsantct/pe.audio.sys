@@ -66,8 +66,8 @@ For instance:
             4096.000 frames   92.880 ms
             ...
 
-Play trial and error with JACK **--period** xxx: choose power of 2, and a value equal or smaller than the `brutefir_config` **partition size**.
+Play trial and error with JACK **`--period xxx`**. Choose a power of 2 value, and equal or smaller than the `brutefir_config` **partition size**.
 
-For USB/Firewire sound cards use **-n 3**
+For USB/Firewire sound cards use **`-n 3`**.
 
 
