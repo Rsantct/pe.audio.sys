@@ -56,7 +56,7 @@ Run JACK and Brutefir alone, without the whole pe.audio.sys scripts.
 For instance:
 
     cd          ~/pe.audio.sys/loudspeakers/3_way_test
-    jackd       -R -L 1 -d alsa -d hw:0 -r 44100 --period 1024 -n 2 &
+    jackd       -R -L 2 -d alsa -d hw:0 -r 44100 --period 1024 -n 2 &
     brutefir    brutefir_config &
     jack        connect brutefir:fr.L loopback:playback_1
     jack_delay  -O brutefir:in.L   -I loopback:capture_1
