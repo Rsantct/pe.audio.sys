@@ -6,7 +6,7 @@ If you want watching movies and video with **minimal audio latency** (say less t
 
 ## loudspeakers/3_way_test
 
-The file `loudspeakers/3_way_test/brutefir_config` is intended for you to test your system performance.
+The file `loudspeakers/3_way_test/brutefir_config` is intended for you to test your system performance capability.
 
 It simulates a 3 WAY XOVER and DRC convolution system over a simple stereo output sound card
 
@@ -100,5 +100,6 @@ These are not too bad results, even for watching to movies and videos.
 
 Same results can be obtained by using a **Rapspberry Pi 3** with the same configuration, but CPU% loading reaches >65%, wich is near the dangeous limit and you will probably have no CPU headroom to run MPD and other stuff..., but leaving Brutefir partitioning you can get ride off.
 
+Anyway a Raspberry Pi 3 is not a good option for 3 way XOVER filtering + DRC, but 2 way + DRC works fine.
 
 Better latencies can be obtained by using a modern powerful CPU and lower Jack --period and Brutefir partition size values.
