@@ -1,0 +1,73 @@
+# System performance
+
+**Convolution** filtering is a **high CPU demanding** task.
+
+If you want watching movies and video with **minimal audio latency** (i.e. less than 100 ms), you need a powerfull CPU and tuning your system accordingly.
+
+## loudspeakers/3_way_test
+
+The file `loudspeaker/3_way_test/brutefir_config` is intended for you to test your system performance.
+
+It it simulates a 3 WAY XOVER and DRC convolution system over a simple stereo output sound card
+
+
+                                                /--> f.hi.L >--\
+                                               /                \
+    --> in.L >----> f.eq.L >----> f.drc.L >---X----> f.mi.L >----X---> fr.L
+                                               \                /
+                                                \--> f.lo.L >--/
+
+    --> in.R >-- ... ... ... ... ... ... the same as L ... ... ... --> fr.R
+
+
+See here for tuning number of partitions, bit depth and dither:
+
+    https://torger.se/anders/brutefir.html#tuning_1
+    https://torger.se/anders/brutefir.html#tuning_5
+    https://torger.se/anders/brutefir.html#config_6
+
+
+## CPU load
+
+**`htop`** displays %CPU usage:
+
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/htop.png" align="center" width="600" ></a>
+
+
+**Qjackctl** displays JACK RT real time index information:
+
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/qjackctl_RT_index.png" align="center" width="600" ></a>
+
+
+**Brutefir** real time index can be obtained by issuing the `rti` command, which is similar to the CPU% load of the Brutefir process:
+
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/bf_rti.png" align="center" width="600" ></a>
+
+
+
+## System latency test
+
+Run JACK and Brutefir alone, without the whole pe.audio.sys scripts. 
+
+***(PLEASE switch-off your AMPLIFIER or jack_disconnect system:playback_X)***
+
+<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/testing_latency.png" align="center" width="600" ></a>
+
+For instance:
+
+    cd          ~/pe.audio.sys/loudspeakers/3_way_test
+    jackd       -R -L 1 -d alsa -d hw:0 -r 44100 --period 1024 -n 2 &
+    brutefir    brutefir_config &
+    jack        connect brutefir:fr.L loopback:playback_1
+    jack_delay  -O brutefir:in.L   -I loopback:capture_1
+    
+            ...    
+            4096.002 frames   92.880 ms
+            4096.000 frames   92.880 ms
+            ...
+
+Play trial and error with JACK **--period** xxx: choose power of 2, and a value equal or smaller than the `brutefir_config` **partition size**.
+
+For USB/Firewire sound cards use **-n 3**
+
+

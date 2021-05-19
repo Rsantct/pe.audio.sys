@@ -40,6 +40,7 @@ Please check:
     [  ] sampling_rate
     
     [  ] Tune properly the convolver's partition size, depending on your CPU available power, e.g.:
+         (more info here doc/90_System_performance_tuning.md)
     
             filter_length:      16384 ;     # not partitioned
                     
@@ -139,3 +140,9 @@ NOTICE: **`start.log`** will help you to debug the starting process.
 ## [ ] Restarting script
 
 You may want to restart the whole `pe.audio.sys` system without console printouts. If so please consider the provided `bin/peaudiosys_restart.sh` script.
+
+## [ ] System performance tuning
+
+See **doc/90_System_performance_tuning.md**
+
+
