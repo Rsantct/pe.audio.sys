@@ -10,7 +10,7 @@ No filtering will be applied over the only XO section inside the convolver file 
 This is the loudspeaker folder used inside the provided `pe.audio.sys/config.yml.sample` and `pe.audio.sys/.state.yml.sample` files.
 
 
-### 2 ways
+### 2_ways
 
 This is a slightly advanced loudspeaker configuration. Two ways will be filtered by the convolver file `brutefir_config`.
 
