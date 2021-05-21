@@ -1,7 +1,8 @@
 # ===========================  SOUND CARDS =====================================
 
-# Main system card alsa name
+# Main system card alsa/ffado name
 system_card: hw:0
+#system_card: guid:0x00130e01000406d2
 
 # Additional cards to be used resampled under jack,
 # either as capture or as playback devices.
@@ -44,6 +45,10 @@ external_cards:
 #               it will be replaced by the actual values)
 jack_options:           -R -d alsa
 jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n2 
+
+# FIREWIRE (FFADO) backend:
+#jack_options:           -R -d firewire
+#jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n 3
 
 
 # =========================  LIMITS  ===========================================
