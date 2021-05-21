@@ -151,6 +151,14 @@ def start_jack_stuff():
     cmdlist += f'{CONFIG["jack_options"]}'.split() + \
                f'{jack_backend_options}'.split()
 
+    # If backend is Firewire, lets reset the Firewire Bus
+    if 'firewire' in cmdlist:
+        print(f'{Fmt.BOLD}({ME}) resetting the FIREWIRE BUS, sorry for users '
+              f'using other FW things :-|{Fmt.END}')
+        sp.Popen('ffado-test BusReset', shell=True)
+        sleep(1)
+
+    # If Pulseaudio
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
         cmdlist = ['pasuspender', '--'] + cmdlist
