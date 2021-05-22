@@ -4,11 +4,11 @@
 
 # ffado dbus server is needed for dbus-send commands below
 if pgrep -fa ffado-dbus-server; then
- echo "ffado-dbus-server detected :-)"
+    echo "ffado-dbus-server detected :-)"
 else
- ffado-dbus-server 1>/dev/null 2>&1 &
- echo "running ffado-dbus-server ..."
- sleep 3
+    ffado-dbus-server 1>/dev/null 2>&1 &
+    echo "running ffado-dbus-server ..."
+    sleep 3
 fi
 
 
