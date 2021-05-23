@@ -31,41 +31,7 @@ Use `ffado-test ListDevices` to find your card's firewire GUID.
 
 No modifications are needed.
 
-The Jack ports for your system card will have a new naming, but don't worry because the Jack firewire backend automagically creates aliases for regular naming `system:playback...`:
-
-
-    $ jack_lsp firewire -A
-    firewire_pcm:00130e01000406d2_Rec 1_in
-       system:capture_1
-    firewire_pcm:00130e01000406d2_Rec 2_in
-       system:capture_2
-    firewire_pcm:00130e01000406d2_Rec 3_in
-       system:capture_3
-    firewire_pcm:00130e01000406d2_Rec 4_in
-       system:capture_4
-    firewire_pcm:00130e01000406d2_Rec 5_in
-       system:capture_5
-    firewire_pcm:00130e01000406d2_Rec 6_in
-       system:capture_6
-    firewire_pcm:00130e01000406d2_Midi In_in
-    firewire_pcm:00130e01000406d2_Play 1_out
-       system:playback_1
-    firewire_pcm:00130e01000406d2_Play 2_out
-       system:playback_2
-    firewire_pcm:00130e01000406d2_Play 3_out
-       system:playback_3
-    firewire_pcm:00130e01000406d2_Play 4_out
-       system:playback_4
-    firewire_pcm:00130e01000406d2_Play 5_out
-       system:playback_5
-    firewire_pcm:00130e01000406d2_Play 6_out
-       system:playback_6
-    firewire_pcm:00130e01000406d2_Play 7_out
-       system:playback_7
-    firewire_pcm:00130e01000406d2_Play 8_out
-       system:playback_8
-    firewire_pcm:00130e01000406d2_Midi Out_out
-
+The Jack ports for your system card will have a new naming, but don't worry because the Jack firewire backend automagically creates aliases for regular naming `system:playback...`, see `jack_lsp firewire -A`.
 
 
 ## Firewire sound card mixer settings
@@ -90,6 +56,9 @@ Basically, it is spected to found a custom made bash script for your card settin
 **You'll need to make your own script** by monitorig dBus messages in a terminal while playing with the ffado-mixer GUI, please refer to:
 
 **http://subversion.ffado.org/wiki/ffadoMixerGuides**
+
+(i) `ffado-dbus-server` has to be running as a background process, `start.py` will do it, but at this moment you'll need to run it in a dedicated terminal.
+
 
 <a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/ffado-mixer.png" align="center" width="480" ></a>
 
