@@ -101,6 +101,31 @@ So now you can symlink it to run the new version:
     ln -s /usr/local/bin/brutefir $HOME/bin/brutefir
     
 
+## Playing CD
+
+Enable CD playing in `config.yml`
+
+    sources:
+        ...
+        ...
+        cd:
+            gain:           0.0
+            capture_port:   mplayer_cdda
+            lu_offset:      0.0         # Optional. Depending on the CD mastering you usually
+                                        # listen to, you would like to set 3, 6 or 9 dB
+            
+
+    scripts:
+        ...
+        ...
+        - CDDA.py
+        - autoplay_cdda.py              # Optional to auto play CD when inserted
+
+    # miscel
+    cdrom_device:  /dev/cdrom
+
+
+
 ## About zita-j2n (JACK-NETWORK BRIDGE) network usage
 
 https://kokkinizita.linuxaudio.org/linuxaudio/
