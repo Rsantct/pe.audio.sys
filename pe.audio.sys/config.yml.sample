@@ -1,6 +1,6 @@
 # ===========================  SOUND CARDS =====================================
 
-# Main system card alsa/ffado name
+# Main system card name (alsa or ffado)
 system_card: hw:0
 #system_card: guid:0x00130e01000406d2
 
