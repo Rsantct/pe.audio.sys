@@ -23,8 +23,9 @@ The control of the system is based on a tcp server architecture, thanks @amr.
 
 # Introducing pe.audio.sys
 
+**pe.audio.sys** is an **DIY audio** project. 
 
-**pe.audio.sys** is a versatile, and **fully customizable Linux platform based audio system,** providing an **user friendly interface**.
+It is a versatile, and **fully customizable Linux platform based audio system,** providing an **user friendly interface**.
 
 Its main feature is the management, filtering and EQ of a **multiway active
 loudspeaker system**. A regular passive loudspeakers can be used as well.
