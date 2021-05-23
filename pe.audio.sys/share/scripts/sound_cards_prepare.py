@@ -77,11 +77,14 @@ def get_pulse_cards():
 
 
 def get_config_yml_cards():
+
     cards = []
     cards.append( CONFIG["system_card"] )
+
     if CONFIG["external_cards"]:
         for ecard in CONFIG["external_cards"]:
             cards.append( CONFIG["external_cards"][ecard]["alsacard"] )
+
     return cards
 
 
@@ -89,12 +92,62 @@ def PA_release_card( pa_name ):
     """ Release the card from pulseaudio """
     try:
         sp.Popen( f'pactl set-card-profile {pa_name} off'.split() )
+        print(  f'{Fmt.BLUE}'
+                f'(sound_cards_prepare) releasing '
+                f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
     except:
         print(  f'{Fmt.RED}'
                 f'(sound_cards_prepare) PROBLEMS releasing '
                 f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
 
 
+def restore_alsa_card(card):
+
+        bareCardName = card.split(':')[-1].split(',')[0]
+
+        asound_file = f'{MAINFOLDER}/.asound.{bareCardName}'
+        try:
+            if os.path.isfile( asound_file ):
+                sp.Popen( f'alsactl -f {asound_file} \
+                            restore {bareCardName}'.split() )
+                print(  f'{Fmt.BLUE}'
+                        f'(sound_cards_prepare) restoring alsa settings: '
+                        f'\'{asound_file}\' NO FOUND.{Fmt.END}' )
+            else:
+                print(  f'{Fmt.RED}'
+                        f'(sound_cards_prepare) ERROR restoring alsa settings: '
+                        f'\'{card}\'{Fmt.END}' )
+        except:
+            print(  f'{Fmt.RED}'
+                    f'(sound_cards_prepare) PROBLEMS restoring alsa: '
+                    f'\'{bareCardName}\'{Fmt.END}' )
+
+
+def restore_ffado_card(card):
+    ''' FFADO firewire cards needs a custom made script, named like:
+
+            ~/pe.audio.sys/.0x00130e01000406d2.sh
+        
+        where 0x...... is the firewire GUID (see ffado-test ListDevices)
+        
+        For details about this script see the 'doc/' folder.
+    '''
+    
+    guid = card.replace('guid:','')
+    scriptPath = f'{MAINFOLDER}/.{guid}.sh'
+    
+    if os.path.isfile( scriptPath ):
+        print(  f'{Fmt.BLUE}'
+                f'(sound_cards_prepare) restoring ffado settings for: '
+                f'\'{card}\'{Fmt.END}' )
+        sp.Popen( f'sh {scriptPath} 1>/dev/null 2>&1', shell=True)
+
+    else:
+        print(  f'{Fmt.RED}'
+                f'(sound_cards_prepare) ERROR restoring ffado settings: '
+                f'\'{scriptPath}\' NOT FOUND.{Fmt.END}' )
+
+        
 if __name__ == "__main__":
 
     if sys.argv[1:]:
@@ -113,22 +166,26 @@ if __name__ == "__main__":
     if pa_cards:
         for pa_card in pa_cards:
             for config_card in config_cards:
-                if config_card.replace('hw:', '').split(',')[0] in \
-                                        pa_cards[pa_card]["alsa_name"]:
+
+                # alsa
+                ccname = config_card.replace('hw:', '').split(',')[0]
+                # firewire
+                ccname = config_card.replace('guid:', '').split(',')[0]
+                
+                if ccname in pa_cards[pa_card]["alsa_name"] or \
+                   ccname in pa_cards[pa_card]["pa_name"]:
                     PA_release_card( pa_cards[pa_card]["pa_name"] )
 
     # Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
     for card in config_cards:
-        bareCardName = card.split(':')[-1].split(',')[0]
+        
+        if 'hw:' in card:
+            restore_alsa_card(card)
+        
+        elif 'guid:' in card:
+            restore_ffado_card(card)
 
-        asound_file = f'{MAINFOLDER}/.asound.{bareCardName}'
-        try:
-            if os.path.isfile( asound_file ):
-                sp.Popen( f'alsactl -f {asound_file} \
-                            restore {bareCardName}'.split() )
-            else:
-                raise
-        except:
+        else:
             print(  f'{Fmt.RED}'
-                    f'(sound_cards_prepare) PROBLEMS restoring alsa: '
-                    f'\'{bareCardName}\'{Fmt.END}' )
+                    f'(sound_cards_prepare) UNKNOWN card type: '
+                    f'\'{card}\'{Fmt.END}' )
