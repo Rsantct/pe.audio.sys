@@ -52,3 +52,4 @@ See the `doc/` folder for detailed information about this.
 ## May 2021, version 1.0b
 
 - New documentation for remote pe.audio.sys sources listening.
+- New Firewire Audio Interfaces support.
