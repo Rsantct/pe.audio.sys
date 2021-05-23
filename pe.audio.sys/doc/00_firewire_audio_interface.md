@@ -1,6 +1,8 @@
 # Firewire audio interfaces
 
-The `libffado2` Debian package provides a driver layer for firewire interfaces, for model compatibility see here:
+Firewire professional audio interfaces are optimal for multiway filtering, and prices are really low in second hand market in current days. An interesting scenario for Mac Mini 'linuxed' machines :-)
+
+The `libffado2` Debian package provides a driver layer for firewire interfaces, for **model compatibility** see here:
 
     zcat /usr/share/doc/libffado2/README.gz | less
 
