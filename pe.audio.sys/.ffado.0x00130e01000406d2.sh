@@ -2,7 +2,7 @@
 # http://subversion.ffado.org/wiki/ffadoMixerGuides
 
 
-# ffado dbus server is needed for dbus-send commands below
+# ffado dbus server is needed for dbus-send commands below, as well for ffado-mixer GUI to work
 if pgrep -fa ffado-dbus-server; then
     echo "ffado-dbus-server detected :-)"
 else
