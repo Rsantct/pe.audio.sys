@@ -16,37 +16,7 @@ https://www.spotify.com/es/download/linux/
 
 First time you need to connect a keyboard and mouse, then login with your credentials.
 
-
-### Autostart Spotify for `paudio` session
-
-Prepare a desktop autostart file:
-
-    /home/paudio/.config/autostart/spotify.desktop 
-
-                [Desktop Entry]
-                Type=Application
-                Exec=spotify
-                Hidden=false
-                NoDisplay=false
-                X-GNOME-Autostart-enabled=true
-                Name[es_ES]=spotify
-                Name=spotify
-                Comment[es_ES]=
-                Comment=
-
-### Autologin `paudio` user session on Desktop
-
-(i) If you want this, **please consider remove `paudio` from the `sudo` group**
-
-
-    /etc/gdm3/daemon.conf 
-
-            [daemon]
-                AutomaticLoginEnable = true
-                AutomaticLogin = paudio
-
-
-
+Later, you can consider a 'headless' Desktop system, by auto login on your desktop, see below.
 
 
 ## pe.audio.sys configuration
@@ -71,3 +41,35 @@ scripts:
     - pulseaudio-jack-sink.py
     - spotify_monitor.py        #  gets metadata an playback status
 ```
+
+### Autostart Spotify for `paudio` session
+
+Prepare a desktop autostart file:
+
+    /home/paudio/.config/autostart/spotify.desktop 
+
+                [Desktop Entry]
+                Type=Application
+                Exec=spotify
+                Hidden=false
+                NoDisplay=false
+                X-GNOME-Autostart-enabled=true
+                Name[es_ES]=spotify
+                Name=spotify
+                Comment[es_ES]=
+                Comment=
+
+### Autologin `paudio` user session on Desktop
+
+
+(i) If you want this, **please consider remove `paudio` from the `sudo` group**
+
+
+    /etc/gdm3/daemon.conf 
+
+            [daemon]
+                AutomaticLoginEnable = true
+                AutomaticLogin = paudio
+
+
+
