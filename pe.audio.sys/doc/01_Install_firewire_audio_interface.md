@@ -1,5 +1,10 @@
 # Firewire audio interfaces
 
+The `libffado2` Debian package provides a driver layer for firewire interfaces, for model compatibility see here:
+
+    zcat /usr/share/doc/libffado2/README.gz | less
+
+
 ## FFADO for firewire audio interfaces
 
 If you plan to use a JACK with a firewire audio interface, please install the Firewire Audio Drivers stuff (aka FFADO):
