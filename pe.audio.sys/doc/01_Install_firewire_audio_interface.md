@@ -7,13 +7,6 @@ If you plan to use a JACK with a firewire audio interface, please install the Fi
     sudo apt install libffado2 ffado-tools ffado-mixer-qt4 jackd2-firewire
 
 
-More info here
-
-http://subversion.ffado.org/wiki
-
-http://subversion.ffado.org/wiki/StepByStepUbuntu12.04
-
-
 ## config.yml
 
 **Configure** your card under `config.yml` like this, by using `-n 3` as recommended for serial interfaces:
