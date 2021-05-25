@@ -66,7 +66,6 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input=True )
 
     # If not found, it can be an ALIAS pattern
-    # (if used, jackd -Ln loopback ports will be aliased with the source name)
     if not cap_ports:
         for p in JCLI.get_ports( is_output=True ):
             # A port can have 2 alias
