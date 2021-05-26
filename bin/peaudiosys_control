@@ -5,10 +5,10 @@
 #
 
 # Reading TCP address and port from the pe.audio.sy config file
-ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config.yml | grep -v \# | awk '{print $NF}' )
 ADDR=${ADDR//\"/}; CTL_ADDR=${ADDR//\'/}
-PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
-if [[ ! $ADDR ]]; then
+PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | grep -v \# | awk '{print $NF}' )
+if [[ ! $ADDR || ! $PORT ]]; then
     echo ERROR reading config.yml
     exit -1
 fi
