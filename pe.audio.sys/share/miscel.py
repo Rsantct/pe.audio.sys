@@ -21,6 +21,7 @@ import  ipaddress
 from    json import loads as json_loads
 from    time import sleep
 import  subprocess as sp
+import  psutil
 import  yaml
 from    numpy import loadtxt as np_loadtxt, zeros as np_zeros
 import  configparser
@@ -506,6 +507,19 @@ def detect_spotify_client(timeout=10):
             sleep(1)
 
     return result
+
+
+# Auxiliary to check for a system process to be running by a given name pattern
+def process_runs(pName):
+    """ check for a system process to be running by the given process name pattern
+    """
+    for proc in psutil.process_iter():
+        try:
+            if pName.lower() in proc.name().lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False;
 
 
 # Kill previous instaces of a process
