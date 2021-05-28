@@ -47,7 +47,7 @@ Please use spaces for tab indenting:
 The last one will trim blank spaces at line endings when you justify (Ctrl-J or ESC-J)
 
 
-## Headless machine:
+## Headless machine (no desktop)
 
 Update your `~/.profile`:
 
