@@ -36,7 +36,7 @@ UHOME = os.path.expanduser("~")
 
 
 def stop():
-    # some Desktop autostarts MPD user systemd units, after upgrading mpd package:
+    # some mpd packages enables MPD user systemd units, when upgraded:
     tmp =  "systemctl --user stop mpd.socket &&"
     tmp += "systemctl --user stop mpd.service &&"
     tmp += "systemctl --user disable mpd.socket &&"
