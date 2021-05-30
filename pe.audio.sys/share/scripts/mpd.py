@@ -36,14 +36,14 @@ UHOME = os.path.expanduser("~")
 
 
 def stop():
-    # some Desktop autostarts MPD user systemd units, even if disabled:
+    # some Desktop autostarts MPD user systemd units, after upgrading mpd package:
     tmp =  "systemctl --user stop mpd.socket &&"
     tmp += "systemctl --user stop mpd.service &&"
     tmp += "systemctl --user disable mpd.socket &&"
     tmp += "systemctl --user disable mpd.service"
     Popen( tmp, shell=True )
-    Popen( ['pkill', '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
-    sleep(.5)
+    Popen( ['pkill', '-KILL', 'mpd'] )
+    sleep(.25)
 
 
 def start():
@@ -57,6 +57,9 @@ if __name__ == '__main__':
         if sys.argv[1] == 'stop':
             stop()
         elif sys.argv[1] == 'start':
+            # some Desktop autostarts MPD when user logins, because of the packaged file:
+            # /etc/xdg/autostart/mpd.desktop
+            stop()
             start()
         else:
             print(__doc__)
