@@ -36,7 +36,7 @@ UHOME = os.path.expanduser("~")
 
 
 def stop():
-    # some mpd packages enables MPD user systemd units, when upgraded:
+    # Some mpd packages enables MPD user systemd units, when upgraded:
     tmp =  "systemctl --user stop mpd.socket &&"
     tmp += "systemctl --user stop mpd.service &&"
     tmp += "systemctl --user disable mpd.socket &&"
@@ -57,8 +57,9 @@ if __name__ == '__main__':
         if sys.argv[1] == 'stop':
             stop()
         elif sys.argv[1] == 'start':
-            # some Desktop autostarts MPD when user logins, because of the packaged file:
-            # /etc/xdg/autostart/mpd.desktop
+            # Some Desktop autostarts MPD when user logins, because of the packaged file:
+            #   /etc/xdg/autostart/mpd.desktop
+            # If so, please set "X-GNOME-Autostart-enabled=false" inside this file.
             stop()
             start()
         else:
