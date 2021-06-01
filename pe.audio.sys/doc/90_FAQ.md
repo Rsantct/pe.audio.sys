@@ -153,3 +153,17 @@ Only recommended if you want to run an Spotify desktop client at startup. To ena
 
 (!) If so, please consider REMOVE **`paudio`** from your machine **`sudo`** group.
 
+## How can I switch my amplifier?
+
+Just prepare a script which accepts `on|off` as argument, then declare it in `amp_manager:` inside `config.yml`.
+
+You can use a commercial `sispmctl` compatible USB controlled power strip.
+
+Also, you can home made your own USB controlled power socket, for example by using some cheap `usbrelay` compatible relay board, more info inside the provided `bin/ampli.sh_usbrelay.example`.
+
+`pe.audio.sys/start.py` will control the amp power outlet.
+
+
+
+
+
