@@ -41,17 +41,21 @@ except:
           f'\'config.yml\'{Fmt.END}')
     exit()
 
+LOUDSPEAKER         = CONFIG['loudspeaker']
+LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+STATE_PATH          = f'{MAINFOLDER}/.state.yml'
+EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
+BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
+BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
+LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
+LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
+PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+MACROS_FOLDER       = f'{MAINFOLDER}/macros'
+AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 if 'amp_manager' in CONFIG:
-    AMP_MANAGER = CONFIG['amp_manager']
+    AMP_MANAGER     = CONFIG['amp_manager']
 else:
-    AMP_MANAGER = ''
-LOUDSPEAKER     = CONFIG['loudspeaker']
-LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-STATE_PATH      = f'{MAINFOLDER}/.state.yml'
-EQ_FOLDER       = f'{MAINFOLDER}/share/eq'
-LDMON_PATH      = f'{MAINFOLDER}/.loudness_monitor'
-BFCFG_PATH      = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH      = f'{UHOME}/.brutefir_defaults'
+    AMP_MANAGER     = ''
 
 
 # Some nice ANSI formats for printouts
