@@ -42,11 +42,6 @@ from    share.miscel        import  *
 
 
 ME                  = __file__.split('/')[-1]
-MACROS_FOLDER       = f'{MAINFOLDER}/macros'
-LOUD_MON_CTRL_FILE  = f'{MAINFOLDER}/.loudness_control'
-LOUD_MON_VAL_FILE   = f'{MAINFOLDER}/.loudness_monitor'
-AMP_STATE_FILE      = f'{UHOME}/.amplifier'
-STATE_FILE          = f'{MAINFOLDER}/.state.yml'
 
 
 # COMMAND LOG FILE
@@ -102,7 +97,7 @@ def send_zita(argvs):
 def get_amp_state():
     curr_sta = 'off'
     try:
-        with open( f'{AMP_STATE_FILE}', 'r') as f:
+        with open( f'{AMP_STATE_PATH}', 'r') as f:
             curr_sta =  f.read().strip()
     except:
         pass
@@ -231,9 +226,9 @@ def process_aux( cmd, arg='' ):
             return False
 
 
-    # As per LOUD_MON_CTRL_FILE is a namedpipe (FIFO), it is needed that
+    # As per LDCTRL_PATH is a namedpipe (FIFO), it is needed that
     # 'loudness_monitor.py' was alive in order to release any write to it.
-    # If not alive, any f.write() to LOUD_MON_CTRL_FILE will HANG UP
+    # If not alive, any f.write() to LDCTRL_PATH will HANG UP
     # :-(
     def lu_ctrl_write(string):
         try:
@@ -241,7 +236,7 @@ def process_aux( cmd, arg='' ):
         except:
             return 'ERROR loudness_monitor.py NOT running'
         try:
-            with open(LOUD_MON_CTRL_FILE, 'w') as f:
+            with open(LDCTRL_PATH, 'w') as f:
                 f.write(string)
             return 'tried'
         except:
@@ -322,7 +317,7 @@ def process_aux( cmd, arg='' ):
     elif cmd == 'get_loudness_monitor' or \
          cmd == 'get_lu_monitor':
         try:
-            with open(LOUD_MON_VAL_FILE, 'r') as f:
+            with open(LDMON_PATH, 'r') as f:
                 result = json.loads( f.read() )
         except:
             if 'LU_reset_scope' in CONFIG:
@@ -442,17 +437,17 @@ def init():
     #   Even observing recursively the CPU load is negligible,
     #   but we prefer to observe to a single folder.
 
-    # Will observe for changes in AMP_STATE_FILE under HOME folder:
+    # Will observe for changes in AMP_STATE_PATH:
     observer1 = Observer()
-    observer1.schedule( files_event_handler(AMP_STATE_FILE),
-                        path=UHOME,
+    observer1.schedule( files_event_handler(AMP_STATE_PATH),
+                        path=os.path.dirname(AMP_STATE_PATH),
                         recursive=False )
     observer1.start()
 
-    # Will observe for changes in LOUD_MON_VAL_FILE under MAINFOLDER folder:
+    # Will observe for changes in LDMON_PATH:
     observer2 = Observer()
-    observer1.schedule( files_event_handler(LOUD_MON_VAL_FILE),
-                        path=MAINFOLDER,
+    observer1.schedule( files_event_handler(LDMON_PATH),
+                        path=os.path.dirname(LDMON_PATH),
                         recursive=False )
     observer2.start()
 
