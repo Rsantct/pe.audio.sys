@@ -213,7 +213,7 @@ def init():
     def store_meta(timer=2):
         while True:
             md = player_get_meta()
-            with open( f'{MAINFOLDER}/.player_metadata', 'w') as f:
+            with open( PLAYER_META_PATH, 'w') as f:
                 f.write( json.dumps( md ))
             sleep(timer)
     # Loop storing metadata
@@ -249,7 +249,7 @@ def do(cmd_phrase):
 
     # Getting METADATA
     elif cmd == 'get_meta':
-        with open( f'{MAINFOLDER}/.player_metadata', 'r') as f:
+        with open( PLAYER_META_PATH, 'r') as f:
             result = f.read()
 
     # PLAYLISTS
