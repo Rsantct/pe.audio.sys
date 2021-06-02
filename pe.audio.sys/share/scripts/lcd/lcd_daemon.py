@@ -26,19 +26,18 @@ from watchdog.events import FileSystemEventHandler
 import lcd_client
 #import lcdbig # NOT USED, displays the level value in full size
 import os
+import sys
 import yaml
 import json
 import threading
 from time import sleep
 
-UHOME = os.path.expanduser("~")
 
-## OBSERVER DIRECTORY and subfolders:
-WATCHED_DIR      = f'{UHOME}/pe.audio.sys'
 # FILES of interest:
-STATE_file       = f'{WATCHED_DIR}/.state.yml'
-LOUDNESSMON_file = f'{WATCHED_DIR}/.loudness_monitor'
-PLAYER_META_file = f'{WATCHED_DIR}/.player_metadata'
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+from miscel import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH
+
 
 ## Auxiliary global
 state = { 'lu_offset': 0 }
@@ -62,13 +61,13 @@ class Changed_files_handler(FileSystemEventHandler):
         #print( f'(lcd_daemon) file {event.event_type}: \'{path}\'' ) # DEBUG
 
         # pe.audio.sys STATE changes
-        if STATE_file in path:
+        if STATE_PATH in path:
             update_lcd_state()
         # METADATA perodically updated file by players.py
-        if PLAYER_META_file in path:
+        if PLAYER_META_PATH in path:
             update_lcd_metadata()
         # LOUDNESS MONITOR
-        if path in (LOUDNESSMON_file):
+        if path in (LDMON_PATH):
             update_lcd_loudness_monitor()
 
 
@@ -258,7 +257,7 @@ def update_lcd_state(scr='scr_1'):
     # Reading state
     tries = 3
     while tries:
-        with open(STATE_file, 'r') as f:
+        with open(STATE_PATH, 'r') as f:
             new_state = yaml.safe_load(f)
             if new_state:
                 break
@@ -297,7 +296,7 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     tries = 3
     while tries:
         try:
-            with open(LOUDNESSMON_file, 'r') as f:
+            with open(LDMON_PATH, 'r') as f:
                 # e.g. {'LU_I': -6.0, 'scope': 'album'}
                 lu_dict = json.loads( f.read() )
                 lu_I = lu_dict["LU_I"]
@@ -374,7 +373,7 @@ def update_lcd_metadata(scr='scr_1'):
     tries = 3
     while tries:
         try:
-            with open(PLAYER_META_file, 'r') as f:
+            with open(PLAYER_META_PATH, 'r') as f:
                 md = json.loads( f.read() )
             break
         except:
@@ -438,7 +437,7 @@ if __name__ == "__main__":
     #  (i) Even observing recursively the CPU load is negligible
     observer = Observer()
     observer.schedule(event_handler=Changed_files_handler(),
-                      path=WATCHED_DIR,
+                      path=MAINFOLDER,
                       recursive=False)
     observer.start()
     obsloop = threading.Thread( target=observer.join() )
