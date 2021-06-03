@@ -39,17 +39,16 @@
     the preamp input.
 """
 
-import sys
-import os
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share')
-
-from miscel import *
 from pathlib import Path
 from time import sleep
 import subprocess as sp
 import yaml
+
+import sys
+import os
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+from miscel import *
 
 
 ## USER SETTINGS: see inside DVB-T.yml
@@ -60,7 +59,7 @@ options = '-quiet -nolirc -slave -idle'
 
 # Input FIFO. Mplayer runs in server mode (-slave) and
 # will read commands from a fifo:
-input_fifo = f'{UHOME}/pe.audio.sys/.dvb_fifo'
+input_fifo = f'{MAINFOLDER}/.dvb_fifo'
 f = Path( input_fifo )
 if not f.is_fifo():
     sp.Popen( f'mkfifo {input_fifo}'.split() )
@@ -68,7 +67,7 @@ del(f)
 
 # Mplayer output is redirected to a file,
 # so it can be read what it is been playing:
-redirection_path = f'{UHOME}/pe.audio.sys/.dvb_events'
+redirection_path = f'{MAINFOLDER}/.dvb_events'
 
 
 def select_by_name(channel_name):
@@ -127,7 +126,7 @@ if __name__ == '__main__':
 
     ### Reading the DVB-T config file
     try:
-        with open(f'{UHOME}/pe.audio.sys/DVB-T.yml', 'r') as f:
+        with open(f'{MAINFOLDER}/DVB-T.yml', 'r') as f:
             DVB_config = yaml.safe_load(f)
     except:
         print( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
