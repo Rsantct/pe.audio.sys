@@ -68,6 +68,8 @@ del(f)
 # Mplayer output is redirected to a file,
 # so it can be read what it is been playing:
 redirection_path = f'{MAINFOLDER}/.dvb_events'
+# (i) This file grows about 200K per hour if mplayer is the selected input
+#     so players.py will periodically queries metadata info from mplayer.
 
 
 def select_by_name(channel_name):
@@ -112,6 +114,8 @@ def start():
         sys.exit()
     cmd = f'mplayer {options} -profile dvb -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
+        # clearing the file for this session
+        redirfile.write('')
         sp.Popen( cmd.split(), shell=False, stdout=redirfile,
                                             stderr=redirfile )
 
