@@ -24,22 +24,23 @@
     Usage:      CDDA  start | stop | eject
 """
 
-import os
-import sys
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share')
-
-from miscel import *
 import subprocess as sp
 from pathlib import Path
 import yaml
+
+import os
+import sys
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+
+from miscel import CONFIG, MAINFOLDER, check_Mplayer_config_file
 
 
 ## --- Mplayer options ---
 # -quiet: see channels change
 # -really-quiet: silent
 options = '-quiet -nolirc -slave -idle'
+
 
 ## Input FIFO. Mplayer runs in server mode (-slave) and
 #  will read commands from a fifo:
@@ -49,15 +50,15 @@ if not f.is_fifo():
     sp.Popen( f'mkfifo {input_fifo}'.split() )
 del(f)
 
+
 ## Mplayer output is redirected to a file,
-#  so it can be read what it is been playing:
+#  so what it is been playing can be read:
 redirection_path = f'{MAINFOLDER}/.cdda_events'
+
 
 ## cdrom device to use
 try:
-    with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-        PEASYSCONFIG = yaml.safe_load(f)
-    CDROM_DEVICE = PEASYSCONFIG['cdrom_device']
+    CDROM_DEVICE = CONFIG['cdrom_device']
 except:
     CDROM_DEVICE = '/dev/cdrom'
     print(f'(CDDA.py) Using default \'{CDROM_DEVICE}\'')
