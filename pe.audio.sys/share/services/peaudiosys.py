@@ -113,7 +113,7 @@ def set_amp_state(mode):
     if not AMP_MANAGER:
         return
     print( f'({ME}) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
-    Popen( f'{AMP_MANAGER} {mode}'.split(), shell=False )
+    Popen( f'{AMP_MANAGER} {mode}', shell=True )
 
 
 def amp_player_manager(mode):
