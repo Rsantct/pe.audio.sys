@@ -3,9 +3,9 @@
 
 You'll need:
 
-    - a SPL meter with C curve and slow time integration mode.
+- a SPL meter with C curve and slow time integration mode.
 
-    - a track of pink noise -20 dBFS RMS limited to 500-2000 Hz (find it under `doc/test signals` folder).
+- a track of pink noise -20 dBFS RMS limited to 500-2000 Hz (find it under `doc/test signals` folder).
 
 Full bandwidth noise is not recommended because of issues on bass room modes and/or typical reflections on mid and high frequencies due to room and furnitures.
 

@@ -1,0 +1,137 @@
+# SAFFIRE (white 8x analog out) FFADO DBUS MIXER RESTORING FOR "SOUND CARD" REGULAR MODE
+# http://subversion.ffado.org/wiki/ffadoMixerGuides
+
+
+# ffado dbus server is needed for dbus-send commands below, 
+# as well for ffado-mixer GUI to work:
+if pgrep -fa ffado-dbus-server; then
+    echo "ffado-dbus-server detected :-)"
+else
+    ffado-dbus-server 1>/dev/null 2>&1 &
+    echo "running ffado-dbus-server ..."
+    sleep 3
+fi
+
+
+echo "uploading mixer settings ...."
+
+
+## MONO MODE
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MonoMode org.ffado.Control.Element.Discrete.setValue int32:1
+
+
+## UNMUTE, HARDWARE LEVEL CONTROL
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out12Mute      org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out12HwCtrl    org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out12Dim      org.ffado.Control.Element.Discrete.setValue int32:0
+
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out34Mute      org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out34HwCtrl    org.ffado.Control.Element.Discrete.setValue int32:0
+
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out56Mute      org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out56HwCtrl    org.ffado.Control.Element.Discrete.setValue int32:0
+
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out78Mute      org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out78HwCtrl    org.ffado.Control.Element.Discrete.setValue int32:0
+
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out910Mute      org.ffado.Control.Element.Discrete.setValue int32:0
+## 9/10 has not hw level control
+
+
+## Out1/2 Input Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:0  int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:3  int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:1  int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:4  int32:1 double:0
+## Out1/2 DAW Return Channel Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:7  int32:1 double:32768
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:8  int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:9  int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:10 int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:6  int32:1 double:0
+## Out1/2 Return FX1 FX2
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:2  int32:1 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:5  int32:1 double:0
+
+
+## Out3/4 Input Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:0  int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:3  int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:1  int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:4  int32:2 double:0
+## Out3/4 DAW Return Channel Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:7  int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:8  int32:2 double:32768
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:9  int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:10 int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:6  int32:2 double:0
+## Out3/4 Return FX1 FX2
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:2  int32:2 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:5  int32:2 double:0
+
+
+## Out5/6 Input Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:0  int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:3  int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:1  int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:4  int32:3 double:0
+## Out5/6 DAW Return Channel Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:7  int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:8  int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:9  int32:3 double:32768
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:10 int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:6  int32:3 double:0
+## Out5/6 Return FX1 FX2
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:2  int32:3 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:5  int32:3 double:0
+
+
+## Out7/8 Input Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:0  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:3  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:1  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:4  int32:4 double:0
+## Out7/8 DAW Return Channel Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:7  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:8  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:9  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:10 int32:4 double:32768
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:6  int32:4 double:0
+## Out7/8 Return FX1 FX2
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:2  int32:4 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:5  int32:4 double:0
+
+
+## Out9/10 Input Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:0  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:3  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:1  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:4  int32:0 double:0
+## Out9/10 DAW Return Channel Mix
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:7  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:8  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:9  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:10 int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:6  int32:0 double:32768
+## Out9/10 Reverb Mix FX1 FX2
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:2  int32:0 double:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/MatrixMixerMono org.ffado.Control.Element.MatrixMixer.setValue int32:5  int32:0 double:0
+
+
+## Output Level (value is attenuation in dBFS)
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out12Level org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out34Level org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out56Level org.ffado.Control.Element.Discrete.setValue int32:0
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/Out78Level org.ffado.Control.Element.Discrete.setValue int32:0
+
+
+## SPDIF input enable
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/SpdifSwitch org.ffado.Control.Element.Discrete.setValue int32:0
+
+
+################
+## SAVE SETTINGS
+################
+dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e0100012f55/Mixer/SaveSettings org.ffado.Control.Element.Discrete.setValue int32:1
+
+echo "mixer settings uploaded, bye!"

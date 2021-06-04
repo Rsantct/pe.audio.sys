@@ -151,6 +151,18 @@ def start_jack_stuff():
     cmdlist += f'{CONFIG["jack_options"]}'.split() + \
                f'{jack_backend_options}'.split()
 
+    # Firewire: reset the Firewire Bus and run ffado-dbus-server
+    if 'firewire' in cmdlist:
+        print(f'{Fmt.BOLD}({ME}) resetting the FIREWIRE BUS, sorry for users '
+              f'using other FW things :-|{Fmt.END}')
+        sp.Popen('ffado-test BusReset'.split())
+        sleep(1)
+        print(f'{Fmt.BLUE}({ME}) running FIREWIRE DBUS SERVER ...{Fmt.END}')
+        sp.Popen('killall -KILL ffado-dbus-server', shell=True)
+        sp.Popen('ffado-dbus-server 1>/dev/null 2>&1', shell=True)
+        sleep(2)
+
+    # Pulseaudio
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
         cmdlist = ['pasuspender', '--'] + cmdlist

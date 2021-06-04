@@ -72,13 +72,13 @@ Please add this under your `scripts:` section inside `config.yml`
 
 #### Apache + PHP (system wide service)
 
-Last step in installing/updating script will update your Apache web server (you'll need sudo credentials).
+Last step in installing/updating script will update your pe.audio.sys web site configuration under Apache (you'll need sudo credentials).
 
-Also please be sure you have the Apache's PHP module:
+So, please install the Apache-PHP module and enable it:
 
     sudo apt install apache2 libapache2-mod-php
+    sudo a2enmod php7.X     # (i)
+    
+**(i)** replace 7.X with your installed version:
 
-
-
-
-
+    apt list libapache2-mod-php*

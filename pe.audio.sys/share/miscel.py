@@ -41,17 +41,21 @@ except:
           f'\'config.yml\'{Fmt.END}')
     exit()
 
+LOUDSPEAKER         = CONFIG['loudspeaker']
+LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+STATE_PATH          = f'{MAINFOLDER}/.state.yml'
+EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
+BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
+BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
+LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
+LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
+PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+MACROS_FOLDER       = f'{MAINFOLDER}/macros'
+AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 if 'amp_manager' in CONFIG:
-    AMP_MANAGER = CONFIG['amp_manager']
+    AMP_MANAGER     = CONFIG['amp_manager']
 else:
-    AMP_MANAGER = ''
-LOUDSPEAKER     = CONFIG['loudspeaker']
-LSPK_FOLDER     = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-STATE_PATH      = f'{MAINFOLDER}/.state.yml'
-EQ_FOLDER       = f'{MAINFOLDER}/share/eq'
-LDMON_PATH      = f'{MAINFOLDER}/.loudness_monitor'
-BFCFG_PATH      = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH      = f'{UHOME}/.brutefir_defaults'
+    AMP_MANAGER     = ''
 
 
 # Some nice ANSI formats for printouts
@@ -506,6 +510,21 @@ def detect_spotify_client(timeout=10):
             sleep(1)
 
     return result
+
+
+# Auxiliary to check for a system process to be running by a pattern
+def process_runs(pattern):
+    """ check for a system process to be running by a given pattern
+    """
+    try:
+        # do NOT use shell=True because pgrep ...  will appear it self.
+        plist = sp.check_output(['pgrep', '-fla', pattern]).decode().split('\n')
+    except:
+        plist = []
+    for p in plist:
+        if pattern in p:
+            return True
+    return False
 
 
 # Kill previous instaces of a process

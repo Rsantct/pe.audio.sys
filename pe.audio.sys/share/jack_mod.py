@@ -51,43 +51,45 @@ def jack_connect(p1, p2, mode='connect', wait=1):
                 JCLI.connect(p1, p2)
             return 'done'
         except jack.JackError as e:
-            print( f'(core.jack_connect) Exception: {e}' )
+            print( f'(jack_mod) Exception: {e}' )
             return e
         wait -= 1
         sleep(1)
 
 
 def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
-    """ High level tool to connect/disconnect a given port name patterns
+    """ High level tool to connect/disconnect a given port name patterns.
+        Also works for port alias patterns.
     """
     # Try to get ports by a port name pattern
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input=True )
 
     # If not found, it can be an ALIAS pattern
-    # (if used, jackd -Ln loopback ports will be aliased with the source name)
     if not cap_ports:
-        loopback_cap_ports = JCLI.get_ports( 'loopback', is_output=True )
-        for p in loopback_cap_ports:
-            # A port can have 2 alias, our is the 2nd one.
-            if cap_pattern in p.aliases[1]:
-                cap_ports.append(p)
+        for p in JCLI.get_ports( is_output=True ):
+            # A port can have 2 alias
+            for palias in p.aliases:
+                if cap_pattern in palias:
+                    cap_ports.append(p)
     if not pbk_ports:
-        loopback_pbk_ports = JCLI.get_ports( 'loopback', is_input=True )
-        for p in loopback_pbk_ports:
-            if pbk_pattern in p.aliases[1]:
-                pbk_ports.append(p)
+        for p in JCLI.get_ports( is_input=True ):
+            # A port can have 2 alias
+            for palias in p.aliases:
+                if pbk_pattern in palias:
+                    pbk_ports.append(p)
 
     #print('CAPTURE  ====> ', cap_ports)  # DEBUG
     #print('PLAYBACK ====> ', pbk_ports)
+
     errors = ''
     if not cap_ports:
         tmp = f'cannot find jack port "{cap_pattern}" '
-        print(f'(core) {tmp}')
+        print(f'(jack_mod) {tmp}')
         errors += tmp
     if not pbk_ports:
         tmp = f'cannot find jack port "{pbk_pattern}" '
-        print(f'(core) {tmp}')
+        print(f'(jack_mod) {tmp}')
         errors += tmp
     if errors:
         return errors

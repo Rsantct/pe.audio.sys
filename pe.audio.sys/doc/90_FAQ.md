@@ -101,6 +101,7 @@ So now you can symlink it to run the new version:
     ln -s /usr/local/bin/brutefir $HOME/bin/brutefir
     
 
+
 ## About zita-j2n (JACK-NETWORK BRIDGE) network usage
 
 https://kokkinizita.linuxaudio.org/linuxaudio/
@@ -151,4 +152,28 @@ Only recommended if you want to run an Spotify desktop client at startup. To ena
         ...
 
 (!) If so, please consider REMOVE **`paudio`** from your machine **`sudo`** group.
+
+
+## How can I switch my amplifier?
+
+You can use a commercial `sispmctl` compatible USB controlled power strip.
+
+Also, you can home made your own USB controlled power socket, for instance by using some cheap `usbrelay` compatible relay board, more info inside the provided `bin/ampli.sh_usbrelay.example`.
+
+You need to prepare a script to manage the power socket:
+
+- The script must accept `on|off` as argument
+- The script must keep a file `~/.amplifier` containing `on` `1` `off` `0` as per the power socket status.
+
+Then declare it inside `config.yml`, for instance:
+
+    amp_manager:   ~/bin/ampli.sh
+
+This way `pe.audio.sys` will control the amp power outlet, as well will notice the power outlet state changes.
+
+
+
+
+
+
 

@@ -14,7 +14,17 @@ The main software on which this project is based:
 
 - Audio connections are based on **JACK** https://jackaudio.org
 
-- Networked audio are based on Fons Adriaensen utilities https://kokkinizita.linuxaudio.org/linuxaudio/
+
+Other GNU audio software we use here:
+
+- IIR filtering plugins are supported by **Ecasound**.
+
+- Networked audio and IIR filtering are based on Fons Adriaensen utilities https://kokkinizita.linuxaudio.org/linuxaudio/
+
+- For music files library playing we use **MPD** (Music Player Daemon)
+
+- For CD, DVB-T (digital terrestial radio broadcasting) or internet streamed music we use **Mplayer**
+
 
 Most of the system is written in Python3, and config files are YAML kind of, thanks @rripio.
 
@@ -23,11 +33,11 @@ The control of the system is based on a tcp server architecture, thanks @amr.
 
 # Introducing pe.audio.sys
 
+**pe.audio.sys** is a **DIY** audio project, aimed at achieving the best management for a loudspeaker system.
 
-**pe.audio.sys** is a versatile, and **fully customizable Linux platform based audio system,** providing an **user friendly interface**.
+It is a versatile, and **fully customizable Linux platform based audio system,** providing an **user friendly interface**.
 
-Its main feature is the management, filtering and EQ of a **multiway active
-loudspeaker system**. A regular passive loudspeakers can be used as well.
+Its main feature is the management, filtering and EQ of a **multiway active loudspeaker system**. A regular passive loudspeakers can be used as well.
 
 Full hi-fi preamplifier features are available.
 
@@ -55,7 +65,7 @@ In addition, you can control unlimited audio sources:
 - Loudspeaker anechoic correction
 - Digital Room Correction
 - Multiway crossover
-- Advanced FIR filtering or traditional IIR filtering
+- Advanced FIR filtering (optionally traditional IIR filtering)
 - Target EQ curves for subjective in room responses
 
 
@@ -88,7 +98,7 @@ Simple control from your smartphone, tablet or desktop **web browser**.
 
 - Optional **LCD display** for basic information and playback metadata visualization.
 
-- A **mouse** attached to a pe.audio.sys 'black box' can be used as a easy-access **volume/mute control**.
+- A **mouse** attached to a pe.audio.sys 'black box' can be used as an easy-access **volume/mute control**.
 
 
 ## System maintenace
@@ -98,7 +108,7 @@ An simple script will update the whole system from GitHub, without user interven
 
 ## System usage and configuration
 
-See **`doc/`** folder and `90_FAQ.md`
+See files and FAQ under the **`doc/`** folfer
 
 
 ## Loudspeaker EQ and multiway XOVER filtering
@@ -113,7 +123,7 @@ Regarding room correction EQ, you can use both IIR (parametric correction) or FI
 
 FIR DRC is supported under a reserver convolver stage on Brutefir.
 
-IIR DRC can be used through by the provided Ecasound add-on script, then bypassing the convolver stage above.
+IIR DRC can be implemented through by the provided Ecasound add-on script, then bypassing the convolver stage above.
 
 The most popular software for room Eq is REW https://www.roomeqwizard.com
 
@@ -143,10 +153,10 @@ MPD (Music Player Daemon) is integrated as the player for your audio files.
 
 You can control your playback in several ways:
 
-- Web page user defined buttons (max 100) for launching favourites playlist to be played
+- Web page user defined buttons for launching favourites playlist to be played
 - Web playback control buttons: next, previous, pause, ...
 - A samartphone/tablet MPD app for a total control of the music library
-- A desktop MPD application (desktop mouse and keyboard)
+- A desktop MPD application (regular desktop usage of mouse and keyboard)
 
 
 ## CD discs
@@ -157,7 +167,7 @@ When you use the internal one drive, the CD metadata (artist, album, title) will
 be displayed on the control web page or on the optional LCD display.
 
 
-## Spotify (premium)
+## Spotify
 
 You can use your smartphone or tablet Spotify App to control the integrated Spotify player.
 

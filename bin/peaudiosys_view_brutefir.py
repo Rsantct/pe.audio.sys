@@ -33,6 +33,8 @@ import subprocess as sp
 from socket import socket
 
 UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+from miscel import process_runs
 
 class color:
    PURPLE = '\033[95m'
@@ -293,6 +295,10 @@ def get_running_delays():
 
 
 if __name__ == "__main__" :
+
+    if not process_runs('brutefir'):
+        print('brutefir process NOT running')
+        sys.exit()
 
     # Read the loudspeaker folder where brutefir has been launched
     try:
