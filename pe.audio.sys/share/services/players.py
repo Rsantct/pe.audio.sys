@@ -148,6 +148,9 @@ def player_get_meta():
                 port = 9990
             md = remote_get_meta( host, port )
 
+    # If there is no artist or album information, let's use the source name
+    if md['artist'] == '-' and md['album'] == '-':
+        md['artist'] = f'- {source.upper()} -'
 
     return md
 
