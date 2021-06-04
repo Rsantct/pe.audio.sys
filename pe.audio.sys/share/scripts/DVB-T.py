@@ -48,7 +48,7 @@ import sys
 import os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import *
+from miscel import MAINFOLDER, check_Mplayer_config_file
 
 
 ## USER SETTINGS: see inside DVB-T.yml
@@ -129,11 +129,12 @@ def stop():
 if __name__ == '__main__':
 
     ### Reading the DVB-T config file
+    DVB_config_path = f'{MAINFOLDER}/DVB-T.yml'
     try:
-        with open(f'{MAINFOLDER}/DVB-T.yml', 'r') as f:
+        with open(DVB_config_path, 'r') as f:
             DVB_config = yaml.safe_load(f)
     except:
-        print( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
+        print( f'(DVB-T.py) ERROR reading \'{DVB_config_path}\'' )
         sys.exit()
 
     ### Reading the command line
