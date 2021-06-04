@@ -33,7 +33,7 @@ import threading
 from time import sleep
 
 
-# FILES of interest:
+# FILES of interest (referred from miscel.py)
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
 from miscel import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH
