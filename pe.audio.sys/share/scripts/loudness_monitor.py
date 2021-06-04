@@ -34,19 +34,9 @@ from watchdog.events import FileSystemEventHandler
 UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
 
-sys.path.append(f'{MAINFOLDER}/share/audiotools')
-from loudness_meter import LU_meter
+sys.path.append(f'{MAINFOLDER}/share')
+from miscel import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PATH
 
-CONFIGFNAME     = f'{MAINFOLDER}/config.yml'
-STATEFNAME      = f'{MAINFOLDER}/.state.yml'
-CTRLFNAME       = f'{MAINFOLDER}/.loudness_control'
-MEASFNAME       = f'{MAINFOLDER}/.loudness_monitor'
-METADATAFNAME   = f'{MAINFOLDER}/.player_metadata'
-
-
-def stop():
-    Popen( 'pkill -KILL -f "loudness_monitor.py\ start"', shell=True )
-    sys.exit()
 
 def prepare_control_fifo(fname):
     try:
@@ -103,8 +93,8 @@ class My_files_event_handler(FileSystemEventHandler):
         path = event.src_path
 
         # Check if preamp input has changed, then RESET
-        if STATEFNAME in path:
-            with open( STATEFNAME, 'r' ) as f:
+        if STATE_PATH in path:
+            with open( STATE_PATH, 'r' ) as f:
                 preamp_state = yaml.safe_load(f)
                 if not preamp_state:
                     return
@@ -114,8 +104,8 @@ class My_files_event_handler(FileSystemEventHandler):
                     sleep(.25)      # anti bouncing
 
         # Check if metadata album or title has changed, then RESET
-        if METADATAFNAME in path:
-            with open( METADATAFNAME, 'r' ) as f:
+        if PLAYER_META_PATH in path:
+            with open( PLAYER_META_PATH, 'r' ) as f:
                 md = yaml.safe_load(f)
             if not md:
                 return
@@ -134,10 +124,8 @@ def get_configured_scope():
     """ The configured scope ('album', 'title', '') to reset the measured LU-I.
         If void '', preamp input changes events will still reset the measure.
     """
-    with open(CONFIGFNAME, 'r') as f:
-        config = yaml.safe_load(f)
-    if 'LU_reset_scope' in config:
-            scope = config['LU_reset_scope']
+    if 'LU_reset_scope' in CONFIG:
+            scope = CONFIG['LU_reset_scope']
             # If left blank:
             if not scope:
                 scope = 'input'
@@ -179,7 +167,7 @@ def wait_I():
 
 def save2disk():
     # Saving to disk rounded to 1 dB
-    with open( MEASFNAME, 'w') as f:
+    with open( LDMON_PATH, 'w') as f:
         # From dBFS to dBLU ( 0 dBLU = -23dBFS )
         I_LU = meter.I - -23.0
         M_LU = meter.M - -23.0
@@ -194,10 +182,16 @@ if __name__ == '__main__':
 
     # Reading command line: start | stop
     if sys.argv[1:]:
-        if sys.argv[1] == 'start':
-            pass
-        elif sys.argv[1] == 'stop':
-            stop()
+
+        if sys.argv[1] == 'stop':
+            Popen( 'pkill -KILL -f "loudness_monitor.py\ start"', shell=True )
+            sys.exit()
+
+        elif sys.argv[1] == 'start':
+            # (i) Only import LU_meter when 'start' because it takes a long time,
+            # so it can trouble the stop pkill (can be too much delayed).
+            from audiotools.loudness_meter  import  LU_meter
+
         else:
             print(__doc__)
     else:
@@ -208,7 +202,7 @@ if __name__ == '__main__':
     scope = get_configured_scope()
 
     # Initialize current preamp source
-    with open( STATEFNAME, 'r' ) as state_file:
+    with open( STATE_PATH, 'r' ) as state_file:
         source = yaml.safe_load(state_file)['input']
 
     # Starts a LU_meter instance with relevant parameters:
@@ -222,9 +216,9 @@ if __name__ == '__main__':
     print(f'(loudness_monitor) spawn PortAudio ports in JACK')
 
     # Threading the fifo listening loop for controlling this module
-    prepare_control_fifo(CTRLFNAME)
+    prepare_control_fifo(LDCTRL_PATH)
     control = threading.Thread( target=control_fifo_read_loop,
-                                args=(CTRLFNAME, meter) )
+                                args=(LDCTRL_PATH, meter) )
     control.start()
 
     # Threading an Observer watchdog for file changes, and passing our meter

@@ -39,17 +39,16 @@
     the preamp input.
 """
 
-import sys
-import os
-UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share')
-
-from miscel import *
 from pathlib import Path
 from time import sleep
 import subprocess as sp
 import yaml
+
+import sys
+import os
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+from miscel import MAINFOLDER, check_Mplayer_config_file
 
 
 ## USER SETTINGS: see inside DVB-T.yml
@@ -60,7 +59,7 @@ options = '-quiet -nolirc -slave -idle'
 
 # Input FIFO. Mplayer runs in server mode (-slave) and
 # will read commands from a fifo:
-input_fifo = f'{UHOME}/pe.audio.sys/.dvb_fifo'
+input_fifo = f'{MAINFOLDER}/.dvb_fifo'
 f = Path( input_fifo )
 if not f.is_fifo():
     sp.Popen( f'mkfifo {input_fifo}'.split() )
@@ -68,7 +67,9 @@ del(f)
 
 # Mplayer output is redirected to a file,
 # so it can be read what it is been playing:
-redirection_path = f'{UHOME}/pe.audio.sys/.dvb_events'
+redirection_path = f'{MAINFOLDER}/.dvb_events'
+# (i) This file grows about 200K per hour if mplayer is the selected input
+#     so players.py will periodically queries metadata info from mplayer.
 
 
 def select_by_name(channel_name):
@@ -113,6 +114,8 @@ def start():
         sys.exit()
     cmd = f'mplayer {options} -profile dvb -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
+        # clearing the file for this session
+        redirfile.write('')
         sp.Popen( cmd.split(), shell=False, stdout=redirfile,
                                             stderr=redirfile )
 
@@ -126,11 +129,12 @@ def stop():
 if __name__ == '__main__':
 
     ### Reading the DVB-T config file
+    DVB_config_path = f'{MAINFOLDER}/DVB-T.yml'
     try:
-        with open(f'{UHOME}/pe.audio.sys/DVB-T.yml', 'r') as f:
+        with open(DVB_config_path, 'r') as f:
             DVB_config = yaml.safe_load(f)
     except:
-        print( '(DVB-T.py) ERROR reading \'pe.audio.sys/DVB-T.yml\'' )
+        print( f'(DVB-T.py) ERROR reading \'{DVB_config_path}\'' )
         sys.exit()
 
     ### Reading the command line

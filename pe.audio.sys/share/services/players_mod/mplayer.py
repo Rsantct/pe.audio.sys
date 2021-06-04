@@ -415,9 +415,12 @@ def mplayer_meta(md, service):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
-        input:      md:         a blank metadata dict,
-                    service:    'cdda' or any else
+        input:      md:         a blank metadata dict to be updated
+                    service:    'dvb' 'istreams' 'cdda' (*)
+
         output:     the updated md dict
+
+        (*) for cdda will use the alternate function cdda_meta()
     """
 
     md['player'] = 'Mplayer'
@@ -440,43 +443,28 @@ def mplayer_meta(md, service):
     # Waiting for Mplayer ANS_xxxx to be written to the output file
     sleep(.25)
 
-    # Trying to read the ANS_xxxx from the Mplayer output file
-    with open(mplayer_redirection_path, 'r') as file:
-        try:
-            # get last 4 lines plus the empty one when splitting
-            tmp = file.read().replace('\x00', '').split('\n')[-5:]
-        except:
-            tmp = []
+    # Reading a tail of 300 bytes from the Mplayer output file
+    fsize = os.path.getsize(mplayer_redirection_path)
+    tail_lenght = 300
+    with open(mplayer_redirection_path, 'rb') as f:
+        f.seek(fsize - tail_lenght)
+        lines = f.read(tail_lenght).decode().split('\n')
 
-    # Flushing the Mplayer output file to avoid continue growing:
-    with open(mplayer_redirection_path, 'w') as file:
-        file.write('')
+        # Some sample lines:
+        #   ANS_FILENAME='Radio 3 HQ'
+        #   ANS_pause=no
+        #   ANS_TIME_POSITION=4399.8
+        #   ANS_LENGTH=-0.95
+        #   ANS_AUDIO_BITRATE='256 kbps'
 
-    # Reading the intended metadata chunks
-    if len(tmp) >= 4:
-    # avoiding indexes issues while no relevant metadata are available
+    # Reading metadata (will take the last valid field if found in lines)
+    for line in lines:
 
-        if 'ANS_AUDIO_BITRATE=' in tmp[0]:
-            bitrate = tmp[0].split('ANS_AUDIO_BITRATE=')[1] \
-                                            .split('\n')[0] \
-                                            .replace("'", "")
-            md['bitrate'] = bitrate.split()[0]
+        if 'ANS_AUDIO_BITRATE=' in line:
+            md['bitrate'] = line.split('=')[-1].replace("'", "").split()[0]
 
-        if 'ANS_FILENAME=' in tmp[1]:
-            # this way will return the whole url:
-            #md['title'] = tmp[1].split('ANS_FILENAME=')[1]
-            # this way will return just the filename:
-            md['title'] = tmp[1].split('ANS_FILENAME=')[1] \
-                                            .split('?')[0] \
-                                            .replace("'", "")
+        if 'ANS_FILENAME=' in line:
+            md['title'] = line.split('=')[-1].replace("'", "")
 
-        if 'ANS_TIME_POSITION=' in tmp[2]:
-            time_pos = tmp[2].split('ANS_TIME_POSITION=')[1] \
-                                             .split('\n')[0]
-            md['time_pos'] = timeFmt( float( time_pos ) )
-
-        if 'ANS_LENGTH=' in tmp[3]:
-            time_tot = tmp[3].split('ANS_LENGTH=')[1].split('\n')[0]
-            md['time_tot'] = timeFmt( float( time_tot ) )
 
     return md
