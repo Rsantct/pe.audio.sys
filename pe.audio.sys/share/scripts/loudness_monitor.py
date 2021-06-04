@@ -188,7 +188,8 @@ if __name__ == '__main__':
             sys.exit()
 
         elif sys.argv[1] == 'start':
-            # Do not import when 'stop' is wanted because it takes a long time
+            # (i) Only import LU_meter when 'start' because it takes a long time,
+            # so it can trouble the stop pkill (can be too much delayed).
             from audiotools.loudness_meter  import  LU_meter
 
         else:
