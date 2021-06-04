@@ -17,9 +17,9 @@ fi
 if [[ $opc == *"-h"* ]]; then
     echo "usage:    peaudiosys_service_restart.sh  [stop | --verbose]"
     echo ""
-    echo "          stop        stops the server"
-    echo "          --verbose   will keep messages to console,"
-    echo "                      otherways will redirect to /dev/null"
+    echo "          stop            stops the server"
+    echo "          -v --verbose    will keep messages to console,"
+    echo "                          otherways will redirect to /dev/null"
     exit 0
 fi
 
