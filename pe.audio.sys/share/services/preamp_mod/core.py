@@ -179,6 +179,7 @@ def init_audio_settings():
                 'bass':             preamp.set_bass,
                 'treble':           preamp.set_treble,
                 'balance':          preamp.set_balance,
+                'subsonic':         preamp.set_subsonic,
                 'equal_loudness':   preamp.set_equal_loudness,
                 'lu_offset':        preamp.set_lu_offset,
                 'midside':          preamp.set_midside,
@@ -614,6 +615,37 @@ class Preamp(object):
         else:
             return 'bad option'
         return 'done'
+
+
+    def set_subsonic(self, value, *dummy):
+
+        if value.lower() in ('off', 'mp', 'lp', 'toggle', 'rotate'):
+
+            nvalue = {  'off':  'off',
+                        'mp':   'mp',
+                        'lp':   'lp',
+                        'toggle': { 'off':  'mp',
+                                    'mp':   'off',
+                                    'lp':   'off'
+                                  }[ self.state["subsonic"] ],
+                        'rotate': { 'off':  'mp',
+                                    'mp':   'lp',
+                                    'lp':   'off'
+                                  }[ self.state["subsonic"] ]
+                     } [ value.lower() ]
+
+            result = bf_set_subsonic( nvalue )
+
+            if result == 'done':
+                self.state["subsonic"] = nvalue
+
+            else:
+                self.state["subsonic"] = 'off'
+
+            return result
+
+        else:
+            return 'bad option'
 
 
     def get_eq(self, *dummy):
