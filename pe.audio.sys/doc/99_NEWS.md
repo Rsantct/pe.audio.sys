@@ -56,4 +56,4 @@ See the `doc/` folder for detailed information about this.
 
 ## Sep 2012, version 1.0c
 
-- New subsonic filtering feature (see README.md under loudspeakers folder)
+- New subsonic filtering feature.
