@@ -26,7 +26,7 @@ The system core is mainly based on:
 
     - XOVER FIR filtering (multiway active loudspeaker crossover filtering)
     - DRC FIR filtering (digital room correction)
-    - EQ: bass, treble, dynamic loudness compensation curves, in-room target eq curves.
+    - EQ: bass, treble, subsonic, dynamic loudness compensation curves, in-room target eq curves.
     - LEVEL control.
 
 
