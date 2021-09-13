@@ -71,8 +71,8 @@ coeff "c.eq" {
 };
 
 # --------- COEFFs for SUBSONIC filter (optional) ---------
-# (i) If you use partitioned filter_length, you can set blocks > 1
-#     in order to use only the 4096 taps from the subsonic.x.pcm files
+# (i) If you use partitioned filter_length, please set blocks
+#     in order to use the 4096 taps from the subsonic.x.pcm files
 
 coeff "subsonic.lp" {
     filename:    "subsonic.lp.pcm";
