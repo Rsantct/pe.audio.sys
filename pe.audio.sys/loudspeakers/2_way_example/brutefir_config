@@ -143,7 +143,7 @@ coeff "xo.lo.minpha.mp" {
 # ------------ CONVOLVER:  level filter  --------------
 # No filtering just for level and channel routing purposes
 # (i) Initial 50 dB atten for a safe startup
-#     Optional subsonic coeff will be loaded here is needed.
+#     Optional subsonic coeff will be loaded here if needed.
 
 filter "f.lev.L" {
     from_inputs:  "in.L"/50.0/1, "in.R"//0;
