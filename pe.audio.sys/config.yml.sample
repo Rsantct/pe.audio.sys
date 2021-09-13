@@ -101,6 +101,7 @@ on_init:
     bass:               0
     treble:             0
     balance:            0
+    subsonic:           off
     equal_loudness:     true
     lu_offset:          6.0     # most records suffers loudness war mastering
     midside:            'off'
