@@ -354,6 +354,7 @@ function page_update() {
     buttonLoudHighlight()
     buttonsToneBalanceHighlight()
     buttonSubsonicHighlight()
+    levelInfoHighlight()()
 
     // Updates metadata player info
     player_info_update()
@@ -884,22 +885,27 @@ function buttonSubsonicHighlight(){
         document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
         document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
         document.getElementById("subsonic").innerText = 'SUBS\n-';
-        document.getElementById("levelInfo").style.borderColor = "white";
-        document.getElementById("levelInfo").style.borderWidth = "thin";
     } else if ( state.subsonic == 'mp' ) {
         document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nmp';
-        document.getElementById("levelInfo").style.borderColor = "DarkRed";
-        document.getElementById("levelInfo").style.borderWidth = "medium";
     } else if ( state.subsonic == 'lp' ) {
         document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nlp';
-        document.getElementById("levelInfo").style.borderColor = "Crimson";
-        document.getElementById("levelInfo").style.borderWidth = "medium";
     }
 }
+function levelInfoHighlight() {
+    if (state.subsonic != 'off' ){  //|| state.xo_set == 'lp'){
+        document.getElementById("levelInfo").style.borderWidth = "thick";
+        document.getElementById("levelInfo").style.borderColor = "DarkRed";
+    }else{
+        document.getElementById("levelInfo").style.borderWidth = "thin";
+        document.getElementById("levelInfo").style.borderColor = "white";
+   }
+}
+
+
 // Send preamp changes and display new values
 function audio_change(param, value) {
     state[param] += value;
