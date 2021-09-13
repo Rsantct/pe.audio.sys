@@ -294,7 +294,7 @@ SUBSONIC pcm files must be named:
 
     These ones are optional files, for more info see the loudspeakers folder.
 
-Subsonic filtering is not performed under the generic EQ stage in order to benefit from a lower latency for the linear phase subsonic filter, when a partitioned filter_lenght is available.
+Subsonic filtering is not performed under the generic EQ stage in order to ensure enough 4096 taps resolution when using a partitioned filter_lenght.
 
 
 ### Full range loudspeaker w/o correction 'xo' filter
