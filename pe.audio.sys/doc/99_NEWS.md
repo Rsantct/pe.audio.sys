@@ -53,3 +53,7 @@ See the `doc/` folder for detailed information about this.
 
 - New documentation for remote pe.audio.sys sources listening.
 - New Firewire Audio Interfaces support.
+
+## Sep 2012, version 1.0c
+
+- New subsonic filtering feature (see README.md under loudspeakers folder)
