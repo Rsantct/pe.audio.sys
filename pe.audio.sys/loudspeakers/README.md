@@ -16,6 +16,8 @@ This is a slightly advanced loudspeaker configuration. Two ways will be filtered
 
 Accordingly, two set of cross over FIR files are provided, both of them are typical 2000 Hz cross over files with a litte of EQ per driver. The 'minpha' set uses typical LR 24 dB/oct slopes. The 'linpha' set uses brickwall slopes at cross over ends.
 
+In addition, an optional **subsonic** filtering is configured by using the provided `subsonic.mp.pcm` and `subsonic.lp.pcm` FIR files with 4098 taps lenght. The 'lp' one has flat GD response but adding 46 ms of extra latency.
+
 
 ### Convolver performance test (3_way_test)
 
