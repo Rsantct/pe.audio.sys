@@ -70,6 +70,28 @@ coeff "c.eq" {
     blocks: 1;
 };
 
+# --------- COEFFs for SUBSONIC filter (optional) ---------
+# (i) If you use partitioned filter_length, you can set blocks > 1
+#     in order to use only the 4096 taps from the subsonic.x.pcm files
+
+coeff "subsonic.lp" {
+    filename:    "subsonic.lp.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+    blocks:      1;
+};
+
+coeff "subsonic.mp" {
+    filename:    "subsonic.mp.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+    blocks:      1;
+};
+
+
+
 # -------  COEFFs for DRC: --------
 # PCMs found under the loudspeaker folder
 
@@ -119,8 +141,9 @@ coeff "xo.lo.minpha.mp" {
 
 
 # ------------ CONVOLVER:  level filter  --------------
-# Not a filter just for level and channel routing purposes
-# (i) initial 50 dB atten for a safe startup
+# No filtering just for level and channel routing purposes
+# (i) Initial 50 dB atten for a safe startup
+#     Optional subsonic coeff will be loaded here is needed.
 
 filter "f.lev.L" {
     from_inputs:  "in.L"/50.0/1, "in.R"//0;
