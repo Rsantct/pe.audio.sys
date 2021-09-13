@@ -101,6 +101,7 @@ Here you are an uncommented bare example of `config.yml`:
         bass:               0
         treble:             0
         balance:            0
+        subsonic:           'off'
         equal_loudness:     true
         lu_offset:          6.0     # most records suffers loudness war mastering
         midside:            'off'
@@ -275,6 +276,7 @@ DRC pcm files must be named:
 
     drc.X.DRCSETNAME.pcm      where X must be L | R
 
+
 XO pcm files must be named:
 
     xo.XX[.C].XOSETNAME.pcm   where XX must be:  fr | lo | mi | hi | sw
@@ -283,6 +285,17 @@ XO pcm files must be named:
     Using C allows to have DEDICATED DRIVER FIR FILTERING if desired.  
 
     (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
+
+
+SUBSONIC pcm files must be named:
+
+    subsonic.mp.pcm
+    subsonic.lp.pcm
+
+    These ones are optional files, for more info see the loudspeakers folder.
+
+Subsonic filtering is not performed under the generic EQ stage in order to benefit from a lower latency for the linear phase subsonic filter, when a partitioned filter_lenght is available.
+
 
 ### Full range loudspeaker w/o correction 'xo' filter
 
