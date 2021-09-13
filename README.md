@@ -83,7 +83,7 @@ Simple control from your smartphone, tablet or desktop **web browser**.
 
     - Calibrated **equal loudness compensation curves** (ISO 226:2003 standard) for low SPL listening without loosing low and high bands perception
 
-    - Hi-Fi preamp controls (volume, tone, balance, stereo/mono, mute, loudness, source selector, amplifier on/off)
+    - Hi-Fi preamp controls (volume, tone, balance, subsonic, stereo/mono, mute, loudness, source selector, amplifier on/off)
 
     - User defined presets for EQ modes and xover FIR filtering
 
