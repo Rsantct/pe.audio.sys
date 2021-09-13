@@ -69,6 +69,28 @@ def bf_cli(cmd):
     return ans
 
 
+def bf_set_subsonic(mode):
+    """ Subsonic filter is applied into the 'level' filtering stage.
+        Coefficients must be named: "subsonic.mp" and/or "subsonic.lp"
+    """
+
+    if mode == 'mp':
+            cmd = 'cfc "f.lev.L" "subsonic.mp"; cfc "f.lev.R" "subsonic.mp";'
+
+    elif mode == 'lp':
+            cmd = 'cfc "f.lev.L" "subsonic.lp"; cfc "f.lev.R" "subsonic.lp";'
+
+    else:
+        cmd = 'cfc "f.lev.L" -1; cfc "f.lev.R" -1;'
+
+    result = bf_cli(cmd)
+
+    if "There is no coefficient set" in result:
+        return 'subsonic coeff not available'
+    else:
+        return 'done'
+
+
 def bf_set_gains( state ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
