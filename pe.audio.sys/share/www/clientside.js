@@ -354,7 +354,7 @@ function page_update() {
     buttonLoudHighlight()
     buttonsToneBalanceHighlight()
     buttonSubsonicHighlight()
-    levelInfoHighlight()()
+    levelInfoHighlight()
 
     // Updates metadata player info
     player_info_update()
