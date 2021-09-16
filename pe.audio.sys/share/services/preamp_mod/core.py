@@ -758,7 +758,7 @@ class Convolver(object):
             xo_coeffs       list of pcm FIRs for XOVER
             drc_sets        sets of FIRs for DRC
             xo_sets         sets of FIRs for XOVER
-            ways            filtering stages (loudspeaker ways)
+            lspk_ways       filtering stages (loudspeaker ways)
 
         methods:
 
@@ -805,14 +805,14 @@ class Convolver(object):
             if xoSetName not in self.xo_sets:
                 self.xo_sets.append( xoSetName )
 
-        # Ways are the XO filter stages definded inside brutefir_config
+        # lspk_ways are the XO filter stages definded inside brutefir_config
         # 'f.WW.C' where WW:fr|lo|mi|hi|sw and C:L|R
-        self.ways = bf_get_configured('ways')
+        self.lspk_ways = bf_get_config()['lspk_ways']
 
         # debug
         #print('drc_sets:', self.drc_sets)
         #print('xo_sets:', self.xo_sets)
-        #print('ways:', self.ways)
+        #print('lspk_ways:', self.lspk_ways)
 
     # Bellow we use *dummy to accommodate the preamp.py parser mechanism
     # wich always will include two arguments for any function call.
@@ -828,7 +828,7 @@ class Convolver(object):
 
     def set_xo(self, xo_set, *dummy):
         if xo_set in self.xo_sets:
-            bf_set_xo( self.ways, self.xo_coeffs, xo_set )
+            bf_set_xo( self.lspk_ways, self.xo_coeffs, xo_set )
             return 'done'
         else:
             return f'xo set \'{xo_set}\' not available'
