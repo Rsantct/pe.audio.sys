@@ -81,7 +81,6 @@ def read_config():
     # Outputs storage
     outputIniciado = False
     outputJackIniciado = False
-    outputsTmp= ''
 
     # Coeff storage
     coeffIndex = -1
