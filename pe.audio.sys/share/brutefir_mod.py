@@ -261,26 +261,147 @@ def bf_set_xo( ways, xo_coeffs, xoID ):
     bf_cli( cmd )
 
 
-def bf_get_configured(prop):
-    """ BETA
-
-        Returns a property from Brutefir configuration.
-
-        (i) Currently only works for getting the 'ways' of the loudspeaker)
+def bf_get_config():
+    """ reads outputsMap, coeffs, filters_at_start
+        from brutefir_config
     """
-    with open(f'{LSPK_FOLDER}/brutefir_config', 'r') as f:
-        lines = f.read().split('\n')
 
-    if prop == 'ways':
-        ways = []
-        for line in [ x for x in lines if x and 'filter' in x.strip().split() ]:
-            if '"f.eq.' not in line and '"f.drc.' not in line and \
-                                              line.startswith('filter'):
-                way = line.split()[1].replace('"', '')
-                ways.append( way )
-        return ways
-    else:
-        return []
+    def read_value(line):
+        return line.strip().split(':')[1].split(';')[0].strip()
+
+    with open(f'{LSPK_FOLDER}/brutefir_config', 'r') as f:
+        lineas = f.readlines()
+
+    # internals
+    outputIniciado = False
+    outputJackIniciado = False
+    coeffIndex = -1
+    coeffIniciado = False
+    filterIndex = -1
+    filterIniciado = False
+
+    # CONFIG
+    lspk_ways           = []
+    outputsMap          = []
+    coeffs              = []
+    filters_at_start    = []
+    sampling_rate       = ''
+    filter_length       = ''
+    float_bits          = ''
+    dither              = ''
+    delays              = ''
+    maxdelay            = 'unlimited'
+
+    # Loops reading lines in brutefir.config (skip lines commented out)
+    for linea in [x for x in lineas if (x.strip() and x.strip()[0] != '#') ]:
+
+        if 'sampling_rate' in linea:
+            sampling_rate = read_value(linea)
+
+        if 'filter_length' in linea:
+            filter_length = read_value(linea)
+
+        if 'float_bits' in linea:
+            float_bits = read_value(linea)
+
+        if 'dither' in linea:
+            dither = read_value(linea)
+
+        if linea.strip().split()[0] == 'delay:':
+            delays = read_value(linea)
+
+        if linea.strip().split()[0] == 'maxdelay:':
+            maxdelay = read_value(linea)
+
+
+        # OUTPUTs
+        if linea.strip().startswith('output '):
+            outputIniciado = True
+
+        if outputIniciado:
+            if 'device:' in linea and '"jack"' in linea:
+                outputJackIniciado = True
+
+        if outputJackIniciado:
+            tmp = linea.split('ports:')[-1].strip()
+            if tmp:
+                tmp = [ x.strip() for x in tmp.split(',') if x and not '}' in x]
+                for item in tmp:
+                    item = item.replace('"','').replace(';','')
+                    pmap = ( item.split('/')[::-1] )
+                    outputsMap.append( pmap ); tmp = ''
+            if "}" in linea: # fin de la lectura de las outputs
+                outputJackIniciado = False
+
+        # COEFFs
+        if linea.startswith("coeff"):
+            coeffIniciado = True
+            coeffIndex +=1
+            cName = linea.split('"')[1].split('"')[0]
+
+        if coeffIniciado:
+            if "filename:" in linea:
+                pcm = linea.split('"')[1].split('"')[0].split("/")[-1]
+            if "attenuation:" in linea:
+                cAtten = linea.split()[-1].replace(';','').strip()
+            if "}" in linea:
+                try:
+                    coeffs.append( {'index':str(coeffIndex), 'name':cName, 'pcm':pcm, 'atten':cAtten} )
+                except:
+                    coeffs.append( {'index':str(coeffIndex), 'name':cName, 'pcm':pcm, 'atten':'0.0'} )
+                coeffIniciado = False
+
+
+        # FILTERs
+        if linea.startswith("filter "):
+            filterIniciado = True
+            filterIndex +=1
+            fName = linea.split('"')[1].split('"')[0]
+            if not ('f.lev' in fName or 'f.eq' in fName or 'f.drc' in fName):
+                if not fName in lspk_ways:
+                    lspk_ways.append(fName)
+
+        if filterIniciado:
+            if "coeff:" in linea:
+                cName = linea.split(':')[1].strip().replace('"', '').replace(";","")
+            if "to_outputs" in linea:
+                fAtten = linea.split("/")[-2]
+                fPol = linea.split("/")[-1].replace(";","")
+            if "}" in linea:
+                filters_at_start.append( {'index':filterIndex, 'name':fName, 'coeff':cName} )
+                filterIniciado = False
+
+
+    with open( f'{UHOME}/.brutefir_defaults', 'r') as f:
+        lineas = f.readlines()
+
+    #for line in lines:
+    for linea in [x for x in lineas if (x.strip() and x.strip()[0] != '#') ]:
+
+        if not sampling_rate:
+            if 'sampling_rate' in linea:
+                sampling_rate = read_value(linea) + ' (DEFAULT)'
+
+        if not filter_length:
+            if 'filter_length' in linea:
+                filter_length = read_value(linea) + ' (DEFAULT)'
+
+        if not float_bits:
+            if 'float_bits' in linea:
+                float_bits = read_value(linea) + ' (DEFAULT)'
+
+    return      {
+                'lspk_ways'         : lspk_ways,
+                'outputsMap'        : outputsMap,
+                'coeffs'            : coeffs,
+                'filters_at_start'  : filters_at_start,
+                'sampling_rate'     : sampling_rate,
+                'filter_length'     : filter_length,
+                'float_bits'        : float_bits,
+                'dither'            : dither,
+                'delays'            : delays,
+                'maxdelay'          : maxdelay,
+                }
 
 
 def bf_is_running():
