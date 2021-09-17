@@ -113,4 +113,4 @@ def jack_clear_preamp():
 
 
 def jack_get_samplerate():
-    return
+    return JCLI.samplerate
