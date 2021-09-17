@@ -262,15 +262,23 @@ def bf_set_xo( ways, xo_coeffs, xoID ):
 
 
 def bf_get_config():
-    """ reads outputsMap, coeffs, filters_at_start
-        from brutefir_config
+    """
+        Read brutefir_config, returns a dictionary:
+
+            'lspk_ways'
+            'outputsMap'
+            'coeffs'
+            'filters_at_start'
+            'sampling_rate'
+            'filter_length'
+            'float_bits'
+            'dither'
+            'delays'
+            'maxdelay'
     """
 
     def read_value(line):
         return line.strip().split(':')[1].split(';')[0].strip()
-
-    with open(f'{LSPK_FOLDER}/brutefir_config', 'r') as f:
-        lineas = f.readlines()
 
     # internals
     outputIniciado = False
@@ -280,7 +288,7 @@ def bf_get_config():
     filterIndex = -1
     filterIniciado = False
 
-    # CONFIG
+    # results variables
     lspk_ways           = []
     outputsMap          = []
     coeffs              = []
@@ -292,7 +300,11 @@ def bf_get_config():
     delays              = ''
     maxdelay            = 'unlimited'
 
-    # Loops reading lines in brutefir.config (skip lines commented out)
+    # Reading brutefir_config
+    with open(f'{LSPK_FOLDER}/brutefir_config', 'r') as f:
+        lineas = f.readlines()
+
+    # Loops reading lines from brutefir_config (skip lines commented out)
     for linea in [x for x in lineas if (x.strip() and x.strip()[0] != '#') ]:
 
         if 'sampling_rate' in linea:
@@ -371,11 +383,11 @@ def bf_get_config():
                 filters_at_start.append( {'index':filterIndex, 'name':fName, 'coeff':cName} )
                 filterIniciado = False
 
-
+    # Reading brutefir_defaults file
     with open( f'{UHOME}/.brutefir_defaults', 'r') as f:
         lineas = f.readlines()
 
-    #for line in lines:
+    # Loops reading lines from brutefir_defaults (skip lines commented out)
     for linea in [x for x in lineas if (x.strip() and x.strip()[0] != '#') ]:
 
         if not sampling_rate:
@@ -390,6 +402,7 @@ def bf_get_config():
             if 'float_bits' in linea:
                 float_bits = read_value(linea) + ' (DEFAULT)'
 
+    # End.
     return      {
                 'lspk_ways'         : lspk_ways,
                 'outputsMap'        : outputsMap,
@@ -402,6 +415,56 @@ def bf_get_config():
                 'delays'            : delays,
                 'maxdelay'          : maxdelay,
                 }
+
+
+def bf_get_config_outputs():
+    """ Read outputs from 'brutefir_config' file, then gives a dictionary.
+    """
+    outputs = {}
+
+    with open(BFCFG_PATH, 'r') as f:
+        bfconfig = f.read().split('\n')
+
+    output_section = False
+
+    for line in bfconfig:
+
+        line = line.split('#')[0]
+        if not line:
+            continue
+
+        if   line.strip().startswith('logic') or \
+             line.strip().startswith('coeff') or \
+             line.strip().startswith('input') or \
+             line.strip().startswith('filter'):
+                output_section = False
+        elif line.strip().startswith('output'):
+                output_section = True
+
+        if not output_section:
+            continue
+
+        line = line.strip()
+
+        if line.startswith('output') and '{' in line:
+            output_section = True
+            if output_section:
+                outs = line.replace('output', '').replace('{', '').split(',')
+                outs = [ x.replace('"', '').strip() for x in outs ]
+
+        if line.startswith('delay:'):
+            i = 0
+            delays = line.replace('delay:', '').split(';')[0].strip().split(',')
+            delays = [ int(x.strip()) for x in delays ]
+            for oname, delay in zip(outs, delays):
+                outputs[str(i)] = {'name': oname, 'delay': delay}
+                i += 1
+
+        if line.startswith('maxdelay:'):
+            maxdelay = int( line.split(':')[1].replace(';', '').strip() )
+            outputs['maxdelay'] = maxdelay
+
+    return outputs
 
 
 def bf_is_running():
@@ -502,54 +565,79 @@ def bf_restart_and_reconnect(bf_sources=[]):
         return warnings
 
 
-def bf_get_config_outputs():
-    """ Read outputs from 'brutefir_config' file, then gets a dictionary.
-    """
-    outputs = {}
+def bf_get_running_filters():
 
-    with open(BFCFG_PATH, 'r') as f:
-        bfconfig = f.read().split('\n')
+    # auxiliary to sum all attenuations inside a filter stage
+    def add_atten_pol(f):
+        at = 0.0 # atten total
+        pol = 1
 
-    output_section = False
+        for key in ['from inputs', 'to outputs', 'from filters', 'to filters']:
+            tmp = f[key].split()
+            # index/atten/multiplier, for instance:
+            # 0/0.0    1/inf
+            # 3/0.0
+            # 4/-9.0/-1
+            for item in [ x for x in tmp if '/' in x ]:
 
-    for line in bfconfig:
+                # atten
+                a = item.split('/')[1]
+                if a != 'inf':
+                    at += float(a)
 
-        line = line.split('#')[0]
-        if not line:
-            continue
+                # multiplier (polarity)
+                try:
+                    tmp = item.split('/')[2]
+                    pol *= (int( tmp ) )
+                except:
+                    pass
 
-        if   line.strip().startswith('logic') or \
-             line.strip().startswith('coeff') or \
-             line.strip().startswith('input') or \
-             line.strip().startswith('filter'):
-                output_section = False
-        elif line.strip().startswith('output'):
-                output_section = True
+        f["atten tot"]  = at
+        f["pol"]        = pol
 
-        if not output_section:
-            continue
+        return f
 
-        line = line.strip()
+    filters = []
+    f_blank = { 'f_num':    None,
+                'f_name':   None,
+                }
 
-        if line.startswith('output') and '{' in line:
-            output_section = True
-            if output_section:
-                outs = line.replace('output', '').replace('{', '').split(',')
-                outs = [ x.replace('"', '').strip() for x in outs ]
+    # query list of filter in Brutefir
+    lines = bf_cli('lf').split('\n')
 
-        if line.startswith('delay:'):
-            i = 0
-            delays = line.replace('delay:', '').split(';')[0].strip().split(',')
-            delays = [ int(x.strip()) for x in delays ]
-            for oname, delay in zip(outs, delays):
-                outputs[str(i)] = {'name': oname, 'delay': delay}
-                i += 1
+    # scanning filters
+    f = {}
+    for line in lines:
 
-        if line.startswith('maxdelay:'):
-            maxdelay = int( line.split(':')[1].replace(';', '').strip() )
-            outputs['maxdelay'] = maxdelay
+        if line and ':' in line[ :5]:   # ':' pos can vary
 
-    return outputs
+            if f:
+                f = add_atten_pol(f)
+                filters.append( f )
+
+            f = f_blank.copy()
+            f["f_num"]  = line.split(':')[0].strip()
+            f["f_name"] = line.split(':')[1].strip().replace('"','')
+
+        if 'coeff set:' in line:
+            f["coeff set"] = line.split(':')[1].strip()
+        if 'delay blocks:' in line:
+            f["delay blocks"] = line.split(':')[1].strip()
+        if 'from inputs:' in line:
+            f["from inputs"] = line.split(':')[1].strip()
+        if 'to outputs:' in line:
+            f["to outputs"] = line.split(':')[1].strip()
+        if 'from filters:' in line:
+            f["from filters"] = line.split(':')[1].strip()
+        if 'to filters:' in line:
+            f["to filters"] = line.split(':')[1].strip()
+
+    # adding the last
+    if f:
+        f = add_atten_pol(f)
+        filters.append( f )
+
+    return filters
 
 
 def bf_get_current_outputs():
