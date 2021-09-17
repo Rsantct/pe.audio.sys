@@ -301,7 +301,7 @@ def bf_get_config():
     maxdelay            = 'unlimited'
 
     # Reading brutefir_config
-    with open(f'{LSPK_FOLDER}/brutefir_config', 'r') as f:
+    with open(BFCFG_PATH, 'r') as f:
         lineas = f.readlines()
 
     # Loops reading lines from brutefir_config (skip lines commented out)
@@ -459,10 +459,6 @@ def bf_get_config_outputs():
             for oname, delay in zip(outs, delays):
                 outputs[str(i)] = {'name': oname, 'delay': delay}
                 i += 1
-
-        if line.startswith('maxdelay:'):
-            maxdelay = int( line.split(':')[1].replace(';', '').strip() )
-            outputs['maxdelay'] = maxdelay
 
     return outputs
 
@@ -662,9 +658,6 @@ def bf_get_current_outputs():
         if not lines[i] or lines[i] == '':
             break
 
-    # Adding maxdelay info from config_file, because not available on runtime
-    outputs['maxdelay'] = bf_get_config_outputs()['maxdelay']
-
     return outputs
 
 
@@ -684,7 +677,7 @@ def bf_add_delay(ms):
 
     cmd = ''
     too_much = False
-    max_available    = outputs['maxdelay']
+    max_available    = int( bf_get_config()['maxdelay'] )
     max_available_ms = max_available / FS * 1e3
 
     for o in outputs:
@@ -695,9 +688,9 @@ def bf_add_delay(ms):
 
         cfg_delay = outputs[o]['delay']
         new_delay = int(cfg_delay + delay)
-        if new_delay > outputs['maxdelay']:
+        if new_delay > max_available:
             too_much = True
-            max_available    = outputs['maxdelay'] - cfg_delay
+            max_available   -= cfg_delay
             max_available_ms = max_available / FS * 1e3
         cmd += f'cod {o} {new_delay};'
 
