@@ -56,4 +56,4 @@ See the `doc/` folder for detailed information about this.
 
 ## Sep 2021, version 1.0c
 
-- New subsonic preamp filtering feature.
+- New subsonic filter as optional preamp feature.
