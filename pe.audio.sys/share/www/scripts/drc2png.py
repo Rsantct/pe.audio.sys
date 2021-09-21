@@ -4,47 +4,24 @@
 
 import sys
 import os
+
+ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import CONFIG, LOUDSPEAKER, LSPK_FOLDER
+from share.miscel import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER, get_bf_samplerate
 
 import  numpy as np
 from    scipy       import signal
 from    matplotlib  import pyplot as plt
 import  yaml
 
-webColor = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
+# Same color as index.html background-color: rgb(38, 38, 38)
+WEBCOLOR    = (.15, .15, .15)
 # https://matplotlib.org/2.0.2/examples/color/named_colors.html
-lineRED  = 'indianred'
-lineBLUE = 'steelblue'
-
-
-def get_Bfir_sample_rate():
-    """ retrieve loudspeaker's filters FS from its Brutefir configuration
-    """
-    FS = 0
-    for fname in (f'{LSPK_FOLDER}/brutefir_config',
-                  f'{UHOME}/.brutefir_defaults'):
-        with open(fname, 'r') as f:
-            lines = f.readlines()
-        for l in lines:
-            if 'sampling_rate:' in l and l.strip()[0] != '#':
-                try:
-                    FS = int( [x for x in l.replace(';', '').split()
-                                         if x.isdigit() ][0] )
-                except:
-                    pass
-        if FS:
-            break   # stops searching if found under lskp folder
-
-    if not FS:
-        raise ValueError('unable to find Brutefir sample_rate')
-
-    if 'defaults' in fname:
-        print( f'(drc2png) *** using .brutefir_defaults SAMPLE RATE ***' )
-
-    return FS
+LINERED     = 'indianred'
+LINEBLUE    = 'steelblue'
+IMGFOLDER   = f'{MAINFOLDER}/share/www/images'
 
 
 def readPCM32(fname):
@@ -94,8 +71,9 @@ def diracs():
 
 
 def get_drc_sets():
+    """ find loudspeaker's drc_sets """
     files   = os.listdir(LSPK_FOLDER)
-    coeffs  = [ x.replace('.pcm', '') for x in files ]
+    coeffs  = [ x.replace('.pcm', '') for x in files if x[:4] == 'drc.']
     drc_coeffs = [ x for x in coeffs if x[:4] == 'drc.'  ]
     #print('drc_coeffs:', drc_coeffs) # debug
     drc_sets = []
@@ -103,11 +81,40 @@ def get_drc_sets():
         drcSetName = drc_coeff[6:]
         if drcSetName not in drc_sets:
             drc_sets.append( drcSetName )
-    return drc_sets + ['none']
+    return drc_sets
+
+
+def png_is_outdated(drc_set):
+    """ check datetime of drcXXX.png file versus drcXXX.pcm file """
+
+    if drc_set == 'none':
+        png_path = f'{IMGFOLDER}/drc_none.png'
+        if os.path.isfile( png_path ):
+            return False
+
+    for ch in 'L', 'R':
+        # pcm path do exists because pcm_sets is derived from the pcm files
+        pcm_path = f'{LSPK_FOLDER}/drc.{ch}.{drc_set}.pcm'
+        # png path might not exist
+        png_path = f'{IMGFOLDER}/drc_{drc_set}.png'
+        try:
+            pcm_ctime = os.path.getctime(pcm_path) # the lower one
+            png_ctime = os.path.getctime(png_path)
+            if (png_ctime - pcm_ctime) < 0:
+                if verbose:
+                    print(f'({ME}) found old PNG file for "{drc_set}"')
+                return True
+        except:
+            if verbose:
+                print(f'({ME}) PNG file for "{drc_set}" not found')
+            return True
+
+    return False
 
 
 if __name__ == '__main__':
 
+    # Read command line (quiet mode or help)
     verbose = True
     if sys.argv[1:]:
         if '-q' in sys.argv[1]:
@@ -116,28 +123,38 @@ if __name__ == '__main__':
             print(__doc__)
             exit()
 
-    FS = get_Bfir_sample_rate()
-    if verbose:
-        print( f'(drc2png) using sample rate: {FS}' )
-
-    drc_sets = get_drc_sets()
-
+    # Prepare plot
     plt.style.use('dark_background')
     plt.rcParams.update({'font.size': 6})
     freq_ticks  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
     freq_labels = ['20', '50', '100', '200', '500', '1K', '2K',
                    '5K', '10K', '20K']
+    # Get sample rate
+    FS = get_bf_samplerate()
+    if verbose:
+        print( f'(drc2png) using sample rate: {FS}' )
 
+    # Get DRC sets names
+    drc_sets = get_drc_sets()
+
+    # Do plot png files from pcm files
+    drc_sets.append('none')
     for drc_set in drc_sets:
 
-        if verbose:
-            print( f'(drc2png) working: {LOUDSPEAKER} - {drc_set} ... .. .' )
+        # Check for outdated PNG file
+        if not png_is_outdated(drc_set):
+            if verbose:
+                print(f'({ME}) found PNG file for {LOUDSPEAKER}: {drc_set}')
+            continue
+        else:
+            if verbose:
+                print(f'({ME}) processing PNG file for {LOUDSPEAKER}: {drc_set}')
 
         fig, ax = plt.subplots()
         fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
         fig.set_figheight( 1.5 )
-        fig.set_facecolor( webColor )
-        ax.set_facecolor( webColor )
+        fig.set_facecolor( WEBCOLOR )
+        ax.set_facecolor( WEBCOLOR )
         ax.set_xscale('log')
         ax.set_xlim( 20, 20000 )
         ax.set_ylim( -15, 5 )
@@ -155,14 +172,14 @@ if __name__ == '__main__':
             freqs, magdB = get_spectrum( IR["imp"], FS )
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
-                    color={'L': lineBLUE, 'R': lineRED}
+                    color={'L': LINEBLUE, 'R': LINERED}
                           [ IR["channel"] ],
                     linewidth=3
                     )
 
-        ax.legend( facecolor=webColor, loc='lower right')
-        fpng = f'{UHOME}/pe.audio.sys/share/www/images/drc_{drc_set}.png'
-        plt.savefig( fpng, facecolor=webColor )
+        ax.legend( facecolor=WEBCOLOR, loc='lower right')
+        fpng = f'{IMGFOLDER}/drc_{drc_set}.png'
+        plt.savefig( fpng, facecolor=WEBCOLOR )
         if verbose:
-            print( f'(drc2png) saved: \'{fpng}\' ' )
+            print( f'({ME}) saved: \'{fpng}\' ' )
         #plt.show()

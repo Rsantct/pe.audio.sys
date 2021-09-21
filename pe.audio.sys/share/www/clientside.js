@@ -353,6 +353,8 @@ function page_update() {
     buttonMonoHighlight()
     buttonLoudHighlight()
     buttonsToneBalanceHighlight()
+    buttonSubsonicHighlight()
+    levelInfoHighlight()
 
     // Updates metadata player info
     player_info_update()
@@ -878,6 +880,31 @@ function buttonLoudHighlight(){
         document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
     }
 }
+function buttonSubsonicHighlight(){
+    if ( state.subsonic == 'off' ) {
+        document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
+        document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
+        document.getElementById("subsonic").innerText = 'SUBS\n-';
+    } else if ( state.subsonic == 'mp' ) {
+        document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
+        document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
+        document.getElementById("subsonic").innerText = 'SUBS\nmp';
+    } else if ( state.subsonic == 'lp' ) {
+        document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
+        document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
+        document.getElementById("subsonic").innerText = 'SUBS\nlp';
+    }
+}
+function levelInfoHighlight() {
+    if (state.subsonic != 'off' ){  //|| state.xo_set == 'lp'){
+        document.getElementById("levelInfo").style.borderWidth = "thick";
+        document.getElementById("levelInfo").style.borderColor = "DarkRed";
+    }else{
+        document.getElementById("levelInfo").style.borderWidth = "thin";
+        document.getElementById("levelInfo").style.borderColor = "white";
+   }
+}
+
 
 // Send preamp changes and display new values
 function audio_change(param, value) {
@@ -960,12 +987,14 @@ function advanced(mode) {
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
         document.getElementById( "RAOD").style.display = "inline-block";
+        document.getElementById( "subsonic").style.display = "inline-block";
     }
     else {
         document.getElementById( "advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
         document.getElementById( "RAOD").style.display = "none";
+        document.getElementById( "subsonic").style.display = "none";
     }
 }
 

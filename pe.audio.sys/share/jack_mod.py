@@ -33,7 +33,7 @@ import jack
 JCLI = jack.Client('pe.audio.sys', no_start_server=True)
 
 
-def jack_connect(p1, p2, mode='connect', wait=1):
+def jack_connect(p1, p2, mode='connect', wait=1, verbose=True):
     """ Low level tool to connect / disconnect a pair of ports,
         by retriyng for a while
     """
@@ -51,7 +51,8 @@ def jack_connect(p1, p2, mode='connect', wait=1):
                 JCLI.connect(p1, p2)
             return 'done'
         except jack.JackError as e:
-            print( f'(jack_mod) Exception: {e}' )
+            if verbose:
+                print( f'(jack_mod) Exception: {e}' )
             return e
         wait -= 1
         sleep(1)
@@ -112,4 +113,4 @@ def jack_clear_preamp():
 
 
 def jack_get_samplerate():
-    return
+    return JCLI.samplerate

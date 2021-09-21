@@ -179,6 +179,7 @@ def init_audio_settings():
                 'bass':             preamp.set_bass,
                 'treble':           preamp.set_treble,
                 'balance':          preamp.set_balance,
+                'subsonic':         preamp.set_subsonic,
                 'equal_loudness':   preamp.set_equal_loudness,
                 'lu_offset':        preamp.set_lu_offset,
                 'midside':          preamp.set_midside,
@@ -616,6 +617,37 @@ class Preamp(object):
         return 'done'
 
 
+    def set_subsonic(self, value, *dummy):
+
+        if value.lower() in ('off', 'mp', 'lp', 'toggle', 'rotate'):
+
+            nvalue = {  'off':  'off',
+                        'mp':   'mp',
+                        'lp':   'lp',
+                        'toggle': { 'off':  'mp',
+                                    'mp':   'off',
+                                    'lp':   'off'
+                                  }[ self.state["subsonic"] ],
+                        'rotate': { 'off':  'mp',
+                                    'mp':   'lp',
+                                    'lp':   'off'
+                                  }[ self.state["subsonic"] ]
+                     } [ value.lower() ]
+
+            result = bf_set_subsonic( nvalue )
+
+            if result == 'done':
+                self.state["subsonic"] = nvalue
+
+            else:
+                self.state["subsonic"] = 'off'
+
+            return result
+
+        else:
+            return 'bad option'
+
+
     def get_eq(self, *dummy):
         freq, mag , pha = bf_read_eq()
         return { 'band': freq.tolist(), 'mag': mag.tolist(),
@@ -726,7 +758,7 @@ class Convolver(object):
             xo_coeffs       list of pcm FIRs for XOVER
             drc_sets        sets of FIRs for DRC
             xo_sets         sets of FIRs for XOVER
-            ways            filtering stages (loudspeaker ways)
+            lspk_ways       filtering stages (loudspeaker ways)
 
         methods:
 
@@ -773,14 +805,14 @@ class Convolver(object):
             if xoSetName not in self.xo_sets:
                 self.xo_sets.append( xoSetName )
 
-        # Ways are the XO filter stages definded inside brutefir_config
+        # lspk_ways are the XO filter stages definded inside brutefir_config
         # 'f.WW.C' where WW:fr|lo|mi|hi|sw and C:L|R
-        self.ways = bf_get_configured('ways')
+        self.lspk_ways = bf_get_config()['lspk_ways']
 
         # debug
         #print('drc_sets:', self.drc_sets)
         #print('xo_sets:', self.xo_sets)
-        #print('ways:', self.ways)
+        #print('lspk_ways:', self.lspk_ways)
 
     # Bellow we use *dummy to accommodate the preamp.py parser mechanism
     # wich always will include two arguments for any function call.
@@ -796,7 +828,7 @@ class Convolver(object):
 
     def set_xo(self, xo_set, *dummy):
         if xo_set in self.xo_sets:
-            bf_set_xo( self.ways, self.xo_coeffs, xo_set )
+            bf_set_xo( self.lspk_ways, self.xo_coeffs, xo_set )
             return 'done'
         else:
             return f'xo set \'{xo_set}\' not available'

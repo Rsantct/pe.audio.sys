@@ -40,6 +40,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="white">
+    <meta name="apple-mobile-web-app-title" content="Notentool">
 
     <!-- The javascript functions used when an event occurs on this page body's -->
     <script src="clientside.js"></script>
@@ -294,6 +296,11 @@
           </tr>
           <tr>
             <td id="level_buttons21">
+                <button type="button" id="subsonic" style="display:none;font-size:0.7em"
+                        title="Subsonic Filter"
+                        onmousedown="control_cmd('preamp subsonic rotate')">
+                        SUBS.
+                </button>
             </td>
             <td id="level_buttons22">
                 <button type="button" onmousedown="audio_change('level', -3)" >
@@ -325,7 +332,7 @@
         </td>
         <td id="LU_offset_slider" >
             <input  id="LU_slider" class="LU_slider" type="range"
-                    min="0" step="3" max="12.0"
+                    min="0" step="3" max="15.0"
                     title="Adjust as estimated 'loudness war' music program"
                     oninput="LU_slider_action(this.value)">
         </td>
@@ -348,7 +355,7 @@
         </td>
         <td id="LU_meter_bar">
         <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
-                min="0" optimum="0" low="5" high="8" max="12" ></meter>
+                min="0" optimum="0" low="5" high="8" max="15" ></meter>
         </td>
       </tr>
     </table>

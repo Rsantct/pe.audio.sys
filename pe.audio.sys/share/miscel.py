@@ -142,9 +142,9 @@ class Fmt:
 # Reads the FS to be used by Brutefir
 # (i) This function is intentionally kept here, to be used even before Brutefir runs.
 def get_bf_samplerate():
-    """ Retrieve loudspeaker's filters FS:
-            - from         brutefir_config'   loudspeaker file,
-            - or from   ~/.brutefir_defaults  default     file
+    """ Retrieves loudspeaker's filters FS:
+            - from         brutefir_config    (the loudspeaker config file),
+            - or from   ~/.brutefir_defaults  (the default config file).
     """
     FS = 0
 
