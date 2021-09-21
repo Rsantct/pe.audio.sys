@@ -45,13 +45,11 @@ import yaml
 import os
 import sys
 
+ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from   share.miscel         import *
-
-
-ME = __file__.split('/')[-1]
 
 
 def prepare_extra_cards(channels=2):
@@ -301,35 +299,14 @@ def check_state_file():
                 recover_state(reason='missed')
 
 
-def prepare_drc_graphs():
-
-    # find loudspeaker's drc_sets
-    pcm_files  = os.listdir(LSPK_FOLDER)
-    drc_coeffs  = [ x.replace('.pcm', '') for x in pcm_files
-                                          if x[:4] == 'drc.' ]
-    drc_sets = []
-    for drc_coeff in drc_coeffs:
-        drcSetName = drc_coeff[6:]
-        if drcSetName not in drc_sets:
-            drc_sets.append(drcSetName)
-    drc_sets += ['none']
-
-    # find existing drc graph images
-    img_folder = f'{MAINFOLDER}/share/www/images'
-    png_files = [ x for x in os.listdir(img_folder) if x[:4] == 'drc_' ]
-    png_sets =  [ x[4:-4] for x in png_files ]
-
-    # If graphs exist, skip generate them
-    if sorted(drc_sets) == sorted(png_sets):
-        print(f'({ME}) found drc graphs in web/images folders')
-    else:
-        print(f'({ME}) processing drc sets to web/images in background')
-        sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
-
-
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
     sp.Popen(['python3', f'{MAINFOLDER}/share/brutefir_eq2png.py'])
+
+
+def prepare_drc_graphs():
+    print(f'({ME}) processing drc sets to web/images in background')
+    sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
 
 if __name__ == "__main__":
