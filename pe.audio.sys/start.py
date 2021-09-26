@@ -305,7 +305,7 @@ def update_bfeq_graph():
 
 
 def prepare_drc_graphs():
-    print(f'({ME}) processing drc sets to web/images in background')
+    print(f'({ME}) processing drc sets to web/images/{LOUDSPEAKER} in background')
     sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
 
