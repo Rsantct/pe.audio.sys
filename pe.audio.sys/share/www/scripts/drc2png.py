@@ -21,7 +21,7 @@ WEBCOLOR    = (.15, .15, .15)
 # https://matplotlib.org/2.0.2/examples/color/named_colors.html
 LINERED     = 'indianred'
 LINEBLUE    = 'steelblue'
-IMGFOLDER   = f'{MAINFOLDER}/share/www/images'
+IMGFOLDER   = f'{MAINFOLDER}/share/www/images/{LOUDSPEAKER}'
 
 
 def readPCM32(fname):
@@ -112,6 +112,15 @@ def png_is_outdated(drc_set):
     return False
 
 
+def prepare_IMGFOLDER():
+    try:
+        os.mkdir(IMGFOLDER)
+    except FileExistsError:
+        pass
+    except:
+        print(f'{ME} unexpected error when mkdir "{IMGFOLDER}"')
+
+
 if __name__ == '__main__':
 
     # Read command line (quiet mode or help)
@@ -123,12 +132,16 @@ if __name__ == '__main__':
             print(__doc__)
             exit()
 
+    # Prepare loudspeaker image folder
+    prepare_IMGFOLDER()
+
     # Prepare plot
     plt.style.use('dark_background')
     plt.rcParams.update({'font.size': 6})
     freq_ticks  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
     freq_labels = ['20', '50', '100', '200', '500', '1K', '2K',
                    '5K', '10K', '20K']
+
     # Get sample rate
     FS = get_bf_samplerate()
     if verbose:
