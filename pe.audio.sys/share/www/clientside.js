@@ -1014,7 +1014,9 @@ function graphs_toggle() {
         document.getElementById("drc_graph").style.display = 'block';
         document.getElementById("bfeq_graph").style.display = 'block';
         // Points to the current DRC png
-        document.getElementById("drc_img").src =  'images/drc_' + state.drc_set
+        document.getElementById("drc_img").src =  'images/'
+                                                + state.loudspeaker
+                                                + '/drc_' + state.drc_set
                                                                + '.png';
         document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?';
     }else{
