@@ -318,7 +318,7 @@ function page_update() {
     }
 
     // Updates the Integrated LU monitor and the LU offset slider
-    document.getElementById("LU_slider").value           =   state.lu_offset;
+    document.getElementById("LU_slider").value           = (15 - state.lu_offset);
     document.getElementById("LU_offset_value").innerText =
                                         'LU offset: ' + -1 * state.lu_offset;
     try{
@@ -329,7 +329,7 @@ function page_update() {
         if ( scope == 'title' ) {
             scope = 'track';
         }
-        document.getElementById("LU_meter").value           = LU_I;
+        document.getElementById("LU_meter").value           = -LU_I;
         document.getElementById("LUscopeSelector").value    = scope;
         document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
     }catch(e){
@@ -768,7 +768,7 @@ function run_macro(mFname){
 
 // Manages the LU_offset slider
 function LU_slider_action(slider_value){
-    control_cmd( 'lu_offset ' + slider_value )
+    control_cmd( 'lu_offset ' + (15 - parseInt(slider_value) ).toString() )
 }
 
 
