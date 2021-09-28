@@ -302,6 +302,8 @@ function page_update() {
     // Cancel updating if not connected
     if (!server_available){
         document.getElementById("levelInfo").innerHTML  = '--';
+        player_info_clear();
+        player_controls_clear();
         return;
     }
 
@@ -574,6 +576,28 @@ function player_info_update() {
         }
     }
 }
+
+// Aux to clear controls when not connected
+function player_controls_clear() {
+    document.getElementById("buttonStop").style.background  = "rgb(100, 100, 100)";
+    document.getElementById("buttonStop").style.color       = "lightgray";
+    document.getElementById("buttonPause").style.background = "rgb(100, 100, 100)";
+    document.getElementById("buttonPause").style.color      = "lightgray";
+    document.getElementById("buttonPlay").style.background  = "rgb(100, 100, 100)";
+    document.getElementById("buttonPlay").style.color       = "lightgray";
+}
+
+// Aux to clear metadata when not connected
+function player_info_clear() {
+    document.getElementById("bitrate").innerText = "-\nkbps"
+    document.getElementById("artist").innerText = "-"
+    document.getElementById("track_info").innerText = "-"
+    document.getElementById("track_info").innerText += "\n-"
+    document.getElementById("time").innerText = "-"
+    document.getElementById("album").innerText = "-"
+    document.getElementById("title").innerText = "-"
+}
+
 
 // Emerge a dialog to select a disk track to be played
 function select_track() {
