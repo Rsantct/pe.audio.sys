@@ -928,7 +928,8 @@ function buttonSubsonicHighlight(){
     }
 }
 function levelInfoHighlight() {
-    if (state.subsonic != 'off' ){  //|| state.xo_set == 'lp'){
+    // currently only indicates subsonic filter activated
+    if (state.subsonic != 'off' ){
         document.getElementById("levelInfo").style.borderWidth = "thick";
         document.getElementById("levelInfo").style.borderColor = "DarkRed";
     }else{
