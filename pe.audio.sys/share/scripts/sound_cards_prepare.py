@@ -112,11 +112,11 @@ def restore_alsa_card(card):
                             restore {bareCardName}'.split() )
                 print(  f'{Fmt.BLUE}'
                         f'(sound_cards_prepare) restoring alsa settings: '
-                        f'\'{asound_file}\' NO FOUND.{Fmt.END}' )
+                        f'\'{asound_file}\'{Fmt.END}' )
             else:
                 print(  f'{Fmt.RED}'
-                        f'(sound_cards_prepare) ERROR restoring alsa settings: '
-                        f'\'{card}\'{Fmt.END}' )
+                        f'(sound_cards_prepare) restoring alsa settings: '
+                        f'\'{asound_file}\' NOT FOUND{Fmt.END}' )
         except:
             print(  f'{Fmt.RED}'
                     f'(sound_cards_prepare) PROBLEMS restoring alsa: '
@@ -127,15 +127,15 @@ def restore_ffado_card(card):
     ''' FFADO firewire cards needs a custom made script, named like:
 
             ~/pe.audio.sys/.0x00130e01000406d2.sh
-        
+
         where 0x...... is the firewire GUID (see ffado-test ListDevices)
-        
+
         For details about this script see the 'doc/' folder.
     '''
-    
+
     guid = card.replace('guid:','')
     scriptPath = f'{MAINFOLDER}/.{guid}.sh'
-    
+
     if os.path.isfile( scriptPath ):
         print(  f'{Fmt.BLUE}'
                 f'(sound_cards_prepare) restoring ffado settings for: '
@@ -147,7 +147,7 @@ def restore_ffado_card(card):
                 f'(sound_cards_prepare) ERROR restoring ffado settings: '
                 f'\'{scriptPath}\' NOT FOUND.{Fmt.END}' )
 
-        
+
 if __name__ == "__main__":
 
     if sys.argv[1:]:
@@ -171,17 +171,17 @@ if __name__ == "__main__":
                 ccname = config_card.replace('hw:', '').split(',')[0]
                 # firewire
                 ccname = config_card.replace('guid:', '').split(',')[0]
-                
+
                 if ccname in pa_cards[pa_card]["alsa_name"] or \
                    ccname in pa_cards[pa_card]["pa_name"]:
                     PA_release_card( pa_cards[pa_card]["pa_name"] )
 
     # Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
     for card in config_cards:
-        
+
         if 'hw:' in card:
             restore_alsa_card(card)
-        
+
         elif 'guid:' in card:
             restore_ffado_card(card)
 
