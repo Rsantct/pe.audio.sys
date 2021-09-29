@@ -333,7 +333,11 @@ function page_update() {
         }
         document.getElementById("LU_meter").value           = -LU_I;
         document.getElementById("LUscopeSelector").value    = scope;
-        document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
+        if (LU_I <= 0){
+          document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
+        }else{
+          document.getElementById("LU_meter_value").innerHTML ='LU monit: +' + LU_I;
+        }
     }catch(e){
         console.log('Error getting loudness monitor from server', e.name, e.message);
     }
