@@ -106,7 +106,7 @@ def main():
     jloop.start()
     # 2nd: the SOURCE's connection loop ports:
     for source in CONFIG['sources']:
-        pname = CONFIG['sources'][source]['capture_port']
+        pname = CONFIG['sources'][source]['jack_pname']
         if 'loop' in pname:
             jloop = mp.Process( target=jack_loop, args=(pname,) )
             jloop.start()
