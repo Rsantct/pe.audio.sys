@@ -112,8 +112,8 @@ Please refer to **`doc/80_Pulseaudio`**
         ...
         ...
         BT:
-            gain: 0
-            capture_port:   pulse_sink
+            gain:       0
+            jack_pname: pulse_sink
 
     # ========================= MISCEL CONFIGURATIONS ==============================
     ...
@@ -150,8 +150,8 @@ Please use the provided `.asoundrc.sample` file in order to enable the ALSA to J
         ...
         ...
         BT:
-            gain: 0
-            capture_port:   alsa_loop
+            gain:       0
+            jack_pname: alsa_loop
 
     # ========================= MISCEL CONFIGURATIONS ==============================
     ...
