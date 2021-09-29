@@ -124,11 +124,12 @@
         td#level_buttons22   { border-style: none; width:80%; }
         td#level_buttons23   { border-style: none; width:10%; }
 
-        /* --- LU OFFSET --- */
+        /* --- LU OFFSET CELLS--- */
         td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
         td#LU_offset_value   { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.2em; vertical-align: middle;}
         td#LU_offset_slider  { width:50%; border-style:none; vertical-align: middle;}
-        /* The LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
+
+        /* --- LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
         .LU_slider {
           -webkit-appearance:   none;
           width:                100%;
@@ -158,12 +159,37 @@
           cursor:               pointer;
         }
 
-        /* --- LU MONITOR --- */
-        td#LU_meter_reset    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
+        /* --- LU MONITOR CELLS--- */
+        td#LU_meter_reset    { width:18%; border-style:none ; font-size:1.0em; vertical-align: middle;}
         td#LU_meter_value    { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:1.2em; vertical-align: middle;}
         td#LU_meter_bar      { width:50%; border-style:none; vertical-align: middle;}
-        /* The LU METER class (type METER) */
-        .LU_meter { width: 100%; height: 0.8em; border: 1px solid; }
+
+        /* --- LU METER class and handlers (type METER) --- */
+        .LU_meter { width: 100%; height: 1.0em; border: 2px solid rgb(100,100,100);
+                    border-radius: 5px;
+        }
+        /* As per we want an inverse bar look, we need to tweak here */
+        .LU_meter::-webkit-meter-bar {
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 0,     0, 0.6)    25%,
+                rgba(255, 255,   0, 0.6)    75%,
+                rgba(0,   255,   0, 0.6)    100%
+                );
+            border-radius: 5px;
+        }
+        .LU_meter::-webkit-meter-optimum-value {
+            background: none; /* Required to get rid of the default background property */
+            background-color: rgb(38, 38, 38);
+        }
+        .LU_meter::-webkit-meter-suboptimum-value {
+            background: none; /* Required to get rid of the default background property */
+            background-color: rgb(38, 38, 38);
+        }
+        .LU_meter::-webkit-meter-even-less-good-value {
+            background: none; /* Required to get rid of the default background property */
+            background-color: rgb(38, 38, 38);
+        }
 
 
         table#player_info   { text-align: left; }
@@ -331,6 +357,7 @@
         <td id="LU_offset_value">LU offset: --
         </td>
         <td id="LU_offset_slider" >
+            <!-- Displayed in reverse mode in relation to its volume reduction effect -->
             <input  id="LU_slider" class="LU_slider" type="range"
                     min="0" step="3" max="15.0"
                     title="Adjust as estimated 'loudness war' music program"
@@ -354,8 +381,9 @@
             LU monit: --
         </td>
         <td id="LU_meter_bar">
-        <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
-                min="0" optimum="0" low="5" high="8" max="15" ></meter>
+        <!-- Displayed in reverse mode in relation to its volume reduction effect -->
+        <meter id="LU_meter" title="LU meter (loudness units)" class="LU_meter"
+                value="0" min="-15" max="0" ></meter>
         </td>
       </tr>
     </table>
