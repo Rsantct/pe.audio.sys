@@ -64,7 +64,7 @@ This file allows to configure the whole system.
 
 Some points:
 
-- The necessary preamp **loop ports** will be auto spawn under JACK when source `capture_ports` are named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
+- The necessary preamp **loop ports** will be auto spawn under JACK when source `jack_pname` is named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
 
 - You can force some audio **settings at start up**, see `init_xxxxx` options.
 
@@ -121,24 +121,24 @@ Here you are an uncommented bare example of `config.yml`:
     sources:
     
         spotify:
-            capture_port:   alsa_loop
+            jack_pname:    alsa_loop
             gain:           0.0
             xo:             lp
         mpd:
-            capture_port:   mpd
+            jack_pname:     mpd
             gain:           0.0
             xo:             lp
         istreams:
-            capture_port:   mplayer_istreams
+            jack_pname:     mplayer_istreams
             gain:           0.0
             xo:             lp
         tv:
-            capture_port:   system
+            jack_pname:     system
             gain:           +6.0                # low level source
             xo:             mp                  # low latency filtering
             target:         none                # preferred for movie dialogue
         remote:
-            capture_port:   192.168.1.234       # remote zita-j2n sender
+            jack_pname:     192.168.1.234       # remote zita-j2n sender
             gain:           0.0
             xo:             lp
 
