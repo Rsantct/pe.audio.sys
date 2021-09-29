@@ -268,11 +268,11 @@
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud"
-                        title="Loudness Contour" onmousedown="equal_loudness_toggle()">LC</button>
+                        title="Loudness Contour compensation" onmousedown="equal_loudness_toggle()">LC</button>
             </td>
 
             <!-- LEVEL display -->
-            <td id="levelInfo" rowspan="2">
+            <td id="levelInfo" rowspan="2" title="Target volume">
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -360,7 +360,7 @@
             <!-- Displayed in reverse mode in relation to its volume reduction effect -->
             <input  id="LU_slider" class="LU_slider" type="range"
                     min="0" step="3" max="15.0"
-                    title="Adjust as estimated 'loudness war' music program"
+                    title="Adjust as monitored LU to balance Loudness Compensation and target volume"
                     oninput="LU_slider_action(this.value)">
         </td>
       </tr>
@@ -382,7 +382,7 @@
         </td>
         <td id="LU_meter_bar">
         <!-- Displayed in reverse mode in relation to its volume reduction effect -->
-        <meter id="LU_meter" title="LU meter (loudness units)" class="LU_meter"
+        <meter id="LU_meter" title="Loudness Units meter EBU R128" class="LU_meter"
                 value="0" min="-15" max="0" ></meter>
         </td>
       </tr>
