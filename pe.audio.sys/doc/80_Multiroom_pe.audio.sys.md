@@ -21,8 +21,8 @@ The file `share/scripts/zita_link.py` allows you to receive the listening source
         ...
         ...
         remoteLivingRoom:
-            gain: 0
-            capture_port:   192.168.1.123
+            gain:       0
+            jack_pname: 192.168.1.123
     ```
     
 The `zita_link.py` script will autospawn a new jack port named `192.168.1.123`
