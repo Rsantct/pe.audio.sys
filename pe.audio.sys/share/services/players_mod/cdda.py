@@ -51,9 +51,9 @@ else:
 
 # cd port under Jack
 try:
-    CD_CAPTURE_PORT = CONFIG['sources']['cd']['capture_port']
+    CD_JACK_PNAME = CONFIG['sources']['cd']['jack_pname']
 except:
-    CD_CAPTURE_PORT = 'mplayer_cdda'
+    CD_JACK_PNAME = 'mplayer_cdda'
 
 # cdda info template with a fake track #1
 CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',

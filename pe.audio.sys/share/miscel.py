@@ -656,8 +656,8 @@ def get_remote_source_info():
     '''
     # Retrieving the remote sender address from 'config.yml'.
     # For a 'remote.....' named source, it is expected to have
-    # an IP address kind of in its capture_port field:
-    #   capture_port:  X.X.X.X
+    # an IP address kind of in its jack_pname field:
+    #   jack_pname:  X.X.X.X
     # so this way we can query the remote sender to run 'zita-j2n'
 
     remote_addr = ''
@@ -665,7 +665,7 @@ def get_remote_source_info():
 
     for source in CONFIG["sources"]:
         if 'remote' in source:
-            tmp = CONFIG["sources"][source]["capture_port"]
+            tmp = CONFIG["sources"][source]["jack_pname"]
             tmp_addr = tmp.split(':')[0]
             tmp_port = tmp.split(':')[-1]
             if is_IP(tmp_addr):
