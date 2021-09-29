@@ -141,7 +141,6 @@ function page_initiate(){
 // PAGE STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
 
-
     // MAIN_SELECTOR
     function fill_in_main_selector(){
         // standard INPUTS manager
@@ -246,6 +245,11 @@ function fill_in_page_statics(){
     // Web header:
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        state.loudspeaker;
+
+    // Level cell info
+    document.getElementById("levelInfo").title = 'Target volume ref@' +
+                                                 state.loudspeaker_ref_SPL + 'dBSPL';
+
     // Selectors:
     fill_in_main_selector();
     fill_in_target_selector();
