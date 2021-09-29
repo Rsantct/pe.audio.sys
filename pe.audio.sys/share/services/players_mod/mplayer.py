@@ -205,7 +205,7 @@ def cdda_get_current_track():
 
 
 # Aux to disconect Mplayer jack ports from preamp ports.
-def pre_connect(mode, pname=cdda.CD_CAPTURE_PORT):
+def pre_connect(mode, pname=cdda.CD_JACK_PNAME):
     # (i) Mplayer cdda pausing becomes on strange behavior,
     #     a stutter audio frame stepping phenomena,
     #     even if a 'pausing_keep mute 1' command was issued.
