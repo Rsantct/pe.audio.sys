@@ -32,7 +32,7 @@ sources:
     ...
     spotify:
         gain:           0.0
-        capture_port:   pulse_sink
+        jack_pname:     pulse_sink
 
 
 scripts:
