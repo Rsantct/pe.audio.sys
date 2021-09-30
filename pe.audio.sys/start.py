@@ -41,7 +41,6 @@
 
 import subprocess as sp
 from   time import sleep, time, ctime
-import yaml
 import os
 import sys
 
