@@ -1,12 +1,11 @@
 ## Wake On Lan
 
-If you have a 24x7 Raspberry Pi kind of micro PC running at home, you may want to remotely WakeOnLan your main pe.audio.sys PC system.
-
-To do so you can either:
+To remotely WakeOnLan your main pe.audio.sys PC system, you can either:
   
-- Use some smartphone app with WOL capability
-- Use the provided auxiliary web page
+- Use some smartphone app with WOL capability (geek option)
+- Use the provided auxiliary web page (end user friendly option)
 
+If you have a 24x7 Raspberry Pi kind of micro PC running at home, you may want to use it as a WOL server.
 
 
 On your 24x7 micro PC you'll need:
