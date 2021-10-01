@@ -262,7 +262,7 @@ def run_scripts(mode='start'):
         if type(script) == dict:
             script = list(script.keys())[0]
         print(f'({ME}) will {mode} the script \'{script}\' ...')
-        sp.Popen(f'{MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
+        sp.Popen(f'python3 {MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
                                   stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
