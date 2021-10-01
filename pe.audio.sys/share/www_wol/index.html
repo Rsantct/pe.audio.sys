@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Wake On LAN </title>
+
+    <!--
+    Copyright (c) 2021 Rafael Sánchez
+    This file is part of 'pe.audio.sys', a PC based personal audio system.
+
+    This is based on 'pre.di.c,' a preamp and digital crossover
+    https://github.com/rripio/pre.di.c
+    Copyright (C) 2018 Roberto Ripio
+    'pre.di.c' is based on 'FIRtro', a preamp and digital crossover
+    https://github.com/AudioHumLab/FIRtro
+    Copyright (c) 2006-2011 Roberto Ripio
+    Copyright (c) 2011-2016 Alberto Miguélez
+    Copyright (c) 2016-2018 Rafael Sánchez
+
+    'pe.audio.sys' is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    'pe.audio.sys' is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
+    -->
+
+    <!-- https://favicon.io -->
+    <linkrel="apple-touch-icon"sizes="180x180"href="/apple-touch-icon.png">
+    <linkrel="icon"type="image/png"sizes="32x32"href="/favicon-32x32.png">
+    <linkrel="icon"type="image/png"sizes="16x16"href="/favicon-16x16.png">
+    <linkrel="manifest"href="/site.webmanifest">
+
+    <!-- responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- web-app behavoir (full screen when iconize at init screen on smartphones -->
+    <!-- some Androids: -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="white">
+    <meta name="apple-mobile-web-app-title" content="Notentool">
+    <!-- The javascript functions used when an event occurs on this page body's -->
+    <script src="clientside.js"></script>
+
+    <!-- CSS Styles
+        (i) To comment out inside CSS style tag use /* xxx */
+            The .xxxxx refers to classes definitions
+    -->
+    <style>
+
+        /* GLOBAL THEME */
+        body    {   color:white;
+                    background-color: rgb(38, 38, 38);
+                    font-family: Verdana, Helvetica, Arial;
+                    font-weight:bold;
+                }
+
+        /* GLOBAL BUTTONS STYLE */
+        button  {   background-color: rgb(100, 100, 100);
+                    border-radius: 5px/5px;
+                    border:2px solid rgb(120,120,120);
+                    /* Text inside buttons: */
+                    color: white;
+                    font-weight:bold;
+                    font-size:0.95em;   /* smaller than usual */
+                }
+
+        /* GLOBAL TABLES behavior */
+        table   {   width: 90%;
+                    margin-left: auto;
+                    margin-right: auto;
+                    border-radius: 5px/5px;
+                    border:2px solid rgb(120,120,120);
+                }
+
+
+        /* GLOBAL TABLES CELLS behavior */
+        th, td  {   padding: 5px;
+                    text-align: center;
+                    font-size:1.0em;
+                }
+
+        table#main_table { border-style: none; }
+        .machine_cell {
+            border-style: none; width:30%;
+        }
+        .machine_button {
+            width: 100%;
+            min-height: 3.0em;
+            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
+            border:4px solid rgb(120,120,120);
+            border-radius: 10px/10px;
+            /* below is for text inside button: */
+            font-size:2.0em;
+            display: inline;
+        }
+        .machine_button_highlighted  {
+            width: 100%;
+            min-height: 3.0em;
+            box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
+            border:5px solid rgb(200,200,200);
+            border-radius: 10px/10px;
+            background-color: rgb(140, 140, 140);
+            /* below is for text inside button: */
+            font-size:2.0em;
+            display: inline;
+        }
+
+
+    </style>
+
+</head>
+
+<!-- initizalizes the web page, and auto updates -->
+<body onload="page_initiate()" >
+
+    <div>
+        <!-- Empty table, JS will fill in this-->
+        <table id="main_table">
+        </table>
+    </div>
+
+</body>
+</html>
