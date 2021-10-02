@@ -21,15 +21,11 @@
        NOTICE: remember do not leaving any console.log active
 */
 
-// -----------------------------------------------------------------------------
-// ------------------------------- CONFIG: -------------------------------------
-// -----------------------------------------------------------------------------
-//
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/functions.php' if you use Apache+PHP at server side.
-//
+//  (!!!) CURRENTLY ONLY SUPORTED BY APACHE+PHP NOT NODE.JS
 const URL_PREFIX = '/functions.php';
-// -----------------------------------------------------------------------------
+
 
 // DICT OF CONFIGURED MACHINES
 try{
@@ -80,6 +76,16 @@ function page_initiate(){
     fill_in_wol_buttons();
 }
 
+// ACTION ON BUTTON CLICKED
+function button_do(buttonID){
+    send_cmd('wol ' + buttonID);
+    // Highlights the button for a second
+    document.getElementById("b_" + buttonID).className = 'machine_button_highlighted';
+    setTimeout(function(){
+            document.getElementById("b_" + buttonID).className = 'machine_button';
+        }, 1000);
+}
+
 
 // FILLING IN WOL BUTTONS
 function fill_in_wol_buttons() {
@@ -109,7 +115,7 @@ function fill_in_wol_buttons() {
         //machines_list.push(machine);
         btn.id = 'b_' + machine;
         btn.innerHTML = machine;
-        btn.setAttribute( "onclick", "send_cmd\('wol "+ machine +"'\)" );
+        btn.setAttribute( "onclick", "button_do\('"+ machine +"'\)" );
         // Put the button inside the cell
         cell.appendChild(btn);
 
