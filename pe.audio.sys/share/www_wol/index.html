@@ -76,6 +76,8 @@
 
         /* GLOBAL TABLES behavior */
         table   {   width: 90%;
+                    margin-top: 3.0em;;
+                    margin-bottom: auto;
                     margin-left: auto;
                     margin-right: auto;
                     border-radius: 5px/5px;
@@ -95,23 +97,23 @@
         }
         .machine_button {
             width: 100%;
-            min-height: 3.0em;
+            height: 2.5em;
             box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
             border:4px solid rgb(120,120,120);
             border-radius: 10px/10px;
             /* below is for text inside button: */
-            font-size:2.0em;
+            font-size:1.5em;
             display: inline;
         }
         .machine_button_highlighted  {
             width: 100%;
-            min-height: 3.0em;
+            height: 2.5em;
             box-shadow: 0 5px 10px 0 rgba(200,200,200,0.3), 0 3px 10px 0 rgba(0,0,0,0.1);
             border:5px solid rgb(200,200,200);
             border-radius: 10px/10px;
             background-color: rgb(140, 140, 140);
             /* below is for text inside button: */
-            font-size:2.0em;
+            font-size:1.5em;
             display: inline;
         }
 
@@ -123,8 +125,11 @@
 <!-- initizalizes the web page, and auto updates -->
 <body onload="page_initiate()" >
 
+    <div style="text-align:center; color:grey">
+        Wake On LAN <br>machines:
+    </div>
     <div>
-        <!-- Empty table, JS will fill in this-->
+        <!-- Empty table, JS will fill in this -->
         <table id="main_table">
         </table>
     </div>
