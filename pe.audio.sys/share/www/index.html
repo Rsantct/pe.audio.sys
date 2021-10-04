@@ -31,24 +31,29 @@
     along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
     -->
 
-    <!-- https://favicon.io -->
-    <linkrel="apple-touch-icon"sizes="180x180"href="/apple-touch-icon.png">
-    <linkrel="icon"type="image/png"sizes="32x32"href="/favicon-32x32.png">
-    <linkrel="icon"type="image/png"sizes="16x16"href="/favicon-16x16.png">
-    <linkrel="manifest"href="/site.webmanifest">
-
     <!-- responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <!-- See details at https://favicon.io -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon"type=" image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
 
     <!-- web-app behavoir (full screen when iconize at init screen on smartphones -->
     <!-- some Androids: -->
     <meta name="mobile-web-app-capable" content="yes">
     <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="white">
-    <meta name="apple-mobile-web-app-title" content="Notentool">
-    <!-- The javascript functions used when an event occurs on this page body's -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="pe.audio.sys">
+
+
+    <!-- The JAVASCRIPT functions used when an event occurs on this page body's -->
     <script src="clientside.js"></script>
+
 
     <!-- CSS Styles
         (i) To comment out inside CSS style tag use /* xxx */
@@ -251,7 +256,8 @@
             <td id="main_lside" style="display:none">
                 <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="peaudiosys_restart()">&#128585;</button>
             </td>
-            <td id="main_cside"></td>
+            <td id="main_cside">
+            </td>
             <td id="main_rside">
                 <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="advanced('toggle')">&#9881;</button>
             </td>
