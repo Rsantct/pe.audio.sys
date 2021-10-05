@@ -215,6 +215,19 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 ########################################################################
 a2ensites=$(ls /etc/apache2/sites-enabled/)
 
+# normal web site
+forig_www=$ORIG"/.install/apache-site/pe.audio.sys.conf"
+fdest_www="/etc/apache2/sites-available/pe.audio.sys.conf"
+
+# optional web site with wakeonlan site
+forig_wol=$ORIG"/.install/apache-site/pe.audio.sys_wol.conf"
+fdest_wol="/etc/apache2/sites-available/pe.audio.sys_wol.conf"
+
+# updating HOME path inside xxx.conf files
+sed -i s/paudio/$(basename $HOME)/g  $forig_www
+sed -i s/paudio/$(basename $HOME)/g  $forig_wol
+
+
 # Using Apache
 if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
     echo "(i) Will configure www/clientside.js for Apache server"
@@ -222,15 +235,11 @@ if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
     echo "(i) Checking the website 'pe.audio.sys'"
     echo "    /etc/apache2/sites-available/pe.audio.sys.conf"
     echo
-    forig=$ORIG"/.install/apache-site/pe.audio.sys.conf"
-    fdest="/etc/apache2/sites-available/pe.audio.sys.conf"
-    # updating your HOME path inside pe.audio.sys.conf
-    sed -i s/peaudiosys/$(basename $HOME)/g  $forig
     updateWeb=1
-    if [ -f $fdest ]; then
-        if ! cmp --quiet $forig $fdest; then
+    if [ -f $fdest_www ]; then
+        if ! cmp --quiet $forig_www $fdest_www; then
             echo "(i) A new version is available "
-            echo "    "$forig"\n"
+            echo "    "$forig_www"\n"
         else
             echo "(i) No changes on the website\n"
             updateWeb=""
@@ -239,10 +248,15 @@ if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
     if [ "$updateWeb" ]; then
         echo "(!) You need admin privilegies (sudo)"
         echo "( ^C to cancel the website update )\n"
-        sudo cp $forig $fdest
+        # normal web site
+        sudo cp $forig_www $fdest_www
+        # prepare optional wakeonlan site
+        sudo cp $forig_wol $fdest_wol
+        # disable default Apache site
         sudo a2dissite 000-default.conf
         # a helper when migrating from pre.di.c
         sudo a2dissite pre.di.c.conf
+        # enable normal site
         sudo a2ensite pe.audio.sys.conf
         sudo service apache2 reload
     fi
