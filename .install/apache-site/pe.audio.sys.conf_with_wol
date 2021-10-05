@@ -1,0 +1,34 @@
+<VirtualHost *:80>
+
+DocumentRoot /home/paudio/pe.audio.sys/share/www
+<Directory />
+    Options FollowSymLinks
+    AllowOverride None
+</Directory>
+<Directory /home/paudio/pe.audio.sys/share/www/>
+    Options All Indexes FollowSymLinks MultiViews
+    Require all granted
+    allow from all
+</Directory>
+
+</VirtualHost>
+
+
+# below enables the wol page on port 8081
+
+Listen 8081
+
+<VirtualHost *:8081>
+
+DocumentRoot /home/paudio/pe.audio.sys/share/www_wol
+<Directory />
+    Options FollowSymLinks
+    AllowOverride None
+</Directory>
+<Directory /home/paudio/pe.audio.sys/share/www_wol/>
+    Options All Indexes FollowSymLinks MultiViews
+    Require all granted
+    allow from all
+</Directory>
+
+</VirtualHost>
