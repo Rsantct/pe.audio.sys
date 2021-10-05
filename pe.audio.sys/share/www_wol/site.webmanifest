@@ -1,6 +1,6 @@
 {
-    "name":         "pe.audio.sys",
-    "short_name":   "pe.audio.sys",
+    "name":         "Wake On LAN",
+    "short_name":   "WakeOnLAN",
     "icons":[
         {   "src":      "/android-chrome-192x192.png",
             "sizes":    "192x192",

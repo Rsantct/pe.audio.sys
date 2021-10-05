@@ -257,11 +257,12 @@ def stop_processes(mode):
 
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
-        #(i) Some elements on the scripts list from config.yml can be a dict,
-        #    e.g the ecasound_peq, so we need to extract the script name.
+        # (i) Some elements on the scripts list from config.yml can be a dict,
+        #     e.g the ecasound_peq, so we need to extract the script name.
         if type(script) == dict:
             script = list(script.keys())[0]
         print(f'({ME}) will {mode} the script \'{script}\' ...')
+        # (i) Notice that we are open to run scripts writen in python, bash, etc...
         sp.Popen(f'{MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
                                   stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
