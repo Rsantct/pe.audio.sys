@@ -11,9 +11,20 @@ If you have a 24x7 Raspberry Pi kind of Linux based micro PC running at home, yo
 On your 24x7 micro PC you'll need:
   
 - `sudo apt install wakeonlan`
-- Enable the wol section under `/etc/apache2/sites-available/pe.sudio.sys.conf`, `sudo service apache2 restart`
-- Configure the MAC address of your main pe.audio.sys PC system inside `pe.audio.sys/scripts/wolservice/wolservice.cfg`
+
+- Enable the optional apache site configuration:
+
+        sudo a2dissite  pe.audio.sys.conf
+        sudo a2ensite   pe.audio.sys_wol.conf
+        sudo service apache2 reload
+
+- Configure the MAC address of your main pe.audio.sys PC system inside
+
+        pe.audio.sys/scripts/wolservice/wolservice.cfg
+
 - Include `- wolserver.py` inside the `scripts:` section from `pe.audio.sys/config.yml` (1)
+
+
 
 (1) If your microPC does not run pe.audio.sys, you can simply run the standalone server by yourself:
 
