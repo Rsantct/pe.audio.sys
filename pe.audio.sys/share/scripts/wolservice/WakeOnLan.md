@@ -20,7 +20,8 @@ On your 24x7 micro PC you'll need:
 
 - Configure the MAC address of your main pe.audio.sys PC system inside
 
-        pe.audio.sys/scripts/wolservice/wolservice.cfg
+        cp -i pe.audio.sys/scripts/wolservice/wolservice.cfg.sample pe.audio.sys/scripts/wolservice/wolservice.cfg
+        nano pe.audio.sys/scripts/wolservice/wolservice.cfg
 
 - Include `- wolserver.py` inside the `scripts:` section from `pe.audio.sys/config.yml` (1)
 
