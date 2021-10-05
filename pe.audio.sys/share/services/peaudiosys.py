@@ -351,8 +351,10 @@ def process_aux( cmd, arg='' ):
 
         try:
             Popen( f'{restart_cmd}'.split() )
+            result = f'tried: \'{restart_cmd}\''
         except:
-            print( f'({ME}) Problems running \'{restart_cmd}\'' )
+            print( f'({ME}) error running \'{restart_cmd}\'' )
+            result = f'error running \'{restart_cmd}\''
 
     # HELP
     elif cmd == 'help':
