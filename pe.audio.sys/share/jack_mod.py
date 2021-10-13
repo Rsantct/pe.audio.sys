@@ -25,25 +25,21 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-import jack
 from time import sleep
+import jack
 
 JCLI = jack.Client('tmp', no_start_server=True)
 JCLI.activate()
 
 
-def jack_connect(p1, p2, mode='connect', wait=1.0, verbose=True):
-    """ Low level tool to connect / disconnect a pair of ports,
-        by retriyng for a while (def 1 second)
+def jack_connect(p1, p2, mode='connect', verbose=True):
+    """ Low level tool to connect / disconnect a pair of ports.
     """
-    # Will retry during <wait> seconds, this is useful when a
-    # jack port exists but it is still not active,
-    # for instance Brutefir ports takes some seconds to be active.
 
-    period  = .2     # seconds
-    limit   = int(wait / period)
+    # will retry 10 times every .1 sec
+    times = 10
+    while times:
 
-    while limit > 0 :
         try:
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
@@ -51,17 +47,19 @@ def jack_connect(p1, p2, mode='connect', wait=1.0, verbose=True):
                 JCLI.connect(p1, p2)
             result = 'done'
             break
+
         except jack.JackError as e:
             result = f'{e}'
             if verbose:
                 print( f'(jack_mod) Exception: {result}' )
-        sleep(period)
-        limit -= 1
+
+        sleep(.1)
+        times -= 1
 
     return result
 
 
-def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
+def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect' ):
     """ High level tool to connect/disconnect a given port name patterns.
         Also works for port alias patterns.
     """
@@ -99,10 +97,7 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
 
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     for cap_port, pbk_port in zip(cap_ports, pbk_ports):
-        #job_jc = threading.Thread( target=jack_connect,
-        #                           args=(cap_port, pbk_port, mode, wait) )
-        #job_jc.start()
-        jack_connect(cap_port, pbk_port, mode, wait)
+        jack_connect(cap_port, pbk_port, mode)
 
 
     if not errors:
