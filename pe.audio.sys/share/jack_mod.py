@@ -25,43 +25,47 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-
-import threading
 import jack
+from time import sleep
+
+JCLI = jack.Client('tmp', no_start_server=True)
+JCLI.activate()
 
 
-JCLI = jack.Client('pe.audio.sys', no_start_server=True)
-
-
-def jack_connect(p1, p2, mode='connect', wait=1, verbose=True):
+def jack_connect(p1, p2, mode='connect', wait=1.0, verbose=True):
     """ Low level tool to connect / disconnect a pair of ports,
-        by retriyng for a while
+        by retriyng for a while (def 1 second)
     """
     # Will retry during <wait> seconds, this is useful when a
     # jack port exists but it is still not active,
     # for instance Brutefir ports takes some seconds to be active.
 
-    wait = int(wait)
-    # will retry every second
-    while wait > 0 :
+    period  = .2     # seconds
+    limit   = int(wait / period)
+
+    while limit > 0 :
         try:
             if 'dis' in mode or 'off' in mode:
                 JCLI.disconnect(p1, p2)
             else:
                 JCLI.connect(p1, p2)
-            return 'done'
+            result = 'done'
+            break
         except jack.JackError as e:
+            result = f'{e}'
             if verbose:
-                print( f'(jack_mod) Exception: {e}' )
-            return e
-        wait -= 1
-        sleep(1)
+                print( f'(jack_mod) Exception: {result}' )
+        sleep(period)
+        limit -= 1
+
+    return result
 
 
 def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
     """ High level tool to connect/disconnect a given port name patterns.
         Also works for port alias patterns.
     """
+
     # Try to get ports by a port name pattern
     cap_ports = JCLI.get_ports( cap_pattern, is_output=True )
     pbk_ports = JCLI.get_ports( pbk_pattern, is_input=True )
@@ -92,15 +96,19 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect', wait=1 ):
         tmp = f'cannot find jack port "{pbk_pattern}" '
         print(f'(jack_mod) {tmp}')
         errors += tmp
-    if errors:
-        return errors
 
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     for cap_port, pbk_port in zip(cap_ports, pbk_ports):
-        job_jc = threading.Thread( target=jack_connect,
-                                   args=(cap_port, pbk_port, mode, wait) )
-        job_jc.start()
-    return 'ordered'
+        #job_jc = threading.Thread( target=jack_connect,
+        #                           args=(cap_port, pbk_port, mode, wait) )
+        #job_jc.start()
+        jack_connect(cap_port, pbk_port, mode, wait)
+
+
+    if not errors:
+        return 'ordered'
+    else:
+        return errors
 
 
 def jack_clear_preamp():
@@ -113,4 +121,24 @@ def jack_clear_preamp():
 
 
 def jack_get_samplerate():
+    """ wrap function """
     return JCLI.samplerate
+
+
+def jack_get_all_connections(pname):
+    """ wrap function """
+    ports = JCLI.get_all_connections(pname)
+    return ports
+
+
+def jack_get_ports(pattern='',  is_audio=True, is_midi=False,
+                                is_input=False, is_output=False,
+                                is_physical=False, can_monitor=False,
+                                is_terminal=False ):
+    """ wrap function """
+    ports = JCLI.get_ports(pattern, is_audio, is_midi,
+                                    is_input, is_output,
+                                    is_physical, can_monitor,
+                                    is_terminal )
+    return ports
+
