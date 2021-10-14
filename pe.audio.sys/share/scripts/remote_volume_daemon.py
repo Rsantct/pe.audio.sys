@@ -29,9 +29,10 @@
 
 import sys
 import os
+
 UHOME           = os.path.expanduser("~")
 BASEDIR         = f'{UHOME}/pe.audio.sys'
-CMD_LOG_PATH    = f'{BASEDIR}/.peaudiosys_cmd.log'
+CMD_LOG_PATH    = f'{BASEDIR}/log/peaudiosys_cmd.log'
 STATE_PATH      = f'{BASEDIR}/.state.yml'
 
 sys.path.append( f'{BASEDIR}/share' )
