@@ -28,6 +28,7 @@ import socket
 import sys
 import os
 import yaml
+from subprocess import Popen
 
 MY_DIR = os.path.dirname(__file__)
 
@@ -80,6 +81,12 @@ def run_server(host, port, verbose=False):
 
 
 if __name__ == "__main__":
+
+    # command line
+    for opc in sys.argv[1:]:
+        if opc == 'stop':
+            Popen( 'pkill -f -KILL wolserver.py'.split() )
+            sys.exit()
 
     # Loading configured machines
     try:
