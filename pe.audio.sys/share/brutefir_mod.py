@@ -65,7 +65,7 @@ def bf_cli(cmd):
                 ans += tmp
             s.close()
         except:
-            print( f'(core) unable to connect to Brutefir:3000' )
+            print( f'(brutefir_mod) unable to connect to Brutefir:3000' )
     return ans
 
 
@@ -464,17 +464,17 @@ def bf_get_config_outputs():
 
 
 def bf_is_running():
-    if JCLI.get_ports('brutefir'):
+    if jack_get_ports(pattern='brutefir'):
         return True
     else:
         return False
 
 
 def bf_get_in_connections():
-    bf_inputs = JCLI.get_ports('brutefir', is_input=True)
+    bf_inputs = jack_get_ports('brutefir', is_input=True)
     src_ports = []
     for p in bf_inputs:
-        srcs = JCLI.get_all_connections(p)
+        srcs = jack_get_all_connections(p)
         for src in srcs:
             src_ports.append( src )
     if src_ports:
@@ -505,11 +505,11 @@ def bf_restart_and_reconnect(bf_sources=[]):
 
         # Showing progress every 3 sec
         if tries % 6 == 0:
-            print(  f'{Fmt.BLUE}(core) waiting for Brutefir ports '
+            print(  f'{Fmt.BLUE}(brutefir_mod) waiting for Brutefir ports '
                     f'{"."*int((120-tries)/6)}{Fmt.END}')
 
         # Getting the bf out ports list
-        bf_out_ports = JCLI.get_ports('brutefir', is_output=True)
+        bf_out_ports = jack_get_ports('brutefir', is_output=True)
 
         # Ensuring that ports are available
         if len(bf_out_ports) < 2:
@@ -520,7 +520,7 @@ def bf_restart_and_reconnect(bf_sources=[]):
         # Counting if all bf_out_ports are properly bonded to system ports
         n = 0
         for p in bf_out_ports:
-            conns = JCLI.get_all_connections(p)
+            conns = jack_get_all_connections(p)
             n += len(conns)
         if n == len(bf_out_ports):
             # We are done ;-)
@@ -532,12 +532,12 @@ def bf_restart_and_reconnect(bf_sources=[]):
     if not tries:
         warnings += ' PROBLEM RUNNING BRUTEFIR :-('
     else:
-        print(  f'{Fmt.BLUE}(core) Brutefir ports are alive.{Fmt.END}')
+        print(  f'{Fmt.BLUE}(brutefir_mod) Brutefir ports are alive.{Fmt.END}')
 
     # Wait for brutefir input ports to be available
     tries = 50      # ~ 10 sec
     while tries:
-        bf_in_ports = JCLI.get_ports('brutefir', is_input=True)
+        bf_in_ports = jack_get_ports('brutefir', is_input=True)
         if len(bf_in_ports) >= 2:
             break
         else:
@@ -707,7 +707,7 @@ def bf_add_delay(ms):
         else:
                 result = 'Brutefir error'
     else:
-        print(f'(i) ERROR Brutefir\'s maxdelay is {int(max_available_ms)} ms')
+        print(f'(brutefir_mod) ERROR Brutefir\'s maxdelay is {int(max_available_ms)} ms')
         result = f'max delay {int(max_available_ms)} ms exceeded'
 
     return result

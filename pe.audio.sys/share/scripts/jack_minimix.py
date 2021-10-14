@@ -115,7 +115,7 @@ def stop_mixer():
     # (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
     start_brutefir()
     # Connect Brutefir
-    jack_connect_bypattern('pre_in', 'brutefir', wait=60)
+    jack_connect_bypattern('pre_in', 'brutefir')
 
 
 def get_args():

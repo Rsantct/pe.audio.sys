@@ -239,7 +239,7 @@ def connect_monitors():
     """
     if CONFIG["source_monitors"]:
         for monitor in CONFIG["source_monitors"]:
-            jack_connect_bypattern('pre_in_loop', monitor, wait=60)
+            jack_connect_bypattern('pre_in_loop', monitor)
 
 
 class Preamp(object):
