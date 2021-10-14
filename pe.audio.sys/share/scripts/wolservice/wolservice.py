@@ -26,7 +26,9 @@ from    time                import  strftime
 import  yaml
 import  json
 
-MY_DIR = os.path.dirname(__file__)
+MY_DIR      = os.path.dirname(__file__)
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
 # Things to do first
@@ -35,9 +37,9 @@ def init():
     global CONFIG, LOGFNAME
 
     # Command log file
-    LOGFNAME = f'{MY_DIR}/wolservice.log'
-    if os.path.exists(LOGFNAME) and os.path.getsize(LOGFNAME) > 10e6:
-        print ( f"(wolservice) log file exceeds ~ 10 MB '{LOGFNAME}'" )
+    LOGFNAME = f'{MAINFOLDER}/log/wolservice.log'
+    if os.path.exists(LOGFNAME) and os.path.getsize(LOGFNAME) > 2e6:
+        print ( f"(wolservice) log file exceeds ~ 2 MB '{LOGFNAME}'" )
     print ( f"(wolservice) logging commands in '{LOGFNAME}'" )
 
     # Loading configured machines
