@@ -96,14 +96,14 @@ cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
 # MPLAYER
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
 # MPD
-mkdir music                                         >/dev/null 2>&1
-mkdir -p .config/mpd/playlists                      >/dev/null 2>&1
+mkdir -p $HOME/music
+mkdir -p $HOME/.config/mpd/playlists
 cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
 # MAIN
-mkdir $HOME/pe.audio.sys                            >/dev/null 2>&1
+mkdir -p $HOME/pe.audio.sys/log
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
-mkdir $HOME/bin                                     >/dev/null 2>&1
+mkdir -p $HOME/bin
 cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
 
 ########################################################################
