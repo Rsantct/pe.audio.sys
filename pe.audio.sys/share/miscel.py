@@ -41,6 +41,7 @@ except:
           f'\'config.yml\'{Fmt.END}')
     exit()
 
+LOG_FOLDER          = f'{MAINFOLDER}/log'
 LOUDSPEAKER         = CONFIG['loudspeaker']
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
 STATE_PATH          = f'{MAINFOLDER}/.state.yml'

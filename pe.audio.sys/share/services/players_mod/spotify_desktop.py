@@ -24,7 +24,7 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 import logging
-LOGFNAME    = f'{MAINFOLDER}/.spotify_desktop.py.log'
+LOGFNAME    = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
 from time import sleep

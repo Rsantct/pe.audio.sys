@@ -26,7 +26,9 @@ from    time                import  strftime
 import  yaml
 import  json
 
-MY_DIR = os.path.dirname(__file__)
+MY_DIR      = os.path.dirname(__file__)
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
 # Things to do first
@@ -35,7 +37,7 @@ def init():
     global CONFIG, LOGFNAME
 
     # Command log file
-    LOGFNAME = f'{MY_DIR}/wolservice.log'
+    LOGFNAME = f'{MAINFOLDER}/log/wolservice.log'
     if os.path.exists(LOGFNAME) and os.path.getsize(LOGFNAME) > 10e6:
         print ( f"(wolservice) log file exceeds ~ 10 MB '{LOGFNAME}'" )
     print ( f"(wolservice) logging commands in '{LOGFNAME}'" )

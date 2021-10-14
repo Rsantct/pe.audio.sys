@@ -35,7 +35,7 @@
         'server'   :    restart tcp server
         'scripts'  :    restart user scripts
 
-    --log   messages redirected to 'pe.audio.sys/start.log'
+    --log   messages redirected to 'pe.audio.sys/log/start.log'
 
 """
 
@@ -273,7 +273,7 @@ def check_state_file():
     """ a sudden power break out can damage .state.yml  :-/
     """
     state_file      = f'{MAINFOLDER}/.state.yml'
-    state_log_file  = f'{MAINFOLDER}/.state.log'
+    state_log_file  = f'{LOG_FOLDER}/state.log'
 
     def recover_state(reason='damaged'):
         sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
@@ -292,7 +292,7 @@ def check_state_file():
                 sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
                 print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
 
-            # if it is damaged, lets recover from backup, and log to .state.log
+            # if it is damaged, lets recover from backup, and log to state.log
             else:
                 recover_state(reason='damaged')
     except:
@@ -329,9 +329,9 @@ if __name__ == "__main__":
 
     if logFlag:
         print('\n' + '-' * 80)
-        print(f'start process logged at \'{MAINFOLDER}/start.log\'')
+        print(f'start process logged at \'{LOG_FOLDER}/start.log\'')
         print('-' * 80)
-        flog = open(f'{MAINFOLDER}/start.log', 'w')
+        flog = open(f'{LOG_FOLDER}/start.log', 'w')
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         sys.stdout = flog
