@@ -45,7 +45,7 @@ ME                  = __file__.split('/')[-1]
 
 
 # COMMAND LOG FILE
-logFname = f'{UHOME}/pe.audio.sys/.peaudiosys_cmd.log'
+logFname = f'{LOG_FOLDER}/peaudiosys_cmd.log'
 if os.path.exists(logFname) and os.path.getsize(logFname) > 10e6:
     print ( f"{Fmt.RED}(peaudiosys) log file exceeds ~ 10 MB '{logFname}'{Fmt.END}" )
 print ( f"{Fmt.BLUE}(peaudiosys) logging commands in '{logFname}'{Fmt.END}" )
