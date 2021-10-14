@@ -36,8 +36,8 @@ def init():
 
     # Command log file
     LOGFNAME = f'{MY_DIR}/wolservice.log'
-    if os.path.exists(LOGFNAME) and os.path.getsize(LOGFNAME) > 2e6:
-        print ( f"(wolservice) log file exceeds ~ 2 MB '{LOGFNAME}'" )
+    if os.path.exists(LOGFNAME) and os.path.getsize(LOGFNAME) > 10e6:
+        print ( f"(wolservice) log file exceeds ~ 10 MB '{LOGFNAME}'" )
     print ( f"(wolservice) logging commands in '{LOGFNAME}'" )
 
     # Loading configured machines
