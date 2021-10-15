@@ -14,7 +14,7 @@ You can browse two web page flavours depending on your device usage preference:
 
 ## Configure the web page behavior
 
-Some options can be configured inside **`~/pe.audio.sys/config.yml`**:
+Some options can be configured inside **`config.yml`**:
 
 - Command to run when the reboot button is pressed.
 - Show or hide the macro buttons array at startup.
