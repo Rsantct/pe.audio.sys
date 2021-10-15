@@ -32,7 +32,7 @@ MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
 # Config, server addressing and common usage paths and variables
-with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 try:
     SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
