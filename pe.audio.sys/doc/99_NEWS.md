@@ -57,3 +57,7 @@ See the `doc/` folder for detailed information about this.
 ## Sep 2021, version 1.0c
 
 - New subsonic filter as optional preamp feature.
+
+## Oct 2021, version 1.0d
+
+- New folder layout for log & config files
