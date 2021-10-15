@@ -126,7 +126,7 @@ def restore_alsa_card(card):
 def restore_ffado_card(card):
     ''' FFADO firewire cards needs a custom made script, named like:
 
-            ~/pe.audio.sys/config/0x00130e01000406d2.sh
+            ~/pe.audio.sys/config/ffado.0x00130e01000406d2.sh
 
         where 0x...... is the firewire GUID (see ffado-test ListDevices)
 
@@ -134,7 +134,7 @@ def restore_ffado_card(card):
     '''
 
     guid = card.replace('guid:','')
-    scriptPath = f'{MAINFOLDER}/config/{guid}.sh'
+    scriptPath = f'{MAINFOLDER}/config/ffado.{guid}.sh'
 
     if os.path.isfile( scriptPath ):
         print(  f'{Fmt.BLUE}'
