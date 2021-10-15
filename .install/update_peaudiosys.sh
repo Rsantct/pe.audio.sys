@@ -64,7 +64,7 @@ cp .mpdconf .mpdconf.LAST
 # use .LAST instead of .bak in order to respect any existing bak file if so.
 if [ -d "pe.audio.sys" ]; then
     echo "(i) backing up pe.audio.sys config files"
-    for file in pe.audio.sys/*.yml ; do
+    for file in pe.audio.sys/config/*.yml ; do
         cp "$file" "$file.LAST"
     done
 fi
@@ -91,7 +91,7 @@ fi
 ########################################################################
 echo "(i) Copying from $ORIG ..."
 cd "$HOME"
-# (i) HIDDEN FILES must be explicited each one to be copied
+# HIDDEN FILES (!) must explicit each one so they can be copied
 cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
 # MPLAYER
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
@@ -100,6 +100,7 @@ mkdir -p $HOME/music
 mkdir -p $HOME/.config/mpd/playlists
 cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
 # MAIN
+mkdir -p $HOME/pe.audio.sys/config
 mkdir -p $HOME/pe.audio.sys/log
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
@@ -123,7 +124,7 @@ if [ "$keepConfig" ]; then
 
     # PE.AUDIO.SYS
     echo "(i) Restoring pe.audio.sys config files"
-    cd "$HOME"/pe.audio.sys
+    cd "$HOME"/pe.audio.sys/config
     for file in *yml.LAST ; do
         nfile=${file%.LAST}         # removes trailing .LAST '%'
         echo "    "$nfile
@@ -149,6 +150,7 @@ else
     # MAIN
     cd "$HOME"/pe.audio.sys
     cp .state.yml.sample         .state.yml
+    cd "$HOME"/pe.audio.sys/config
     cp config.yml.sample         config.yml
     cp DVB-T.yml.sample          DVB-T.yml        >/dev/null 2>&1
     cp istreams.yml.sample       istreams.yml     >/dev/null 2>&1
