@@ -54,7 +54,7 @@ from  players_mod.spotify_desktop   import  spotify_control,            \
 
 
 ## Getting sources list
-with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
     SOURCES = yaml.safe_load( f )["sources"]
 
 
