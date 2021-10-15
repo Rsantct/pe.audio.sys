@@ -5,16 +5,24 @@
     #url:    http://rtve-mp3-radiolive.flumotion.com/rtve/rtve-rne.mp3.m3u
     #url:    http://rne.rtveradio.cires21.com/rne_hc.mp3
     url:    https://crtve-ice-edge-2001-fra-eco-cdn.cast.addradio.de/crtve/rne1/main/mp3/high
+    #url:    https://crtve-ice-edge-2002-fra-eco-cdn.cast.addradio.de/crtve/rne1/main/mp3/high
+    #url:    https://crtve-ice-edge-2003-fra-eco-cdn.cast.addradio.de/crtve/rne1/main/mp3/high
+
 2:
     name:   Radio Clasica
     #url :    http://rtve-mp3-radiolive.flumotion.com/rtve/rtve-radioclasica.mp3.m3u
     #url:    http://radio3.rtveradio.cires21.com/radioclasica_hc.mp3
-    url:    https://crtve-ice-edge-2003-fra-eco-cdn.cast.addradio.de/crtve/rnerc/main/mp3/high
+    #url:    https://crtve-ice-edge-2001-fra-eco-cdn.cast.addradio.de/crtve/rnerc/main/mp3/high
+    url:    https://crtve-ice-edge-2002-fra-eco-cdn.cast.addradio.de/crtve/rnerc/main/mp3/high
+    #url:    https://crtve-ice-edge-2003-fra-eco-cdn.cast.addradio.de/crtve/rnerc/main/mp3/high
+
 3:
     name:   Radio 3
     #url:    http://rtve-mp3-radiolive.flumotion.com/rtve/rtve-radio3.mp3.m3u
     #url:    http://radio3.rtveradio.cires21.com/radio3_hc.mp3
-    url:    https://crtve-ice-edge-2001-fra-eco-cdn.cast.addradio.de/crtve/rner3/main/mp3/high
+    #url:    https://crtve-ice-edge-2001-fra-eco-cdn.cast.addradio.de/crtve/rner3/main/mp3/high
+    #url:    https://crtve-ice-edge-2002-fra-eco-cdn.cast.addradio.de/crtve/rner3/main/mp3/high
+    url:    https://crtve-ice-edge-2003-fra-eco-cdn.cast.addradio.de/crtve/rner3/main/mp3/high
 
 4:
     name:   M80          
