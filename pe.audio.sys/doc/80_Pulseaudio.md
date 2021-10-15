@@ -39,7 +39,7 @@ A desktop machine already have Pulseaudio installed, you'll need just some modul
 
 - **pe.audio.sys** will automatically ask Pulseaudio to release the sound card to run Jack properly.
 
-- Enable the Pulseaudio to Jack bridge under `pe.audio.sys/config/config.yml`
+- Enable the Pulseaudio to Jack bridge under `config.yml`
 
         scripts:
             ...
