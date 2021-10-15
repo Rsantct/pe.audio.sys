@@ -48,7 +48,7 @@ def main():
     sleep(2)
 
     # Waiting for mplayer ports to re-emerge
-    if not wait4ports( f'mplayer_{mplayer_profile}' ):
+    if not wait4ports( f'mplayer_{mplayer_profile}', timeout=30 ):
         print(f'{Fmt.RED}(macros) ERROR jack ports \'mplayer_{mplayer_profile}\' not found, '
               f'bye :-/{Fmt.RED}')
         sys.exit(-1)
