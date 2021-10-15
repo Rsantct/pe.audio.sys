@@ -25,7 +25,7 @@ The originary main features on FIRtro were:
 
 - Digital crossover filtering and loudspeaker alignment, digital room correction, calibrated level control (based on the Brutefir convolution stages)
 
-- Digital preamp facilities: bass, treble, equal loudness compensation curves, in-room target eq curves (based on the Brutefir runtime EQ module)
+- Digital preamp facilities: bass, treble, equal loudness compensation curves, in-room target eq curves (based on the Brutefir runtime EQ module), as well a source selector based on the Jack audio server.
 
 - Client/server arch controled by a web page
  
