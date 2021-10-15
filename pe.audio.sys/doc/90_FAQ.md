@@ -72,7 +72,7 @@ Please, after installing it, disable the default raspotify service
 
 #### Running headless Spotify
 
-Simply add `- librespot.py` under the `scripts:` section inside `pe.audio.sys/config.yml`.
+Simply add `- librespot.py` under the `scripts:` section inside `config.yml`.
 
 
 ## Can I run Brutefir compiled from source rather than my distro version
