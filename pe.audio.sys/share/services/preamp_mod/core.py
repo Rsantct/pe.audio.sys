@@ -707,7 +707,7 @@ class Preamp(object):
                     if value is not None:
                         candidate[option] = value
             except:
-                print('(config.yml) missing \'on_change_input\' options')
+                print('(core) config.yml: missing \'on_change_input\' options')
             return candidate
 
         result = 'nothing done'
