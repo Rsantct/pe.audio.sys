@@ -17,13 +17,15 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- pasysctrl.hlp       Help on system control commands
     |
-    |-- .state.yml          The file that keeps the run-time system state
+    |-- .state.yml          Keeps the run-time system state
     |
-    |-- config.yml          The main configuration file
-    |
-    |-- xxxx.yml            Other configuration files
-    |
-    |-- .asound.XXX         ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
+    |-- config/
+    |   |
+    |   |-- config.yml      The main configuration file
+    |   |
+    |   |-- xxxx.yml        Other configuration files
+    |   |
+    |   |-- asound.XXX      ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
     |
     |-- start.py            Startup or shutdown the whole system
     |
