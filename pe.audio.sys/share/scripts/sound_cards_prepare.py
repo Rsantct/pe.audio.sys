@@ -22,11 +22,11 @@
     This is optional, but recommended.
 
     Cards to be prepared are 'system_card' and 'external_cards'
-    as defined under pe.audio.sys (config.yml)
+    as defined under config.yml
 
     ALSA mixer setting must be previously available under
 
-        ~/pe.audio.sys/.asound.XXXXX
+        ~/pe.audio.sys/config/asound.XXXXX
 
     where XXXXX stands for the alsa card name (without 'hw:' prefix)
 
@@ -34,7 +34,7 @@
 
     Prepare your alsamixer settings for MYCARD, then execute the following:
 
-        alsactl -f ~/pe.audio.sys/.asound.MYCARD store MYCARD
+        alsactl -f ~/pe.audio.sys/config/asound.MYCARD store MYCARD
 
 """
 import os
@@ -105,7 +105,7 @@ def restore_alsa_card(card):
 
         bareCardName = card.split(':')[-1].split(',')[0]
 
-        asound_file = f'{MAINFOLDER}/.asound.{bareCardName}'
+        asound_file = f'{MAINFOLDER}/config/asound.{bareCardName}'
         try:
             if os.path.isfile( asound_file ):
                 sp.Popen( f'alsactl -f {asound_file} \
@@ -126,7 +126,7 @@ def restore_alsa_card(card):
 def restore_ffado_card(card):
     ''' FFADO firewire cards needs a custom made script, named like:
 
-            ~/pe.audio.sys/.0x00130e01000406d2.sh
+            ~/pe.audio.sys/config/ffado.0x00130e01000406d2.sh
 
         where 0x...... is the firewire GUID (see ffado-test ListDevices)
 
@@ -134,7 +134,7 @@ def restore_ffado_card(card):
     '''
 
     guid = card.replace('guid:','')
-    scriptPath = f'{MAINFOLDER}/.{guid}.sh'
+    scriptPath = f'{MAINFOLDER}/config/ffado.{guid}.sh'
 
     if os.path.isfile( scriptPath ):
         print(  f'{Fmt.BLUE}'

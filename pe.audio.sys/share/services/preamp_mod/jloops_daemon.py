@@ -114,7 +114,7 @@ def main():
 
 if __name__ == '__main__':
 
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+    with open(f'{UHOME}/pe.audio.sys/config/config.yml', 'r') as f:
         CONFIG = yaml.safe_load(f)
 
     main()

@@ -54,7 +54,7 @@ while tries:
         sleep(1)
 
 # USER PLAYLISTS
-plist_file = f'{MAINFOLDER}/spotify_plists.yml'
+plist_file = f'{MAINFOLDER}/config/spotify_plists.yml'
 PLAYLISTS = {}
 if os.path.exists(plist_file):
     try:

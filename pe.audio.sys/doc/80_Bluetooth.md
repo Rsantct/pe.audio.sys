@@ -95,7 +95,7 @@ Pulseaudio provides an easy to use interface to BT devives with a very low laten
 
 Please refer to **`doc/80_Pulseaudio`**
 
-#### `~/pe.audio.sys/config.yml`
+#### `config.yml`
 
     # ============================= SCRIPTS =======================================
     scripts:
@@ -143,7 +143,7 @@ Bluealsa provides a Bluetooth to ALSA bridge, but its performance can be limited
 Please use the provided `.asoundrc.sample` file in order to enable the ALSA to JACK plugin.
 
 
-#### `~/pe.audio.sys/config.yml`
+#### `config.yml`
 
     # ============================  SOURCES  =======================================
     sources:

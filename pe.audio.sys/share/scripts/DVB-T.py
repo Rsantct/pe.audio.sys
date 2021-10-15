@@ -26,7 +26,7 @@
         ~/.mplayer/channels.conf
 
     User settings (presets) can be configured at
-        pe.audio.sys/DVB-T.yml
+        pe.audio.sys/config/DVB-T.yml
 
     Usage:      DVB   start   [ <preset_num> | <channel_name> ]
                       stop
@@ -129,7 +129,7 @@ def stop():
 if __name__ == '__main__':
 
     ### Reading the DVB-T config file
-    DVB_config_path = f'{MAINFOLDER}/DVB-T.yml'
+    DVB_config_path = f'{MAINFOLDER}/config/DVB-T.yml'
     try:
         with open(DVB_config_path, 'r') as f:
             DVB_config = yaml.safe_load(f)

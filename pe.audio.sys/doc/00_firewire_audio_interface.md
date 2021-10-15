@@ -46,7 +46,7 @@ The Jack ports for your system card will have a new naming, but don't worry beca
 
 ## Firewire sound card mixer settings
 
-For ALSA cards, we use `alsactl` to save our sound card settings to a file `pe.audio.sys/.asound.MYCARD`, as prepared in advance with `alsamixer`.
+For ALSA cards, we use `alsactl` to save our sound card settings to a file `pe.audio.sys/config/asound.MYCARD`, as prepared in advance with `alsamixer`.
 
 So these cards settings will be restored when running `pe.audio.sys/scripts/sound_cards_prepare.py` at system restart.
 
@@ -54,7 +54,7 @@ For FFADO cards, this needs more manual work :-/
 
 Basically, it is spected to found a custom made bash script for your card settings to be restored. This script does run several dbus-send commands to the fireaudio dbus system, see the provided sample file:
 
-    ~/pe.audio.sys/.ffado.0x00130e01000406d2.sh
+    ~/pe.audio.sys/config/ffado.0x00130e01000406d2.sh
 
         dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e01000406d2/Mixer/Out12Mute org.ffado.Control.Element.Discrete.setValue int32:0
         dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e01000406d2/Mixer/Out34Mute org.ffado.Control.Element.Discrete.setValue int32:0

@@ -60,7 +60,7 @@ from share.services.preamp_mod.core import jack_connect_bypattern
 
 
 def start_brutefir():
-    with open( f'{UHOME}/pe.audio.sys/config.yml', 'r' ) as f:
+    with open( f'{UHOME}/pe.audio.sys/config/config.yml', 'r' ) as f:
         CONFIG = yaml.safe_load(f)
     LSPK_FOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{CONFIG["loudspeaker"]}'
     chdir( LSPK_FOLDER )

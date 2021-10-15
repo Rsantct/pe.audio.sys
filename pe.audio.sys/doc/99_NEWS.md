@@ -57,3 +57,7 @@ See the `doc/` folder for detailed information about this.
 ## Sep 2021, version 1.0c
 
 - New subsonic filter as optional preamp feature.
+
+## Oct 2021, version 1.0d
+
+- New folder layout for log & config files, **PLEASE** move your `xxx.yml` files to `pe.audio.sys/config/`, as well your `.asound.XXX` or `.ffado.GUID` files but without the leading `.`(dot)

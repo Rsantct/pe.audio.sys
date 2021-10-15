@@ -41,7 +41,7 @@
         return substr($phpdir, 0, $pos-1 );
     }
 
-    // Gets single line configured items from pe.audio.sys 'config.yml' file
+    // Gets single line configured items from the 'wolservice.cfg' YAML file
     function get_config($item) {
         // to have access to variables from outside
         global $UHOME;
