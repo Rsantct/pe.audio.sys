@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-    Toggles preamp to listen to BT_devices configured inside config.sys
+    Toggles preamp to listen to BT_devices configured inside config.yml
 
     This needs Pulseaudio (see doc/80_Pulseaudio.md), alongside
     the 'scripts/pulseaudio-BT.py' to be called from config.yml
