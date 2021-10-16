@@ -5,7 +5,7 @@ if [[ $1 ]]; then
     if [[ $1 == *"true"* || $1 == *"false"* ]]; then
         new="$1"
     elif [[ $1 == *"toggle"* ]]; then
-        curr=$(grep "bfeq_linear_phase:" "$HOME"/pe.audio.sys/config.yml)
+        curr=$(grep "bfeq_linear_phase:" "$HOME"/pe.audio.sys/config/config.yml)
         curr=$(echo "$curr" | cut -d ":" -f 2)
         if [[ $curr == *"true"* ]]; then
             new='false'
@@ -23,13 +23,13 @@ fi
 
 # Editing config.yml
 sed -i -e '/bfeq_linear_phase/c\bfeq_linear_phase: '$new \
-    "$HOME"/pe.audio.sys/config.yml
+    "$HOME"/pe.audio.sys/config/config.yml
 
 # Restarting
 peaudiosys_service_restart.sh preamp
 
 # Awaiting preamp service
-PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+PORT=$( grep peaudiosys_port ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
 times=10
 while [[ $times -ne "0" ]]; do
     ans=$(echo state | nc -N localhost $PORT)
