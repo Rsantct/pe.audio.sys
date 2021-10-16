@@ -5,9 +5,9 @@ SERVERPATH="$HOME"/"pe.audio.sys/share/server.py"
 opc=$1
 
 # Reading TCP address and port from the pe.audio.sy config file
-ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
 ADDR=${ADDR//\"/}; CTL_ADDR=${ADDR//\'/}
-PORT=$( grep peaudiosys_port ~/pe.audio.sys/config.yml | awk '{print $NF}' )
+PORT=$( grep peaudiosys_port ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
 if [[ ! $ADDR ]]; then
     echo ERROR reading config.yml
     exit -1
