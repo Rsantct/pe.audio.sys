@@ -31,23 +31,29 @@
     along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
     -->
 
-    <!-- https://favicon.io -->
-    <linkrel="apple-touch-icon"sizes="180x180"href="/apple-touch-icon.png">
-    <linkrel="icon"type="image/png"sizes="32x32"href="/favicon-32x32.png">
-    <linkrel="icon"type="image/png"sizes="16x16"href="/favicon-16x16.png">
-    <linkrel="manifest"href="/site.webmanifest">
-
     <!-- responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <!-- See details at https://favicon.io -->
+    <link rel="apple-touch-icon"        sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png"   sizes="32x32"   href="/favicon-32x32.png">
+    <link rel="icon"type=" image/png"   sizes="16x16"   href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
 
     <!-- web-app behavoir (full screen when iconize at init screen on smartphones -->
     <!-- some Androids: -->
     <meta name="mobile-web-app-capable" content="yes">
     <!-- iOS:  https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="pe.audio.sys">
 
-    <!-- The javascript functions used when an event occurs on this page body's -->
+
+    <!-- The JAVASCRIPT functions used when an event occurs on this page body's -->
     <script src="clientside.js"></script>
+
 
     <!-- CSS Styles
         (i) To comment out inside CSS style tag use /* xxx */
@@ -127,11 +133,12 @@
         td#level_buttons22   { border-style: none; width:80%; }
         td#level_buttons23   { border-style: none; width:10%; }
 
-        /* --- LU OFFSET --- */
+        /* --- LU OFFSET CELLS --- */
         td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
         td#LU_offset_value   { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:0.8em; vertical-align: middle;}
         td#LU_offset_slider  { width:50%; border-style:none; vertical-align: middle;}
-        /* The LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
+
+        /* --- LU OFFSET SLIDER class and handlers (type INPUT RANGE) */
         .LU_slider {
           -webkit-appearance:   none;
           width:                100%;
@@ -161,12 +168,37 @@
           cursor:               pointer;
         }
 
-        /* --- LU MONITOR --- */
+        /* --- LU MONITOR CELLS--- */
         td#LU_meter_reset    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
         td#LU_meter_value    { width:32%; border: 1px solid grey; border-radius: 10px/10px; font-size:.8em; vertical-align: middle;}
         td#LU_meter_bar      { width:50%; border-style:none; vertical-align: middle;}
-        /* The LU METER class (type METER) */
-        .LU_meter { width: 100%; height: 0.8em; border: 1px solid; }
+
+        /* --- LU METER class and handlers (type METER) --- */
+        .LU_meter { width: 100%; height: 1.0em; border: 2px solid rgb(100,100,100);
+                    border-radius: 5px;
+        }
+        /* As per we want an inverse bar look, we need to tweak here */
+        .LU_meter::-webkit-meter-bar {
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 0,     0, 0.6)    25%,
+                rgba(255, 255,   0, 0.6)    75%,
+                rgba(0,   255,   0, 0.6)    100%
+                );
+            border-radius: 5px;
+        }
+        .LU_meter::-webkit-meter-optimum-value {
+            background: none; /* Required to get rid of the default background property */
+            background-color: rgb(38, 38, 38);
+        }
+        .LU_meter::-webkit-meter-suboptimum-value {
+            background: none; /* Required to get rid of the default background property */
+            background-color: rgb(38, 38, 38);
+        }
+        .LU_meter::-webkit-meter-even-less-good-value {
+            background: none; /* Required to get rid of the default background property */
+            background-color: rgb(38, 38, 38);
+        }
 
 
         table#player_info   { text-align: left; }
@@ -224,7 +256,8 @@
             <td id="main_lside" style="display:none">
                 <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="peaudiosys_restart()">&#128585;</button>
             </td>
-            <td id="main_cside"></td>
+            <td id="main_cside">
+            </td>
             <td id="main_rside">
                 <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="advanced('toggle')">&#9881;</button>
             </td>
@@ -243,13 +276,13 @@
             </td>
 
             <!-- LEVEL display -->
-            <td id="levelInfo" rowspan="2">
+            <td id="levelInfo" rowspan="2" title="Target volume">
             </td>
 
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud"
-                        title="Loudness Contour" onmousedown="equal_loudness_toggle()">LC</button>
+                        title="Loudness Contour compensation" onmousedown="equal_loudness_toggle()">LC</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -297,6 +330,11 @@
           </tr>
           <tr>
             <td id="level_buttons21">
+                <button type="button" id="subsonic" style="display:none;font-size:0.7em"
+                        title="Subsonic Filter"
+                        onmousedown="control_cmd('preamp subsonic rotate')">
+                        SUBS.
+                </button>
             </td>
             <td id="level_buttons22">
                 <button type="button" onmousedown="audio_change('level', -3)" >
@@ -327,9 +365,10 @@
         <td id="LU_offset_value">LU offset: --
         </td>
         <td id="LU_offset_slider" >
+            <!-- Displayed in reverse mode in relation to its volume reduction effect -->
             <input  id="LU_slider" class="LU_slider" type="range"
-                    min="0" step="3" max="12.0"
-                    title="Adjust as estimated 'loudness war' music program"
+                    min="0" step="3" max="15.0"
+                    title="Adjust as monitored LU to balance Loudness Compensation and target volume"
                     oninput="LU_slider_action(this.value)">
         </td>
       </tr>
@@ -350,8 +389,9 @@
             LU monit: --
         </td>
         <td id="LU_meter_bar">
-        <meter  id="LU_meter" title="LU meter (loudness units)" class="LU_meter" value="0"
-                min="0" optimum="0" low="5" high="8" max="12" ></meter>
+        <!-- Displayed in reverse mode in relation to its volume reduction effect -->
+        <meter id="LU_meter" title="Loudness Units meter EBU R128" class="LU_meter"
+                value="0" min="-15" max="0" ></meter>
         </td>
       </tr>
     </table>

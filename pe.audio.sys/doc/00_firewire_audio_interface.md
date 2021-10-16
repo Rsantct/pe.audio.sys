@@ -13,6 +13,16 @@ If you plan to use a JACK with a firewire audio interface, please install the Fi
 
     sudo apt install libffado2 ffado-tools ffado-mixer-qt4 jackd2-firewire
 
+### Kernel >= 4.2
+
+Some interfaces (e.g Focusrite Saffire PRO) uses the DICE II chipset, so the O.S. will automatically load the kernel module `snd-dice` (you can check it with `lsmod`). If so, the firewire JACK backend will fail to load. To fix this, you need to blacklist the module:
+
+    /etc/modprobe.d/blacklist.conf 
+    
+        blacklist snd-dice
+
+Anyway, for kernel >=4.2, you can leave the module `snd-dice` to be loaded, then use `jackd -d alsa` instead of `-d firewire`. Be aware to properly setup in advance the internal routing and mixer, by running the genuine Saffire PRO Mixer software under Win/Mac.
+
 
 ## config.yml
 
@@ -36,7 +46,7 @@ The Jack ports for your system card will have a new naming, but don't worry beca
 
 ## Firewire sound card mixer settings
 
-For ALSA cards, we use `alsactl` to save our sound card settings to a file `pe.audio.sys/.asound.MYCARD`, as prepared in advance with `alsamixer`.
+For ALSA cards, we use `alsactl` to save our sound card settings to a file `pe.audio.sys/config/asound.MYCARD`, as prepared in advance with `alsamixer`.
 
 So these cards settings will be restored when running `pe.audio.sys/scripts/sound_cards_prepare.py` at system restart.
 
@@ -44,7 +54,7 @@ For FFADO cards, this needs more manual work :-/
 
 Basically, it is spected to found a custom made bash script for your card settings to be restored. This script does run several dbus-send commands to the fireaudio dbus system, see the provided sample file:
 
-    ~/pe.audio.sys/.ffado.0x00130e01000406d2.sh
+    ~/pe.audio.sys/config/ffado.0x00130e01000406d2.sh
 
         dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e01000406d2/Mixer/Out12Mute org.ffado.Control.Element.Discrete.setValue int32:0
         dbus-send --print-reply --dest=org.ffado.Control /org/ffado/Control/DeviceManager/00130e01000406d2/Mixer/Out34Mute org.ffado.Control.Element.Discrete.setValue int32:0

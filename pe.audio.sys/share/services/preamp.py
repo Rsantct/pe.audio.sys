@@ -145,6 +145,7 @@ def process_commands( full_command ):
             'midside':          preamp.set_midside,
             'polarity':         preamp.set_polarity,
             'mute':             preamp.set_mute,
+            'subsonic':         preamp.set_subsonic,
 
             'level':            preamp.set_level,
             'volume':           preamp.set_level,

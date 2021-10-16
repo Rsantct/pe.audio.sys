@@ -76,7 +76,7 @@ def stop():
 if __name__ == '__main__':
 
     try:
-        with open( f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+        with open( f'{UHOME}/pe.audio.sys/config/config.yml', 'r') as f:
             config = yaml.safe_load(f)
             scripts_lists = config['scripts']
             for script in scripts_lists:

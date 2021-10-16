@@ -20,7 +20,7 @@ Main points to check for:
 
 ## [  ] sound card's mixer setting
 
-It is suggested to prepare `.asound.XXXX` files to ensure your sound card's mixer settings
+It is suggested to prepare `config/asound.XXXX` files to ensure your sound card's mixer settings
 
 More help running **`pe.audio.sys/share/scripts/sound_cards_prepare.py -h`**
 

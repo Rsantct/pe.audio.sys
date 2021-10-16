@@ -35,23 +35,20 @@
         'server'   :    restart tcp server
         'scripts'  :    restart user scripts
 
-    --log   messages redirected to 'pe.audio.sys/start.log'
+    --log   messages redirected to 'pe.audio.sys/log/start.log'
 
 """
 
 import subprocess as sp
 from   time import sleep, time, ctime
-import yaml
 import os
 import sys
 
+ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from   share.miscel         import *
-
-
-ME = __file__.split('/')[-1]
 
 
 def prepare_extra_cards(channels=2):
@@ -95,7 +92,7 @@ def check_jloops():
     cfg_loops = []
     loop_names = ['pre_in_loop']
     for source in CONFIG['sources']:
-        pname = CONFIG['sources'][source]['capture_port']
+        pname = CONFIG['sources'][source]['jack_pname']
         if 'loop' in pname and pname not in loop_names:  # avoids duplicates
             loop_names.append( pname )
     for loop_name in loop_names:
@@ -260,11 +257,12 @@ def stop_processes(mode):
 
 def run_scripts(mode='start'):
     for script in CONFIG['scripts']:
-        #(i) Some elements on the scripts list from config.yml can be a dict,
-        #    e.g the ecasound_peq, so we need to extract the script name.
+        # (i) Some elements on the scripts list from config.yml can be a dict,
+        #     e.g the ecasound_peq, so we need to extract the script name.
         if type(script) == dict:
             script = list(script.keys())[0]
         print(f'({ME}) will {mode} the script \'{script}\' ...')
+        # (i) Notice that we are open to run scripts writen in python, bash, etc...
         sp.Popen(f'{MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
                                   stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
@@ -275,7 +273,7 @@ def check_state_file():
     """ a sudden power break out can damage .state.yml  :-/
     """
     state_file      = f'{MAINFOLDER}/.state.yml'
-    state_log_file  = f'{MAINFOLDER}/.state.log'
+    state_log_file  = f'{LOG_FOLDER}/state.log'
 
     def recover_state(reason='damaged'):
         sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
@@ -294,42 +292,21 @@ def check_state_file():
                 sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
                 print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
 
-            # if it is damaged, lets recover from backup, and log to .state.log
+            # if it is damaged, lets recover from backup, and log to state.log
             else:
                 recover_state(reason='damaged')
     except:
                 recover_state(reason='missed')
 
 
-def prepare_drc_graphs():
-
-    # find loudspeaker's drc_sets
-    pcm_files  = os.listdir(LSPK_FOLDER)
-    drc_coeffs  = [ x.replace('.pcm', '') for x in pcm_files
-                                          if x[:4] == 'drc.' ]
-    drc_sets = []
-    for drc_coeff in drc_coeffs:
-        drcSetName = drc_coeff[6:]
-        if drcSetName not in drc_sets:
-            drc_sets.append(drcSetName)
-    drc_sets += ['none']
-
-    # find existing drc graph images
-    img_folder = f'{MAINFOLDER}/share/www/images'
-    png_files = [ x for x in os.listdir(img_folder) if x[:4] == 'drc_' ]
-    png_sets =  [ x[4:-4] for x in png_files ]
-
-    # If graphs exist, skip generate them
-    if sorted(drc_sets) == sorted(png_sets):
-        print(f'({ME}) found drc graphs in web/images folders')
-    else:
-        print(f'({ME}) processing drc sets to web/images in background')
-        sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
-
-
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
     sp.Popen(['python3', f'{MAINFOLDER}/share/brutefir_eq2png.py'])
+
+
+def prepare_drc_graphs():
+    print(f'({ME}) processing drc sets to web/images/{LOUDSPEAKER} in background')
+    sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
 
 if __name__ == "__main__":
@@ -352,9 +329,9 @@ if __name__ == "__main__":
 
     if logFlag:
         print('\n' + '-' * 80)
-        print(f'start process logged at \'{MAINFOLDER}/start.log\'')
+        print(f'start process logged at \'{LOG_FOLDER}/start.log\'')
         print('-' * 80)
-        flog = open(f'{MAINFOLDER}/start.log', 'w')
+        flog = open(f'{LOG_FOLDER}/start.log', 'w')
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         sys.stdout = flog

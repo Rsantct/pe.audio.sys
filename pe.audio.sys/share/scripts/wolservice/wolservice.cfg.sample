@@ -1,0 +1,14 @@
+# Addressing for the wolserver.py socket
+
+server_addr: '0.0.0.0'
+server_port: 9981
+
+
+# List of machines to sent wake on lan magic packets
+#
+#   machineID: MACADDRESS
+machines:
+
+    pe.audio.sys at salon:      xx:xx:xx:xx:xx:xx
+    another PC:                 xx:xx:xx:xx:xx:xx
+

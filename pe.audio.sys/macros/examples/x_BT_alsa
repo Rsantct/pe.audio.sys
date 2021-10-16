@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-    Toggles preamp to listen to BT_devices configured inside config.sys
+    Toggles preamp to listen to BT_devices configured inside config.yml
 
     (i) Please refer to   -->  doc/80_Bluetooth
 

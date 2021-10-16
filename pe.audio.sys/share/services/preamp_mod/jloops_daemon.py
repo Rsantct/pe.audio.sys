@@ -106,7 +106,7 @@ def main():
     jloop.start()
     # 2nd: the SOURCE's connection loop ports:
     for source in CONFIG['sources']:
-        pname = CONFIG['sources'][source]['capture_port']
+        pname = CONFIG['sources'][source]['jack_pname']
         if 'loop' in pname:
             jloop = mp.Process( target=jack_loop, args=(pname,) )
             jloop.start()
@@ -114,7 +114,7 @@ def main():
 
 if __name__ == '__main__':
 
-    with open(f'{UHOME}/pe.audio.sys/config.yml', 'r') as f:
+    with open(f'{UHOME}/pe.audio.sys/config/config.yml', 'r') as f:
         CONFIG = yaml.safe_load(f)
 
     main()

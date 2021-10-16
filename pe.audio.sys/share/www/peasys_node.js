@@ -41,7 +41,7 @@ if ( opcs.indexOf('-v') != -1 ){
 // Reading address & port to communicate to pe.audio.sys
 try {
     const UHOME = require('os').homedir();
-    let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config.yml', 'utf8');
+    let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config/config.yml', 'utf8');
     let CFG = yaml.safeLoad(fileContents);
     var PAS_ADDR =   CFG.peaudiosys_address; // PAS ~> pe.audio.sys
     var PAS_PORT =   CFG.peaudiosys_port;

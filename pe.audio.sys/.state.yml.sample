@@ -11,6 +11,7 @@ muted: false
 peq_set: none
 polarity: +
 solo: 'off'
+subsonic: 'off'
 target: none
 treble: 0.0
 xo_set: none

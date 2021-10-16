@@ -32,7 +32,7 @@ MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
 # Config, server addressing and common usage paths and variables
-with open(f'{MAINFOLDER}/config.yml', 'r') as f:
+with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 try:
     SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
@@ -41,6 +41,7 @@ except:
           f'\'config.yml\'{Fmt.END}')
     exit()
 
+LOG_FOLDER          = f'{MAINFOLDER}/log'
 LOUDSPEAKER         = CONFIG['loudspeaker']
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
 STATE_PATH          = f'{MAINFOLDER}/.state.yml'
@@ -142,9 +143,9 @@ class Fmt:
 # Reads the FS to be used by Brutefir
 # (i) This function is intentionally kept here, to be used even before Brutefir runs.
 def get_bf_samplerate():
-    """ Retrieve loudspeaker's filters FS:
-            - from         brutefir_config'   loudspeaker file,
-            - or from   ~/.brutefir_defaults  default     file
+    """ Retrieves loudspeaker's filters FS:
+            - from         brutefir_config    (the loudspeaker config file),
+            - or from   ~/.brutefir_defaults  (the default config file).
     """
     FS = 0
 
@@ -656,8 +657,8 @@ def get_remote_source_info():
     '''
     # Retrieving the remote sender address from 'config.yml'.
     # For a 'remote.....' named source, it is expected to have
-    # an IP address kind of in its capture_port field:
-    #   capture_port:  X.X.X.X
+    # an IP address kind of in its jack_pname field:
+    #   jack_pname:  X.X.X.X
     # so this way we can query the remote sender to run 'zita-j2n'
 
     remote_addr = ''
@@ -665,7 +666,7 @@ def get_remote_source_info():
 
     for source in CONFIG["sources"]:
         if 'remote' in source:
-            tmp = CONFIG["sources"][source]["capture_port"]
+            tmp = CONFIG["sources"][source]["jack_pname"]
             tmp_addr = tmp.split(':')[0]
             tmp_port = tmp.split(':')[-1]
             if is_IP(tmp_addr):

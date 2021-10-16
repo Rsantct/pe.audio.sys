@@ -47,7 +47,7 @@
         global $UHOME;
 
         $tmp = "";
-        $cfile = fopen( $UHOME."/pe.audio.sys/config.yml", "r" )
+        $cfile = fopen( $UHOME."/pe.audio.sys/config/config.yml", "r" )
                   or die("Unable to open file!");
         while( !feof($cfile) ) {
             $line = fgets($cfile);
@@ -101,7 +101,7 @@
         PHP server side receives associative arrays, i.e. dictionaries, through by the
         GET o PUT methods from the client side XMLHttpRequest (usually javascript).
         The array is what appears after 'functions.php?.......', examples:
-        
+
             "GET", "functions.php?command=level -15"
             "GET", "functions.php?command=aux amp_switch on"
             "GET", "functions.php?command=player stop"

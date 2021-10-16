@@ -52,11 +52,8 @@ from  players_mod.librespot         import  librespot_control,          \
 from  players_mod.spotify_desktop   import  spotify_control,            \
                                             spotify_meta
 
-
 ## Getting sources list
-with open(f'{MAINFOLDER}/config.yml', 'r') as f:
-    SOURCES = yaml.safe_load( f )["sources"]
-
+SOURCES = CONFIG["sources"]
 
 ## Spotify client detection
 SPOTIFY_CLIENT = detect_spotify_client()
@@ -136,11 +133,11 @@ def player_get_meta():
 
     elif source.startswith('remote'):
         # For a 'remote.....' named source, it is expected to have
-        # an IP address kind of in its capture_port field:
-        #   capture_port:  X.X.X.X:PPPP
+        # an IP address kind of in its jack_pname field:
+        #   jack_pname:  X.X.X.X:PPPP
         # so this way we can query metadata from the remote address.
-        host = SOURCES[source]["capture_port"].split(':')[0]
-        port = SOURCES[source]["capture_port"].split(':')[-1]
+        host = SOURCES[source]["jack_pname"].split(':')[0]
+        port = SOURCES[source]["jack_pname"].split(':')[-1]
 
         # (i) we assume that the remote pe.audio.sys listen at standard 9990 port
         if is_IP(host):

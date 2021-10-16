@@ -141,7 +141,6 @@ function page_initiate(){
 // PAGE STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
 
-
     // MAIN_SELECTOR
     function fill_in_main_selector(){
         // standard INPUTS manager
@@ -246,6 +245,11 @@ function fill_in_page_statics(){
     // Web header:
     document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
                                                        state.loudspeaker;
+
+    // Level cell info
+    document.getElementById("levelInfo").title = 'Target volume ref@' +
+                                                 state.loudspeaker_ref_SPL + 'dBSPL';
+
     // Selectors:
     fill_in_main_selector();
     fill_in_target_selector();
@@ -302,6 +306,8 @@ function page_update() {
     // Cancel updating if not connected
     if (!server_available){
         document.getElementById("levelInfo").innerHTML  = '--';
+        player_info_clear();
+        player_controls_clear();
         return;
     }
 
@@ -318,7 +324,7 @@ function page_update() {
     }
 
     // Updates the Integrated LU monitor and the LU offset slider
-    document.getElementById("LU_slider").value           =   state.lu_offset;
+    document.getElementById("LU_slider").value           = (15 - state.lu_offset);
     document.getElementById("LU_offset_value").innerText =
                                         'LU offset: ' + -1 * state.lu_offset;
     try{
@@ -329,9 +335,13 @@ function page_update() {
         if ( scope == 'title' ) {
             scope = 'track';
         }
-        document.getElementById("LU_meter").value           = LU_I;
+        document.getElementById("LU_meter").value           = -LU_I;
         document.getElementById("LUscopeSelector").value    = scope;
-        document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
+        if (LU_I <= 0){
+          document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
+        }else{
+          document.getElementById("LU_meter_value").innerHTML ='LU monit: +' + LU_I;
+        }
     }catch(e){
         console.log('Error getting loudness monitor from server', e.name, e.message);
     }
@@ -353,6 +363,8 @@ function page_update() {
     buttonMonoHighlight()
     buttonLoudHighlight()
     buttonsToneBalanceHighlight()
+    buttonSubsonicHighlight()
+    levelInfoHighlight()
 
     // Updates metadata player info
     player_info_update()
@@ -573,6 +585,28 @@ function player_info_update() {
     }
 }
 
+// Aux to clear controls when not connected
+function player_controls_clear() {
+    document.getElementById("buttonStop").style.background  = "rgb(100, 100, 100)";
+    document.getElementById("buttonStop").style.color       = "lightgray";
+    document.getElementById("buttonPause").style.background = "rgb(100, 100, 100)";
+    document.getElementById("buttonPause").style.color      = "lightgray";
+    document.getElementById("buttonPlay").style.background  = "rgb(100, 100, 100)";
+    document.getElementById("buttonPlay").style.color       = "lightgray";
+}
+
+// Aux to clear metadata when not connected
+function player_info_clear() {
+    document.getElementById("bitrate").innerText = "-\nkbps"
+    document.getElementById("artist").innerText = "-"
+    document.getElementById("track_info").innerText = "-"
+    document.getElementById("track_info").innerText += "\n-"
+    document.getElementById("time").innerText = "-"
+    document.getElementById("album").innerText = "-"
+    document.getElementById("title").innerText = "-"
+}
+
+
 // Emerge a dialog to select a disk track to be played
 function select_track() {
     var tracknum = prompt('Enter track number to play:');
@@ -766,7 +800,7 @@ function run_macro(mFname){
 
 // Manages the LU_offset slider
 function LU_slider_action(slider_value){
-    control_cmd( 'lu_offset ' + slider_value )
+    control_cmd( 'lu_offset ' + (15 - parseInt(slider_value) ).toString() )
 }
 
 
@@ -878,6 +912,32 @@ function buttonLoudHighlight(){
         document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
     }
 }
+function buttonSubsonicHighlight(){
+    if ( state.subsonic == 'off' ) {
+        document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
+        document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
+        document.getElementById("subsonic").innerText = 'SUBS\n-';
+    } else if ( state.subsonic == 'mp' ) {
+        document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
+        document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
+        document.getElementById("subsonic").innerText = 'SUBS\nmp';
+    } else if ( state.subsonic == 'lp' ) {
+        document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
+        document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
+        document.getElementById("subsonic").innerText = 'SUBS\nlp';
+    }
+}
+function levelInfoHighlight() {
+    // currently only indicates subsonic filter activated
+    if (state.subsonic != 'off' ){
+        document.getElementById("levelInfo").style.borderWidth = "thick";
+        document.getElementById("levelInfo").style.borderColor = "DarkRed";
+    }else{
+        document.getElementById("levelInfo").style.borderWidth = "thin";
+        document.getElementById("levelInfo").style.borderColor = "white";
+   }
+}
+
 
 // Send preamp changes and display new values
 function audio_change(param, value) {
@@ -960,12 +1020,14 @@ function advanced(mode) {
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
         document.getElementById( "RAOD").style.display = "inline-block";
+        document.getElementById( "subsonic").style.display = "inline-block";
     }
     else {
         document.getElementById( "advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
         document.getElementById( "RAOD").style.display = "none";
+        document.getElementById( "subsonic").style.display = "none";
     }
 }
 
@@ -985,7 +1047,9 @@ function graphs_toggle() {
         document.getElementById("drc_graph").style.display = 'block';
         document.getElementById("bfeq_graph").style.display = 'block';
         // Points to the current DRC png
-        document.getElementById("drc_img").src =  'images/drc_' + state.drc_set
+        document.getElementById("drc_img").src =  'images/'
+                                                + state.loudspeaker
+                                                + '/drc_' + state.drc_set
                                                                + '.png';
         document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?';
     }else{

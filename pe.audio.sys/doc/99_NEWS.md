@@ -53,3 +53,11 @@ See the `doc/` folder for detailed information about this.
 
 - New documentation for remote pe.audio.sys sources listening.
 - New Firewire Audio Interfaces support.
+
+## Sep 2021, version 1.0c
+
+- New subsonic filter as optional preamp feature.
+
+## Oct 2021, version 1.0d
+
+- New folder layout for log & config files, **PLEASE** move your `xxx.yml` files to `pe.audio.sys/config/`, as well your `.asound.XXX` or `.ffado.GUID` files but without the leading `.`(dot)

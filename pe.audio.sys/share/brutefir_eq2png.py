@@ -131,7 +131,7 @@ if __name__ == '__main__':
             exit()
 
     # Check bfeq_linear_phase config
-    CONFIG = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config.yml', 'r') )
+    CONFIG = yaml.safe_load( open(f'{UHOME}/pe.audio.sys/config/config.yml', 'r') )
     try:
         if CONFIG['bfeq_linear_phase']:
             is_lin_phase = True

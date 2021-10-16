@@ -21,23 +21,22 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from    share.brutefir_mod  import *
-from    share.miscel        import send_cmd
+from    share.miscel        import send_cmd, get_bf_samplerate
 
 
 def print_delays():
     """ Prints out the delays on Brutefir outputs.
     """
-    FS          = int( bf_get_sample_rate() )
+    FS          = int( get_bf_samplerate() )
     outs        = bf_get_current_outputs()
-    maxdelay    = outs['maxdelay']
+    maxdelay    = int( bf_get_config()['maxdelay'] )
     maxdelay_ms = int( maxdelay / FS  * 1e3)
 
     print( f'Brutefir max available outputs delay: {maxdelay} samples ({maxdelay_ms} ms)' )
     print
 
     for o in outs:
-        # skipping the maxdelay dict field
-        if not o.isdigit():
+        if not o.isdigit():    # currently not necessary
             continue
         oname = outs[o]['name']
         delay = outs[o]['delay']
@@ -46,6 +45,7 @@ def print_delays():
 
 
 if __name__ == '__main__':
+
 
     # Resuming Brutefir from powesave
     print( 'resuming Brutefir from powersave ...')

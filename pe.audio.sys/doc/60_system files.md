@@ -17,13 +17,15 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- pasysctrl.hlp       Help on system control commands
     |
-    |-- .state.yml          The file that keeps the run-time system state
+    |-- .state.yml          Keeps the run-time system state
     |
-    |-- config.yml          The main configuration file
-    |
-    |-- xxxx.yml            Other configuration files
-    |
-    |-- .asound.XXX         ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
+    |-- config/
+    |   |
+    |   |-- config.yml      The main configuration file
+    |   |
+    |   |-- xxxx.yml        Other configuration files
+    |   |
+    |   |-- asound.XXX      ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
     |
     |-- start.py            Startup or shutdown the whole system
     |
@@ -64,7 +66,7 @@ This file allows to configure the whole system.
 
 Some points:
 
-- The necessary preamp **loop ports** will be auto spawn under JACK when source `capture_ports` are named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
+- The necessary preamp **loop ports** will be auto spawn under JACK when source `jack_pname` is named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
 
 - You can force some audio **settings at start up**, see `init_xxxxx` options.
 
@@ -101,6 +103,7 @@ Here you are an uncommented bare example of `config.yml`:
         bass:               0
         treble:             0
         balance:            0
+        subsonic:           'off'
         equal_loudness:     true
         lu_offset:          6.0     # most records suffers loudness war mastering
         midside:            'off'
@@ -120,24 +123,24 @@ Here you are an uncommented bare example of `config.yml`:
     sources:
     
         spotify:
-            capture_port:   alsa_loop
+            jack_pname:    alsa_loop
             gain:           0.0
             xo:             lp
         mpd:
-            capture_port:   mpd
+            jack_pname:     mpd
             gain:           0.0
             xo:             lp
         istreams:
-            capture_port:   mplayer_istreams
+            jack_pname:     mplayer_istreams
             gain:           0.0
             xo:             lp
         tv:
-            capture_port:   system
+            jack_pname:     system
             gain:           +6.0                # low level source
             xo:             mp                  # low latency filtering
             target:         none                # preferred for movie dialogue
         remote:
-            capture_port:   192.168.1.234       # remote zita-j2n sender
+            jack_pname:     192.168.1.234       # remote zita-j2n sender
             gain:           0.0
             xo:             lp
 
@@ -275,6 +278,7 @@ DRC pcm files must be named:
 
     drc.X.DRCSETNAME.pcm      where X must be L | R
 
+
 XO pcm files must be named:
 
     xo.XX[.C].XOSETNAME.pcm   where XX must be:  fr | lo | mi | hi | sw
@@ -283,6 +287,17 @@ XO pcm files must be named:
     Using C allows to have DEDICATED DRIVER FIR FILTERING if desired.  
 
     (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
+
+
+SUBSONIC pcm files must be named:
+
+    subsonic.mp.pcm
+    subsonic.lp.pcm
+
+    These ones are optional files, for more info see the loudspeakers folder.
+
+Subsonic filtering is not performed under the generic EQ stage in order to ensure enough resolution, usually 4096 taps. Dedicated FIRs also allows a more specific subsonic filter design.
+
 
 ### Full range loudspeaker w/o correction 'xo' filter
 

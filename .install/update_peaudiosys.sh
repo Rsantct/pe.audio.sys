@@ -64,7 +64,7 @@ cp .mpdconf .mpdconf.LAST
 # use .LAST instead of .bak in order to respect any existing bak file if so.
 if [ -d "pe.audio.sys" ]; then
     echo "(i) backing up pe.audio.sys config files"
-    for file in pe.audio.sys/*.yml ; do
+    for file in pe.audio.sys/config/*.yml ; do
         cp "$file" "$file.LAST"
     done
 fi
@@ -91,19 +91,20 @@ fi
 ########################################################################
 echo "(i) Copying from $ORIG ..."
 cd "$HOME"
-# (i) HIDDEN FILES must be explicited each one to be copied
+# HIDDEN FILES (!) must explicit each one so they can be copied
 cp    $ORIG/.asoundrc.sample    $HOME/              >/dev/null 2>&1
 # MPLAYER
 cp -r $ORIG/.mplayer*           $HOME/              >/dev/null 2>&1
 # MPD
-mkdir music                                         >/dev/null 2>&1
-mkdir -p .config/mpd/playlists                      >/dev/null 2>&1
+mkdir -p $HOME/music
+mkdir -p $HOME/.config/mpd/playlists
 cp    $ORIG/.mpdconf.sample     $HOME/              >/dev/null 2>&1
 # MAIN
-mkdir $HOME/pe.audio.sys                            >/dev/null 2>&1
+mkdir -p $HOME/pe.audio.sys/config
+mkdir -p $HOME/pe.audio.sys/log
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
-mkdir $HOME/bin                                     >/dev/null 2>&1
+mkdir -p $HOME/bin
 cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
 
 ########################################################################
@@ -123,7 +124,7 @@ if [ "$keepConfig" ]; then
 
     # PE.AUDIO.SYS
     echo "(i) Restoring pe.audio.sys config files"
-    cd "$HOME"/pe.audio.sys
+    cd "$HOME"/pe.audio.sys/config
     for file in *yml.LAST ; do
         nfile=${file%.LAST}         # removes trailing .LAST '%'
         echo "    "$nfile
@@ -149,6 +150,7 @@ else
     # MAIN
     cd "$HOME"/pe.audio.sys
     cp .state.yml.sample         .state.yml
+    cd "$HOME"/pe.audio.sys/config
     cp config.yml.sample         config.yml
     cp DVB-T.yml.sample          DVB-T.yml        >/dev/null 2>&1
     cp istreams.yml.sample       istreams.yml     >/dev/null 2>&1
@@ -215,6 +217,19 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 ########################################################################
 a2ensites=$(ls /etc/apache2/sites-enabled/)
 
+# normal web site
+forig_www=$ORIG"/.install/apache-site/pe.audio.sys.conf"
+fdest_www="/etc/apache2/sites-available/pe.audio.sys.conf"
+
+# optional web site with wakeonlan site
+forig_wol=$ORIG"/.install/apache-site/pe.audio.sys_wol.conf"
+fdest_wol="/etc/apache2/sites-available/pe.audio.sys_wol.conf"
+
+# updating HOME path inside xxx.conf files
+sed -i s/paudio/$(basename $HOME)/g  $forig_www
+sed -i s/paudio/$(basename $HOME)/g  $forig_wol
+
+
 # Using Apache
 if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
     echo "(i) Will configure www/clientside.js for Apache server"
@@ -222,15 +237,11 @@ if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
     echo "(i) Checking the website 'pe.audio.sys'"
     echo "    /etc/apache2/sites-available/pe.audio.sys.conf"
     echo
-    forig=$ORIG"/.install/apache-site/pe.audio.sys.conf"
-    fdest="/etc/apache2/sites-available/pe.audio.sys.conf"
-    # updating your HOME path inside pe.audio.sys.conf
-    sed -i s/peaudiosys/$(basename $HOME)/g  $forig
     updateWeb=1
-    if [ -f $fdest ]; then
-        if ! cmp --quiet $forig $fdest; then
+    if [ -f $fdest_www ]; then
+        if ! cmp --quiet $forig_www $fdest_www; then
             echo "(i) A new version is available "
-            echo "    "$forig"\n"
+            echo "    "$forig_www"\n"
         else
             echo "(i) No changes on the website\n"
             updateWeb=""
@@ -239,10 +250,15 @@ if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
     if [ "$updateWeb" ]; then
         echo "(!) You need admin privilegies (sudo)"
         echo "( ^C to cancel the website update )\n"
-        sudo cp $forig $fdest
+        # normal web site
+        sudo cp $forig_www $fdest_www
+        # prepare optional wakeonlan site
+        sudo cp $forig_wol $fdest_wol
+        # disable default Apache site
         sudo a2dissite 000-default.conf
         # a helper when migrating from pre.di.c
         sudo a2dissite pre.di.c.conf
+        # enable normal site
         sudo a2ensite pe.audio.sys.conf
         sudo service apache2 reload
     fi

@@ -24,7 +24,7 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 import logging
-LOGFNAME    = f'{MAINFOLDER}/.spotify_desktop.py.log'
+LOGFNAME    = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
 from time import sleep
@@ -54,7 +54,7 @@ while tries:
         sleep(1)
 
 # USER PLAYLISTS
-plist_file = f'{MAINFOLDER}/spotify_plists.yml'
+plist_file = f'{MAINFOLDER}/config/spotify_plists.yml'
 PLAYLISTS = {}
 if os.path.exists(plist_file):
     try:
