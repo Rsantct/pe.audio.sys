@@ -26,7 +26,7 @@ sed -i -e '/bfeq_linear_phase/c\bfeq_linear_phase: '$new \
     "$HOME"/pe.audio.sys/config/config.yml
 
 # Restarting
-peaudiosys_service_restart.sh preamp
+peaudiosys_server_restart.sh
 
 # Awaiting preamp service
 PORT=$( grep peaudiosys_port ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
