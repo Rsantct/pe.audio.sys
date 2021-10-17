@@ -83,10 +83,17 @@ def load_url(url):
 
 def select_by_name(preset_name):
     """ loads a stream by its preset name """
-    for preset, dict in presets.items():
-        if dict['name'] == preset_name:
-            load_url( dict['url'] )
-            return True
+    for pnum, pdict in presets.items():
+        if type(pdict) == dict and 'name' in pdict and pdict["name"] == preset_name:
+            if 'url' in pdict:
+                if load_url( pdict["url"] ):
+                    return True
+                else:
+                    print( f'(istreams.py) error loading: \'{pdict["url"]}\'' )
+                    return False
+            else:
+                print( f'(istreams.py) url not found in preset: \'{preset_name}\'' )
+                return False
     print( f'(istreams.py) preset \'{preset_name}\' not found' )
     return False
 
@@ -94,7 +101,7 @@ def select_by_name(preset_name):
 def select_by_preset(preset_num):
     """ loads a stream by its preset number """
     try:
-        load_url( presets[ int(preset_num) ]['url'] )
+        load_url( presets[ int(preset_num) ]["url"] )
         return True
     except:
         print( f'(istreams.py) error in preset # {preset_num}' )
