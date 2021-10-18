@@ -46,7 +46,7 @@ from  share.miscel                  import  *
 from  players_mod.mpd               import  mpd_control,                \
                                             mpd_meta
 from  players_mod.mplayer           import  mplayer_control,            \
-                                            mplayer_meta
+                                            mplayer_get_meta
 from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
 from  players_mod.spotify_desktop   import  spotify_control,            \
@@ -123,13 +123,13 @@ def player_get_meta():
         md = mpd_meta(md)
 
     elif source == 'istreams':
-        md = mplayer_meta(md, service='istreams')
+        md = mplayer_get_meta(md, service='istreams')
 
     elif source == 'tdt' or 'dvb' in source:
-        md = mplayer_meta(md, service='dvb')
+        md = mplayer_get_meta(md, service='dvb')
 
     elif 'cd' in source:
-        md = mplayer_meta(md, service='cdda')
+        md = mplayer_get_meta(md, service='cdda')
 
     elif source.startswith('remote'):
         # For a 'remote.....' named source, it is expected to have
