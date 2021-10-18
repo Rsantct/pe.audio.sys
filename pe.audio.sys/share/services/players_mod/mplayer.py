@@ -411,7 +411,7 @@ def cdda_meta(md):
 
 
 # MAIN Mplayer metadata
-def mplayer_meta(md, service):
+def mplayer_get_meta(md, service):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
@@ -440,31 +440,34 @@ def mplayer_meta(md, service):
     mplayer_control(cmd='get_time_pos',      service=service)
     mplayer_control(cmd='get_time_length',   service=service)
 
-    # Waiting for Mplayer ANS_xxxx to be written to the output file
-    sleep(.25)
-
-    # Reading a tail of 300 bytes from the Mplayer output file
-    fsize = os.path.getsize(mplayer_redirection_path)
-    tail_lenght = 300
-    with open(mplayer_redirection_path, 'rb') as f:
-        f.seek(fsize - tail_lenght)
-        lines = f.read(tail_lenght).decode().split('\n')
-
-        # Some sample lines:
-        #   ANS_FILENAME='Radio 3 HQ'
-        #   ANS_pause=no
-        #   ANS_TIME_POSITION=4399.8
-        #   ANS_LENGTH=-0.95
-        #   ANS_AUDIO_BITRATE='256 kbps'
+    # Triyng to read Mplayer output from its redirected file
+    lines = []
+    tries = 3
+    while tries:
+        # Waiting for Mplayer ANS_xxxx to be written to the output file
+        sleep(.10)
+        try:
+            # Reading a tail of 300 bytes from the Mplayer output file
+            fsize = os.path.getsize(mplayer_redirection_path)
+            tail_lenght = 300
+            with open(mplayer_redirection_path, 'rb') as f:
+                f.seek(fsize - tail_lenght)
+                lines = f.read(tail_lenght).decode().split('\n')
+            break
+        except:
+            tries -= 1
 
     # Reading metadata (will take the last valid field if found in lines)
+    #   Some sample lines:
+    #       ANS_FILENAME='Radio 3 HQ'
+    #       ANS_pause=no
+    #       ANS_TIME_POSITION=4399.8
+    #       ANS_LENGTH=-0.95
+    #       ANS_AUDIO_BITRATE='256 kbps'
     for line in lines:
-
         if 'ANS_AUDIO_BITRATE=' in line:
             md['bitrate'] = line.split('=')[-1].replace("'", "").split()[0]
-
         if 'ANS_FILENAME=' in line:
             md['title'] = line.split('=')[-1].replace("'", "")
-
 
     return md
