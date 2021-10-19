@@ -59,12 +59,12 @@ def main():
     send_cmd( f'input {preinput}', sender=ME, verbose=True )
     sleep(.5)
 
-    # LU level compensation reference
-    send_cmd( f'lu_offset {lu_offset}', sender=ME, verbose=True )
-    sleep(.5)
-
     # Loudness compensation on|off
     send_cmd( f'loudness {loudness_comp}', sender=ME, verbose=True )
+    sleep(.5)
+
+    # LU level compensation reference
+    send_cmd( f'lu_offset {lu_offset}', sender=ME, verbose=True )
     sleep(.5)
 
     # XO
