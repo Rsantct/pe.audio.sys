@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-print('Importing examples/radio_macro.py ...')
+print('Importing templates/radio_macro.py ...')
 import templates.radio_macro as rm
 
 
