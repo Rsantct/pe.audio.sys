@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 print('Importing examples/radio_macro.py ...')
-import examples.radio_macro as rm
+import templates.radio_macro as rm
 
 
 rm.mplayer_profile = 'istreams'   # choose an Mplayer profile: "istreams", "dvb"
