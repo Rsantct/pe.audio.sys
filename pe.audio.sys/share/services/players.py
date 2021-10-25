@@ -32,7 +32,6 @@ from os.path import expanduser, exists, getsize
 import sys
 import subprocess as sp
 import threading
-import yaml
 from time import sleep, strftime
 import json
 from socket import socket
@@ -71,6 +70,15 @@ METATEMPLATE = {
                 'tracks_tot':   '-' }
 
 
+def dump_metadata_file(md):
+    with open(PLAYER_META_PATH, 'w') as f:
+        f.write( json.dumps( md ))
+
+def dump_state_file(state):
+    with open(PLAYER_STATE_PATH, 'w') as f:
+        f.write(state)
+
+
 # Gets metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
     md = ''
@@ -82,23 +90,6 @@ def remote_get_meta(host, port=9990):
     except:
         pass
     return md
-
-
-# Aux to get the current preamp input source
-def get_source():
-    """ retrieves the current input source """
-    source = None
-    # It is possible to fail while state file is updating :-/
-    times = 4
-    while times:
-        try:
-            with open( MAINFOLDER + '/.state.yml', 'r') as f:
-                source = yaml.safe_load(f)['input']
-            break
-        except:
-            times -= 1
-        sleep(.25)
-    return source
 
 
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
@@ -193,36 +184,37 @@ def player_control(cmd, arg=''):
     else:
         result = 'stop'
 
-    # Dumps the player newState
     # (fix newState to a valid value if a module answer was wrong)
-    if result not in ('stop', 'play', 'pause'):
+    if result in ('stop', 'play', 'pause'):
+        newState = result
+    else:
         newState = 'stop'  # default state
-    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write(newState)
+
+    # Dumps the player newState
+    dump_state_file(newState)
 
     return result
 
 
 # auto-started when loading this module
 def init():
-    """ This init function will:
-        - Periodically store the metadata info to .player_metadata file
-          so that can be read from any process interested in it.
-        - Also will flush the .player_state file
+    """ This init function will
+        - Launch the 'store_meta' thread, see below.
+        - Also will reset the .player_state file to 'pause'.
     """
     def store_meta(timer=2):
         while True:
             md = player_get_meta()
-            with open( PLAYER_META_PATH, 'w') as f:
-                f.write( json.dumps( md ))
+            dump_metadata_file( md )
             sleep(timer)
+
     # Loop storing metadata
     meta_timer = 2
     meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
-    # Flush state file:
-    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write('')
+
+    # Reset state file:
+    dump_state_file('pause')
 
 
 # Interface entry function for this module plugged inside 'server.py'
