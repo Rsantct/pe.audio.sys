@@ -54,7 +54,7 @@ def main_loop():
     def eject_job(timer=5):
         """ Runs forever every 5 sec:
             - Reads the playback files to detect when a CD disc is over,
-              then ejects it.
+              then ejects the disc.
             - Waits the timer
         """
 
