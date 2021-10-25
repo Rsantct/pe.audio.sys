@@ -34,7 +34,9 @@ UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from    share.miscel            import *
+from    share.miscel  import    PLAYER_META_PATH,   \
+                                PLAYER_STATE_PATH,  \
+                                get_source
 
 
 def read_state_file():
@@ -57,6 +59,7 @@ def main_loop():
         """
 
         disc_is_over    = False
+        tries           = 3     # to ensure that .player_state changes from 'play'
 
         while True:
 
@@ -67,12 +70,15 @@ def main_loop():
 
                 if md["track_num"] == md["tracks_tot"]:
 
-                    # time_pos could not reach time_tot by 1 sec :-/
+                    # time_pos could not reach time_tot by ~2 sec :-/
                     if md["time_pos"][3:-1] == md["time_tot"][:-1]:
-                        if abs( int(md["time_pos"][-2:]) - int(md["time_tot"][-2:])) <= 1:
+                        if abs( int(md["time_pos"][-2:]) - int(md["time_tot"][-2:])) <= 2:
                             disc_is_over = True
+                            tries -= 1
+            else:
+                tries = 3
 
-            if disc_is_over:
+            if disc_is_over and not tries:
                 Popen("peaudiosys_control player eject".split())
                 print(f'(autoeject_cdda.py) CD playback is over, disc ejected.')
                 disc_is_over = False
