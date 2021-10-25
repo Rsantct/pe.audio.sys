@@ -63,7 +63,7 @@ import sys
 UHOME       = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, CONFIG
+from share.miscel import MAINFOLDER, CONFIG, PLAYER_STATE_PATH, timesec2string
 from subprocess import Popen
 import json
 import yaml
@@ -75,19 +75,6 @@ import cdda
 
 
 ME          = __file__.split('/')[-1]
-
-
-# Auxiliary function to format hh:mm:ss
-def timeFmt(x):
-    """ in:     x seconds   (float)
-        out:    'hh:mm:ss'  (string)
-    """
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
 # Aux to convert a given formatted time string "hh:mm:ss.cc" to seconds
@@ -166,7 +153,7 @@ def cdda_get_current_track():
             f.write( 'pausing_keep get_time_pos\n' )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
-        for line in tmp[-10:]:
+        for line in tmp[-10:][::-1]:
             if line.startswith('ANS_TIME_POSITION='):
                 return float( line.replace('ANS_TIME_POSITION=', '')
                               .strip() )
@@ -296,9 +283,12 @@ def mplayer_control(cmd, arg='', service=''):
         # Flush .cdda_info
         with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
             f.write( json.dumps( cdda.cdda_info_template() ) )
-        # Flush Mplayer playlist
+        # Flush Mplayer playlist and player status file
         send_cmd('stop', service)
+        with open( PLAYER_STATE_PATH, 'w') as f:
+            f.write( 'stop' )
         return playing_status(service)
+
 
     # Processing ACTION commands (playback control)
     if service == 'istreams':
@@ -379,7 +369,7 @@ def mplayer_control(cmd, arg='', service=''):
 
 
 # Aux Mplayer metadata only for the CDDA service
-def cdda_meta(md):
+def cdda_get_meta(md):
     """ input:      a metadata blank dict
         output:     the updated one
     """
@@ -396,7 +386,7 @@ def cdda_meta(md):
     # Updating md fields:
     md['track_num'] = '1'
     md['bitrate'] = '1411'
-    md['track_num'], md['time_pos'] = str(curr_track), timeFmt(trackPos)
+    md['track_num'], md['time_pos'] = str(curr_track), timesec2string(trackPos)
     md['artist'] = cd_info['artist']
     md['album'] = cd_info['album']
     if md['track_num'] in cd_info.keys():
@@ -420,14 +410,14 @@ def mplayer_get_meta(md, service):
 
         output:     the updated md dict
 
-        (*) for cdda will use the alternate function cdda_meta()
+        (*) for cdda will use the alternate function cdda_get_meta()
     """
 
     md['player'] = 'Mplayer'
 
     # (!) DIVERTING: this works only for DVB or iSTREAMS, but not for CDDA
     if service == 'cdda':
-        return cdda_meta(md)
+        return cdda_get_meta(md)
 
     # This is the file were Mplayer standard output has been redirected to,
     # so we can read there any answer when required to Mplayer slave daemon:
