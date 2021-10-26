@@ -21,7 +21,7 @@
 
 import  os
 import  sys
-UHOME       = os.path.expanduser("~")
+UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel   import MAINFOLDER, timesec2string as timeFmt
@@ -32,12 +32,12 @@ import  yaml
 from    pydbus      import SessionBus
 import  logging
 
-LOGFNAME    = f'{MAINFOLDER}/log/spotify_desktop.py.log'
+LOGFNAME = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
 
 # BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
-SPOTIFY_BITRATE   = '320'
+SPOTIFY_BITRATE = '320'
 
 
 # The DBUS INTERFACE with the Spotify Desktop client.
