@@ -40,13 +40,27 @@ from    share.miscel  import    PLAYER_META_PATH,   \
 
 
 def read_state_file():
-    with open(PLAYER_STATE_PATH, 'r') as f:
-        return f.read()
+    tries = 3
+    while tries:
+        try:
+            with open(PLAYER_STATE_PATH, 'r') as f:
+                return f.read()
+        except:
+            sleep (.1)
+            tries -=1
+    return 'stop'
 
 
 def read_metadata_file():
-    with open(PLAYER_META_PATH, 'r') as f:
-        return json.loads( f.read() )
+    tries = 3
+    while tries:
+        try:
+            with open(PLAYER_META_PATH, 'r') as f:
+                return json.loads( f.read() )
+        except:
+            sleep (.1)
+            tries -=1
+    return {}
 
 
 def main_loop():
@@ -64,30 +78,44 @@ def main_loop():
         while True:
 
             md          = read_metadata_file()
+            if not md:
+                continue
             is_playing  = read_state_file() == 'play'
 
+            # check if source = 'cd' and the disc is playing
             if get_source().lower() == 'cd' and is_playing:
 
-                if md["track_num"] == md["tracks_tot"]:
+                # check if the last track is the one being played,
+                # also avoid bare default metadata
+                if md["tracks_tot"] == md["track_num"] and \
+                   md["time_tot"][-2:].isdigit()       and \
+                   md["time_tot"]   != '00:00':
 
                     # time_pos could not reach time_tot by ~2 sec :-/
                     if md["time_pos"][3:-1] == md["time_tot"][:-1]:
-                        if abs( int(md["time_pos"][-2:]) - int(md["time_tot"][-2:])) <= 2:
+                        if abs( int(md["time_pos"][-2:]) -
+                                int(md["time_tot"][-2:]) )  <= 2:
                             disc_is_over = True
                             tries -= 1
+                else:
+                    tries = 3
             else:
                 tries = 3
+
+            # DEBUG
+            #print(md["time_pos"], md["time_tot"], tries)
 
             if disc_is_over and not tries:
                 Popen("peaudiosys_control player eject".split())
                 print(f'(autoeject_cdda.py) CD playback is over, disc ejected.')
                 disc_is_over = False
+                tries = 3
 
-            # SLEEP TIMER
+            # sleep timer
             sleep(timer)
 
 
-    # Loop forever
+    # Thread the job
     job_loop = threading.Thread( target=eject_job, args=() )
     job_loop.start()
 
