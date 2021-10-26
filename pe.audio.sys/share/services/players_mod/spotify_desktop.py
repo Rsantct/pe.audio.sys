@@ -70,19 +70,6 @@ if os.path.exists(plist_file):
     logging.info(tmp)
 
 
-# Auxiliary function to format hh:mm:ss
-def timeFmt(x):
-    """ in:     x seconds   (float)
-        out:    'hh:mm:ss'  (string)
-    """
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
-
-
 # Spotify Desktop control
 def spotify_control(cmd, arg=''):
     """ Controls the Spotify Desktop player
