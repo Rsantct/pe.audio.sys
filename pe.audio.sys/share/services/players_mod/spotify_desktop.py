@@ -19,18 +19,22 @@
 """ A Spotify Desktop client interface module for players.py
 """
 
-import os
+import  os
+import  sys
 UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-import logging
+from share.miscel   import MAINFOLDER, timesec2string as timeFmt
+
+from    time        import sleep
+from    subprocess  import check_output
+import  yaml
+from    pydbus      import SessionBus
+import  logging
+
 LOGFNAME    = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
-from time import sleep
-from subprocess import check_output
-import yaml
-from pydbus import SessionBus
 
 # BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE   = '320'
