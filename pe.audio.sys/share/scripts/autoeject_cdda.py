@@ -18,6 +18,8 @@
 
 """
     A pe.audio.sys daemon to auto eject a CD-Audio when playback is over
+    
+    (Useful for tray less slot drives, such as Apple Superdrive)
 
     Usage:  auteject_cdda.py  start | stop  &
 """
