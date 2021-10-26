@@ -18,8 +18,6 @@
 
 """
     A pe.audio.sys daemon to auto eject a CD-Audio when playback is over
-    
-    (Useful for tray less slot drives, such as Apple Superdrive)
 
     Usage:  auteject_cdda.py  start | stop  &
 """
@@ -39,18 +37,6 @@ sys.path.append(MAINFOLDER)
 from    share.miscel  import    PLAYER_META_PATH,   \
                                 PLAYER_STATE_PATH,  \
                                 get_source
-
-
-def read_state_file():
-    tries = 3
-    while tries:
-        try:
-            with open(PLAYER_STATE_PATH, 'r') as f:
-                return f.read()
-        except:
-            sleep (.1)
-            tries -=1
-    return 'stop'
 
 
 def read_metadata_file():
@@ -75,21 +61,19 @@ def main_loop():
         """
 
         disc_is_over    = False
-        tries           = 3     # to ensure that .player_state changes from 'play'
 
         while True:
 
             md          = read_metadata_file()
             if not md:
                 continue
-            is_playing  = read_state_file() == 'play'
 
-            # check if source = 'cd' and the disc is playing
-            if get_source().lower() == 'cd' and is_playing:
+            # check if source = 'cd'
+            if get_source().lower() == 'cd':
 
-                # check if the last track is the one being played,
+                # check if the track being playe is last one,
                 # also avoid bare default metadata
-                if md["tracks_tot"] == md["track_num"] and \
+                if md["track_num"] == md["tracks_tot"] and \
                    md["time_tot"][-2:].isdigit()       and \
                    md["time_tot"]   != '00:00':
 
@@ -98,16 +82,12 @@ def main_loop():
                         if abs( int(md["time_pos"][-2:]) -
                                 int(md["time_tot"][-2:]) )  <= 2:
                             disc_is_over = True
-                            tries -= 1
-                else:
-                    tries = 3
-            else:
-                tries = 3
 
             # DEBUG
-            #print(md["time_pos"], md["time_tot"], tries)
+            #print(md["time_pos"], md["time_tot"])
 
-            if disc_is_over and not tries:
+            if disc_is_over:
+                sleep(2) # courtesy wait
                 Popen("peaudiosys_control player eject".split())
                 print(f'(autoeject_cdda.py) CD playback is over, disc ejected.')
                 disc_is_over = False
