@@ -120,7 +120,6 @@ def main_loop():
     job_loop.start()
 
 
-
 def stop():
     Popen( f'pkill -KILL -f autoeject_cdda'.split() )
     sleep(.5)
