@@ -153,7 +153,7 @@ def cdda_get_current_track():
             f.write( 'pausing_keep get_time_pos\n' )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
-        for line in tmp[-10:][::-1]:
+        for line in tmp[-15:][::-1]:
             if line.startswith('ANS_TIME_POSITION='):
                 return float( line.replace('ANS_TIME_POSITION=', '')
                               .strip() )
