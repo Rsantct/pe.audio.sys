@@ -8,14 +8,20 @@
 # OR
 #   ao=jack:name=<mplayer_port_name>:port=<destination_port_name>
 
+
 [dvb]
 ao=jack:name=mplayer_dvb:noconnect
+
 
 [cdda]
 ao=jack:name=mplayer_cdda:noconnect
 speed=1
-# Try cache=1024 to avoid playback breakdowns
-cache=1024
+# Slow machines:
+# Cache (in kBytes) to use when precaching a file or URL.  Especially useful on slow media.
+cache=8000   
+# Playback will start when the cache has been filled up to <cache-min=percentage> of the total.
+cache-min=99 
+
 
 [istreams]
 ao=jack:name=mplayer_istreams:noconnect
