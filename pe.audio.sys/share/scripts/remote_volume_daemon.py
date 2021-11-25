@@ -31,11 +31,12 @@ import sys
 import os
 
 UHOME           = os.path.expanduser("~")
-BASEDIR         = f'{UHOME}/pe.audio.sys'
-CMD_LOG_PATH    = f'{BASEDIR}/log/peaudiosys_cmd.log'
-STATE_PATH      = f'{BASEDIR}/.state.yml'
+BASE_DIR        = f'{UHOME}/pe.audio.sys'
+STATE_PATH      = f'{BASE_DIR}/.state.yml'
+LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
+CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'
 
-sys.path.append( f'{BASEDIR}/share' )
+sys.path.append( f'{BASE_DIR}/share' )
 import miscel
 import server
 
@@ -89,7 +90,7 @@ def get_curr_state():
     tries = 3
     while tries:
         try:
-            tmp = yaml.safe_load( open( f'{BASEDIR}/.state.yml','r') )
+            tmp = yaml.safe_load( open( f'{BASE_DIR}/.state.yml','r') )
             if tmp:
                 state = tmp
                 break
@@ -271,12 +272,12 @@ if __name__ == "__main__":
     observer1.schedule( file_event_handler( fname=CMD_LOG_PATH,
                                             action='cmd_log_file_changed',
                                             antibound=True ),
-                                            path=f'{BASEDIR}',
+                                            path=LOG_DIR,
                                             recursive=False )
     observer2.schedule( file_event_handler( fname=STATE_PATH,
                                             action='state_file_changed',
                                             antibound=True ),
-                                            path=f'{BASEDIR}',
+                                            path=LOG_DIR,
                                             recursive=False )
     observer1.start()
     observer2.start()
