@@ -121,12 +121,12 @@ def detect_remotes():
     return clients
 
 
-def remote_relat_level(cli_addr, rel_level_cmd):
-    print( f'(remote_volume) remote {cli_addr} sending \'{rel_level_cmd}\'' )
-    miscel.send_cmd( rel_level_cmd, host=cli_addr, verbose=False )
+def remote_change_level(cli_addr, level_cmd):
+    print( f'(remote_volume) remote {cli_addr} sending \'{level_cmd}\'' )
+    miscel.send_cmd( level_cmd, host=cli_addr, verbose=False )
 
 
-def remote_LU_offset(cli_addr):
+def remote_update_LU_offset(cli_addr):
     """ updates the current LU offset to remote
     """
     cmd = f'lu_offset { get_curr_state()["lu_offset"] }'
@@ -137,7 +137,7 @@ def remote_LU_offset(cli_addr):
 # Action for observer1
 def cmd_log_file_changed():
     """ Read the last command from <peaudiosys.log>
-        If it was about a relative level change,
+        If it was about a relative level change or lu_offset
         then forwards it to the remotes listeners.
     """
     global remoteClients
@@ -148,12 +148,12 @@ def cmd_log_file_changed():
     cmd = tmp.split(';')[1].strip()
 
     # Filtering <relative level> or <lu_offset> commands
-    rel_level_cmd = ''
-    if 'level' in cmd and 'add' in cmd:
-        rel_level_cmd = cmd
+    level_cmd = ''
+    if ('level' in cmd and 'add' in cmd) or 'lu_offset' in cmd:
+        level_cmd = cmd
 
     # Early return
-    if not rel_level_cmd:
+    if not level_cmd:
         return
 
     # Forwarding commands to remotes
@@ -163,8 +163,8 @@ def cmd_log_file_changed():
         if 'remote' in miscel.get_remote_selected_source(rem_addr):
 
             # Updates relative VOLUME event to remote
-            if rel_level_cmd:
-                remote_relat_level(rem_addr, rel_level_cmd)
+            if level_cmd:
+                remote_change_level(rem_addr, level_cmd)
 
         # purge from remotes list if not listening anymore
         else:
@@ -193,7 +193,7 @@ def all_remotes_LU_offset(force=False):
 
             if 'remote' in miscel.get_remote_selected_source(rem_addr):
                 # Updates LU OFFSET to remotes
-                remote_LU_offset(rem_addr)
+                remote_update_LU_offset(rem_addr)
             else:
                 print( f'remote {rem_addr} not listening by now :-/' )
                 remoteClients.remove( rem_addr )
@@ -220,7 +220,7 @@ def do(cmd):
                 print( f'(remote_volume) Updated remote listening machines: '
                        f'{remoteClients}' )
                 # set the current LU offset in the remote listener
-                remote_LU_offset(cli_addr)
+                remote_update_LU_offset(cli_addr)
             result = 'ack'
         else:
             print( f'(remote_volume) Tas tonto: received \'hello\' '
