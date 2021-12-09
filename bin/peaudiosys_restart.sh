@@ -15,7 +15,7 @@ if [[ $1 == 'stop' ]]; then
 
 elif [[ ! $1 || $1 == *'start' ]]; then
     echo '(i) RESTARTING pe.audio.sys (all printouts hidden to /dev/null)'
-    echo '    Startup process logged in <pe.audio.sys/start.log>'
+    echo '    Startup process logged in <pe.audio.sys/log/start.log>'
     $HOME/pe.audio.sys/start.py all --log 1>/dev/null 2>&1 &
 
 else
