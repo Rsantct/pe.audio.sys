@@ -22,7 +22,7 @@ else
     echo
     echo 'USAGE:   peaudiosys_restart.sh [stop]'
     echo
-    echo '         Startup process will be logged in <pe.audio.sys/start.log>'
+    echo '         Startup process will be logged in <pe.audio.sys/log/start.log>'
     echo '         For further debugging run manually from a terminal:'
     echo '             peaudio.sys/start.py all & '
     echo
