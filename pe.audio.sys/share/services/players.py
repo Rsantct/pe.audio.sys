@@ -92,6 +92,17 @@ def remote_get_meta(host, port=9990):
     return md
 
 
+# Controls the playback in a remote pe.audio.sys system
+def remote_player_control( cmd, arg, host, port):
+    try:
+        tmp = send_cmd( cmd=f'player {cmd} {arg}',
+                        host=host, port=port, timeout=1)
+        result = json.loads(tmp)
+    except:
+        result = 'play'
+    return result
+
+
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
 def player_get_meta():
     """ Returns a dictionary with the current track metadata
@@ -150,7 +161,7 @@ def player_control(cmd, arg=''):
         I/O:     .player_state
     """
 
-    newState = 'stop'  # default state
+    newState = 'play'  # default state
     source   = get_source()
 
     # (i) result depends on different source modules:
@@ -179,6 +190,21 @@ def player_control(cmd, arg=''):
     # CDDA.py
     elif source == 'cd':
         result = mplayer_control(cmd=cmd, arg=arg, service='cdda')
+
+    # A remote pe.audio.sys source
+    elif source.startswith('remote'):
+        # For a 'remote.....' named source, it is expected to have
+        # an IP address kind of in its jack_pname field:
+        #   jack_pname:  X.X.X.X:PPPP
+        # so this way we can query metadata from the remote address.
+        host = SOURCES[source]["jack_pname"].split(':')[0]
+        port = SOURCES[source]["jack_pname"].split(':')[-1]
+
+        # (i) we assume that the remote pe.audio.sys listen at standard 9990 port
+        if is_IP(host):
+            if not port.isdigit():
+                port = 9990
+            result = remote_player_control( cmd=cmd, arg=arg, host=host, port=port )
 
     # A generic source without a player module
     else:
