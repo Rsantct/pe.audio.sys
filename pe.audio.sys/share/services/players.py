@@ -92,7 +92,7 @@ def remote_get_meta(host, port=9990):
     return md
 
 
-# Controls the playback in a remote pe.audio.sys system
+# Controls the playback on a remote pe.audio.sys system
 def remote_player_control( cmd, arg, host, port):
     try:
         tmp = send_cmd( cmd=f'player {cmd} {arg}',
