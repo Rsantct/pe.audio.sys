@@ -272,14 +272,25 @@ function state_update() {
             document.getElementById("main_cside").innerText =
                     ':: pe.audio.sys :: preamp OFFLINE';
             return;
+
         } else {
+
             if ( hold_tmp_msg == 0 ){
-                document.getElementById("main_cside").innerText =
-                        ':: pe.audio.sys :: ' + state.loudspeaker;
+
+                let warning = control_cmd('aux warning get');
+
+                if (warning == ''){
+                    document.getElementById("main_cside").innerText =
+                            ':: pe.audio.sys :: ' + state.loudspeaker;
+                } else {
+                    document.getElementById("main_cside").innerText = warning;
+                }
+
             } else {
                 document.getElementById("main_cside").innerText = tmp_msg;
                 hold_tmp_msg -= 1;
             }
+
         }
     }catch(e){
         console.log( 'not connected', e.name, e.message );
