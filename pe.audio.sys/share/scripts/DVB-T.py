@@ -87,9 +87,8 @@ def select_by_name(channel_name):
         # The whole address after 'loadfile' needs to be
         # SINGLE quoted to load properly:
         command = ('loadfile \'dvb://' + channel_name + '\'\n' )
-        f = open( input_fifo, 'w')
-        f.write(command)
-        f.close()
+        with open( input_fifo, 'w') as f:
+            f.write(command)
         return True
     except:
         print( f'(DVB-T.py) failed to load \'{channel_name}\'' )
