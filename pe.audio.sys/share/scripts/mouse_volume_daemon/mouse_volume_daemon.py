@@ -65,7 +65,7 @@ import subprocess as sp
 import binascii
 import yaml
 #import struct # only to debug see below
-from share.miscel import send_cmd
+from share.miscel import send_cmd, STATE_PATH
 
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 try:
@@ -128,10 +128,10 @@ def getMouseEvent():
 
 
 def check_level():
-    # To avoid reading issues while state.yml is written
+    # To avoid reading issues while state.yml is been written
     i = 0
     while i < 20:
-        f = open( f'{UHOME}/pe.audio.sys/.state.yml', 'r')
+        f = open( STATE_PATH, 'r')
         conte = f.read()
         f.close()
         try:

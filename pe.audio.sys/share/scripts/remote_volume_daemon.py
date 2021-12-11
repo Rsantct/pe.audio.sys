@@ -31,19 +31,18 @@ import sys
 import os
 
 UHOME           = os.path.expanduser("~")
-BASEDIR         = f'{UHOME}/pe.audio.sys'
-CMD_LOG_PATH    = f'{BASEDIR}/log/peaudiosys_cmd.log'
-STATE_PATH      = f'{BASEDIR}/.state.yml'
+BASE_DIR        = f'{UHOME}/pe.audio.sys'
+LOG_DIR         = f'{BASE_DIR}/log'
+CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'
 
-sys.path.append( f'{BASEDIR}/share' )
+sys.path.append( f'{BASE_DIR}/share' )
 import miscel
 import server
 
-import yaml
+import json
 from subprocess import Popen
-from time import sleep, time
+from time import time
 import socket
-import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -81,23 +80,8 @@ class file_event_handler(FileSystemEventHandler):
                     globals()[self.action]()
 
 
-def get_curr_state():
-
-    state = {'lu_offset': 0}
-
-    # Avoid a possible loading of a blank .state.yml
-    tries = 3
-    while tries:
-        try:
-            tmp = yaml.safe_load( open( f'{BASEDIR}/.state.yml','r') )
-            if tmp:
-                state = tmp
-                break
-        except:
-            sleep(.1)
-            tries -= 1
-
-    return state
+def get_state():
+    return json.loads( miscel.send_cmd('state') )
 
 
 def detect_remotes():
@@ -120,91 +104,82 @@ def detect_remotes():
     return clients
 
 
-def remote_relat_level(cli_addr, rel_level_cmd):
-    print( f'(remote_volume) remote {cli_addr} sending \'{rel_level_cmd}\'' )
-    miscel.send_cmd( rel_level_cmd, host=cli_addr, verbose=False )
-
-
-def remote_LU_offset(cli_addr):
-    """ updates the current LU offset to remote
-    """
-    cmd = f'lu_offset { get_curr_state()["lu_offset"] }'
+def remote_cmd(cli_addr, cmd):
     print( f'(remote_volume) remote {cli_addr} sending \'{cmd}\'' )
-    miscel.send_cmd( cmd, host=cli_addr, verbose=True )
+    miscel.send_cmd( cmd, host=cli_addr, verbose=False )
 
 
-# Action for observer1
-def cmd_log_file_changed():
-    """ Read the last command from <peaudiosys.log>
-        If it was about a relative level change,
-        then forwards it to the remotes listeners.
+def remote_update_levels(rem_addr):
+    level           = get_state()["level"]
+    lu_offset       = get_state()["lu_offset"]
+    equal_loudness  = get_state()["equal_loudness"]
+    remote_cmd(rem_addr, f'lu_offset {lu_offset}')
+    remote_cmd(rem_addr, f'loudness {equal_loudness}')
+    remote_cmd(rem_addr, f'level {level}')
+
+
+# The action triggered by the observer
+def relay_level_changes():
+    """ Notice that only relative level changes will be relayed
     """
-    global remoteClients
 
-    # Retrieving the last 'level X add' command
+    # Read last command from the command log file
     tmp = miscel.read_last_line( CMD_LOG_PATH )
     # e.g.: "2020/10/23 17:16:43; level -1 add; done"
-    cmd = tmp.split(';')[1].strip()
+    last_cmd = tmp.split(';')[1].strip()
 
-    # Filtering <relative level> or <lu_offset> commands
-    rel_level_cmd = ''
-    if 'level' in cmd and 'add' in cmd:
-        rel_level_cmd = cmd
+    # Filtering commands:
+    wanted_cmd = ''
+
+    # - relative level
+    if ('level' in last_cmd and 'add' in last_cmd):
+        wanted_cmd = last_cmd
+
+    # - LU_offset (usually a toggle command)
+    if ('lu_offset' in last_cmd):
+        lu_offset       = get_state()["lu_offset"]
+        wanted_cmd      = f'lu_offset {lu_offset}'
+
+    # - equal loudness (usually a toggle command)
+    if ('loudness' in last_cmd):
+        equal_loudness  = get_state()["equal_loudness"]
+        wanted_cmd      = f'loudness {equal_loudness}'
 
     # Early return
-    if not rel_level_cmd:
+    if not wanted_cmd:
         return
 
     # Forwarding commands to remotes
     for rem_addr in remoteClients:
 
-        # checking if remote is still listening to us
+        # Checking if remote is still listening to us
+        # then updates the level event to remote
         if 'remote' in miscel.get_remote_selected_source(rem_addr):
+            remote_cmd(rem_addr, wanted_cmd)
 
-            # Updates relative VOLUME event to remote
-            if rel_level_cmd:
-                remote_relat_level(rem_addr, rel_level_cmd)
-
-        # purge from remotes list if not listening anymore
+        # else purge from remotes list if not listening anymore
         else:
             print( f'remote {rem_addr} not listening by now :-/' )
             remoteClients.remove( rem_addr )
             print( f'Updated remote listening machines: {remoteClients}' )
 
 
-# Action for observer2
-def state_file_changed():
-    all_remotes_LU_offset()
+# Broadcast level settings to all remote machines
+def broadcast_level_settings():
 
+    for rem_addr in remoteClients:
 
-# Broadcast LU_offset to all remote machines
-def all_remotes_LU_offset(force=False):
-
-    global last_lu_offset, remoteClients
-
-    curr_lu_offset = get_curr_state()["lu_offset"]
-
-    if (curr_lu_offset != last_lu_offset) or force:
-
-        last_lu_offset = curr_lu_offset
-
-        for rem_addr in remoteClients:
-
-            if 'remote' in miscel.get_remote_selected_source(rem_addr):
-                # Updates LU OFFSET to remotes
-                remote_LU_offset(rem_addr)
-            else:
-                print( f'remote {rem_addr} not listening by now :-/' )
-                remoteClients.remove( rem_addr )
-                print( f'Updated remote listening machines: {remoteClients}' )
-
+        if 'remote' in miscel.get_remote_selected_source(rem_addr):
+            remote_update_levels(rem_addr)
+        else:
+            print( f'remote {rem_addr} not listening by now :-/' )
+            remoteClients.remove( rem_addr )
+            print( f'Updated remote listening machines: {remoteClients}' )
 
 
 # The action called from our instance of <server.py> when receiving messages.
 # (See below 'server.MODULE=...' when initiating <server.py> )
 def do(cmd):
-
-    global remoteClients
 
     cli_addr = server.CLIADDR[0]
     result = 'nack'
@@ -218,8 +193,8 @@ def do(cmd):
                 remoteClients.append(cli_addr)
                 print( f'(remote_volume) Updated remote listening machines: '
                        f'{remoteClients}' )
-                # set the current LU offset in the remote listener
-                remote_LU_offset(cli_addr)
+                # set the level settings in remote listener
+                remote_update_levels(cli_addr)
             result = 'ack'
         else:
             print( f'(remote_volume) Tas tonto: received \'hello\' '
@@ -249,42 +224,34 @@ if __name__ == "__main__":
         sys.exit()
 
 
-    # Retrieving basic data to this to work
+    # Retrieving basic data for this to work
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
-    last_lu_offset  = get_curr_state()["lu_offset"]
-
-    # Detecting remote listening clients
-    remoteClients = detect_remotes()
+    remoteClients   = detect_remotes()
     print( f'(remote_volume) Detected {len(remoteClients)} '
            f'remote listening machines: {remoteClients}' )
 
-    # A WATCHDOG to observe file changes
+    # Broadcast level settings to remote clients
+    print( f'(remote_volume) broadcast level settings to remotes ...' )
+    broadcast_level_settings()
+
+    #   WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
     #   https://stackoverflow.com/questions/18599339/
     #   python-watchdog-monitoring-file-for-changes
     #   Use recursive=True to observe also subfolders
     #   Even observing recursively the CPU load is negligible,
     #   but we prefer to observe to a single folder.
-    observer1 = Observer()
-    observer2 = Observer()
-    observer1.schedule( file_event_handler( fname=CMD_LOG_PATH,
-                                            action='cmd_log_file_changed',
+    observer = Observer()
+    observer.schedule( file_event_handler(  fname=CMD_LOG_PATH,
+                                            action='relay_level_changes',
                                             antibound=True ),
-                                            path=f'{BASEDIR}',
+                                            path=LOG_DIR,
                                             recursive=False )
-    observer2.schedule( file_event_handler( fname=STATE_PATH,
-                                            action='state_file_changed',
-                                            antibound=True ),
-                                            path=f'{BASEDIR}',
-                                            recursive=False )
-    observer1.start()
-    observer2.start()
+    observer.start()
 
-    print( f'(remote_volume) Balancing LU_offset on remotes ...' )
-    all_remotes_LU_offset(force=True)
+    print( f'(remote_volume) Keep relaying level changes to remotes ...' )
 
-    print( f'(remote_volume) Forwarding relative level changes to remotes ...' )
 
     # A server that listen for new remote listening clients to emerge
     print( f'(remote_volume) Keep listening for new remotes ...' )

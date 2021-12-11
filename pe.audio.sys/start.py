@@ -272,7 +272,7 @@ def run_scripts(mode='start'):
 def check_state_file():
     """ a sudden power break out can damage .state.yml  :-/
     """
-    state_file      = f'{MAINFOLDER}/.state.yml'
+    state_file      = STATE_PATH
     state_log_file  = f'{LOG_FOLDER}/state.log'
 
     def recover_state(reason='damaged'):

@@ -17,15 +17,7 @@
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-    A script to read the Brutefir convolver structure on pe.audio.sys
-
-    Four objects are provided:
-
-    .outputsMap:         outputs and its corresponding port in JACK.
-    .coeffs:             available coefficients.
-    .filters_at_start:   filters and coefficients defined into the brutefir_config file.
-    .filters_running:    filters and coefficients in progress.
-
+    Shows the Brutefir configuration, outputs, coeffs and filters
 """
 
 import sys, os

@@ -19,21 +19,25 @@
 """ A Spotify Desktop client interface module for players.py
 """
 
-import os
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+import  os
+import  sys
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-import logging
-LOGFNAME    = f'{MAINFOLDER}/log/spotify_desktop.py.log'
+from share.miscel   import MAINFOLDER, timesec2string as timeFmt
+
+from    time        import sleep
+from    subprocess  import check_output
+import  yaml
+from    pydbus      import SessionBus
+import  logging
+
+LOGFNAME = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
-from time import sleep
-from subprocess import check_output
-import yaml
-from pydbus import SessionBus
 
 # BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
-SPOTIFY_BITRATE   = '320'
+SPOTIFY_BITRATE = '320'
 
 
 # The DBUS INTERFACE with the Spotify Desktop client.
@@ -64,19 +68,6 @@ if os.path.exists(plist_file):
         tmp = f'ERROR reading \'{plist_file}\''
         print(f'(spotify_desktop.py) {tmp}')
     logging.info(tmp)
-
-
-# Auxiliary function to format hh:mm:ss
-def timeFmt(x):
-    """ in:     x seconds   (float)
-        out:    'hh:mm:ss'  (string)
-    """
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
 # Spotify Desktop control

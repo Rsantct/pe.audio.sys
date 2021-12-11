@@ -32,7 +32,6 @@ from os.path import expanduser, exists, getsize
 import sys
 import subprocess as sp
 import threading
-import yaml
 from time import sleep, strftime
 import json
 from socket import socket
@@ -71,6 +70,15 @@ METATEMPLATE = {
                 'tracks_tot':   '-' }
 
 
+def dump_metadata_file(md):
+    with open(PLAYER_META_PATH, 'w') as f:
+        f.write( json.dumps( md ))
+
+def dump_state_file(state):
+    with open(PLAYER_STATE_PATH, 'w') as f:
+        f.write(state)
+
+
 # Gets metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
     md = ''
@@ -84,21 +92,15 @@ def remote_get_meta(host, port=9990):
     return md
 
 
-# Aux to get the current preamp input source
-def get_source():
-    """ retrieves the current input source """
-    source = None
-    # It is possible to fail while state file is updating :-/
-    times = 4
-    while times:
-        try:
-            with open( MAINFOLDER + '/.state.yml', 'r') as f:
-                source = yaml.safe_load(f)['input']
-            break
-        except:
-            times -= 1
-        sleep(.25)
-    return source
+# Controls the playback on a remote pe.audio.sys system
+def remote_player_control( cmd, arg, host, port):
+    try:
+        tmp = send_cmd( cmd=f'player {cmd} {arg}',
+                        host=host, port=port, timeout=1)
+        result = json.loads(tmp)
+    except:
+        result = 'play'
+    return result
 
 
 # Generic function to get meta from any player: MPD, Mplayer or Spotify
@@ -159,7 +161,7 @@ def player_control(cmd, arg=''):
         I/O:     .player_state
     """
 
-    newState = 'stop'  # default state
+    newState = 'play'  # default state
     source   = get_source()
 
     # (i) result depends on different source modules:
@@ -189,40 +191,56 @@ def player_control(cmd, arg=''):
     elif source == 'cd':
         result = mplayer_control(cmd=cmd, arg=arg, service='cdda')
 
+    # A remote pe.audio.sys source
+    elif source.startswith('remote'):
+        # For a 'remote.....' named source, it is expected to have
+        # an IP address kind of in its jack_pname field:
+        #   jack_pname:  X.X.X.X:PPPP
+        # so this way we can query metadata from the remote address.
+        host = SOURCES[source]["jack_pname"].split(':')[0]
+        port = SOURCES[source]["jack_pname"].split(':')[-1]
+
+        # (i) we assume that the remote pe.audio.sys listen at standard 9990 port
+        if is_IP(host):
+            if not port.isdigit():
+                port = 9990
+            result = remote_player_control( cmd=cmd, arg=arg, host=host, port=port )
+
     # A generic source without a player module
     else:
         result = 'stop'
 
-    # Dumps the player newState
     # (fix newState to a valid value if a module answer was wrong)
-    if result not in ('stop', 'play', 'pause'):
+    if result in ('stop', 'play', 'pause'):
+        newState = result
+    else:
         newState = 'stop'  # default state
-    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write(newState)
+
+    # Dumps the player newState
+    dump_state_file(newState)
 
     return result
 
 
 # auto-started when loading this module
 def init():
-    """ This init function will:
-        - Periodically store the metadata info to .player_metadata file
-          so that can be read from any process interested in it.
-        - Also will flush the .player_state file
+    """ This init function will
+        - Launch the 'store_meta' thread, see below.
+        - Also will reset the .player_state file to 'pause'.
     """
     def store_meta(timer=2):
         while True:
             md = player_get_meta()
-            with open( PLAYER_META_PATH, 'w') as f:
-                f.write( json.dumps( md ))
+            dump_metadata_file( md )
             sleep(timer)
+
     # Loop storing metadata
     meta_timer = 2
     meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
-    # Flush state file:
-    with open( f'{MAINFOLDER}/.player_state', 'w') as f:
-        f.write('')
+
+    # Reset state file:
+    dump_state_file('pause')
 
 
 # Interface entry function for this module plugged inside 'server.py'

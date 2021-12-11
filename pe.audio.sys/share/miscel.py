@@ -51,6 +51,7 @@ BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+PLAYER_STATE_PATH   = f'{MAINFOLDER}/.player_state'
 MACROS_FOLDER       = f'{MAINFOLDER}/macros'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 if 'amp_manager' in CONFIG:
@@ -138,6 +139,19 @@ class Fmt:
     UNDERLINE       = '\033[4m'
     BLINK           = '\033[5m'
     END             = '\033[0m'
+
+
+# Format a given float (seconds) to a string "hh:mm:ss"
+def timesec2string(x):
+    """ in:     x seconds   (float)
+        out:    'hh:mm:ss'  (string)
+    """
+    # x must be float
+    h = int( x / 3600 )         # hours
+    x = int( round(x % 3600) )  # updating x to reamining seconds
+    m = int( x / 60 )           # minutes from the new x
+    s = int( round(x % 60) )    # and seconds
+    return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
 # Reads the FS to be used by Brutefir
@@ -590,6 +604,23 @@ def kill_bill(pid=0):
         sp.Popen(f'kill -KILL {pid}'.split())
         sleep(.1)
     sleep(.5)
+
+
+# Gets the current preamp input source
+def get_source():
+    """ retrieves the current input source """
+    source = None
+    # It is possible to fail while state file is updating :-/
+    times = 4
+    while times:
+        try:
+            with open( STATE_PATH, 'r') as f:
+                source = yaml.safe_load(f)['input']
+            break
+        except:
+            times -= 1
+        sleep(.25)
+    return source
 
 
 # Gets the selected source from a pe.audio.sys server at <addr>

@@ -18,7 +18,7 @@ ORIG=$HOME/tmp/pe.audio.sys-$branch
 if [ ! -d $ORIG ]; then
     echo
     echo ERROR: not found $ORIG
-    echo must indicated a branch name available at ~/tmp/pe.audio.sys-xxx:
+    echo must indicate a branch name suffix as available at ~/tmp/pe.audio.sys-xxx:
     echo "    update_peaudiosys.sh master|testing|xxx"
     echo
     exit 0

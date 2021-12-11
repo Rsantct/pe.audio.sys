@@ -45,13 +45,13 @@ def main():
             .split() )
 
     # Wait a bit to Mplayer ports to dissapear from jack while loading a new stream.
-    sleep(2)
+    sleep(3)
 
     # Waiting for mplayer ports to re-emerge
     # (i) Some radio streams take a while to be loaded by Mplayer
     if not wait4ports( f'mplayer_{mplayer_profile}', timeout=45 ):
         print(f'{Fmt.RED}(macros) ERROR jack ports \'mplayer_{mplayer_profile}\' not found, '
-              f'bye :-/{Fmt.RED}')
+              f'bye :-/{Fmt.END}')
         sys.exit(-1)
     sleep(.5)
 

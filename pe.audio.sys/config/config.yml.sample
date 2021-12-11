@@ -220,6 +220,9 @@ scripts:
     ## A daemon to autoplay a CD-Audio when inserted
     #- autoplay_cdda.py
 
+    ## A daemon to auto eject a CD-Audio when playback is over
+    - autoeject_cdda.py
+
     ## librespot (a headless Spotify Connect player daemon)
     #- librespot.py
 
