@@ -31,6 +31,7 @@ from    subprocess          import  Popen, check_output
 from    time                import  sleep, strftime
 import  os
 import  sys
+import  threading
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
@@ -200,7 +201,7 @@ def process_aux( cmd, arg='' ):
                    'loudness_monitor_reset, lu_monitor_reset, ' + \
                    'set_loudness_monitor_scope, set_lu_monitor_scope, ' + \
                    'get_loudness_monitor, get_lu_monitor, ' + \
-                   'restart, get_aux_info, info, add_delay'
+                   'restart, get_aux_info, info, add_delay, warning'
         return cmd_list
 
     # Aux for playing an url stream
@@ -360,8 +361,48 @@ def process_aux( cmd, arg='' ):
     elif cmd == 'help':
         result = aux_cmd_list()
 
+    # Temporary warning messages (by default expires in 60 s)
+    elif cmd == 'warning':
+
+        args = arg.split()
+
+        if args[0] == 'set':
+
+            if AUX_INFO['warning']:
+                result = 'warning message in use'
+            else:
+                AUX_INFO['warning'] = ' '.join(args[1:])
+                dump_aux_info()
+                warning_expire(timeout=60)
+                result = 'done'
+
+        elif args[0] == 'clear':
+            AUX_INFO['warning'] = ''
+            dump_aux_info()
+            result = 'done'
+
+        elif args[0] == 'get':
+            result = AUX_INFO['warning']
+
+        elif args[0] == 'expire':
+            if args[1:] and args[1].isdigit():
+                warning_expire(timeout=int(args[1]))
+                result = 'done'
+            else:
+                result = 'bad expire timeout'
+        else:
+            result = 'usage: warning set message | warning clear'
 
     return result
+
+# A timer to clear the warning message field inside .aux_info
+def warning_expire(timeout=5):
+    def mytimer(timeout):
+        sleep(timeout)
+        AUX_INFO['warning'] = ''
+        dump_aux_info()
+    job = threading.Thread(target=mytimer, args=(timeout,))
+    job.start()
 
 
 # Dumps pe.audio.sys/.aux_info
@@ -424,7 +465,8 @@ def init():
     AUX_INFO = {    'amp':                  'off',
                     'loudness_monitor':     0.0,
                     'web_config':           get_web_config(),
-                    'last_macro':           '-'  # cannot be empty
+                    'last_macro':           '-',                # cannot be empty
+                    'warning':              ''
                 }
 
 
