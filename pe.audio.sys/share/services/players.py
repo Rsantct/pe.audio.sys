@@ -110,7 +110,7 @@ def player_get_meta():
     """
     md = METATEMPLATE.copy()
 
-    source = get_source()
+    source = read_state_from_disk()['input']
 
     if 'librespot' in source or 'spotify' in source.lower():
         if SPOTIFY_CLIENT == 'desktop':
@@ -162,7 +162,7 @@ def player_control(cmd, arg=''):
     """
 
     newState = 'play'  # default state
-    source   = get_source()
+    source   = read_state_from_disk()['input']
 
     # (i) result depends on different source modules:
 
