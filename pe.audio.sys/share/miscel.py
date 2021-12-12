@@ -44,7 +44,7 @@ except:
 LOG_FOLDER          = f'{MAINFOLDER}/log'
 LOUDSPEAKER         = CONFIG['loudspeaker']
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-STATE_PATH          = f'{MAINFOLDER}/.state.yml'
+STATE_PATH          = f'{MAINFOLDER}/.state'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
 BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
@@ -606,21 +606,22 @@ def kill_bill(pid=0):
     sleep(.5)
 
 
-# Gets the current preamp input source
-def get_source():
-    """ retrieves the current input source """
-    source = None
+# Gets the current state dict from the .state disk file
+def read_state_from_disk():
+    """ retrieves the current state dict from disk
+    """
+    state = {'input':'none', 'level':'0.0'}
     # It is possible to fail while state file is updating :-/
-    times = 4
+    times = 5
     while times:
         try:
             with open( STATE_PATH, 'r') as f:
-                source = yaml.safe_load(f)['input']
+                state = json_loads( f.read() )
             break
         except:
             times -= 1
         sleep(.25)
-    return source
+    return state
 
 
 # Gets the selected source from a pe.audio.sys server at <addr>
