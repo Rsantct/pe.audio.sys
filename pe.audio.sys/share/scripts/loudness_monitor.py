@@ -25,7 +25,6 @@ import sys
 import os
 from subprocess import Popen
 from time import sleep
-import yaml
 import json
 import threading
 from watchdog.observers import Observer
@@ -33,9 +32,10 @@ from watchdog.events import FileSystemEventHandler
 
 UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
-
 sys.path.append(f'{MAINFOLDER}/share')
-from miscel import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PATH
+
+from miscel import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, \
+                    PLAYER_META_PATH, read_state_from_disk
 
 
 def prepare_control_fifo(fname):
@@ -94,19 +94,16 @@ class My_files_event_handler(FileSystemEventHandler):
 
         # Check if preamp input has changed, then RESET
         if STATE_PATH in path:
-            with open( STATE_PATH, 'r' ) as f:
-                preamp_state = yaml.safe_load(f)
-                if not preamp_state:
-                    return
-                if source != preamp_state['input']:
-                    source = preamp_state['input']
-                    self.meter.reset()
-                    sleep(.25)      # anti bouncing
+            new_source = read_state_from_disk()['input']
+            if source != new_source:
+                source = new_source
+                self.meter.reset()
+                sleep(.25)      # anti bouncing
 
         # Check if metadata album or title has changed, then RESET
         if PLAYER_META_PATH in path:
             with open( PLAYER_META_PATH, 'r' ) as f:
-                md = yaml.safe_load(f)
+                md = json.loads( f.read() )
             if not md:
                 return
             # Ignore if scope is not a metadata field name
@@ -204,8 +201,7 @@ if __name__ == '__main__':
     scope = get_configured_scope()
 
     # Initialize current preamp source
-    with open( STATE_PATH, 'r' ) as state_file:
-        source = yaml.safe_load(state_file)['input']
+    source = read_state_from_disk()['input']
 
     # Starts a LU_meter instance with relevant parameters:
     # M_threshold = 10.0   To avoid stress saving values to disk, because this
