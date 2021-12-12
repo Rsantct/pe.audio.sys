@@ -149,13 +149,13 @@ else
 
     # MAIN
     cd "$HOME"/pe.audio.sys
-    cp .state.yml.sample         .state.yml
+    cp .state.sample             .state
     cd "$HOME"/pe.audio.sys/config
     cp config.yml.sample         config.yml
     cp DVB-T.yml.sample          DVB-T.yml        >/dev/null 2>&1
     cp istreams.yml.sample       istreams.yml     >/dev/null 2>&1
 
-    echo "(i) New config.yml and .state.yml files NEEDS to be adapted"
+    echo "(i) New config.yml and .state files NEEDS to be adapted"
 fi
 
 ########################################################################
