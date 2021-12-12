@@ -30,7 +30,6 @@
 
 import os
 import sys
-import yaml
 from time import sleep
 import pyudev
 from subprocess import check_output, Popen
