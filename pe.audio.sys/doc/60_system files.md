@@ -19,7 +19,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |
     |-- pasysctrl.hlp       Plain text about help on system control commands
     |
-    |-- .state.yml          Keeps the run-time system state
+    |-- .state              Keeps the run-time system state
     |
     |-- log/                System log files
     |   |
@@ -325,7 +325,7 @@ If you want not to use any xo filter at all, you simply do:
 
 - Leave blank `xo:` inside `on_init` section from `config.yml` 
 
-- Leave blank `xo_set:` inside `.state.yml`
+- Leave blank `xo_set:` inside `.state`
 
 - Omit any `xo....pcm` file inside your loudspeaker folder.
 
