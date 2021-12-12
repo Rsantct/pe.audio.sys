@@ -21,7 +21,7 @@
 
 # (i) I/O FILES MANAGED HERE:
 #
-# .state.yml        'r'     pe.audio.sys state file
+# .state            'r'     pe.audio.sys state file
 #
 # .player_metadata  'w'     Stores the current player metadata
 #
