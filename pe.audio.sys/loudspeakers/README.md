@@ -7,7 +7,7 @@ The full range folder is very simple, only DRC files are provided.
 
 No filtering will be applied over the only XO section inside the convolver file `brutefir_config`.
 
-This is the loudspeaker folder used inside the provided `pe.audio.sys/config.yml.sample` and `pe.audio.sys/.state.yml.sample` files.
+This is the loudspeaker folder used inside the provided `pe.audio.sys/config.yml.sample` and `pe.audio.sys/.state.sample` files.
 
 
 ### 2_ways
