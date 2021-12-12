@@ -27,7 +27,6 @@ import  sys
 import  threading
 from    time import sleep
 import  json
-import  yaml
 from    subprocess import Popen
 
 UHOME = expanduser("~")
