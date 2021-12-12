@@ -35,7 +35,7 @@ sys.path.append(MAINFOLDER)
 
 from    share.miscel  import    PLAYER_META_PATH,   \
                                 PLAYER_STATE_PATH,  \
-                                get_source
+                                read_state_from_disk
 
 
 def read_metadata_file():
@@ -68,7 +68,7 @@ def main_loop():
                 continue
 
             # check if source = 'cd'
-            if get_source().lower() == 'cd':
+            if read_state_from_disk()['input'].lower() == 'cd':
 
                 # check if the track being playe is last one,
                 # also avoid bare default metadata
