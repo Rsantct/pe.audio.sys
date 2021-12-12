@@ -36,7 +36,8 @@ from time import sleep
 # FILES of interest (referred from miscel.py)
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH
+from miscel import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH, \
+                   read_state_from_disk
 
 
 ## Auxiliary global
@@ -180,7 +181,7 @@ def prepare_main_screen():
 
 
 def update_lcd_state(scr='scr_1'):
-    """ Reads system .state.yml then updates the LCD """
+    """ Reads system .state file, then updates the LCD """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
     global state
@@ -255,18 +256,10 @@ def update_lcd_state(scr='scr_1'):
         pass
 
     # Reading state
-    tries = 3
-    while tries:
-        with open(STATE_PATH, 'r') as f:
-            new_state = yaml.safe_load(f)
-            if new_state:
-                break
-            else:
-                sleep(.1)
-                tries -=1
-    if not tries:
+    try:
+        new_state = read_state_from_disk(()
+    except:
         return
-
 
     # If changed
     if new_state != state:
