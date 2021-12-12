@@ -431,9 +431,7 @@ function main_select(itemName){
         return result;
     }
 
-    hold_tmp_msg = 3;
-    tmp_msg = 'Please wait for "' + itemName + '"';
-    document.getElementById("main_cside").innerText = tmp_msg;
+    display_tmp_msg( 'Please wait for "' + itemName + '"', 3 );
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
     // setTimeout( () => { control_cmd('input ' + itemName); }, 200 );
@@ -805,8 +803,7 @@ function run_macro(mFname){
     }
     setTimeout( tmp, 200, mName );  // 'mName' is given as argument for 'tmp'
 
-    hold_tmp_msg = 3;
-    tmp_msg = 'Please wait for "' + mName + '"';
+    display_tmp_msg( 'Please wait for "' + mName + '"', 3);
 }
 
 // Manages the LU_offset slider
@@ -816,6 +813,13 @@ function LU_slider_action(slider_value){
 
 
 ///////////////  MISCEL INTERNAL ////////////
+
+// Displays a temporary message for some seconds within the upper frame.
+function display_tmp_msg(msg, timeout){
+    hold_tmp_msg    = timeout;     // these two are global variables checked when
+    tmp_msg         = msg;         // every update
+    document.getElementById("main_cside").innerText = tmp_msg;
+}
 
 // Hightlights a macro button
 function highlight_macro_button(id){
