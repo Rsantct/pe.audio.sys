@@ -257,7 +257,7 @@ def update_lcd_state(scr='scr_1'):
 
     # Reading state
     try:
-        new_state = read_state_from_disk(()
+        new_state = read_state_from_disk()
     except:
         return
 
