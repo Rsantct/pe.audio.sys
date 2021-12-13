@@ -37,7 +37,7 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
 from miscel import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH, \
-                   read_state_from_disk
+                   read_state_from_disk, read_metadata_from_disk
 
 
 ## Auxiliary global
@@ -363,16 +363,8 @@ def update_lcd_metadata(scr='scr_1'):
 
 
     # Trying to read the metadata file, or early return if failed
-    tries = 3
-    while tries:
-        try:
-            with open(PLAYER_META_PATH, 'r') as f:
-                md = json.loads( f.read() )
-            break
-        except:
-            sleep(.1)
-            tries -= 1
-    if not tries:
+    md = read_metadata_from_disk()
+    if not md:
         return
 
     # Modify the metadata dict to have a new field 'composed_marquue'
