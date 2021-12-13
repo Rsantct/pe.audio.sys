@@ -34,8 +34,10 @@ UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share')
 
-from miscel import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, \
-                    PLAYER_META_PATH, read_state_from_disk
+from miscel import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH,    \
+                    PLAYER_META_PATH,                               \
+                    read_state_from_disk,                           \
+                    read_metadata_from_disk
 
 
 def prepare_control_fifo(fname):
@@ -102,8 +104,7 @@ class My_files_event_handler(FileSystemEventHandler):
 
         # Check if metadata album or title has changed, then RESET
         if PLAYER_META_PATH in path:
-            with open( PLAYER_META_PATH, 'r' ) as f:
-                md = json.loads( f.read() )
+            md = read_metadata_from_disk()
             if not md:
                 return
             # Ignore if scope is not a metadata field name
