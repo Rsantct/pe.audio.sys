@@ -61,3 +61,9 @@ See the `doc/` folder for detailed information about this.
 ## Oct 2021, version 1.0d
 
 - New folder layout for log & config files, **PLEASE** move your `xxx.yml` files to `pe.audio.sys/config/`, as well your `.asound.XXX` or `.ffado.GUID` files but without the leading `.`(dot)
+
+## Dec 2021, version 1.0e
+
+- Playback control forwarded when listening to remote sources.
+- The state file becomes json instead of yaml in order to improve parsing times about 30% faster.
+- New warning message internal facilities.
