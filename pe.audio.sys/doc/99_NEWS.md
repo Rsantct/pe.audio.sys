@@ -66,4 +66,4 @@ See the `doc/` folder for detailed information about this.
 
 - Playback control forwarded when listening to remote sources.
 - The state file becomes json instead of yaml in order to improve parsing times about 30% faster.
-- New warning message internal facilities.
+- New warning temporary message internal facilities.
