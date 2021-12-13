@@ -41,18 +41,18 @@ except:
           f'\'config.yml\'{Fmt.END}')
     exit()
 
-LOG_FOLDER          = f'{MAINFOLDER}/log'
 LOUDSPEAKER         = CONFIG['loudspeaker']
+LOG_FOLDER          = f'{MAINFOLDER}/log'
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+MACROS_FOLDER       = f'{MAINFOLDER}/macros'
 STATE_PATH          = f'{MAINFOLDER}/.state'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
-BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
 PLAYER_STATE_PATH   = f'{MAINFOLDER}/.player_state'
-MACROS_FOLDER       = f'{MAINFOLDER}/macros'
+BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
+BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 if 'amp_manager' in CONFIG:
     AMP_MANAGER     = CONFIG['amp_manager']
@@ -611,7 +611,7 @@ def read_state_from_disk():
     """ retrieves the current state dict from disk
     """
     state = {'input':'none', 'level':'0.0'}
-    # It is possible to fail while state file is updating :-/
+    # It is possible to fail while the file is updating :-/
     times = 5
     while times:
         try:
@@ -622,6 +622,24 @@ def read_state_from_disk():
             times -= 1
         sleep(.25)
     return state
+
+
+# Gets the current player metadata from the .player_metadata disk file
+def read_metadata_from_disk():
+    """ retrieves the current player metadata dict from disk
+    """
+    md = {}
+    # It is possible to fail while the file is updating :-/
+    times = 5
+    while times:
+        try:
+            with open( PLAYER_META_PATH, 'r') as f:
+                md = json_loads( f.read() )
+            break
+        except:
+            times -= 1
+        sleep(.25)
+    return md
 
 
 # Gets the selected source from a pe.audio.sys server at <addr>
