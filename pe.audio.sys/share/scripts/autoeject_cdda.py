@@ -33,21 +33,10 @@ UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from    share.miscel  import    PLAYER_META_PATH,   \
-                                PLAYER_STATE_PATH,  \
-                                read_state_from_disk
-
-
-def read_metadata_file():
-    tries = 3
-    while tries:
-        try:
-            with open(PLAYER_META_PATH, 'r') as f:
-                return json.loads( f.read() )
-        except:
-            sleep (.1)
-            tries -=1
-    return {}
+from    share.miscel  import    PLAYER_META_PATH,       \
+                                PLAYER_STATE_PATH,      \
+                                read_state_from_disk,   \
+                                read_metadata_from_disk
 
 
 def main_loop():
@@ -63,7 +52,7 @@ def main_loop():
 
         while True:
 
-            md          = read_metadata_file()
+            md = read_metadata_from_disk()
             if not md:
                 continue
 
