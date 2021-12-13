@@ -3,11 +3,21 @@
     to LineOut or Headphones.
     Also restore regular EQ or set flat EQ as appropriate.
 """
+
+# (i)  getting the right signal from DAC on LineOut and PhonesOut
+#
+#   amixer -c RPiCirrus cset name='HPOUT2L Input 1' 'AIF1RX1'
+#   amixer -c RPiCirrus cset name='HPOUT2R Input 1' 'AIF1RX2'
+#   amixer -c RPiCirrus cset name='HPOUT1L Input 1' 'AIF1RX1'
+#   amixer -c RPiCirrus cset name='HPOUT1R Input 1' 'AIF1RX2'
+
+
 from subprocess import Popen, check_output
 from os.path import expanduser
-import yaml
+import json
 
 UHOME = expanduser("~")
+
 
 def get_control_switch(control):
     tmp = check_output(['amixer','-c','RPiCirrus','cget',f'name={control} Switch'])
@@ -16,14 +26,17 @@ def get_control_switch(control):
     result = tmp[-1].split('=')[-1].split(',')
     return result
 
+
 def set_control_switch(control, mode='on'):
     with open('/dev/null','w') as fnull:
         Popen( ['amixer','-c','RPiCirrus','cset',f'name={control} Switch', f'{mode},{mode}'],
                 stdout=fnull)
 
+
 def store_EQ():
-    Popen( ['cp', f'{UHOME}/pe.audio.sys/.state.yml',
-            f'{UHOME}/pe.audio.sys/.state.yml.lineOut'] )
+    Popen( ['cp', f'{UHOME}/pe.audio.sys/.state',
+            f'{UHOME}/pe.audio.sys/.state.lineOut'] )
+
 
 def set_flat_EQ():
     ctrl = 'peaudiosys_control'
@@ -33,13 +46,17 @@ def set_flat_EQ():
         Popen( f'{ctrl} balance        0.0'.split()  , stdout=fnull)
         Popen( f'{ctrl} set_drc        none'.split() , stdout=fnull)
         Popen( f'{ctrl} set_target     none'.split() , stdout=fnull)
+        Popen( f'{ctrl} subsonic       off'.split() , stdout=fnull)
         #Popen( f'{ctrl} loudness off'.split() , stdout=fnull)
 
+
 def restore_EQ():
-    with open(f'{UHOME}/pe.audio.sys/.state.yml.lineOut','r') as f:
-        st = yaml.safe_load(f)
+    with open(f'{UHOME}/pe.audio.sys/.state.lineOut','r') as f:
+        st = json.loads( f.read() )
     ctrl = 'peaudiosys_control'
     with open('/dev/null','w') as fnull:
+        Popen( f'{ctrl} subsonic       {st["subsonic"]}      '.split(),
+                stdout=fnull )
         Popen( f'{ctrl} bass           {str(st["bass"])}     '.split(),
                 stdout=fnull )
         Popen( f'{ctrl} treble         {str(st["treble"])}   '.split(),
@@ -52,6 +69,7 @@ def restore_EQ():
                 stdout=fnull )
         #Popen( f'{ctrl} loudness {st["equal_loudness"]}'.split(),
         #        stdout=fnull )
+
 
 if __name__ == '__main__':
 
