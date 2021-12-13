@@ -97,9 +97,9 @@ As a starting point, you may want to check the **full_range_example** loudspeake
     cp eq.sample.R20_audiotools/* . 
 
 
-## [  ] The `.state.yml` file
+## [  ] The `.state` file
 
-Use the distro `.state.yml.sample`
+Use the distro `.state.sample`
      
 
 ## [  ] Environment variables

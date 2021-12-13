@@ -19,7 +19,7 @@ All commands prefixed with `preamp`. This prexix can be omited.
 ### Getting info:
 
     state | status | get_state  Returns the whole system status parameters,
-                                as per stored in .state.yml
+                                as per stored within the .state file
     get_inputs                  List of available inputs
     get_eq                      Returns the current Brutefir EQ stage (freq, mag ,pha)
     get_target_sets             List of target curves sets available under the eq folder

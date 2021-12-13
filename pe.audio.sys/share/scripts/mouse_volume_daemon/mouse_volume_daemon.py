@@ -55,17 +55,18 @@
 #           because it is always available
 #           (https://www.kernel.org/doc/html/latest/input/input.html#mousedev)
 
-import sys
-import os
-UHOME   =  os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-
 import time
 import subprocess as sp
 import binascii
 import yaml
+import sys
+import os
 #import struct # only to debug see below
-from share.miscel import send_cmd, STATE_PATH
+
+UHOME   =  os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
+
+from share.miscel import send_cmd, read_state_from_disk
 
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 try:
@@ -127,23 +128,6 @@ def getMouseEvent():
     fmice.close()
 
 
-def check_level():
-    # To avoid reading issues while state.yml is been written
-    i = 0
-    while i < 20:
-        f = open( STATE_PATH, 'r')
-        conte = f.read()
-        f.close()
-        try:
-            level = conte.split('level:')[1].split()[0]
-            return float(level)
-        except:
-            pass
-        i += 1
-        time.sleep(.2)
-    return 0.0
-
-
 def beeps():
     # (i) It is PENDING to pythonise this stuff ;-)
 
@@ -185,7 +169,7 @@ def main_loop(alertdB=CFG['alertdB'], beep=CFG['beep']):
 
         # Alert if crossed the headroom threshold
         if level_ups:
-            level = check_level()
+            level = read_state_from_disk()['level']
             if ( level + CFG['STEPdB'] )  >= alertdB:
                 if not beeped and beep:
                     print('(mouse_volume_daemon) BEEEEEEP, BEEEEEP')

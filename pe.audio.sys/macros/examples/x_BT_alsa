@@ -7,14 +7,14 @@
 """
 
 from subprocess import Popen, check_output
-from json import loads as json_loads
 from time import sleep
 import sys
 import os
+
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import CONFIG, send_cmd
+from share.miscel import CONFIG, send_cmd, read_state_from_disk
 
 
 ################################################################################
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
 
     # Toogle preamp input: BT <--> none
-    currinput = json_loads( send_cmd('state') )['input']
+    currinput = read_state_from_disk()['input']
     if currinput == 'BT':
         newinput = 'none'
     else:

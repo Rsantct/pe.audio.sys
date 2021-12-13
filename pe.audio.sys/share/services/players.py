@@ -21,7 +21,7 @@
 
 # (i) I/O FILES MANAGED HERE:
 #
-# .state.yml        'r'     pe.audio.sys state file
+# .state            'r'     pe.audio.sys state file
 #
 # .player_metadata  'w'     Stores the current player metadata
 #
@@ -110,7 +110,7 @@ def player_get_meta():
     """
     md = METATEMPLATE.copy()
 
-    source = get_source()
+    source = read_state_from_disk()['input']
 
     if 'librespot' in source or 'spotify' in source.lower():
         if SPOTIFY_CLIENT == 'desktop':
@@ -162,7 +162,7 @@ def player_control(cmd, arg=''):
     """
 
     newState = 'play'  # default state
-    source   = get_source()
+    source   = read_state_from_disk()['input']
 
     # (i) result depends on different source modules:
 
@@ -267,8 +267,7 @@ def do(cmd_phrase):
 
     # Getting METADATA
     elif cmd == 'get_meta':
-        with open( PLAYER_META_PATH, 'r') as f:
-            result = f.read()
+        result = read_metadata_from_disk()
 
     # PLAYLISTS
     elif cmd == 'load_playlist':

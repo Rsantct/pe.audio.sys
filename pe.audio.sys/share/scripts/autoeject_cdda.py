@@ -27,28 +27,16 @@ import  sys
 import  threading
 from    time import sleep
 import  json
-import  yaml
 from    subprocess import Popen
 
 UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from    share.miscel  import    PLAYER_META_PATH,   \
-                                PLAYER_STATE_PATH,  \
-                                get_source
-
-
-def read_metadata_file():
-    tries = 3
-    while tries:
-        try:
-            with open(PLAYER_META_PATH, 'r') as f:
-                return json.loads( f.read() )
-        except:
-            sleep (.1)
-            tries -=1
-    return {}
+from    share.miscel  import    PLAYER_META_PATH,       \
+                                PLAYER_STATE_PATH,      \
+                                read_state_from_disk,   \
+                                read_metadata_from_disk
 
 
 def main_loop():
@@ -64,12 +52,12 @@ def main_loop():
 
         while True:
 
-            md          = read_metadata_file()
+            md = read_metadata_from_disk()
             if not md:
                 continue
 
             # check if source = 'cd'
-            if get_source().lower() == 'cd':
+            if read_state_from_disk()['input'].lower() == 'cd':
 
                 # check if the track being playe is last one,
                 # also avoid bare default metadata
