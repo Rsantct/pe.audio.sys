@@ -325,7 +325,7 @@ If you want not to use any xo filter at all, you simply do:
 
 - Leave blank `xo:` inside `on_init` section from `config.yml` 
 
-- Leave blank `xo_set:` inside `.state`
+- Set  `"xo_set":""` inside the `.state` file
 
 - Omit any `xo....pcm` file inside your loudspeaker folder.
 
