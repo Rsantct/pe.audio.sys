@@ -172,7 +172,25 @@ Then declare it inside `config.yml`, for instance:
 This way `pe.audio.sys` will control the amp power outlet, as well will notice the power outlet state changes.
 
 
+## How to convert the former state file to json format
 
+If you need to migrate your old system, you can run the following:
+
+    $ nano bin/state2json.py
+    
+        #!/usr/bin/env python3
+        import json
+        import yaml
+        with open('pe.audio.sys/.state.yml', 'r') as f:
+            state = yaml.safe_load( f.read() )
+        with open('pe.audio.sys/.state', 'w') as f:
+            f.write( json.dumps(state) )
+
+    $ python3 bin/state2json
+    
+Once updated your pe.audio.sys, you can safely delete old `.yml` files:
+
+    $ rm pe.audio.sys/.state.yml*
 
 
 
