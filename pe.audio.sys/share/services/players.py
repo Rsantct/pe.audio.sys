@@ -267,8 +267,7 @@ def do(cmd_phrase):
 
     # Getting METADATA
     elif cmd == 'get_meta':
-        with open( PLAYER_META_PATH, 'r') as f:
-            result = f.read()
+        result = read_metadata_from_disk()
 
     # PLAYLISTS
     elif cmd == 'load_playlist':
