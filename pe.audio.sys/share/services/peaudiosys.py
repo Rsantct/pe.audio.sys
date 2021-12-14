@@ -534,11 +534,6 @@ def do( cmd_phrase ):
 
     if cmd_phrase:
 
-        # cmd_phrase log
-        if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
-            with open(logFname, 'a') as FLOG:
-                FLOG.write(f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; ')
-
         pfx, cmd, arg = read_cmd_phrase( cmd_phrase )
         #print('pfx:', pfx, '| cmd:', cmd, '| arg:', arg) # DEBUG
 
@@ -549,10 +544,17 @@ def do( cmd_phrase ):
         if type(result) != str:
             result = json.dumps(result)
 
-        # result log
-        if 'state' not in cmd_phrase and 'get_' not in cmd_phrase:
+        # Logging avoiding non-relevant commands
+        if  ('state'        not in cmd)  and \
+            ('state'        not in arg)  and \
+            ('get_'         not in cmd)  and \
+            ('warning'      not in cmd)  and \
+            ('info'         not in cmd):
+
+            logline = f'{strftime("%Y/%m/%d %H:%M:%S")}; {cmd_phrase}; {result}'
+
             with open(logFname, 'a') as FLOG:
-                FLOG.write(f'{result}\n')
+                    FLOG.write(f'{logline}\n')
 
     return result
 
