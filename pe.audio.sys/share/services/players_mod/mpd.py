@@ -43,51 +43,67 @@ def curr_playlist_is_cdda( port=6600 ):
     return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
 
 
-def mpd_control( query, port=6600 ):
+def mpd_control( query, arg='', port=6600 ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
         Return:     playback state string
     """
 
-    def state():
+    def state(dummy_arg):
         return c.status()['state']
 
-    def stop():
+    def stop(dummy_arg):
         c.stop()
         return c.status()['state']
 
-    def pause():
+    def pause(dummy_arg):
         c.pause()
         return c.status()['state']
 
-    def play():
+    def play(dummy_arg):
         c.play()
         return c.status()['state']
 
-    def next():
+    def next(dummy_arg):
         try:
             c.next()  # avoids error if some playlist has wrong items
         except:
             pass
         return c.status()['state']
 
-    def previous():
+    def previous(dummy_arg):
         try:
             c.previous()
         except:
             pass
         return c.status()['state']
 
-    def rew():  # for REW and FF will move 30 seconds
+    def rew(dummy_arg):  # for REW and FF will move 30 seconds
         c.seekcur('-30')
         return c.status()['state']
 
-    def ff():
+    def ff(dummy_arg):
         c.seekcur('+30')
         return c.status()['state']
 
-    def listplaylists():
+    def list_playlists(dummy_arg):
         return [ x['playlist'] for x in c.listplaylists() ]
+
+    def load_playlist(plistname):
+        c.load(plistname)
+        return f'loading \'{plistname}\''
+
+    def clear_playlist(dummy_arg):
+        c.clear()
+        return 'cleared'
+
+    def random(arg):
+        if arg == 'on':
+            c.random(1)
+        elif arg == 'off':
+            c.random(0)
+        mode = c.status()['random']
+        return {'0':'off', '1':'on'}[mode]
 
 
     c = mpd.MPDClient()
@@ -96,16 +112,22 @@ def mpd_control( query, port=6600 ):
     except:
         return 'stop'
 
-    result = {  'state':            state,
-                'stop':             stop,
-                'pause':            pause,
-                'play':             play,
-                'next':             next,
-                'previous':         previous,
-                'rew':              rew,
-                'ff':               ff,
-                'get_playlists':    listplaylists
-             }[query]()
+    try:
+        result = {  'state':            state,
+                    'stop':             stop,
+                    'pause':            pause,
+                    'play':             play,
+                    'next':             next,
+                    'previous':         previous,
+                    'rew':              rew,
+                    'ff':               ff,
+                    'get_playlists':    list_playlists,
+                    'load_playlist':    load_playlist,
+                    'clear_playlist':   clear_playlist,
+                    'random':           random
+                 }[query](arg)
+    except:
+        result = f'\'{query}\' not available'
 
     c.close()
     return result
