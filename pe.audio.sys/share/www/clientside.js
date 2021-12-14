@@ -48,7 +48,8 @@ var metablank = {                       // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
-var last_loudspeaker    = ''            // Will detect if audio processes has beeen
+var last_input          = '';           // Helps on refreshing sources playlits
+var last_loudspeaker    = '';           // Will detect if audio processes has beeen
                                         // restarted with new loudspeaker configuration.
 var macro_button_list   = [];
 var hold_tmp_msg        = 0;            // A counter to keep tmp_msg during updates
@@ -116,6 +117,9 @@ function page_initiate(){
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
+
+    // playlists selector for some sources
+    fill_in_playlists_selector();
 
     // Shows or hides the LU offset slider and the LU monitor bar
     if ( web_config.hide_LU == true ){
@@ -389,6 +393,20 @@ function page_update() {
                                                   + Math.floor(Date.now()/3000);
     }
 
+    // Displays the playlist loader for some sources
+    if (last_input != state.input){
+        if ( state.input == "mpd" ||
+             state.input == "spotify" ||
+             state.input == "cd" ) {
+            fill_in_playlists_selector()
+            document.getElementById( "playlist_selector").style.display = "inline";
+        }
+        else {
+            document.getElementById( "playlist_selector").style.display = "none";
+        }
+        last_input = state.input;
+    }
+
     // Displays the track selector if input == 'cd'
     if ( state.input == "cd") {
         document.getElementById( "track_selector").style.display = "inline";
@@ -450,6 +468,7 @@ function main_select(itemName){
 
     clear_highlighted();
     document.getElementById('mainSelector').style.color = "white";
+
 }
 
 // DRC selection
@@ -615,6 +634,15 @@ function player_info_clear() {
     document.getElementById("title").innerText = "-"
 }
 
+// When changing a playlist selector
+function load_playlist(plistname) {
+    if (plistname == '-CLEAR-') {
+        control_cmd( 'player clear_playlist ' );
+    } else if (plistname != '--') {
+        control_cmd( 'player clear_playlist ' );
+        control_cmd( 'player load_playlist ' + plistname );
+    }
+}
 
 // Emerge a dialog to select a disk track to be played
 function select_track() {
@@ -726,10 +754,8 @@ function fill_in_macro_buttons() {
         return
     }
 
-    // If any macro found, lets show the corresponding cell playback_control_23
-    // also call xx_21 just for symmetry reasons
-    document.getElementById( "playback_control_23").style.display = 'block';
-    document.getElementById( "playback_control_21").style.display = 'block';
+    // If any macro found, lets show the corresponding button
+    document.getElementById( "macros_toggle_button").style.display = 'inline';
 
 
     // Expands number of buttons to a multiple of 3 (arrange of Nx3 buttons)
@@ -785,6 +811,33 @@ function fill_in_macro_buttons() {
             row  = mtable.insertRow(index=-1);
         }
     }
+}
+
+// Filling in MPD playlists selector:
+function fill_in_playlists_selector() {
+    // getting playlists
+    try{
+        var plists = JSON.parse( control_cmd( 'player get_playlists' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+        return;
+    }
+    // clearing selector options
+    select_clear_options(ElementId="playlist_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("playlist_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( i in plists) {
+        var option = document.createElement("option");
+        option.text = plists[i];
+        mySel.add(option);
+    }
+    var option = document.createElement("option");
+    option.text = '-CLEAR-';
+    mySel.add(option);
 }
 
 // Runs a macro
