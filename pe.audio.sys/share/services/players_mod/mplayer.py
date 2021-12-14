@@ -63,7 +63,7 @@ import sys
 UHOME       = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, CONFIG, PLAYER_STATE_PATH, timesec2string
+from share.miscel import MAINFOLDER, CONFIG, timesec2string
 from subprocess import Popen
 import json
 import yaml
@@ -285,8 +285,6 @@ def mplayer_control(cmd, arg='', service=''):
             f.write( json.dumps( cdda.cdda_info_template() ) )
         # Flush Mplayer playlist and player status file
         send_cmd('stop', service)
-        with open( PLAYER_STATE_PATH, 'w') as f:
-            f.write( 'stop' )
         return playing_status(service)
 
 
