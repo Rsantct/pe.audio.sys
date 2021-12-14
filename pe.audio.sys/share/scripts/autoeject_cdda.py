@@ -34,7 +34,6 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
 from    share.miscel  import    PLAYER_META_PATH,       \
-                                PLAYER_STATE_PATH,      \
                                 read_state_from_disk,   \
                                 read_metadata_from_disk
 
