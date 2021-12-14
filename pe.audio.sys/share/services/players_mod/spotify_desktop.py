@@ -77,7 +77,7 @@ def spotify_control(cmd, arg=''):
         output: the resulting status string
     """
 
-    result = 'stop'
+    result = 'not connected'
 
     if not spotibus:
         return result
@@ -96,6 +96,11 @@ def spotify_control(cmd, arg=''):
 
     elif cmd == 'previous':
         spotibus.Previous()
+
+    # Shuffle only is a readable property
+    # (https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html)
+    elif cmd == 'shuffle':
+        return spotibus.Shuffle
 
     elif cmd == 'load_playlist':
         if PLAYLISTS:
