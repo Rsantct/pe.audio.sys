@@ -210,12 +210,13 @@
         td#title            { border: 1px solid grey; border-radius: 10px/10px; }
 
 
-        td#playback_control_11  { border-style: none; width:10%; }
-        td#playback_control_12  { border-style: none; width:75%; }
-        td#playback_control_13  { border-style: none; width:15%; text-align:left; }
-        td#playback_control_21  { border-style: none; width:10%; }
-        td#playback_control_22  { border-style: none; width:75%; }
-        td#playback_control_23  { border-style: none; width:15%; text-align:center;}
+        table#playback_control{ border-style: none; }
+        td#playback_control_11  { border-style: none; width:12%; display:table-cell; }
+        td#playback_control_12  { border-style: none; width:76%; display:table-cell; }
+        td#playback_control_13  { border-style: none; width:12%; display:table-cell; }
+        td#playback_control_21  { border-style: none; width:12%; display:table-cell; }
+        td#playback_control_22  { border-style: none; width:76%; display:table-cell; }
+        td#playback_control_23  { border-style: none; width:12%; display:table-cell; }
 
 
         table#macro_buttons{ border-style: none; }
@@ -293,9 +294,17 @@
                         onclick="play_url()">
                     &#9901;
                 </button>
-                <button type="button" id="track_selector" title="Enter a track number" onmousedown="select_track()" >
+                <button type="button"   id="track_selector"
+                                        title="Enter a track number"
+                                        style="display:none"
+                                        onmousedown="select_track()" >
                     #
                 </button>
+                <select                 id="playlist_selector"
+                                        title="Playlist loader"
+                                        style="display:none"
+                                        onchange="load_playlist(this.value)" >
+                </select>
                 <select id="mainSelector"
                         title="Source Selector" onchange="main_select(this.value)" >
                 </select>
@@ -490,6 +499,11 @@
                 <button type="button" id="buttonNext"     onmousedown="playerCtrl('next')"     >|&gt;           </button>
             </td>
             <td id="playback_control_13" >
+                <!-- random playback button -->
+                <button type="button" id="random_toggle_button"  onmousedown="random_toggle()"
+                        title="Toggle random playback">
+                    &#8644;
+                </button>
             </td>
        </tr>
         <tr> <!-- row2 -->
@@ -501,10 +515,10 @@
                 <button type="button" id="buttonPause"    onmousedown="playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
                 <button type="button" id="buttonPlay"     onmousedown="playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
             </td>
-            <!-- MACROS button toggle-->
             <td id="playback_control_23" >
+                <!-- MACROS button toggle-->
                 <button type="button" id="macros_toggle_button"  onmousedown="macros_toggle()"
-                        title="Toggle macro buttons">
+                        title="Toggle macro buttons"             style="display:none">
                     ::
                 </button>
             </td>
