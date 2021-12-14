@@ -74,10 +74,6 @@ def dump_metadata_file(md):
     with open(PLAYER_META_PATH, 'w') as f:
         f.write( json.dumps( md ))
 
-def dump_state_file(state):
-    with open(PLAYER_STATE_PATH, 'w') as f:
-        f.write(state)
-
 
 # Gets metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
@@ -216,9 +212,6 @@ def player_control(cmd, arg=''):
     else:
         newState = 'stop'  # default state
 
-    # Dumps the player newState
-    dump_state_file(newState)
-
     return result
 
 
@@ -238,9 +231,6 @@ def init():
     meta_timer = 2
     meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
-
-    # Reset state file:
-    dump_state_file('pause')
 
 
 # Interface entry function for this module plugged inside 'server.py'
