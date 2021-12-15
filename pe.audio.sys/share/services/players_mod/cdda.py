@@ -57,8 +57,10 @@ except:
 
 # cdda info template with a fake track #1
 CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',
-                       '1': {'title': '-', 'length': '00:00.00'} }
+                       '1':      {'title': '-', 'length': '00:00.00'}
+                     }
 
+CDDA_INFO_PATH = f'{UHOME}/pe.audio.sys/.cdda_info'
 
 def cdda_info_template():
     return CDDA_INFO_TEMPLATE
@@ -116,6 +118,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
             trackLen = ( track_sectors[i] - track_sectors[i - 1] ) / 75
             md[str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
                                  'length': msec2string(trackLen * 1e3)}
+
         return md
 
     # will complete md with info retrieved from musicbrainz
@@ -199,8 +202,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
     return md
 
 
-def save_disc_metadata(device=CDROM_DEVICE,
-                       fname=f'{UHOME}/pe.audio.sys/.cdda_info'):
+def save_disc_metadata(device=CDROM_DEVICE, fname=CDDA_INFO_PATH):
     with open(fname, 'w') as f:
         f.write( json.dumps( get_disc_metadata(device) ) )
 
