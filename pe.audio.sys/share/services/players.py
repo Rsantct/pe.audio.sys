@@ -199,35 +199,64 @@ def playback_control(cmd, arg=''):
                 port = 9990
             result = remote_player_control( cmd=cmd, arg=arg, host=host, port=port )
 
-
     return result
 
+
+# Manage playlists
+def playlists_control(cmd, arg):
+    """ works with Spotify playlists file and MPD native playlists
+    """
+
+    source = read_state_from_disk()['input']
+
+    if source == 'mpd':
+        return  mpd_control(cmd, arg)
+
+    elif source == 'spotify':
+        return  spotify_control(cmd, arg)
+
+    else:
+        return []
+
+
 # control of random mode / shuffle in some players
-def random_ctrl(arg):
+def random_control(arg):
 
     source = read_state_from_disk()['input']
 
     if source == 'mpd':
         return  mpd_control('random', arg)
 
-    if source == 'spotify':
-        # Shuffle only is a readable property
-        # (https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html)
-        return spotify_control('shuffle')
+    elif source == 'spotify':
+        return spotify_control('random', arg)
 
-    if source == 'cd':
+    elif source == 'cd':
         return 'WIP'
+
+    else:
+        return 'n/a'
+
+
+# Getting all info in a dict {state, random_mode, metadata}
+def get_all_info():
+    return {
+            'state':        playback_control( 'state' ),
+            'random_mode':  random_control('get'),
+            'metadata':     current_md
+            }
 
 
 # auto-started when loading this module
 def init():
-    """ This init function will
-        - Launch the 'store_meta' thread, see below.
+    """ This init function will thread the 'store_meta' LOOP forever, which
+        updates the global variable current_md as well the metadata disk file.
     """
+
     def store_meta(timer=2):
+        global current_md
         while True:
-            md = player_get_meta()
-            dump_metadata_file( md )
+            current_md = player_get_meta()
+            dump_metadata_file( current_md )
             sleep(timer)
 
     # Loop storing metadata
@@ -260,20 +289,19 @@ def do(cmd_phrase):
 
     # RANDOM MODE
     elif cmd == 'random_mode':
-        result = random_ctrl(arg)
+        result = random_control(arg)
 
     # Getting METADATA
     elif cmd == 'get_meta':
-        result = read_metadata_from_disk()
+        result = current_md
+
+    # Getting all info in a dict {state, random_mode, metadata}
+    elif cmd == 'get_all_info':
+        result = get_all_info()
 
     # PLAYLISTS
-    elif cmd == 'clear_playlist':
-        result = playback_control( cmd )
-    elif cmd == 'load_playlist':
-        result = playback_control( cmd, arg )
-    elif cmd == 'get_playlists':
-        # works with Spotify playlists file and MPD native playlists
-        result = playback_control( cmd )
+    elif '_playlist' in cmd:
+        result = playlists_control( cmd, arg )
 
     # Special command for DISC TRACK playback
     elif cmd == 'play_track':
@@ -290,4 +318,5 @@ def do(cmd_phrase):
 
 
 # Will AUTO-START init() when loading this module
+current_md = METATEMPLATE
 init()
