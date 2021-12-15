@@ -102,6 +102,8 @@ def mpd_control( query, arg='', port=6600 ):
             c.random(1)
         elif arg == 'off':
             c.random(0)
+        elif arg == 'toggle':
+            c.random( {'0':1, '1':0}[ c.status()['random'] ])
         mode = c.status()['random']
         return {'0':'off', '1':'on'}[mode]
 
@@ -127,7 +129,7 @@ def mpd_control( query, arg='', port=6600 ):
                     'random':           random
                  }[query](arg)
     except:
-        result = f'\'{query}\' not available'
+        result = f'erron with \'{query}\''
 
     c.close()
     return result
