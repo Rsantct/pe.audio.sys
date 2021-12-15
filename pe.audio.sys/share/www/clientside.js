@@ -33,11 +33,11 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
 // SOME GLOBALS
-var state               = {};           // The main state dictionary
+var state               = {};       // The main state dictionary
 var server_available    = false;
-var show_advanced       = false;        // defaults for display advanced controls
-var show_graphs         = false;        // defaults for show graphs
-var metablank = {                       // A player's metadata blank dict
+var show_advanced       = false;    // defaults for display advanced controls
+var show_graphs         = false;    // defaults for show graphs
+var metablank = {                   // A player's metadata blank dict
     'player':       '',
     'time_pos':     '',
     'time_tot':     '',
@@ -48,12 +48,13 @@ var metablank = {                       // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
-var last_input          = '';           // Helps on refreshing sources playlits
-var last_loudspeaker    = '';           // Will detect if audio processes has beeen
-                                        // restarted with new loudspeaker configuration.
+var last_input          = '';       // Helps on refreshing sources playlits
+var last_loudspeaker    = '';       // Will detect if audio processes has beeen
+                                    // restarted with new loudspeaker configuration.
 var macro_button_list   = [];
-var hold_tmp_msg        = 0;            // A counter to keep tmp_msg during updates
-var tmp_msg             = '';           // A temporary message
+var hold_selected_track = 0;        // A counter to keep the selected cd track during updates
+var hold_tmp_msg        = 0;        // A counter to keep tmp_msg during updates
+var tmp_msg             = '';       // A temporary message
 
 // STATIC WEB CONFIGURATION
 try{
@@ -392,14 +393,20 @@ function page_update() {
 
     // Displays the playlist loader for some sources
     if (last_input != state.input){
-        if ( state.input == "mpd" ||
-             state.input == "spotify" ||
-             state.input == "cd" ) {
+        if ( state.input == "mpd"     ||
+             state.input == "spotify" ) {
             fill_in_playlists_selector()
             document.getElementById( "playlist_selector").style.display = "inline";
         }
         else {
             document.getElementById( "playlist_selector").style.display = "none";
+        }
+        if ( state.input == "cd" ) {
+            fill_in_track_selector()
+            document.getElementById( "track_selector").style.display = "inline";
+        }
+        else {
+            document.getElementById( "track_selector").style.display = "none";
         }
         last_input = state.input;
     }
@@ -410,6 +417,12 @@ function page_update() {
     }
     else {
         document.getElementById( "track_selector").style.display = "none";
+    }
+
+    // Clear the CD track selector when expired
+    hold_selected_track -= 1;
+    if (hold_selected_track == 0) {
+        document.getElementById('track_selector').value = '--';
     }
 
     // Displays the [url] button if input == 'iradio' or 'istreams'
@@ -646,12 +659,17 @@ function load_playlist(plistname) {
     }
 }
 
-// Emerge a dialog to select a disk track to be played
-function select_track() {
+// Emerge a dialog to select a disk track numbre to be played
+function select_track_number_dialog() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
         control_cmd( 'player play_track ' + tracknum );
     }
+}
+
+function select_track_number(N) {
+    control_cmd( 'player play_track ' + N );
+    hold_selected_track = 10;
 }
 
 // Sends an url to the server, to be played back
@@ -815,7 +833,7 @@ function fill_in_macro_buttons() {
     }
 }
 
-// Filling in MPD playlists selector:
+// Filling in playlists selector:
 function fill_in_playlists_selector() {
     // getting playlists
     try{
@@ -839,6 +857,31 @@ function fill_in_playlists_selector() {
     }
     var option = document.createElement("option");
     option.text = '-CLEAR-';
+    mySel.add(option);
+}
+
+// Filling in track selector:
+function fill_in_track_selector() {
+    // getting tracks
+    try{
+        var tracks = JSON.parse( control_cmd( 'player list_playlist' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+        return;
+    }
+    // clearing selector options
+    select_clear_options(ElementId="track_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("track_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( i in tracks) {
+        var option = document.createElement("option");
+        option.text = tracks[i];
+        mySel.add(option);
+    }
     mySel.add(option);
 }
 
