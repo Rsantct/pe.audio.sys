@@ -43,6 +43,30 @@ def curr_playlist_is_cdda( port=6600 ):
     return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
 
 
+def mpd_playlists(cmd, arg='', port=6600):
+
+    result = ''
+
+    c = mpd.MPDClient()
+    try:
+        c.connect('localhost', port)
+    except:
+        return f'ERROR connecting to MPD at port {port}'
+
+    if cmd == 'get_playlists':
+        result = [ x['playlist'] for x in c.listplaylists() ]
+
+    elif cmd == 'load_playlist':
+        c.load(arg)
+        result = f'ordered loading \'{arg}\''
+
+    elif cmd == 'clear_playlist':
+        c.clear()
+        result = 'playlist cleared'
+
+    return result
+
+
 def mpd_control( query, arg='', port=6600 ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
@@ -86,17 +110,6 @@ def mpd_control( query, arg='', port=6600 ):
         c.seekcur('+30')
         return c.status()['state']
 
-    def list_playlists(dummy_arg):
-        return [ x['playlist'] for x in c.listplaylists() ]
-
-    def load_playlist(plistname):
-        c.load(plistname)
-        return f'loading \'{plistname}\''
-
-    def clear_playlist(dummy_arg):
-        c.clear()
-        return 'cleared'
-
     def random(arg):
         if arg == 'on':
             c.random(1)
@@ -123,9 +136,6 @@ def mpd_control( query, arg='', port=6600 ):
                     'previous':         previous,
                     'rew':              rew,
                     'ff':               ff,
-                    'get_playlists':    list_playlists,
-                    'load_playlist':    load_playlist,
-                    'clear_playlist':   clear_playlist,
                     'random':           random
                  }[query](arg)
     except:
