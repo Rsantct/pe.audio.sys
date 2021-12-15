@@ -41,13 +41,19 @@ sys.path.append(MAINFOLDER)
 from  share.miscel                  import  *
 
 from  players_mod.mpd               import  mpd_control,                \
-                                            mpd_meta
+                                            mpd_meta,                   \
+                                            mpd_playlists
+
 from  players_mod.mplayer           import  mplayer_control,            \
-                                            mplayer_get_meta
+                                            mplayer_get_meta,           \
+                                            mplayer_playlists
+
 from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
+
 from  players_mod.spotify_desktop   import  spotify_control,            \
-                                            spotify_meta
+                                            spotify_meta,               \
+                                            spotify_playlists
 
 ## Getting sources list
 SOURCES = CONFIG["sources"]
@@ -208,15 +214,18 @@ def playlists_control(cmd, arg):
     """
 
     source = read_state_from_disk()['input']
+    result = []
 
     if source == 'mpd':
-        return  mpd_control(cmd, arg)
+        result = mpd_playlists(cmd, arg)
 
     elif source == 'spotify':
-        return  spotify_control(cmd, arg)
+        result = spotify_playlists(cmd, arg)
 
-    else:
-        return []
+    elif source == 'cd':
+        result = mplayer_playlists(cmd=cmd, arg=arg, service='cdda')
+
+    return result
 
 
 # control of random mode / shuffle in some players
