@@ -70,6 +70,15 @@ if os.path.exists(plist_file):
     logging.info(tmp)
 
 
+# External tool 'playerctl' to manage shuffle because MPRIS can only read it
+def set_shuffle(mode):
+    # (!) The command line tool 'playerctl' has a shuffle method
+    #     BUT it does not work with Spotify Desktop :-(
+    mode = { 'on':'On', 'off':'Off' }[mode]
+    ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
+    #print('---->', ans) # DEBUG
+
+
 # Spotify Desktop control
 def spotify_control(cmd, arg=''):
     """ Controls the Spotify Desktop player
@@ -97,10 +106,16 @@ def spotify_control(cmd, arg=''):
     elif cmd == 'previous':
         spotibus.Previous()
 
-    # Shuffle only is a readable property
+    # MPRIS Shuffle is an only-readable property.
     # (https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html)
-    elif cmd == 'shuffle':
-        return spotibus.Shuffle
+    elif cmd == 'random':
+        if arg in ('get', ''):
+            return spotibus.Shuffle
+        elif arg in ('on', 'off'):
+            set_shuffle(arg)
+            return spotibus.Shuffle
+        else:
+            return f'error with \'random {arg}\''
 
     elif cmd == 'load_playlist':
         if PLAYLISTS:
