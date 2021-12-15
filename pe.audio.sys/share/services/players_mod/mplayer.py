@@ -73,7 +73,6 @@ import jack
 sys.path.append( os.path.dirname(__file__) )
 import cdda
 
-
 ME          = __file__.split('/')[-1]
 
 
@@ -118,7 +117,7 @@ def cdda_load():
     print( f'({ME}) loading disk ...' )
     # Save disk info into a json file
     cdda.save_disc_metadata(device=cdda.CDROM_DEVICE,
-                            fname=f'{MAINFOLDER}/.cdda_info')
+                            fname=cdda.CDDA_INFO_PATH)
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
     send_cmd(cmd, service='cdda')
@@ -175,7 +174,7 @@ def cdda_get_current_track():
 
     # We need the cd_info tracks list dict
     try:
-        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
+        with open(cdda.CDDA_INFO_PATH, 'r') as f:
             cd_info = json.loads( f.read() )
     except:
         cd_info = cdda.cdda_info_template()
@@ -242,6 +241,19 @@ def send_cmd(cmd, service):
         sleep(2)
 
 
+def mplayer_playlists(cmd, arg='', service=''):
+    """ This works only for CDDA
+    """
+    result = []
+    if service == 'cdda':
+        if cmd == 'list_playlist':
+            with open(cdda.CDDA_INFO_PATH, 'r') as f:
+                cd_info = json.loads( f.read() )
+            for tnum in [x for x in cd_info.keys() if x.isdigit()]:
+                result.append( cd_info[tnum]['title'] )
+    return result
+
+
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_control(cmd, arg='', service=''):
     """ Sends a command to Mplayer trough by its input fifo
@@ -258,7 +270,8 @@ def mplayer_control(cmd, arg='', service=''):
                             'rew',
                             'ff',
                             'play_track',
-                            'eject'     )
+                            'eject'
+                          )
 
     # (i) pe.audio.sys scripts redirects Mplayer stdout & stderr
     #     towards special files:
@@ -281,7 +294,7 @@ def mplayer_control(cmd, arg='', service=''):
     if cmd == 'eject':
         Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
-        with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
+        with open( cdda.CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps( cdda.cdda_info_template() ) )
         # Flush Mplayer playlist and player status file
         send_cmd('stop', service)
@@ -366,38 +379,6 @@ def mplayer_control(cmd, arg='', service=''):
     return status
 
 
-# Aux Mplayer metadata only for the CDDA service
-def cdda_get_meta(md):
-    """ input:      a metadata blank dict
-        output:     the updated one
-    """
-    # Getting the current track and track time position
-    curr_track, trackPos = cdda_get_current_track()
-
-    # We need the cd_info tracks list dict
-    try:
-        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
-            cd_info = json.loads( f.read() )
-    except:
-        cd_info = cdda.cdda_info_template()
-
-    # Updating md fields:
-    md['track_num'] = '1'
-    md['bitrate'] = '1411'
-    md['track_num'], md['time_pos'] = str(curr_track), timesec2string(trackPos)
-    md['artist'] = cd_info['artist']
-    md['album'] = cd_info['album']
-    if md['track_num'] in cd_info.keys():
-        md['title']     = cd_info[ md['track_num'] ]['title']
-        md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3]
-                                                    # omit decimals
-    else:
-        md['title'] = 'Track ' + md['track_num']
-    last_track = len( [ x for x in cd_info if x.isdigit() ] )
-    md['tracks_tot'] = f'{last_track}'
-    return md
-
-
 # MAIN Mplayer metadata
 def mplayer_get_meta(md, service):
     """ gets metadata from Mplayer as per
@@ -410,6 +391,38 @@ def mplayer_get_meta(md, service):
 
         (*) for cdda will use the alternate function cdda_get_meta()
     """
+
+    # Aux Mplayer metadata only for the CDDA service
+    def cdda_get_meta(md):
+        """ input:      a metadata blank dict
+            output:     the updated one
+        """
+        # Getting the current track and track time position
+        curr_track, trackPos = cdda_get_current_track()
+
+        # We need the cd_info tracks list dict
+        try:
+            with open(cdda.CDDA_INFO_PATH, 'r') as f:
+                cd_info = json.loads( f.read() )
+        except:
+            cd_info = cdda.cdda_info_template()
+
+        # Updating md fields:
+        md['track_num'] = '1'
+        md['bitrate'] = '1411'
+        md['track_num'], md['time_pos'] = str(curr_track), timesec2string(trackPos)
+        md['artist'] = cd_info['artist']
+        md['album'] = cd_info['album']
+        if md['track_num'] in cd_info.keys():
+            md['title']     = cd_info[ md['track_num'] ]['title']
+            md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3]
+                                                        # omit decimals
+        else:
+            md['title'] = 'Track ' + md['track_num']
+        last_track = len( [ x for x in cd_info if x.isdigit() ] )
+        md['tracks_tot'] = f'{last_track}'
+        return md
+
 
     md['player'] = 'Mplayer'
 
