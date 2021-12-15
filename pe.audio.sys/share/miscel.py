@@ -640,18 +640,17 @@ def read_metadata_from_disk():
         sleep(.25)
     return md
 
-
 # Gets the selected source from a pe.audio.sys server at <addr>
 def get_remote_selected_source(addr, port=9990):
     """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
     """
-    source = ''
-    ans = send_cmd('state', host=addr, port=port, timeout=1)
+    remote_source = ''
+    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
     try:
-        source = json_loads(ans)["input"]
+        remote_source = json_loads(remote_state)["input"]
     except:
         pass
-    return source
+    return remote_source
 
 
 # Read the last line from a large file, efficiently.
