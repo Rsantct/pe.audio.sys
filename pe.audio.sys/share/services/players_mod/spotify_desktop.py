@@ -79,6 +79,25 @@ def set_shuffle(mode):
     #print('---->', ans) # DEBUG
 
 
+def spotify_playlists(cmd, arg=''):
+
+    result = 'command not available'
+
+    if cmd == 'load_playlist':
+        if PLAYLISTS:
+            if arg in PLAYLISTS:
+                spotibus.OpenUri( PLAYLISTS[arg] )
+                result = 'ordered'
+            else:
+                result = 'ERROR: playlist not found'
+        else:
+            result = 'ERROR: Spotify playlist not available'
+
+    elif cmd == 'get_playlists':
+        result = list( PLAYLISTS.keys() )
+
+    return result
+
 # Spotify Desktop control
 def spotify_control(cmd, arg=''):
     """ Controls the Spotify Desktop player
@@ -116,18 +135,6 @@ def spotify_control(cmd, arg=''):
             return spotibus.Shuffle
         else:
             return f'error with \'random {arg}\''
-
-    elif cmd == 'load_playlist':
-        if PLAYLISTS:
-            if arg in PLAYLISTS:
-                spotibus.OpenUri( PLAYLISTS[arg] )
-            else:
-                return 'ERROR: playlist not found'
-        else:
-            return 'ERROR: Spotify playlist not available'
-
-    elif cmd == 'get_playlists':
-        return list( PLAYLISTS.keys() )
 
     sleep(.25)
     result = {  'Playing':  'play',
