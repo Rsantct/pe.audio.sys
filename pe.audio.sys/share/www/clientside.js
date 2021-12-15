@@ -269,7 +269,7 @@ function fill_in_page_statics(){
 // STATE DICT. UPDATE by queriyng the server
 function state_update() {
     try{
-        state = control_cmd('get_state');
+        state = control_cmd('preamp state');
         // console.log('Rx state:', state); # debug
         state = JSON.parse( state );
         if (state == null){
@@ -381,11 +381,8 @@ function page_update() {
     buttonSubsonicHighlight()
     levelInfoHighlight()
 
-    // Updates metadata player info
-    player_info_update()
-
-    // Highlights player controls when activated
-    player_controls_update()
+    // Updates all player stuff
+    player_all_update()
 
     // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
     if ( show_graphs == true ) {
@@ -504,23 +501,50 @@ function LU_scope_select(scope){
 
 // Controls the player
 function playerCtrl(action) {
-    control_cmd( 'player ' + action );
+    if (action == 'random_toggle') {
+        control_cmd( 'player random_mode toggle' );
+    } else {
+        control_cmd( 'player ' + action );
+    }
 }
 
-// Updates the player control buttons, hightlights the corresponding button to the playback state
-function player_controls_update() {
-
+// Retrieves and updates all player stuff
+function player_all_update(){
     try{
-        var playerState = control_cmd( 'player state' );
-        if (playerState == "null"){
+        var player_all_info = control_cmd( 'player get_all_info' );
+        if (player_all_info == "null"){
             document.getElementById("main_cside").innerText =
                     ':: pe.audio.sys :: players OFFLINE';
             return;
+        } else {
+            player_all_info = JSON.parse(player_all_info);
         }
     }catch(e){
-        console.log( 'error getting player state', e.name, e.message );
+        console.log( 'error getting player info', e.name, e.message );
         return;
     }
+
+    player_controls_update(     player_all_info.state );
+    player_metadata_update(     player_all_info.metadata );
+    player_random_mode_update(  player_all_info.random_mode);
+
+}
+
+// Highlights the random mode button:
+function player_random_mode_update(mode){
+    if        ( mode=='on' ) {
+        document.getElementById("random_toggle_button").style.background  = "rgb(185, 185, 185)";
+        document.getElementById("random_toggle_button").style.color       = "white";
+
+    } else {
+        document.getElementById("random_toggle_button").style.background  = "rgb(100, 100, 100)";
+        document.getElementById("random_toggle_button").style.color       = "lightgray";
+    }
+}
+
+// Updates the player control buttons, hightlights the corresponding button to the playback state
+function player_controls_update(playerState) {
+
     if        ( playerState == 'stop' ) {
         document.getElementById("buttonStop").style.background  = "rgb(185, 185, 185)";
         document.getElementById("buttonStop").style.color       = "white";
@@ -546,71 +570,49 @@ function player_controls_update() {
 }
 
 // Shows the playing info metadata
-function player_info_update() {
-    try{
-        var tmp = control_cmd( 'player get_meta' );
-        if (tmp == "null"){
-            document.getElementById("main_cside").innerText =
-                    ':: pe.audio.sys :: players OFFLINE';
-            return;
-        }
-    }catch(e){
-        console.log( 'error getting player meta', e.name, e.message );
-        return;
+function player_metadata_update(d) {
+
+
+    if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
+        d = metablank;
     }
-    // players.py will allways give a dictionary as response, but if
-    // no metadata are available then most fields will be empty, except 'player'
-    if ( tmp.indexOf("failed")  == -1 &&
-         tmp.indexOf("refused") == -1    )  {
 
-        try{
-            var d = JSON.parse( tmp );
-        }catch(e){
-            console.log( 'error parsing metadata to dict, using metablank',
-                          e.name, e.message );
-            var d = metablank;
-        }
-
-        if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
-            d = metablank;
-        }
-
-        if (d['bitrate']) {
-            document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
-        } else {
-            document.getElementById("bitrate").innerText = "-\nkbps"
-        }
-        if (d['artist']) {
-            document.getElementById("artist").innerText  = d['artist'];
-        } else {
-            document.getElementById("artist").innerText = "-"
-        }
-        if (d['track_num']) {
-            document.getElementById("track_info").innerText   = d['track_num'];
-        } else {
-            document.getElementById("track_info").innerText = "-"
-        }
-        if (d['tracks_tot']) {
-            document.getElementById("track_info").innerText += ('\n' + d['tracks_tot']);
-        } else {
-            document.getElementById("track_info").innerText += "\n-"
-        }
-        if (d['time_pos']) {
-            document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
-        } else {
-            document.getElementById("time").innerText = "-"
-        }
-        if (d['album']) {
-            document.getElementById("album").innerText   = d['album'];
-        } else {
-            document.getElementById("album").innerText = "-"
-        }
-        if (d['title']) {
-            document.getElementById("title").innerText   = d['title'];
-        } else {
-            document.getElementById("title").innerText = "-"
-        }
+    if (d['bitrate']) {
+        document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
+    } else {
+        document.getElementById("bitrate").innerText = "-\nkbps"
     }
+    if (d['artist']) {
+        document.getElementById("artist").innerText  = d['artist'];
+    } else {
+        document.getElementById("artist").innerText = "-"
+    }
+    if (d['track_num']) {
+        document.getElementById("track_info").innerText   = d['track_num'];
+    } else {
+        document.getElementById("track_info").innerText = "-"
+    }
+    if (d['tracks_tot']) {
+        document.getElementById("track_info").innerText += ('\n' + d['tracks_tot']);
+    } else {
+        document.getElementById("track_info").innerText += "\n-"
+    }
+    if (d['time_pos']) {
+        document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
+    } else {
+        document.getElementById("time").innerText = "-"
+    }
+    if (d['album']) {
+        document.getElementById("album").innerText   = d['album'];
+    } else {
+        document.getElementById("album").innerText = "-"
+    }
+    if (d['title']) {
+        document.getElementById("title").innerText   = d['title'];
+    } else {
+        document.getElementById("title").innerText = "-"
+    }
+
 }
 
 // Aux to clear controls when not connected
