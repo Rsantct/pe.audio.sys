@@ -120,7 +120,7 @@ def cdda_load():
 
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
-    mplayer_send_cmd(cmd, service='cdda')
+    send_cmd(cmd, service='cdda')
 
     # Waiting for the disk to be loaded (usually ~ 5 sec)
     n = 15
@@ -225,15 +225,15 @@ def playing_status(service='cdda'):
 
     with open(f'{MAINFOLDER}/.{service}_events', 'r') as f:
         tmp = f.read().split('\n')
-    for line in tmp[-2:]:
+    for line in tmp[-5::-1]:
         if 'ANS_pause=yes' in line:
             result = 'pause'
-
+            break
     return result
 
 
 # Aux to send Mplayer commands through by the corresponding fifo
-def mplayer_send_cmd(cmd, service):
+def send_cmd(cmd, service):
     #print(f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)') # DEBUG only
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
@@ -285,7 +285,7 @@ def mplayer_control(cmd, arg='', service=''):
 
     # Early return if SLAVE GETTING INFO commands:
     if cmd.startswith('get_'):
-        mplayer_send_cmd( cmd, service )
+        send_cmd( cmd, service )
         return status
     # Early return if STATE or NOT SUPPORTED command:
     elif cmd == 'state'or cmd not in supported_commands:
@@ -298,7 +298,7 @@ def mplayer_control(cmd, arg='', service=''):
         with open( cdda.CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps( cdda.CDDA_INFO_TEMPLATE.copy() ) )
         # Flush Mplayer playlist and player status file
-        mplayer_send_cmd('stop', service)
+        send_cmd('stop', service)
         return playing_status(service)
 
 
@@ -311,7 +311,7 @@ def mplayer_control(cmd, arg='', service=''):
         elif cmd == 'ff':         cmd = 'seek +60  0'
         elif cmd == 'next':       cmd = 'seek +300 0'
 
-        mplayer_send_cmd(cmd, service)
+        send_cmd(cmd, service)
 
     elif service == 'dvb':
 
@@ -321,7 +321,7 @@ def mplayer_control(cmd, arg='', service=''):
         elif cmd == 'ff':         cmd = 'seek_chapter +1 0'
         elif cmd == 'next':       cmd = 'tv_step_channel next'
 
-        mplayer_send_cmd(cmd, service)
+        send_cmd(cmd, service)
 
     elif service == 'cdda':
 
@@ -341,16 +341,16 @@ def mplayer_control(cmd, arg='', service=''):
             cmd = 'stop'
 
         elif cmd == 'pause' and status == 'play':
-            cmd = 'pause'               # Mplayer will toggle to pause
+            cmd = 'pausing pause'               # Mplayer will toggle to pause
             pre_connect('off')
 
         elif cmd == 'play':
-            # Loading disc if necessary
+            # Loading (and playing) disc if necessary
             if not cdda_is_loaded():
                 cdda_load()
             else:
                 if status == 'pause':
-                    cmd = 'pause'       # Mplayer will toggle to play
+                    cmd = 'pausing_togle pause'       # Mplayer will toggle to play
                 else:
                     cmd = ''
 
@@ -367,7 +367,7 @@ def mplayer_control(cmd, arg='', service=''):
                 return 'bad track number'
 
         if cmd:
-            mplayer_send_cmd(cmd, service)
+            send_cmd(cmd, service)
 
         status = playing_status(service)
 
