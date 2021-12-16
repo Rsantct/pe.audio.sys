@@ -279,8 +279,6 @@ def init():
     meta_loop.start()
 
 
-
-
 # Interface entry function for this module plugged inside 'server.py'
 def do(cmd_phrase):
     """ Entry interface function for a parent server.py listener.
