@@ -67,7 +67,7 @@ import  sys
 UHOME       = os.path.expanduser("~")
 
 sys.path.append(f'{UHOME}/pe.audio.sys')
-from    share.miscel import MAINFOLDER, CONFIG, timesec2string
+from    share.miscel import MAINFOLDER, CONFIG, timesec2string, read_last_lines
 
 sys.path.append( os.path.dirname(__file__) )
 import  cdda
@@ -213,22 +213,23 @@ def pre_connect(mode, pname=cdda.CD_JACK_PNAME):
 
 
 # Aux to query Mplayer if paused or playing
-def playing_status(service='cdda'):
+def playing_status(service=''):
     """ Mplayer status: play or pause
     """
+    if not service:
+        return 'n/a'
+
     result = 'play'
 
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( 'pausing_keep_force get_property pause\n' )
-
     sleep(.1)
 
-    with open(f'{MAINFOLDER}/.{service}_events', 'r') as f:
-        tmp = f.read().split('\n')
-    for line in tmp[-5::-1]:
-        if 'ANS_pause=yes' in line:
+    last_lines = read_last_lines( f'{MAINFOLDER}/.{service}_events', nlines=5)
+    for line in last_lines:
+        if 'ANS_pause=yes' == line:
             result = 'pause'
-            break
+
     return result
 
 
