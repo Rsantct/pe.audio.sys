@@ -50,6 +50,8 @@ EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
 BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
@@ -605,40 +607,30 @@ def kill_bill(pid=0):
     sleep(.5)
 
 
-# Gets the current state dict from the .state disk file
+# Function an wrappers for reading json dicts from disk files
+def read_json_from_file(fname):
+    d = {}
+    if fname == STATE_PATH:
+        d = {'input':'none', 'level':'0.0'}
+
+    # It is possible to fail while the file is updating :-/
+    times = 5
+    while times:
+        try:
+            with open( fname, 'r') as f:
+                d = json_loads( f.read() )
+            break
+        except:
+            times -= 1
+        sleep(.25)
+    return d
 def read_state_from_disk():
-    """ retrieves the current state dict from disk
-    """
-    state = {'input':'none', 'level':'0.0'}
-    # It is possible to fail while the file is updating :-/
-    times = 5
-    while times:
-        try:
-            with open( STATE_PATH, 'r') as f:
-                state = json_loads( f.read() )
-            break
-        except:
-            times -= 1
-        sleep(.25)
-    return state
-
-
-# Gets the current player metadata from the .player_metadata disk file
+    return read_json_from_file(STATE_PATH)
 def read_metadata_from_disk():
-    """ retrieves the current player metadata dict from disk
-    """
-    md = {}
-    # It is possible to fail while the file is updating :-/
-    times = 5
-    while times:
-        try:
-            with open( PLAYER_META_PATH, 'r') as f:
-                md = json_loads( f.read() )
-            break
-        except:
-            times -= 1
-        sleep(.25)
-    return md
+    return read_json_from_file(PLAYER_META_PATH)
+def read_cdda_info_from_disk():
+    return read_json_from_file(CDDA_INFO_PATH)
+
 
 # Gets the selected source from a pe.audio.sys server at <addr>
 def get_remote_selected_source(addr, port=9990):
