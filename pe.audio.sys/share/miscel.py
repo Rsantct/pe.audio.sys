@@ -632,19 +632,6 @@ def read_cdda_info_from_disk():
     return read_json_from_file(CDDA_INFO_PATH)
 
 
-# Gets the selected source from a pe.audio.sys server at <addr>
-def get_remote_selected_source(addr, port=9990):
-    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
-    """
-    remote_source = ''
-    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
-    try:
-        remote_source = json_loads(remote_state)["input"]
-    except:
-        pass
-    return remote_source
-
-
 # Read the last line from a large file, efficiently.
 def read_last_line(filename=''):
     # source:
@@ -669,6 +656,33 @@ def read_last_line(filename=''):
         return ''
 
 
+# A tool to flush some special temporary files (!) BE CAREFUL WITH THIS
+def force_to_flush_file(fname=''):
+
+    bare_fname = fname.replace(f'{MAINFOLDER}/', '')
+
+    if 'pe.audio.sys' not in fname:
+        return f'NOT allowed flushing outside pe.audio.sys'
+
+    if bare_fname.replace(MAINFOLDER, '').count('/') >= 1:
+        return f'NOT allowed flushing deeper than \'{MAINFOLDER}\''
+
+    if not bare_fname.startswith('.'):
+        return f'ONLY allowed flushing dot-hidden files'
+
+    # It is possible to fail while the file is updating :-/
+    times = 5
+    while times:
+        try:
+            with open( fname, 'w') as f:
+                f.write('')
+            return 'done'
+        except:
+            times -= 1
+        sleep(.2)
+    return 'ERROR flushing \'fname\''
+
+
 # Validate if a given string is a valid IP address
 def is_IP(s):
     try:
@@ -685,6 +699,19 @@ def get_my_ip():
         return tmp.split()[0]
     except:
         return ''
+
+
+# Gets the selected source from a pe.audio.sys server at <addr>
+def get_remote_selected_source(addr, port=9990):
+    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
+    """
+    remote_source = ''
+    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
+    try:
+        remote_source = json_loads(remote_state)["input"]
+    except:
+        pass
+    return remote_source
 
 
 # Gets data from a remoteXXXXX defined source
@@ -726,7 +753,7 @@ def get_remote_source_info():
 
 
 # EQ curves for tone and loudness contour are mandatory
-# (i) kept last because it depends on the find_eq_curves() funtcion
+# (i) kept last because it depends on the find_eq_curves() function
 EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )
