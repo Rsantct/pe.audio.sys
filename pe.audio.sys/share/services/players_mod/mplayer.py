@@ -58,20 +58,19 @@
 #-----------------------------------------------------------------------
 
 
-import os
-import sys
+from    subprocess import Popen
+import  json
+from    time import sleep
+import  jack
+import  os
+import  sys
 UHOME       = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, CONFIG, timesec2string
-from subprocess import Popen
-import json
-import yaml
-from time import sleep
-import jack
+sys.path.append(f'{UHOME}/pe.audio.sys')
+from    share.miscel import MAINFOLDER, CONFIG, timesec2string
 
 sys.path.append( os.path.dirname(__file__) )
-import cdda
+import  cdda
 
 ME          = __file__.split('/')[-1]
 
@@ -115,12 +114,14 @@ def cdda_load():
         I/O:        .cdda_info (w), a dict with album and tracks
     """
     print( f'({ME}) loading disk ...' )
+
     # Save disk info into a json file
-    cdda.save_disc_metadata(device=cdda.CDROM_DEVICE,
-                            fname=cdda.CDDA_INFO_PATH)
+    cdda.save_disc_metadata()
+
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
-    send_cmd(cmd, service='cdda')
+    mplayer_send_cmd(cmd, service='cdda')
+
     # Waiting for the disk to be loaded (usually ~ 5 sec)
     n = 15
     while n:
@@ -177,7 +178,7 @@ def cdda_get_current_track():
         with open(cdda.CDDA_INFO_PATH, 'r') as f:
             cd_info = json.loads( f.read() )
     except:
-        cd_info = cdda.cdda_info_template()
+        cd_info = cdda.CDDA_INFO_TEMPLATE.copy()
 
     discPos             = get_disc_pos()
     trackNum, trackPos  = calc_track_and_pos(discPos)
@@ -232,7 +233,7 @@ def playing_status(service='cdda'):
 
 
 # Aux to send Mplayer commands through by the corresponding fifo
-def send_cmd(cmd, service):
+def mplayer_send_cmd(cmd, service):
     #print(f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)') # DEBUG only
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
@@ -284,7 +285,7 @@ def mplayer_control(cmd, arg='', service=''):
 
     # Early return if SLAVE GETTING INFO commands:
     if cmd.startswith('get_'):
-        send_cmd( cmd, service )
+        mplayer_send_cmd( cmd, service )
         return status
     # Early return if STATE or NOT SUPPORTED command:
     elif cmd == 'state'or cmd not in supported_commands:
@@ -295,9 +296,9 @@ def mplayer_control(cmd, arg='', service=''):
         Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
         with open( cdda.CDDA_INFO_PATH, 'w') as f:
-            f.write( json.dumps( cdda.cdda_info_template() ) )
+            f.write( json.dumps( cdda.CDDA_INFO_TEMPLATE.copy() ) )
         # Flush Mplayer playlist and player status file
-        send_cmd('stop', service)
+        mplayer_send_cmd('stop', service)
         return playing_status(service)
 
 
@@ -310,7 +311,7 @@ def mplayer_control(cmd, arg='', service=''):
         elif cmd == 'ff':         cmd = 'seek +60  0'
         elif cmd == 'next':       cmd = 'seek +300 0'
 
-        send_cmd(cmd, service)
+        mplayer_send_cmd(cmd, service)
 
     elif service == 'dvb':
 
@@ -320,7 +321,7 @@ def mplayer_control(cmd, arg='', service=''):
         elif cmd == 'ff':         cmd = 'seek_chapter +1 0'
         elif cmd == 'next':       cmd = 'tv_step_channel next'
 
-        send_cmd(cmd, service)
+        mplayer_send_cmd(cmd, service)
 
     elif service == 'cdda':
 
@@ -366,7 +367,7 @@ def mplayer_control(cmd, arg='', service=''):
                 return 'bad track number'
 
         if cmd:
-            send_cmd(cmd, service)
+            mplayer_send_cmd(cmd, service)
 
         status = playing_status(service)
 
@@ -405,7 +406,7 @@ def mplayer_get_meta(md, service):
             with open(cdda.CDDA_INFO_PATH, 'r') as f:
                 cd_info = json.loads( f.read() )
         except:
-            cd_info = cdda.cdda_info_template()
+            cd_info = cdda.CDDA_INFO_TEMPLATE.copy()
 
         # Updating md fields:
         md['track_num'] = '1'
@@ -472,3 +473,11 @@ def mplayer_get_meta(md, service):
             md['title'] = line.split('=')[-1].replace("'", "")
 
     return md
+
+
+# Autoexec when loading this module
+def init():
+    cdda.save_disc_metadata()
+
+# Autoexec when loading this module
+init()
