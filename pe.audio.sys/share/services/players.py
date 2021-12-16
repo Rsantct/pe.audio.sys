@@ -239,9 +239,6 @@ def random_control(arg):
     elif source == 'spotify':
         return spotify_control('random', arg)
 
-    elif source == 'cd':
-        return 'WIP'
-
     else:
         return 'n/a'
 
