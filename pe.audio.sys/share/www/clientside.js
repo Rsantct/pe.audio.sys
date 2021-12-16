@@ -48,6 +48,7 @@ var metablank = {                   // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
+var last_disc           = '';       // Helps on refreshing cd tracks list
 var last_input          = '';       // Helps on refreshing sources playlits
 var last_loudspeaker    = '';       // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
@@ -391,7 +392,7 @@ function page_update() {
                                                   + Math.floor(Date.now()/3000);
     }
 
-    // Displays the playlist loader for some sources
+    // Displays and updates the playlist loader for some sources when input source changed
     if (last_input != state.input){
         if ( state.input == "mpd"     ||
              state.input == "spotify" ) {
@@ -400,13 +401,6 @@ function page_update() {
         }
         else {
             document.getElementById( "playlist_selector").style.display = "none";
-        }
-        if ( state.input == "cd" ) {
-            fill_in_track_selector()
-            document.getElementById( "track_selector").style.display = "inline";
-        }
-        else {
-            document.getElementById( "track_selector").style.display = "none";
         }
         last_input = state.input;
     }
@@ -419,7 +413,7 @@ function page_update() {
         document.getElementById( "track_selector").style.display = "none";
     }
 
-    // Clear the CD track selector when expired
+    // Clears the CD track selector when expired
     hold_selected_track -= 1;
     if (hold_selected_track == 0) {
         document.getElementById('track_selector').value = '--';
@@ -540,6 +534,12 @@ function player_all_update(){
     player_controls_update(     player_all_info.state );
     player_metadata_update(     player_all_info.metadata );
     player_random_mode_update(  player_all_info.random_mode);
+
+    // Updates tracks list id disc has changed
+    if (last_disc != player_all_info.discid) {
+        fill_in_track_selector();
+        last_disc = player_all_info.discid;
+    }
 
 }
 
