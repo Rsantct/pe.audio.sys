@@ -251,7 +251,8 @@ def get_all_info():
     return {
             'state':        playback_control( 'state' ),
             'random_mode':  random_control('get'),
-            'metadata':     current_md
+            'metadata':     current_md,
+            'discid':       read_cdda_info_from_disk()['discid']
             }
 
 
@@ -268,10 +269,16 @@ def init():
             dump_metadata_file( current_md )
             sleep(timer)
 
+    # Initialices runtime variables
+    global current_md
+    current_md = METATEMPLATE
+
     # Loop storing metadata
     meta_timer = 2
     meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
     meta_loop.start()
+
+
 
 
 # Interface entry function for this module plugged inside 'server.py'
@@ -327,5 +334,4 @@ def do(cmd_phrase):
 
 
 # Will AUTO-START init() when loading this module
-current_md = METATEMPLATE
 init()
