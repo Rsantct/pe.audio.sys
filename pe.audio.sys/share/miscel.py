@@ -640,6 +640,39 @@ def read_last_line(filename=''):
     # and move backwards to find a newline.
     # Note that the file has to be opened in binary mode, otherwise,
     # it will be impossible to seek from the end.
+    #
+    # https://python-reference.readthedocs.io/en/latest/docs/file/seek.html
+    # f.seek( offset, whence )
+
+    if not filename:
+        return ''
+
+    try:
+        with open(filename, 'rb') as f:
+            f.seek(-2, os.SEEK_END)             # Go to -2 bytes from file end
+
+            while f.read(1) != b'\n':           # Repeat reading until find \n
+                f.seek(-2, os.SEEK_CUR)
+
+            last_line = f.readline().decode()   # readline reads until \n
+
+        return last_line.strip()
+
+    except:
+        return ''
+
+
+# Read the last N lines from a large file, efficiently.
+def read_last_lines(filename='', nlines=1):
+    # source:
+    # https://stackoverflow.com/questions/46258499/read-the-last-line-of-a-file-in-python
+    # For large files it would be more efficient to seek to the end of the file,
+    # and move backwards to find a newline.
+    # Note that the file has to be opened in binary mode, otherwise,
+    # it will be impossible to seek from the end.
+    #
+    # https://python-reference.readthedocs.io/en/latest/docs/file/seek.html
+    # f.seek( offset, whence )
 
     if not filename:
         return ''
@@ -647,13 +680,19 @@ def read_last_line(filename=''):
     try:
         with open(filename, 'rb') as f:
             f.seek(-2, os.SEEK_END)
-            while f.read(1) != b'\n':
+
+            c = nlines
+            while c:
+                if f.read(1) == b'\n':
+                    c -= 1
                 f.seek(-2, os.SEEK_CUR)
-            last_line = f.readline().decode()
-        return last_line.strip()
+
+            lines = f.read().decode()[2:].replace('\r', '').split('\n')
+
+        return [x.strip() for x in lines if x]
 
     except:
-        return ''
+        return ['']
 
 
 # A tool to flush some special temporary files (!) BE CAREFUL WITH THIS
