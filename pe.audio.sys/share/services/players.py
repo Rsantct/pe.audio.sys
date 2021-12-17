@@ -73,6 +73,10 @@ METATEMPLATE = {
                 'track_num':    '-',
                 'tracks_tot':   '-' }
 
+# The runtime metadata variable and refresh period in seconds
+CURRENT_MD          = METATEMPLATE.copy()
+CURRENT_MD_REFRESH  = 2
+
 
 def dump_metadata_file(md):
     with open(PLAYER_META_PATH, 'w') as f:
@@ -256,7 +260,7 @@ def get_all_info():
     return {
             'state':        playback_control( 'state' ),
             'random_mode':  random_control('get'),
-            'metadata':     current_md,
+            'metadata':     CURRENT_MD,
             'discid':       read_cdda_info_from_disk()['discid']
             }
 
@@ -264,23 +268,21 @@ def get_all_info():
 # auto-started when loading this module
 def init():
     """ This init function will thread the 'store_meta' LOOP forever, which
-        updates the global variable current_md as well the metadata disk file.
+        updates:
+            - the global runtime variable CURRENT_MD,
+            - the metadata disk file.
     """
 
-    def store_meta(timer=2):
-        global current_md
+    def store_meta(period=2):
+        global CURRENT_MD
         while True:
-            current_md = player_get_meta()
-            dump_metadata_file( current_md )
-            sleep(timer)
-
-    # Initialices runtime variables
-    global current_md
-    current_md = METATEMPLATE
+            CURRENT_MD = player_get_meta()
+            dump_metadata_file( CURRENT_MD )
+            sleep(period)
 
     # Loop storing metadata
-    meta_timer = 2
-    meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
+    period = CURRENT_MD_REFRESH
+    meta_loop = threading.Thread( target=store_meta, args=(period,) )
     meta_loop.start()
 
 
@@ -312,7 +314,7 @@ def do(cmd_phrase):
 
     # Getting METADATA
     elif cmd == 'get_meta':
-        result = current_md
+        result = CURRENT_MD
 
     # Getting all info in a dict {state, random_mode, metadata}
     elif cmd == 'get_all_info':
