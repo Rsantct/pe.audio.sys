@@ -293,7 +293,7 @@
                         style="text-align:center;font-size:0.7em;display:none"
                         onclick="play_url()">&#9901;
                 </button>
-                <button type="button"   id="track_number_selector"
+                <button type="button"   id="track_number_button"
                                         title="Enter a track number"
                                         style="display:none; width:150px"
                                         onmousedown="select_track_number_dialog()" >#
@@ -306,7 +306,7 @@
                 <select                 id="track_selector"
                                         title="select a track"
                                         style="display:none; width:150px"
-                                        onchange="select_track_number(this.selectedIndex)" >
+                                        onchange="play_track_number(this.selectedIndex)" >
                 </select>
                 <select id="mainSelector"       style="width:150px"
                         title="Source Selector" onchange="main_select(this.value)" >
