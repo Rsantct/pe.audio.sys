@@ -674,7 +674,7 @@ def read_last_lines(filename='', nlines=1):
     # f.seek( offset, whence )
 
     if not filename:
-        return ''
+        return ['']
 
     try:
         with open(filename, 'rb') as f:
