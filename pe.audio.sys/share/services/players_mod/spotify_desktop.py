@@ -98,6 +98,7 @@ def spotify_playlists(cmd, arg=''):
 
     return result
 
+
 # Spotify Desktop control
 def spotify_control(cmd, arg=''):
     """ Controls the Spotify Desktop player
