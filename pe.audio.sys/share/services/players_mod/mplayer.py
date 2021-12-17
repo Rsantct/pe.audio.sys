@@ -67,10 +67,10 @@ import  sys
 UHOME       = os.path.expanduser("~")
 
 sys.path.append(f'{UHOME}/pe.audio.sys')
-from    share.miscel import MAINFOLDER, CONFIG, timesec2string, read_last_lines
+from share.miscel import    MAINFOLDER, CONFIG, timesec2string, read_last_lines
 
 sys.path.append( os.path.dirname(__file__) )
-import  cdda
+import cdda
 
 ME          = __file__.split('/')[-1]
 
@@ -120,7 +120,7 @@ def cdda_load():
 
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
-    send_cmd(cmd, service='cdda')
+    send_mplayer_cmd(cmd, service='cdda')
 
     # Waiting for the disk to be loaded (usually ~ 5 sec)
     n = 15
@@ -237,7 +237,7 @@ def playing_status(service=''):
 
 
 # Aux to send Mplayer commands through by the corresponding fifo
-def send_cmd(cmd, service):
+def send_mplayer_cmd(cmd, service):
     #print(f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)') # DEBUG only
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
@@ -289,7 +289,7 @@ def mplayer_control(cmd, arg='', service=''):
 
     # Early return if SLAVE GETTING INFO commands:
     if cmd.startswith('get_'):
-        send_cmd( cmd, service )
+        send_mplayer_cmd( cmd, service )
         return status
     # Early return if STATE or NOT SUPPORTED command:
     elif cmd == 'state'or cmd not in supported_commands:
@@ -302,7 +302,7 @@ def mplayer_control(cmd, arg='', service=''):
         with open( cdda.CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps( cdda.CDDA_INFO_TEMPLATE.copy() ) )
         # Flush Mplayer playlist and player status file
-        send_cmd('stop', service)
+        send_mplayer_cmd('stop', service)
         return playing_status(service)
 
 
@@ -315,7 +315,7 @@ def mplayer_control(cmd, arg='', service=''):
         elif cmd == 'ff':         cmd = 'seek +60  0'
         elif cmd == 'next':       cmd = 'seek +300 0'
 
-        send_cmd(cmd, service)
+        send_mplayer_cmd(cmd, service)
 
     elif service == 'dvb':
 
@@ -325,7 +325,7 @@ def mplayer_control(cmd, arg='', service=''):
         elif cmd == 'ff':         cmd = 'seek_chapter +1 0'
         elif cmd == 'next':       cmd = 'tv_step_channel next'
 
-        send_cmd(cmd, service)
+        send_mplayer_cmd(cmd, service)
 
     elif service == 'cdda':
 
@@ -362,6 +362,7 @@ def mplayer_control(cmd, arg='', service=''):
             # Loading disc if necessary
             if not cdda_is_loaded():
                 cdda_load()
+
             if arg.isdigit():
                 curr_track = int( arg )
                 chapter = int(curr_track) - 1
@@ -371,7 +372,7 @@ def mplayer_control(cmd, arg='', service=''):
                 return 'bad track number'
 
         if cmd:
-            send_cmd(cmd, service)
+            send_mplayer_cmd(cmd, service)
 
         status = playing_status(service)
 
