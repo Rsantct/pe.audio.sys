@@ -535,7 +535,7 @@ function player_all_update(){
     player_metadata_update(     player_all_info.metadata );
     player_random_mode_update(  player_all_info.random_mode);
 
-    // Updates tracks list id disc has changed
+    // Updates tracks list if disc has changed
     if (last_disc != player_all_info.discid) {
         fill_in_track_selector();
         last_disc = player_all_info.discid;
@@ -555,7 +555,7 @@ function player_random_mode_update(mode){
     }
 }
 
-// Updates the player control buttons, hightlights the corresponding button to the playback state
+// Hightlights the corresponding playback button as per the playback state
 function player_controls_update(playerState) {
 
     if        ( playerState == 'stop' ) {
@@ -659,7 +659,7 @@ function load_playlist(plistname) {
     }
 }
 
-// Emerge a dialog to select a disk track numbre to be played
+// Emerge a dialog to select a disk track number to be played (currently not used)
 function select_track_number_dialog() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
@@ -667,12 +667,13 @@ function select_track_number_dialog() {
     }
 }
 
-function select_track_number(N) {
+// Plays a track number
+function play_track_number(N) {
     control_cmd( 'player play_track ' + N );
     hold_selected_track = 10;
 }
 
-// Sends an url to the server, to be played back
+// Sends an url to the server, for it to play
 function play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
