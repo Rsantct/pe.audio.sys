@@ -50,6 +50,7 @@ EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
 CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
 BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
@@ -695,7 +696,7 @@ def read_last_lines(filename='', nlines=1):
 
 
 # A tool to flush some special temporary files (!) BE CAREFUL WITH THIS
-def force_to_flush_file(fname=''):
+def force_to_flush_file(fname='', content=''):
 
     bare_fname = fname.replace(f'{MAINFOLDER}/', '')
 
@@ -713,7 +714,7 @@ def force_to_flush_file(fname=''):
     while times:
         try:
             with open( fname, 'w') as f:
-                f.write('')
+                f.write(content)
             return 'done'
         except:
             times -= 1
