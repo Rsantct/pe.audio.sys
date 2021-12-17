@@ -239,7 +239,7 @@ def process_aux( cmd, arg='' ):
         try:
             with open(LDCTRL_PATH, 'w') as f:
                 f.write(string)
-            return 'tried'
+            return 'ordered'
         except:
             return 'unknown ERROR writing .loudness_control FIFO'
 
@@ -287,7 +287,7 @@ def process_aux( cmd, arg='' ):
             AUX_INFO["last_macro"] = arg
             # This updates disk file .aux_info for others to have fresh 'last_macro'
             dump_aux_info()
-            result = 'tried'
+            result = 'ordered'
         else:
             result = 'macro not found'
 
@@ -352,7 +352,7 @@ def process_aux( cmd, arg='' ):
 
         try:
             Popen( f'{restart_cmd}'.split() )
-            result = f'tried: \'{restart_cmd}\''
+            result = f'ordered: \'{restart_cmd}\''
         except:
             print( f'({ME}) error running \'{restart_cmd}\'' )
             result = f'error running \'{restart_cmd}\''

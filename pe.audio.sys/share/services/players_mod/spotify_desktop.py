@@ -70,6 +70,35 @@ if os.path.exists(plist_file):
     logging.info(tmp)
 
 
+# External tool 'playerctl' to manage shuffle because MPRIS can only read it
+def set_shuffle(mode):
+    # (!) The command line tool 'playerctl' has a shuffle method
+    #     BUT it does not work with Spotify Desktop :-(
+    mode = { 'on':'On', 'off':'Off' }[mode]
+    ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
+    #print('---->', ans) # DEBUG
+
+
+def spotify_playlists(cmd, arg=''):
+
+    result = 'command not available'
+
+    if cmd == 'load_playlist':
+        if PLAYLISTS:
+            if arg in PLAYLISTS:
+                spotibus.OpenUri( PLAYLISTS[arg] )
+                result = 'ordered'
+            else:
+                result = 'ERROR: playlist not found'
+        else:
+            result = 'ERROR: Spotify playlist not available'
+
+    elif cmd == 'get_playlists':
+        result = list( PLAYLISTS.keys() )
+
+    return result
+
+
 # Spotify Desktop control
 def spotify_control(cmd, arg=''):
     """ Controls the Spotify Desktop player
@@ -77,7 +106,7 @@ def spotify_control(cmd, arg=''):
         output: the resulting status string
     """
 
-    result = 'stop'
+    result = 'not connected'
 
     if not spotibus:
         return result
@@ -97,17 +126,16 @@ def spotify_control(cmd, arg=''):
     elif cmd == 'previous':
         spotibus.Previous()
 
-    elif cmd == 'load_playlist':
-        if PLAYLISTS:
-            if arg in PLAYLISTS:
-                spotibus.OpenUri( PLAYLISTS[arg] )
-            else:
-                return 'ERROR: playlist not found'
+    # MPRIS Shuffle is an only-readable property.
+    # (https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html)
+    elif cmd == 'random':
+        if arg in ('get', ''):
+            return spotibus.Shuffle
+        elif arg in ('on', 'off'):
+            set_shuffle(arg)
+            return spotibus.Shuffle
         else:
-            return 'ERROR: Spotify playlist not available'
-
-    elif cmd == 'get_playlists':
-        return list( PLAYLISTS.keys() )
+            return f'error with \'random {arg}\''
 
     sleep(.25)
     result = {  'Playing':  'play',

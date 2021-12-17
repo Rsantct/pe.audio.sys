@@ -25,8 +25,6 @@
 #
 # .player_metadata  'w'     Stores the current player metadata
 #
-# .player_state     'w'     Stores the current playback state
-#
 
 from os.path import expanduser, exists, getsize
 import sys
@@ -43,13 +41,19 @@ sys.path.append(MAINFOLDER)
 from  share.miscel                  import  *
 
 from  players_mod.mpd               import  mpd_control,                \
-                                            mpd_meta
+                                            mpd_meta,                   \
+                                            mpd_playlists
+
 from  players_mod.mplayer           import  mplayer_control,            \
-                                            mplayer_get_meta
+                                            mplayer_get_meta,           \
+                                            mplayer_playlists
+
 from  players_mod.librespot         import  librespot_control,          \
                                             librespot_meta
+
 from  players_mod.spotify_desktop   import  spotify_control,            \
-                                            spotify_meta
+                                            spotify_meta,               \
+                                            spotify_playlists
 
 ## Getting sources list
 SOURCES = CONFIG["sources"]
@@ -68,6 +72,10 @@ METATEMPLATE = {
                 'title':        '-',
                 'track_num':    '-',
                 'tracks_tot':   '-' }
+
+# The runtime metadata variable and refresh period in seconds
+CURRENT_MD          = METATEMPLATE.copy()
+CURRENT_MD_REFRESH  = 2
 
 
 def dump_metadata_file(md):
@@ -151,20 +159,19 @@ def player_get_meta():
 
 
 # Generic function to control any player
-def player_control(cmd, arg=''):
+def playback_control(cmd, arg=''):
     """ controls the playback
         returns: 'stop' | 'play' | 'pause'
-        I/O:     .player_state
     """
 
-    newState = 'play'  # default state
-    source   = read_state_from_disk()['input']
+    result = 'stop'
+    source = read_state_from_disk()['input']
 
     # (i) result depends on different source modules:
 
     # MPD
     if source == 'mpd':
-        result = mpd_control(cmd)
+        result = mpd_control(cmd, arg)
 
     # Spotify
     elif source.lower() == 'spotify':
@@ -202,34 +209,80 @@ def player_control(cmd, arg=''):
                 port = 9990
             result = remote_player_control( cmd=cmd, arg=arg, host=host, port=port )
 
-    # A generic source without a player module
-    else:
-        result = 'stop'
+    return result
 
-    # (fix newState to a valid value if a module answer was wrong)
-    if result in ('stop', 'play', 'pause'):
-        newState = result
-    else:
-        newState = 'stop'  # default state
+
+# Manage playlists
+def playlists_control(cmd, arg):
+    """ works with:
+        - Spotify Desktop
+        - MPD
+    """
+
+    result = []
+    source = read_state_from_disk()['input']
+
+    if source == 'mpd':
+        result = mpd_playlists(cmd, arg)
+
+    elif source == 'spotify':
+
+        if   SPOTIFY_CLIENT == 'desktop':
+            result = spotify_playlists(cmd, arg)
+
+    elif source == 'cd':
+        result = mplayer_playlists(cmd=cmd, arg=arg, service='cdda')
 
     return result
 
 
+# control of random mode / shuffle in some players
+def random_control(arg):
+
+    result = 'n/a'
+    source = read_state_from_disk()['input']
+
+    if source == 'mpd':
+        result = mpd_control('random', arg)
+
+    elif source == 'spotify':
+
+        if   SPOTIFY_CLIENT == 'desktop':
+            result = spotify_control('random', arg)
+        elif SPOTIFY_CLIENT == 'librespot':
+            result = librespot_control('random', arg)
+
+    return result
+
+
+# Getting all info in a dict {state, random_mode, metadata}
+def get_all_info():
+    return {
+            'state':        playback_control( 'state' ),
+            'random_mode':  random_control('get'),
+            'metadata':     CURRENT_MD,
+            'discid':       read_cdda_info_from_disk()['discid']
+            }
+
+
 # auto-started when loading this module
 def init():
-    """ This init function will
-        - Launch the 'store_meta' thread, see below.
-        - Also will reset the .player_state file to 'pause'.
+    """ This init function will thread the 'store_meta' LOOP forever, which
+        updates:
+            - the global runtime variable CURRENT_MD,
+            - the metadata disk file.
     """
-    def store_meta(timer=2):
+
+    def store_meta(period=2):
+        global CURRENT_MD
         while True:
-            md = player_get_meta()
-            dump_metadata_file( md )
-            sleep(timer)
+            CURRENT_MD = player_get_meta()
+            dump_metadata_file( CURRENT_MD )
+            sleep(period)
 
     # Loop storing metadata
-    meta_timer = 2
-    meta_loop = threading.Thread( target=store_meta, args=(meta_timer,) )
+    period = CURRENT_MD_REFRESH
+    meta_loop = threading.Thread( target=store_meta, args=(period,) )
     meta_loop.start()
 
 
@@ -251,29 +304,29 @@ def do(cmd_phrase):
         # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
         arg = ' '.join(chunks[1:])
 
-    # PLAYBACK STATE
-    if cmd == 'state':
-        result = player_control( cmd )
+    # PLAYBACK CONTROL / STATE
+    if cmd in ('stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff', 'state'):
+        result = playback_control( cmd )
+
+    # RANDOM MODE
+    elif cmd == 'random_mode':
+        result = random_control(arg)
 
     # Getting METADATA
     elif cmd == 'get_meta':
-        result = read_metadata_from_disk()
+        result = CURRENT_MD
+
+    # Getting all info in a dict {state, random_mode, metadata}
+    elif cmd == 'get_all_info':
+        result = get_all_info()
 
     # PLAYLISTS
-    elif cmd == 'load_playlist':
-        result = player_control( cmd, arg )
-    elif cmd == 'get_playlists':
-        # (currently only works with Spotify playlists file)
-        result = player_control( cmd )
+    elif '_playlist' in cmd:
+        result = playlists_control( cmd, arg )
 
-    # PLAYBACK CONTROL. (i) Some commands need to be adequated later,
-    # e.g. Mplayer does not understand 'previous', 'next'
-    elif cmd in ('stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff'):
-        result = player_control( cmd )
-
-    # Special command for DISK TRACK playback
+    # Special command for DISC TRACK playback
     elif cmd == 'play_track':
-        result = player_control( cmd, arg )
+        result = playback_control( cmd, arg )
 
     # EJECTS unconditionally the CD tray
     elif cmd == 'eject':

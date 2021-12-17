@@ -32,15 +32,16 @@
 #   }
 #
 
-import sys
-from os.path import expanduser
+import  discid
+import  musicbrainzngs as mz
+import  json
+import  sys
+from    os.path import expanduser
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import Fmt, CONFIG
-import discid
-import musicbrainzngs as mz
-import json
+from    share.miscel import Fmt, CONFIG, CDDA_INFO_PATH
+
 
 ## cdrom device to use
 if 'cdrom_device' in CONFIG:
@@ -56,12 +57,9 @@ except:
     CD_JACK_PNAME = 'mplayer_cdda'
 
 # cdda info template with a fake track #1
-CDDA_INFO_TEMPLATE = { 'artist': '-', 'album': '-',
-                       '1': {'title': '-', 'length': '00:00.00'} }
-
-
-def cdda_info_template():
-    return CDDA_INFO_TEMPLATE
+CDDA_INFO_TEMPLATE = { 'discid':'', 'artist': '-', 'album': '-',
+                       '1':      {'title': '-', 'length': '00:00.00'}
+                     }
 
 
 def mmsscc2msec(mmsscc):
@@ -88,7 +86,7 @@ def msec2string(msec):
     return f'{mm}:{ss}'
 
 
-def get_disc_metadata(device=CDROM_DEVICE):
+def read_disc_metadata(device=CDROM_DEVICE):
 
     def simple_md(disc):
         """ For disc not found, we can derive the tracks and tracks length
@@ -116,6 +114,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
             trackLen = ( track_sectors[i] - track_sectors[i - 1] ) / 75
             md[str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
                                  'length': msec2string(trackLen * 1e3)}
+
         return md
 
     # will complete md with info retrieved from musicbrainz
@@ -125,6 +124,9 @@ def get_disc_metadata(device=CDROM_DEVICE):
 
     try:
         disc = discid.read(device)
+        md['discid'] = disc.id
+        global CDDA_DISCID
+        CDDA_DISCID  = disc.id
     except:
         print('(cdaa.py) not CDDA found')
         return md
@@ -170,7 +172,7 @@ def get_disc_metadata(device=CDROM_DEVICE):
         else:
             track_list   = []
 
-    # finally, lets complete our track list structure inside the 'md' template
+    # Lets complete our track list structure inside the 'md' template
     for pos, track in enumerate( track_list ):
 
         # Retrieve track length
@@ -199,15 +201,14 @@ def get_disc_metadata(device=CDROM_DEVICE):
     return md
 
 
-def save_disc_metadata(device=CDROM_DEVICE,
-                       fname=f'{UHOME}/pe.audio.sys/.cdda_info'):
-    with open(fname, 'w') as f:
-        f.write( json.dumps( get_disc_metadata(device) ) )
+def save_disc_metadata(device=CDROM_DEVICE):
+    with open(CDDA_INFO_PATH, 'w') as f:
+        f.write( json.dumps( read_disc_metadata(device) ) )
 
 
 def make_pls():
 
-    md = get_disc_metadata()
+    md = read_disc_metadata()
 
     pls =   '<?xml version="1.0" encoding="UTF-8"?>\n'
     pls +=  '<playlist version="1" xmlns="http://xspf.org/ns/0/">\n'
@@ -236,7 +237,7 @@ def make_pls():
 
 def make_m3u():
 
-    md = get_disc_metadata()
+    md = read_disc_metadata()
 
     m3u =   '#EXTM3U\n'
 

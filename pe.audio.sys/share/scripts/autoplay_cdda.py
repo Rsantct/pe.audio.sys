@@ -28,18 +28,22 @@
 # UDEV  [5336.857159] change   /devices/pci0000:00/0000:00:1f.1/ata1/host0/target0:0:0/0:0:0:0/block/sr0 (block)
 # UDEV  [5358.454256] change   /devices/pci0000:00/0000:00:1d.7/usb5/5-6/5-6:1.0/host4/target4:0:0/4:0:0:0/block/sr1 (block)
 
-import os
-import sys
-from time import sleep
-import pyudev
-from subprocess import check_output, Popen
-from json import loads as json_loads
+import  os
+import  sys
+from    time import sleep
+import  pyudev
+from    subprocess import check_output, Popen
+from    json import loads as json_loads
 
 UHOME = os.path.expanduser("~")
-ME = __file__.split('/')[-1]
-
 sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import send_cmd
+
+from share.miscel                       import send_cmd, CDDA_INFO_PATH
+from share.services.players_mod.cdda    import save_disc_metadata
+
+
+ME    =  __file__.split('/')[-1]
+
 
 # Some distros as Ubuntu 18.04 LTS doesn't have
 # libcdio-dev >=2.0 as required from pycdio.
@@ -79,17 +83,27 @@ def check_for_CDDA(d):
             sleep(.5)
             send_cmd( 'player play',     sender=ME, verbose=True )
 
-    # Verbose if not CDDA
+
+    # Verbose if not CDDA detected
     try:
         # $ cdinfo -a # will output: no_disc | data_disc | xx:xx.xx
         tmp = check_output( f'cdinfo -a -d {CDROM}'.split() ).decode().strip()
+
         if ':' in tmp:
             print( f'({ME}) trying to play the CD Audio disk' )
+            # autoplay the disc
             autoplay_CDDA()
+
         elif 'no_disc' in tmp:
             print( f'({ME}) no disc' )
+            # flushing .cdda_info
+            save_disc_metadata()
+
         elif 'data_disc' in tmp:
             print( f'({ME}) data disc' )
+            # flushing .cdda_info
+            save_disc_metadata()
+
     except:
         print( f'({ME}) This script needs \'cdtool\' (command line cdrom tool)' )
 
