@@ -28,6 +28,14 @@
 # UDEV  [5336.857159] change   /devices/pci0000:00/0000:00:1f.1/ata1/host0/target0:0:0/0:0:0:0/block/sr0 (block)
 # UDEV  [5358.454256] change   /devices/pci0000:00/0000:00:1d.7/usb5/5-6/5-6:1.0/host4/target4:0:0/4:0:0:0/block/sr1 (block)
 
+
+# Some distros as Ubuntu 18.04 LTS doesn't have
+# libcdio-dev >=2.0 as required from pycdio.
+#import cdio, pycdio
+# (i) pycdio dependencies:
+#       python-dev libcdio-dev libiso9660-dev swig pkg-config
+# Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
+
 import  os
 import  sys
 from    time import sleep
@@ -41,16 +49,10 @@ sys.path.append(f'{UHOME}/pe.audio.sys')
 from share.miscel                       import send_cmd, CDDA_INFO_PATH
 from share.services.players_mod.cdda    import save_disc_metadata
 
-
 ME    =  __file__.split('/')[-1]
 
-
-# Some distros as Ubuntu 18.04 LTS doesn't have
-# libcdio-dev >=2.0 as required from pycdio.
-#import cdio, pycdio
-# (i) pycdio dependencies:
-#       python-dev libcdio-dev libiso9660-dev swig pkg-config
-# Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
+# OPTIONAL USER CONFIG
+USE_CD_MACRO = False
 
 
 def find_cd_macro():
@@ -72,16 +74,25 @@ def check_for_CDDA(d):
     CDROM = f'/dev/{srDevice}'
 
     def autoplay_CDDA():
-        # In order to update the web page's inputs selector when used
-        # as macros manager, will try to order a prepared CD macro:
-        mName = find_cd_macro()
-        send_cmd( f'aux run_macro {mName}' )
-        if mName == '-':
-            send_cmd( 'player pause',    sender=ME, verbose=True )
-            sleep(.5)
+
+        cd_macro_found = False
+
+        if USE_CD_MACRO:
+            mName = find_cd_macro()
+            if mName == '-':
+                cd_macro_found = True
+                send_cmd( f'aux run_macro {mName}' )
+
+        if not cd_macro_found:
+            send_cmd( 'player pause', sender=ME, verbose=True )
+            send_cmd( 'aux warning clear', sender=ME, verbose=True, timeout=1 )
+            send_cmd( 'aux warning set disc loading ...', sender=ME, verbose=True, timeout=1 )
+            send_cmd( 'aux warning expire 10', sender=ME, verbose=True, timeout=1 )
             send_cmd( 'preamp input cd', sender=ME, verbose=True )
             sleep(.5)
-            send_cmd( 'player play',     sender=ME, verbose=True )
+            # (!) Ordering 'play' will BLOCK the server while
+            #     waiting for the disc to be loaded
+            send_cmd( 'player play',                      sender=ME, verbose=True )
 
 
     # Verbose if not CDDA detected
