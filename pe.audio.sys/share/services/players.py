@@ -210,17 +210,21 @@ def playback_control(cmd, arg=''):
 
 # Manage playlists
 def playlists_control(cmd, arg):
-    """ works with Spotify playlists file and MPD native playlists
+    """ works with:
+        - Spotify Desktop
+        - MPD
     """
 
-    source = read_state_from_disk()['input']
     result = []
+    source = read_state_from_disk()['input']
 
     if source == 'mpd':
         result = mpd_playlists(cmd, arg)
 
     elif source == 'spotify':
-        result = spotify_playlists(cmd, arg)
+
+        if   SPOTIFY_CLIENT == 'desktop':
+            result = spotify_playlists(cmd, arg)
 
     elif source == 'cd':
         result = mplayer_playlists(cmd=cmd, arg=arg, service='cdda')
@@ -231,16 +235,20 @@ def playlists_control(cmd, arg):
 # control of random mode / shuffle in some players
 def random_control(arg):
 
+    result = 'n/a'
     source = read_state_from_disk()['input']
 
     if source == 'mpd':
-        return  mpd_control('random', arg)
+        result = mpd_control('random', arg)
 
     elif source == 'spotify':
-        return spotify_control('random', arg)
 
-    else:
-        return 'n/a'
+        if   SPOTIFY_CLIENT == 'desktop':
+            result = spotify_control('random', arg)
+        elif SPOTIFY_CLIENT == 'librespot':
+            result = librespot_control('random', arg)
+
+    return result
 
 
 # Getting all info in a dict {state, random_mode, metadata}
