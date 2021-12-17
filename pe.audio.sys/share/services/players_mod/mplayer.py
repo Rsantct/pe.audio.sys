@@ -226,9 +226,12 @@ def playing_status(service=''):
     sleep(.1)
 
     last_lines = read_last_lines( f'{MAINFOLDER}/.{service}_events', nlines=5)
+    # will result based on the last ANS_pause line read
     for line in last_lines:
-        if 'ANS_pause=yes' == line:
+        if line == 'ANS_pause=yes':
             result = 'pause'
+        elif line == 'ANS_pause=no':
+            result = 'play'
 
     return result
 
