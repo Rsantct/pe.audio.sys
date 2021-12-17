@@ -10,5 +10,5 @@ server_port: 9981
 machines:
 
     pe.audio.sys at salon:      xx:xx:xx:xx:xx:xx
-    another PC:                 xx:xx:xx:xx:xx:xx
+    --:                         xx:xx:xx:xx:xx:xx
 

@@ -47,6 +47,7 @@ from time import sleep
 import subprocess as sp
 import yaml
 
+ME = __file__.split('/')[-1]
 
 # Mplayer options:
 options = '-quiet -nolirc -slave -idle'
@@ -72,10 +73,10 @@ redirection_path = f'{UHOME}/pe.audio.sys/.istreams_events'
 def load_url(url):
     try:
         command = ('loadfile ' + url + '\n' )
-        print( f'(istreams.py) trying to load \'{url}\'' )
+        print( f'({ME}) trying to load \'{url}\'' )
         with open( input_fifo, 'w') as f:
             f.write(command)
-        # print(command) # DEBUG
+        sleep(.5)
         return True
     except:
         return False
@@ -83,28 +84,34 @@ def load_url(url):
 
 def select_by_name(preset_name):
     """ loads a stream by its preset name """
-    for preset, dict in presets.items():
-        if dict['name'] == preset_name:
-            load_url( dict['url'] )
-            return True
-    print( f'(istreams.py) preset \'{preset_name}\' not found' )
+    for pnum, pdict in presets.items():
+        if type(pdict) == dict and 'name' in pdict and pdict["name"] == preset_name:
+            if 'url' in pdict:
+                if load_url( pdict["url"] ):
+                    return True
+                else:
+                    print( f'({ME}) error loading: \'{pdict["url"]}\'' )
+                    return False
+            else:
+                print( f'({ME}) url not found in preset: \'{preset_name}\'' )
+                return False
+    print( f'({ME}) preset \'{preset_name}\' not found' )
     return False
 
 
 def select_by_preset(preset_num):
     """ loads a stream by its preset number """
-    try:
-        load_url( presets[ int(preset_num) ]['url'] )
+    if load_url( presets[ int(preset_num) ]["url"] ):
         return True
-    except:
-        print( f'(istreams.py) error in preset # {preset_num}' )
+    else:
+        print( f'({ME}) error in preset # {preset_num}' )
         return False
 
 
 def start():
     tmp = check_Mplayer_config_file(profile='istreams')
     if tmp != 'ok':
-        print( f'{Fmt.RED}(istreams.py) {tmp}{Fmt.END}' )
+        print( f'{Fmt.RED}({ME}) {tmp}{Fmt.END}' )
         sys.exit()
     cmd = f'mplayer {options} -profile istreams \
            -input file={input_fifo}'
@@ -126,7 +133,7 @@ if __name__ == '__main__':
         with open(config_path, 'r') as f:
             presets = yaml.safe_load(f)
     except:
-        print( '(istreams.py) ERROR reading \'config/istreams.yml\'' )
+        print( f'({ME}) ERROR reading \'config/istreams.yml\'' )
         sys.exit()
 
     ### Reading the command line

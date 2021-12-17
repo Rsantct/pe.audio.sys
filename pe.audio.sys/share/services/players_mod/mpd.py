@@ -19,20 +19,13 @@
 """ A MPD interface module for players.py
 """
 import os
+import sys
 import mpd
 
 UHOME = os.path.expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-
-# Auxiliary function to format hh:mm:ss
-def timeFmt(x):
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
+from share.miscel import timesec2string as timeFmt
 
 
 def curr_playlist_is_cdda( port=6600 ):
@@ -50,51 +43,82 @@ def curr_playlist_is_cdda( port=6600 ):
     return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
 
 
-def mpd_control( query, port=6600 ):
+def mpd_playlists(cmd, arg='', port=6600):
+
+    result = ''
+
+    c = mpd.MPDClient()
+    try:
+        c.connect('localhost', port)
+    except:
+        return f'ERROR connecting to MPD at port {port}'
+
+    if cmd == 'get_playlists':
+        result = [ x['playlist'] for x in c.listplaylists() ]
+
+    elif cmd == 'load_playlist':
+        c.load(arg)
+        result = f'ordered loading \'{arg}\''
+
+    elif cmd == 'clear_playlist':
+        c.clear()
+        result = 'playlist cleared'
+
+    return result
+
+
+def mpd_control( query, arg='', port=6600 ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
         Return:     playback state string
     """
 
-    def state():
+    def state(dummy_arg):
         return c.status()['state']
 
-    def stop():
+    def stop(dummy_arg):
         c.stop()
         return c.status()['state']
 
-    def pause():
+    def pause(dummy_arg):
         c.pause()
         return c.status()['state']
 
-    def play():
+    def play(dummy_arg):
         c.play()
         return c.status()['state']
 
-    def next():
+    def next(dummy_arg):
         try:
             c.next()  # avoids error if some playlist has wrong items
         except:
             pass
         return c.status()['state']
 
-    def previous():
+    def previous(dummy_arg):
         try:
             c.previous()
         except:
             pass
         return c.status()['state']
 
-    def rew():  # for REW and FF will move 30 seconds
+    def rew(dummy_arg):  # for REW and FF will move 30 seconds
         c.seekcur('-30')
         return c.status()['state']
 
-    def ff():
+    def ff(dummy_arg):
         c.seekcur('+30')
         return c.status()['state']
 
-    def listplaylists():
-        return [ x['playlist'] for x in c.listplaylists() ]
+    def random(arg):
+        if arg == 'on':
+            c.random(1)
+        elif arg == 'off':
+            c.random(0)
+        elif arg == 'toggle':
+            c.random( {'0':1, '1':0}[ c.status()['random'] ])
+        mode = c.status()['random']
+        return {'0':'off', '1':'on'}[mode]
 
 
     c = mpd.MPDClient()
@@ -103,16 +127,19 @@ def mpd_control( query, port=6600 ):
     except:
         return 'stop'
 
-    result = {  'state':            state,
-                'stop':             stop,
-                'pause':            pause,
-                'play':             play,
-                'next':             next,
-                'previous':         previous,
-                'rew':              rew,
-                'ff':               ff,
-                'get_playlists':    listplaylists
-             }[query]()
+    try:
+        result = {  'state':            state,
+                    'stop':             stop,
+                    'pause':            pause,
+                    'play':             play,
+                    'next':             next,
+                    'previous':         previous,
+                    'rew':              rew,
+                    'ff':               ff,
+                    'random':           random
+                 }[query](arg)
+    except:
+        result = f'erron with \'{query}\''
 
     c.close()
     return result

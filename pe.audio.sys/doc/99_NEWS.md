@@ -52,6 +52,7 @@ See the `doc/` folder for detailed information about this.
 ## May 2021, version 1.0b
 
 - New documentation for remote pe.audio.sys sources listening.
+
 - New Firewire Audio Interfaces support.
 
 ## Sep 2021, version 1.0c
@@ -61,3 +62,12 @@ See the `doc/` folder for detailed information about this.
 ## Oct 2021, version 1.0d
 
 - New folder layout for log & config files, **PLEASE** move your `xxx.yml` files to `pe.audio.sys/config/`, as well your `.asound.XXX` or `.ffado.GUID` files but without the leading `.`(dot)
+
+## Dec 2021, version 1.0e
+
+- The state file becomes json instead of yaml in order to improve parsing times about 30% faster. (See FAQ for help on converting `.state` to json)
+- Playback control is forwarded to a remote pe.audio.sys when listening to remote sources.
+- New warning temporary message internal facilities.
+- New playlist selector for MPD, Spotify
+- New track selector for CD
+- New random playback control

@@ -270,29 +270,29 @@ def run_scripts(mode='start'):
 
 
 def check_state_file():
-    """ a sudden power break out can damage .state.yml  :-/
+    """ a sudden power break out can damage the .state file :-/
     """
-    state_file      = f'{MAINFOLDER}/.state.yml'
+    state_file      = STATE_PATH
     state_log_file  = f'{LOG_FOLDER}/state.log'
 
     def recover_state(reason='damaged'):
         sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
-        print(f'({ME}) ERROR \'state.yml\' was {reason}, ' +
-                'it has been restored from \'.state.yml.BAK\'')
+        print(f'{Fmt.BOLD}({ME}) ERROR \'.state\' file was {reason}, ' +
+              f'it has been restored from \'.state.BAK\'{Fmt.END}')
         now = ctime(time())
         with open(state_log_file, 'a') as f2:
-            f2.write(f'{now}: \'state.yml\' was {reason} and restored.\n')
+            f2.write(f'{now}: \'.state\' was {reason} and restored.\n')
 
     try:
         with open(state_file, 'r') as f:
             state = f.read()
 
-            # if the file is ok, lets backup it
-            if 'xo_set:' in state:
+            # if last field is ok, let's assume the whole file is ok
+            if '"xo_set":' in state:
                 sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
-                print(f'({ME}) (i) .state.yml copied to .state.yml.BAK')
+                print(f'{Fmt.BLUE}({ME}) (i) .state copied to .state.BAK{Fmt.END}')
 
-            # if it is damaged, lets recover from backup, and log to state.log
+            # file damaged, lets recover from backup, and log to state.log
             else:
                 recover_state(reason='damaged')
     except:
@@ -337,7 +337,7 @@ if __name__ == "__main__":
         sys.stdout = flog
         sys.stderr = flog
 
-    # Lets check STATE FILE '.state.yml'
+    # Lets check STATE FILE '.state'
     check_state_file()
 
     # STOPPING:

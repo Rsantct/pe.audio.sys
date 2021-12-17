@@ -29,7 +29,7 @@
 import sys
 import os
 from   subprocess import Popen, check_output
-import yaml
+import json
 import numpy as np
 from   time import sleep
 import threading
@@ -69,7 +69,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
         # Lets use LU_M (LU Momentary) from .loudness_monitor
         try:
             with open(LDMON_PATH, 'r') as f:
-                d = yaml.safe_load( f )
+                d = json.loads( f.read() )
                 LU_M = d["LU_M"]
         except:
             LU_M = 0.0
@@ -285,7 +285,7 @@ class Preamp(object):
         # The available inputs
         self.inputs = CONFIG["sources"]
         # The state dictionary
-        self.state = yaml.safe_load( open(STATE_PATH, 'r') )
+        self.state = read_state_from_disk()
         self.state["convolver_runs"] = bf_is_running()
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
@@ -475,7 +475,7 @@ class Preamp(object):
     def save_state(self):
         self.state["convolver_runs"] = bf_is_running()
         with open(STATE_PATH, 'w') as f:
-            yaml.safe_dump( self.state, f, default_flow_style=False )
+            f.write( json.dumps( self.state ) )
 
 
     def get_state(self, *dummy):

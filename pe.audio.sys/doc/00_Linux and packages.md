@@ -77,11 +77,12 @@ Also install the following packages on your linux installation:
 
     sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins  \
                      libjack-jackd2-dev libsamplerate0 libsamplerate0-dev  \
-                     mpd mpc gmpc ncmpcpp mplayer cdtool  mc \
+                     mpd mpc gmpc ncmpcpp mplayer cdtool  mc jq \
                      ecasound ecatools python-ecasound ladspa-sdk  \
                      fil-plugins zita-ajbridge zita-njbridge apache2 libapache2-mod-php
 
-(i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser.
+(i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser,
+as well the tool `jq` can be useful to read json files from command line.
 
 
 Disable default MPD setup:

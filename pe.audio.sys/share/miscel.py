@@ -41,17 +41,19 @@ except:
           f'\'config.yml\'{Fmt.END}')
     exit()
 
-LOG_FOLDER          = f'{MAINFOLDER}/log'
 LOUDSPEAKER         = CONFIG['loudspeaker']
+LOG_FOLDER          = f'{MAINFOLDER}/log'
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-STATE_PATH          = f'{MAINFOLDER}/.state.yml'
+MACROS_FOLDER       = f'{MAINFOLDER}/macros'
+STATE_PATH          = f'{MAINFOLDER}/.state'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
-BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
-MACROS_FOLDER       = f'{MAINFOLDER}/macros'
+PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
+CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
+BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
+BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 if 'amp_manager' in CONFIG:
     AMP_MANAGER     = CONFIG['amp_manager']
@@ -138,6 +140,19 @@ class Fmt:
     UNDERLINE       = '\033[4m'
     BLINK           = '\033[5m'
     END             = '\033[0m'
+
+
+# Format a given float (seconds) to a string "hh:mm:ss"
+def timesec2string(x):
+    """ in:     x seconds   (float)
+        out:    'hh:mm:ss'  (string)
+    """
+    # x must be float
+    h = int( x / 3600 )         # hours
+    x = int( round(x % 3600) )  # updating x to reamining seconds
+    m = int( x / 60 )           # minutes from the new x
+    s = int( round(x % 60) )    # and seconds
+    return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
 # Reads the FS to be used by Brutefir
@@ -592,17 +607,29 @@ def kill_bill(pid=0):
     sleep(.5)
 
 
-# Gets the selected source from a pe.audio.sys server at <addr>
-def get_remote_selected_source(addr, port=9990):
-    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
-    """
-    source = ''
-    ans = send_cmd('state', host=addr, port=port, timeout=1)
-    try:
-        source = json_loads(ans)["input"]
-    except:
-        pass
-    return source
+# Function an wrappers for reading json dicts from disk files
+def read_json_from_file(fname):
+    d = {}
+    if fname == STATE_PATH:
+        d = {'input':'none', 'level':'0.0'}
+
+    # It is possible to fail while the file is updating :-/
+    times = 5
+    while times:
+        try:
+            with open( fname, 'r') as f:
+                d = json_loads( f.read() )
+            break
+        except:
+            times -= 1
+        sleep(.25)
+    return d
+def read_state_from_disk():
+    return read_json_from_file(STATE_PATH)
+def read_metadata_from_disk():
+    return read_json_from_file(PLAYER_META_PATH)
+def read_cdda_info_from_disk():
+    return read_json_from_file(CDDA_INFO_PATH)
 
 
 # Read the last line from a large file, efficiently.
@@ -613,20 +640,86 @@ def read_last_line(filename=''):
     # and move backwards to find a newline.
     # Note that the file has to be opened in binary mode, otherwise,
     # it will be impossible to seek from the end.
+    #
+    # https://python-reference.readthedocs.io/en/latest/docs/file/seek.html
+    # f.seek( offset, whence )
 
     if not filename:
         return ''
 
     try:
         with open(filename, 'rb') as f:
-            f.seek(-2, os.SEEK_END)
-            while f.read(1) != b'\n':
+            f.seek(-2, os.SEEK_END)             # Go to -2 bytes from file end
+
+            while f.read(1) != b'\n':           # Repeat reading until find \n
                 f.seek(-2, os.SEEK_CUR)
-            last_line = f.readline().decode()
+
+            last_line = f.readline().decode()   # readline reads until \n
+
         return last_line.strip()
 
     except:
         return ''
+
+
+# Read the last N lines from a large file, efficiently.
+def read_last_lines(filename='', nlines=1):
+    # source:
+    # https://stackoverflow.com/questions/46258499/read-the-last-line-of-a-file-in-python
+    # For large files it would be more efficient to seek to the end of the file,
+    # and move backwards to find a newline.
+    # Note that the file has to be opened in binary mode, otherwise,
+    # it will be impossible to seek from the end.
+    #
+    # https://python-reference.readthedocs.io/en/latest/docs/file/seek.html
+    # f.seek( offset, whence )
+
+    if not filename:
+        return ['']
+
+    try:
+        with open(filename, 'rb') as f:
+            f.seek(-2, os.SEEK_END)
+
+            c = nlines
+            while c:
+                if f.read(1) == b'\n':
+                    c -= 1
+                f.seek(-2, os.SEEK_CUR)
+
+            lines = f.read().decode()[2:].replace('\r', '').split('\n')
+
+        return [x.strip() for x in lines if x]
+
+    except:
+        return ['']
+
+
+# A tool to flush some special temporary files (!) BE CAREFUL WITH THIS
+def force_to_flush_file(fname='', content=''):
+
+    bare_fname = fname.replace(f'{MAINFOLDER}/', '')
+
+    if 'pe.audio.sys' not in fname:
+        return f'NOT allowed flushing outside pe.audio.sys'
+
+    if bare_fname.replace(MAINFOLDER, '').count('/') >= 1:
+        return f'NOT allowed flushing deeper than \'{MAINFOLDER}\''
+
+    if not bare_fname.startswith('.'):
+        return f'ONLY allowed flushing dot-hidden files'
+
+    # It is possible to fail while the file is updating :-/
+    times = 5
+    while times:
+        try:
+            with open( fname, 'w') as f:
+                f.write(content)
+            return 'done'
+        except:
+            times -= 1
+        sleep(.2)
+    return 'ERROR flushing \'fname\''
 
 
 # Validate if a given string is a valid IP address
@@ -645,6 +738,19 @@ def get_my_ip():
         return tmp.split()[0]
     except:
         return ''
+
+
+# Gets the selected source from a pe.audio.sys server at <addr>
+def get_remote_selected_source(addr, port=9990):
+    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
+    """
+    remote_source = ''
+    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
+    try:
+        remote_source = json_loads(remote_state)["input"]
+    except:
+        pass
+    return remote_source
 
 
 # Gets data from a remoteXXXXX defined source
@@ -686,7 +792,7 @@ def get_remote_source_info():
 
 
 # EQ curves for tone and loudness contour are mandatory
-# (i) kept last because it depends on the find_eq_curves() funtcion
+# (i) kept last because it depends on the find_eq_curves() function
 EQ_CURVES   = find_eq_curves()
 if not EQ_CURVES:
     print( '(core) ERROR loading EQ_CURVES from share/eq/' )

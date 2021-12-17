@@ -40,31 +40,40 @@ def main():
     # Pausing the current player
     send_cmd( f'player pause', sender=ME, verbose=True )
 
+    # Warning message
+    send_cmd( f'aux warning clear' )
+    send_cmd( f'aux warning set tuning takes a while ...' )
+
     # Tune the radio station (Mplayer jack ports will dissapear for a while)
     Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} preset {str(preset)}'
             .split() )
+    # Wait a bit for current ports to disappear
+    sleep(3)
 
-    # Wait a bit to Mplayer ports to dissapear from jack while loading a new stream.
-    sleep(2)
-
-    # Waiting for mplayer ports to re-emerge
-    # (i) Some radio streams take a while to be loaded by Mplayer
-    if not wait4ports( f'mplayer_{mplayer_profile}', timeout=45 ):
-        print(f'{Fmt.RED}(macros) ERROR jack ports \'mplayer_{mplayer_profile}\' not found, '
-              f'bye :-/{Fmt.RED}')
+    # Check for Mplayer ports to re-emerge
+    # (some streaming urls take several seconds to load)
+    if not wait4ports( f'mplayer_{mplayer_profile}', timeout=45):
+        print(f'{Fmt.RED}({ME}) ERROR jack ports \'mplayer_{mplayer_profile}\' not found, '
+              f'bye :-/{Fmt.END}')
+        # Warning message
+        send_cmd( f'aux warning clear' )
         sys.exit(-1)
+
     sleep(.5)
+
+    # Warning message
+    send_cmd( f'aux warning clear' )
 
     # Switching the preamp input
     send_cmd( f'input {preinput}', sender=ME, verbose=True )
     sleep(.5)
 
-    # LU level compensation reference
-    send_cmd( f'lu_offset {lu_offset}', sender=ME, verbose=True )
-    sleep(.5)
-
     # Loudness compensation on|off
     send_cmd( f'loudness {loudness_comp}', sender=ME, verbose=True )
+    sleep(.5)
+
+    # LU level compensation reference
+    send_cmd( f'lu_offset {lu_offset}', sender=ME, verbose=True )
     sleep(.5)
 
     # XO

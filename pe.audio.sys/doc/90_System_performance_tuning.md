@@ -98,7 +98,7 @@ For instance, having a Brutefir partion size of 2048 (`filter_length: 2048,8;  #
 These are not too bad results, even for watching to movies and videos.
 
 
-Same results can be obtained by using a **Rapspberry Pi 3** with the same configuration, but CPU% loading reaches >65%, wich is near the dangeous limit and you will probably have no CPU headroom to run MPD and other stuff..., but leaving Brutefir partitioning you can get ride off.
+Same results can be obtained by using a **Rapspberry Pi 3** with the same configuration, but CPU% loading reaches >65%, wich is near the dangerous limit and you will probably have no CPU headroom to run MPD and other stuff..., but leaving Brutefir partitioning you can get ride off.
 
 Anyway a Raspberry Pi 3 is not a good option for 3 way XOVER filtering + DRC, but 2 way + DRC works fine.
 

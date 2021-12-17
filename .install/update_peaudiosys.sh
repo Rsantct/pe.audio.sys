@@ -18,7 +18,7 @@ ORIG=$HOME/tmp/pe.audio.sys-$branch
 if [ ! -d $ORIG ]; then
     echo
     echo ERROR: not found $ORIG
-    echo must indicated a branch name available at ~/tmp/pe.audio.sys-xxx:
+    echo must indicate a branch name suffix as available at ~/tmp/pe.audio.sys-xxx:
     echo "    update_peaudiosys.sh master|testing|xxx"
     echo
     exit 0
@@ -149,13 +149,13 @@ else
 
     # MAIN
     cd "$HOME"/pe.audio.sys
-    cp .state.yml.sample         .state.yml
+    cp .state.sample             .state
     cd "$HOME"/pe.audio.sys/config
     cp config.yml.sample         config.yml
     cp DVB-T.yml.sample          DVB-T.yml        >/dev/null 2>&1
     cp istreams.yml.sample       istreams.yml     >/dev/null 2>&1
 
-    echo "(i) New config.yml and .state.yml files NEEDS to be adapted"
+    echo "(i) New config.yml and .state files NEEDS to be adapted"
 fi
 
 ########################################################################

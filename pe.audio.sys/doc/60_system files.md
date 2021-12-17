@@ -13,11 +13,19 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
           |
      ____/
     /
+    |-- start.py            Startup or shutdown the whole system
+    |
     |-- README.md           This file
     |
-    |-- pasysctrl.hlp       Help on system control commands
+    |-- pasysctrl.hlp       Plain text about help on system control commands
     |
-    |-- .state.yml          Keeps the run-time system state
+    |-- .state              Keeps the run-time system state
+    |
+    |-- log/                System log files
+    |   |
+    |   |-- start.log
+    |   |-- peaudiosys_cmd.log
+    |   |-- ...
     |
     |-- config/
     |   |
@@ -26,8 +34,6 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |   |-- xxxx.yml        Other configuration files
     |   |
     |   |-- asound.XXX      ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
-    |
-    |-- start.py            Startup or shutdown the whole system
     |
     |-- macros/             End user general purpose macro scripts (e.g. web interface buttons)
     |
@@ -319,7 +325,7 @@ If you want not to use any xo filter at all, you simply do:
 
 - Leave blank `xo:` inside `on_init` section from `config.yml` 
 
-- Leave blank `xo_set:` inside `.state.yml`
+- Set  `"xo_set":""` inside the `.state` file
 
 - Omit any `xo....pcm` file inside your loudspeaker folder.
 

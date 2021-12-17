@@ -58,36 +58,21 @@
 #-----------------------------------------------------------------------
 
 
-import os
-import sys
+from    subprocess import Popen
+import  json
+from    time import sleep
+import  jack
+import  os
+import  sys
 UHOME       = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, CONFIG
-from subprocess import Popen
-import json
-import yaml
-from time import sleep
-import jack
+sys.path.append(f'{UHOME}/pe.audio.sys')
+from    share.miscel import MAINFOLDER, CONFIG, timesec2string, read_last_lines
 
 sys.path.append( os.path.dirname(__file__) )
-import cdda
-
+import  cdda
 
 ME          = __file__.split('/')[-1]
-
-
-# Auxiliary function to format hh:mm:ss
-def timeFmt(x):
-    """ in:     x seconds   (float)
-        out:    'hh:mm:ss'  (string)
-    """
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
 # Aux to convert a given formatted time string "hh:mm:ss.cc" to seconds
@@ -129,12 +114,14 @@ def cdda_load():
         I/O:        .cdda_info (w), a dict with album and tracks
     """
     print( f'({ME}) loading disk ...' )
+
     # Save disk info into a json file
-    cdda.save_disc_metadata(device=cdda.CDROM_DEVICE,
-                            fname=f'{MAINFOLDER}/.cdda_info')
+    cdda.save_disc_metadata()
+
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
     send_cmd(cmd, service='cdda')
+
     # Waiting for the disk to be loaded (usually ~ 5 sec)
     n = 15
     while n:
@@ -166,7 +153,7 @@ def cdda_get_current_track():
             f.write( 'pausing_keep get_time_pos\n' )
         with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
             tmp = f.read().split('\n')
-        for line in tmp[-10:]:
+        for line in tmp[-15:][::-1]:
             if line.startswith('ANS_TIME_POSITION='):
                 return float( line.replace('ANS_TIME_POSITION=', '')
                               .strip() )
@@ -188,10 +175,10 @@ def cdda_get_current_track():
 
     # We need the cd_info tracks list dict
     try:
-        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
+        with open(cdda.CDDA_INFO_PATH, 'r') as f:
             cd_info = json.loads( f.read() )
     except:
-        cd_info = cdda.cdda_info_template()
+        cd_info = cdda.CDDA_INFO_TEMPLATE.copy()
 
     discPos             = get_disc_pos()
     trackNum, trackPos  = calc_track_and_pos(discPos)
@@ -226,21 +213,25 @@ def pre_connect(mode, pname=cdda.CD_JACK_PNAME):
 
 
 # Aux to query Mplayer if paused or playing
-def playing_status(service='cdda'):
+def playing_status(service=''):
     """ Mplayer status: play or pause
     """
+    if not service:
+        return 'n/a'
+
     result = 'play'
 
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( 'pausing_keep_force get_property pause\n' )
-
     sleep(.1)
 
-    with open(f'{MAINFOLDER}/.{service}_events', 'r') as f:
-        tmp = f.read().split('\n')
-    for line in tmp[-2:]:
-        if 'ANS_pause=yes' in line:
+    last_lines = read_last_lines( f'{MAINFOLDER}/.{service}_events', nlines=5)
+    # will result based on the last ANS_pause line read
+    for line in last_lines:
+        if line == 'ANS_pause=yes':
             result = 'pause'
+        elif line == 'ANS_pause=no':
+            result = 'play'
 
     return result
 
@@ -253,6 +244,19 @@ def send_cmd(cmd, service):
     if cmd == 'stop':
         # Mplayer needs a while to report the actual state ANS_pause=yes
         sleep(2)
+
+
+def mplayer_playlists(cmd, arg='', service=''):
+    """ This works only for CDDA
+    """
+    result = []
+    if service == 'cdda':
+        if cmd == 'list_playlist':
+            with open(cdda.CDDA_INFO_PATH, 'r') as f:
+                cd_info = json.loads( f.read() )
+            for tnum in [x for x in cd_info.keys() if x.isdigit()]:
+                result.append( cd_info[tnum]['title'] )
+    return result
 
 
 # MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
@@ -271,7 +275,8 @@ def mplayer_control(cmd, arg='', service=''):
                             'rew',
                             'ff',
                             'play_track',
-                            'eject'     )
+                            'eject'
+                          )
 
     # (i) pe.audio.sys scripts redirects Mplayer stdout & stderr
     #     towards special files:
@@ -294,11 +299,12 @@ def mplayer_control(cmd, arg='', service=''):
     if cmd == 'eject':
         Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
         # Flush .cdda_info
-        with open( f'{MAINFOLDER}/.cdda_info', 'w') as f:
-            f.write( json.dumps( cdda.cdda_info_template() ) )
-        # Flush Mplayer playlist
+        with open( cdda.CDDA_INFO_PATH, 'w') as f:
+            f.write( json.dumps( cdda.CDDA_INFO_TEMPLATE.copy() ) )
+        # Flush Mplayer playlist and player status file
         send_cmd('stop', service)
         return playing_status(service)
+
 
     # Processing ACTION commands (playback control)
     if service == 'istreams':
@@ -339,16 +345,16 @@ def mplayer_control(cmd, arg='', service=''):
             cmd = 'stop'
 
         elif cmd == 'pause' and status == 'play':
-            cmd = 'pause'               # Mplayer will toggle to pause
+            cmd = 'pausing pause'               # Mplayer will toggle to pause
             pre_connect('off')
 
         elif cmd == 'play':
-            # Loading disc if necessary
+            # Loading (and playing) disc if necessary
             if not cdda_is_loaded():
                 cdda_load()
             else:
                 if status == 'pause':
-                    cmd = 'pause'       # Mplayer will toggle to play
+                    cmd = 'pausing_togle pause'       # Mplayer will toggle to play
                 else:
                     cmd = ''
 
@@ -378,40 +384,8 @@ def mplayer_control(cmd, arg='', service=''):
     return status
 
 
-# Aux Mplayer metadata only for the CDDA service
-def cdda_meta(md):
-    """ input:      a metadata blank dict
-        output:     the updated one
-    """
-    # Getting the current track and track time position
-    curr_track, trackPos = cdda_get_current_track()
-
-    # We need the cd_info tracks list dict
-    try:
-        with open(f'{MAINFOLDER}/.cdda_info', 'r') as f:
-            cd_info = json.loads( f.read() )
-    except:
-        cd_info = cdda.cdda_info_template()
-
-    # Updating md fields:
-    md['track_num'] = '1'
-    md['bitrate'] = '1411'
-    md['track_num'], md['time_pos'] = str(curr_track), timeFmt(trackPos)
-    md['artist'] = cd_info['artist']
-    md['album'] = cd_info['album']
-    if md['track_num'] in cd_info.keys():
-        md['title']     = cd_info[ md['track_num'] ]['title']
-        md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3]
-                                                    # omit decimals
-    else:
-        md['title'] = 'Track ' + md['track_num']
-    last_track = len( [ x for x in cd_info if x.isdigit() ] )
-    md['tracks_tot'] = f'{last_track}'
-    return md
-
-
 # MAIN Mplayer metadata
-def mplayer_meta(md, service):
+def mplayer_get_meta(md, service):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt
 
@@ -420,14 +394,46 @@ def mplayer_meta(md, service):
 
         output:     the updated md dict
 
-        (*) for cdda will use the alternate function cdda_meta()
+        (*) for cdda will use the alternate function cdda_get_meta()
     """
+
+    # Aux Mplayer metadata only for the CDDA service
+    def cdda_get_meta(md):
+        """ input:      a metadata blank dict
+            output:     the updated one
+        """
+        # Getting the current track and track time position
+        curr_track, trackPos = cdda_get_current_track()
+
+        # We need the cd_info tracks list dict
+        try:
+            with open(cdda.CDDA_INFO_PATH, 'r') as f:
+                cd_info = json.loads( f.read() )
+        except:
+            cd_info = cdda.CDDA_INFO_TEMPLATE.copy()
+
+        # Updating md fields:
+        md['track_num'] = '1'
+        md['bitrate'] = '1411'
+        md['track_num'], md['time_pos'] = str(curr_track), timesec2string(trackPos)
+        md['artist'] = cd_info['artist']
+        md['album'] = cd_info['album']
+        if md['track_num'] in cd_info.keys():
+            md['title']     = cd_info[ md['track_num'] ]['title']
+            md['time_tot']  = cd_info[ md['track_num'] ]['length'][:-3]
+                                                        # omit decimals
+        else:
+            md['title'] = 'Track ' + md['track_num']
+        last_track = len( [ x for x in cd_info if x.isdigit() ] )
+        md['tracks_tot'] = f'{last_track}'
+        return md
+
 
     md['player'] = 'Mplayer'
 
     # (!) DIVERTING: this works only for DVB or iSTREAMS, but not for CDDA
     if service == 'cdda':
-        return cdda_meta(md)
+        return cdda_get_meta(md)
 
     # This is the file were Mplayer standard output has been redirected to,
     # so we can read there any answer when required to Mplayer slave daemon:
@@ -440,31 +446,42 @@ def mplayer_meta(md, service):
     mplayer_control(cmd='get_time_pos',      service=service)
     mplayer_control(cmd='get_time_length',   service=service)
 
-    # Waiting for Mplayer ANS_xxxx to be written to the output file
-    sleep(.25)
-
-    # Reading a tail of 300 bytes from the Mplayer output file
-    fsize = os.path.getsize(mplayer_redirection_path)
-    tail_lenght = 300
-    with open(mplayer_redirection_path, 'rb') as f:
-        f.seek(fsize - tail_lenght)
-        lines = f.read(tail_lenght).decode().split('\n')
-
-        # Some sample lines:
-        #   ANS_FILENAME='Radio 3 HQ'
-        #   ANS_pause=no
-        #   ANS_TIME_POSITION=4399.8
-        #   ANS_LENGTH=-0.95
-        #   ANS_AUDIO_BITRATE='256 kbps'
+    # Triyng to read Mplayer output from its redirected file
+    lines = []
+    tries = 3
+    while tries:
+        # Waiting for Mplayer ANS_xxxx to be written to the output file
+        sleep(.10)
+        try:
+            # Reading a tail of 300 bytes from the Mplayer output file
+            fsize = os.path.getsize(mplayer_redirection_path)
+            tail_lenght = 300
+            with open(mplayer_redirection_path, 'rb') as f:
+                f.seek(fsize - tail_lenght)
+                lines = f.read(tail_lenght).decode().split('\n')
+            break
+        except:
+            tries -= 1
 
     # Reading metadata (will take the last valid field if found in lines)
+    #   Some sample lines:
+    #       ANS_FILENAME='Radio 3 HQ'
+    #       ANS_pause=no
+    #       ANS_TIME_POSITION=4399.8
+    #       ANS_LENGTH=-0.95
+    #       ANS_AUDIO_BITRATE='256 kbps'
     for line in lines:
-
         if 'ANS_AUDIO_BITRATE=' in line:
             md['bitrate'] = line.split('=')[-1].replace("'", "").split()[0]
-
         if 'ANS_FILENAME=' in line:
             md['title'] = line.split('=')[-1].replace("'", "")
 
-
     return md
+
+
+# Autoexec when loading this module
+def init():
+    cdda.save_disc_metadata()
+
+# Autoexec when loading this module
+init()

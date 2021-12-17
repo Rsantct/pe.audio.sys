@@ -19,21 +19,25 @@
 """ A Spotify Desktop client interface module for players.py
 """
 
-import os
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+import  os
+import  sys
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys')
 
-import logging
-LOGFNAME    = f'{MAINFOLDER}/log/spotify_desktop.py.log'
+from share.miscel   import MAINFOLDER, timesec2string as timeFmt
+
+from    time        import sleep
+from    subprocess  import check_output
+import  yaml
+from    pydbus      import SessionBus
+import  logging
+
+LOGFNAME = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
-from time import sleep
-from subprocess import check_output
-import yaml
-from pydbus import SessionBus
 
 # BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
-SPOTIFY_BITRATE   = '320'
+SPOTIFY_BITRATE = '320'
 
 
 # The DBUS INTERFACE with the Spotify Desktop client.
@@ -66,17 +70,33 @@ if os.path.exists(plist_file):
     logging.info(tmp)
 
 
-# Auxiliary function to format hh:mm:ss
-def timeFmt(x):
-    """ in:     x seconds   (float)
-        out:    'hh:mm:ss'  (string)
-    """
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
+# External tool 'playerctl' to manage shuffle because MPRIS can only read it
+def set_shuffle(mode):
+    # (!) The command line tool 'playerctl' has a shuffle method
+    #     BUT it does not work with Spotify Desktop :-(
+    mode = { 'on':'On', 'off':'Off' }[mode]
+    ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
+    #print('---->', ans) # DEBUG
+
+
+def spotify_playlists(cmd, arg=''):
+
+    result = 'command not available'
+
+    if cmd == 'load_playlist':
+        if PLAYLISTS:
+            if arg in PLAYLISTS:
+                spotibus.OpenUri( PLAYLISTS[arg] )
+                result = 'ordered'
+            else:
+                result = 'ERROR: playlist not found'
+        else:
+            result = 'ERROR: Spotify playlist not available'
+
+    elif cmd == 'get_playlists':
+        result = list( PLAYLISTS.keys() )
+
+    return result
 
 
 # Spotify Desktop control
@@ -86,7 +106,7 @@ def spotify_control(cmd, arg=''):
         output: the resulting status string
     """
 
-    result = 'stop'
+    result = 'not connected'
 
     if not spotibus:
         return result
@@ -106,17 +126,16 @@ def spotify_control(cmd, arg=''):
     elif cmd == 'previous':
         spotibus.Previous()
 
-    elif cmd == 'load_playlist':
-        if PLAYLISTS:
-            if arg in PLAYLISTS:
-                spotibus.OpenUri( PLAYLISTS[arg] )
-            else:
-                return 'ERROR: playlist not found'
+    # MPRIS Shuffle is an only-readable property.
+    # (https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html)
+    elif cmd == 'random':
+        if arg in ('get', ''):
+            return spotibus.Shuffle
+        elif arg in ('on', 'off'):
+            set_shuffle(arg)
+            return spotibus.Shuffle
         else:
-            return 'ERROR: Spotify playlist not available'
-
-    elif cmd == 'get_playlists':
-        return list( PLAYLISTS.keys() )
+            return f'error with \'random {arg}\''
 
     sleep(.25)
     result = {  'Playing':  'play',

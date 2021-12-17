@@ -33,11 +33,11 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
 // SOME GLOBALS
-var state               = {};           // The main state dictionary
+var state               = {};       // The main state dictionary
 var server_available    = false;
-var show_advanced       = false;        // defaults for display advanced controls
-var show_graphs         = false;        // defaults for show graphs
-var metablank = {                       // A player's metadata blank dict
+var show_advanced       = false;    // defaults for display advanced controls
+var show_graphs         = false;    // defaults for show graphs
+var metablank = {                   // A player's metadata blank dict
     'player':       '',
     'time_pos':     '',
     'time_tot':     '',
@@ -48,11 +48,14 @@ var metablank = {                       // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
-var last_loudspeaker    = ''            // Will detect if audio processes has beeen
-                                        // restarted with new loudspeaker configuration.
+var last_disc           = '';       // Helps on refreshing cd tracks list
+var last_input          = '';       // Helps on refreshing sources playlits
+var last_loudspeaker    = '';       // Will detect if audio processes has beeen
+                                    // restarted with new loudspeaker configuration.
 var macro_button_list   = [];
-var hold_tmp_msg        = 0;            // A counter to keep tmp_msg during updates
-var tmp_msg             = '';           // A temporary message
+var hold_selected_track = 0;        // A counter to keep the selected cd track during updates
+var hold_tmp_msg        = 0;        // A counter to keep tmp_msg during updates
+var tmp_msg             = '';       // A temporary message
 
 // STATIC WEB CONFIGURATION
 try{
@@ -116,6 +119,9 @@ function page_initiate(){
     // Macros buttons (!) place this first because
     // aux server is supposed to be always alive
     fill_in_macro_buttons();
+
+    // playlists selector for some sources
+    fill_in_playlists_selector();
 
     // Shows or hides the LU offset slider and the LU monitor bar
     if ( web_config.hide_LU == true ){
@@ -265,21 +271,32 @@ function fill_in_page_statics(){
 // STATE DICT. UPDATE by queriyng the server
 function state_update() {
     try{
-        state = control_cmd('get_state');
+        state = control_cmd('preamp state');
         // console.log('Rx state:', state); # debug
         state = JSON.parse( state );
         if (state == null){
             document.getElementById("main_cside").innerText =
                     ':: pe.audio.sys :: preamp OFFLINE';
             return;
+
         } else {
+
             if ( hold_tmp_msg == 0 ){
-                document.getElementById("main_cside").innerText =
-                        ':: pe.audio.sys :: ' + state.loudspeaker;
+
+                let warning = control_cmd('aux warning get');
+
+                if (warning == ''){
+                    document.getElementById("main_cside").innerText =
+                            ':: pe.audio.sys :: ' + state.loudspeaker;
+                } else {
+                    document.getElementById("main_cside").innerText = warning;
+                }
+
             } else {
                 document.getElementById("main_cside").innerText = tmp_msg;
                 hold_tmp_msg -= 1;
             }
+
         }
     }catch(e){
         console.log( 'not connected', e.name, e.message );
@@ -366,16 +383,26 @@ function page_update() {
     buttonSubsonicHighlight()
     levelInfoHighlight()
 
-    // Updates metadata player info
-    player_info_update()
-
-    // Highlights player controls when activated
-    player_controls_update()
+    // Updates all player stuff
+    player_all_update()
 
     // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
     if ( show_graphs == true ) {
         document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
                                                   + Math.floor(Date.now()/3000);
+    }
+
+    // Displays and updates the playlist loader for some sources when input source changed
+    if (last_input != state.input){
+        if ( state.input == "mpd"     ||
+             state.input == "spotify" ) {
+            fill_in_playlists_selector()
+            document.getElementById( "playlist_selector").style.display = "inline";
+        }
+        else {
+            document.getElementById( "playlist_selector").style.display = "none";
+        }
+        last_input = state.input;
     }
 
     // Displays the track selector if input == 'cd'
@@ -384,6 +411,12 @@ function page_update() {
     }
     else {
         document.getElementById( "track_selector").style.display = "none";
+    }
+
+    // Clears the CD track selector when expired
+    hold_selected_track -= 1;
+    if (hold_selected_track == 0) {
+        document.getElementById('track_selector').value = '--';
     }
 
     // Displays the [url] button if input == 'iradio' or 'istreams'
@@ -420,9 +453,7 @@ function main_select(itemName){
         return result;
     }
 
-    hold_tmp_msg = 3;
-    tmp_msg = 'Please wait for "' + itemName + '"';
-    document.getElementById("main_cside").innerText = tmp_msg;
+    display_tmp_msg( 'Please wait for "' + itemName + '"', 3 );
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
     // setTimeout( () => { control_cmd('input ' + itemName); }, 200 );
@@ -441,6 +472,7 @@ function main_select(itemName){
 
     clear_highlighted();
     document.getElementById('mainSelector').style.color = "white";
+
 }
 
 // DRC selection
@@ -476,23 +508,56 @@ function LU_scope_select(scope){
 
 // Controls the player
 function playerCtrl(action) {
-    control_cmd( 'player ' + action );
+    if (action == 'random_toggle') {
+        control_cmd( 'player random_mode toggle' );
+    } else {
+        control_cmd( 'player ' + action );
+    }
 }
 
-// Updates the player control buttons, hightlights the corresponding button to the playback state
-function player_controls_update() {
-
+// Retrieves and updates all player stuff
+function player_all_update(){
     try{
-        var playerState = control_cmd( 'player state' );
-        if (playerState == "null"){
+        var player_all_info = control_cmd( 'player get_all_info' );
+        if (player_all_info == "null"){
             document.getElementById("main_cside").innerText =
                     ':: pe.audio.sys :: players OFFLINE';
             return;
+        } else {
+            player_all_info = JSON.parse(player_all_info);
         }
     }catch(e){
-        console.log( 'error getting player state', e.name, e.message );
+        console.log( 'error getting player info', e.name, e.message );
         return;
     }
+
+    player_controls_update(     player_all_info.state );
+    player_metadata_update(     player_all_info.metadata );
+    player_random_mode_update(  player_all_info.random_mode);
+
+    // Updates tracks list if disc has changed
+    if (last_disc != player_all_info.discid) {
+        fill_in_track_selector();
+        last_disc = player_all_info.discid;
+    }
+
+}
+
+// Highlights the random mode button:
+function player_random_mode_update(mode){
+    if        ( mode=='on' ) {
+        document.getElementById("random_toggle_button").style.background  = "rgb(185, 185, 185)";
+        document.getElementById("random_toggle_button").style.color       = "white";
+
+    } else {
+        document.getElementById("random_toggle_button").style.background  = "rgb(100, 100, 100)";
+        document.getElementById("random_toggle_button").style.color       = "lightgray";
+    }
+}
+
+// Hightlights the corresponding playback button as per the playback state
+function player_controls_update(playerState) {
+
     if        ( playerState == 'stop' ) {
         document.getElementById("buttonStop").style.background  = "rgb(185, 185, 185)";
         document.getElementById("buttonStop").style.color       = "white";
@@ -518,71 +583,49 @@ function player_controls_update() {
 }
 
 // Shows the playing info metadata
-function player_info_update() {
-    try{
-        var tmp = control_cmd( 'player get_meta' );
-        if (tmp == "null"){
-            document.getElementById("main_cside").innerText =
-                    ':: pe.audio.sys :: players OFFLINE';
-            return;
-        }
-    }catch(e){
-        console.log( 'error getting player meta', e.name, e.message );
-        return;
+function player_metadata_update(d) {
+
+
+    if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
+        d = metablank;
     }
-    // players.py will allways give a dictionary as response, but if
-    // no metadata are available then most fields will be empty, except 'player'
-    if ( tmp.indexOf("failed")  == -1 &&
-         tmp.indexOf("refused") == -1    )  {
 
-        try{
-            var d = JSON.parse( tmp );
-        }catch(e){
-            console.log( 'error parsing metadata to dict, using metablank',
-                          e.name, e.message );
-            var d = metablank;
-        }
-
-        if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
-            d = metablank;
-        }
-
-        if (d['bitrate']) {
-            document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
-        } else {
-            document.getElementById("bitrate").innerText = "-\nkbps"
-        }
-        if (d['artist']) {
-            document.getElementById("artist").innerText  = d['artist'];
-        } else {
-            document.getElementById("artist").innerText = "-"
-        }
-        if (d['track_num']) {
-            document.getElementById("track_info").innerText   = d['track_num'];
-        } else {
-            document.getElementById("track_info").innerText = "-"
-        }
-        if (d['tracks_tot']) {
-            document.getElementById("track_info").innerText += ('\n' + d['tracks_tot']);
-        } else {
-            document.getElementById("track_info").innerText += "\n-"
-        }
-        if (d['time_pos']) {
-            document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
-        } else {
-            document.getElementById("time").innerText = "-"
-        }
-        if (d['album']) {
-            document.getElementById("album").innerText   = d['album'];
-        } else {
-            document.getElementById("album").innerText = "-"
-        }
-        if (d['title']) {
-            document.getElementById("title").innerText   = d['title'];
-        } else {
-            document.getElementById("title").innerText = "-"
-        }
+    if (d['bitrate']) {
+        document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
+    } else {
+        document.getElementById("bitrate").innerText = "-\nkbps"
     }
+    if (d['artist']) {
+        document.getElementById("artist").innerText  = d['artist'];
+    } else {
+        document.getElementById("artist").innerText = "-"
+    }
+    if (d['track_num']) {
+        document.getElementById("track_info").innerText   = d['track_num'];
+    } else {
+        document.getElementById("track_info").innerText = "-"
+    }
+    if (d['tracks_tot']) {
+        document.getElementById("track_info").innerText += ('\n' + d['tracks_tot']);
+    } else {
+        document.getElementById("track_info").innerText += "\n-"
+    }
+    if (d['time_pos']) {
+        document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
+    } else {
+        document.getElementById("time").innerText = "-"
+    }
+    if (d['album']) {
+        document.getElementById("album").innerText   = d['album'];
+    } else {
+        document.getElementById("album").innerText = "-"
+    }
+    if (d['title']) {
+        document.getElementById("title").innerText   = d['title'];
+    } else {
+        document.getElementById("title").innerText = "-"
+    }
+
 }
 
 // Aux to clear controls when not connected
@@ -606,16 +649,31 @@ function player_info_clear() {
     document.getElementById("title").innerText = "-"
 }
 
+// When changing a playlist selector
+function load_playlist(plistname) {
+    if (plistname == '-CLEAR-') {
+        control_cmd( 'player clear_playlist ' );
+    } else if (plistname != '--') {
+        control_cmd( 'player clear_playlist ' );
+        control_cmd( 'player load_playlist ' + plistname );
+    }
+}
 
-// Emerge a dialog to select a disk track to be played
-function select_track() {
+// Emerge a dialog to select a disk track number to be played (currently not used)
+function select_track_number_dialog() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
         control_cmd( 'player play_track ' + tracknum );
     }
 }
 
-// Sends an url to the server, to be played back
+// Plays a track number
+function play_track_number(N) {
+    control_cmd( 'player play_track ' + N );
+    hold_selected_track = 10;
+}
+
+// Sends an url to the server, for it to play
 function play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
@@ -717,10 +775,8 @@ function fill_in_macro_buttons() {
         return
     }
 
-    // If any macro found, lets show the corresponding cell playback_control_23
-    // also call xx_21 just for symmetry reasons
-    document.getElementById( "playback_control_23").style.display = 'block';
-    document.getElementById( "playback_control_21").style.display = 'block';
+    // If any macro found, lets show the corresponding button
+    document.getElementById( "macros_toggle_button").style.display = 'inline';
 
 
     // Expands number of buttons to a multiple of 3 (arrange of Nx3 buttons)
@@ -778,6 +834,58 @@ function fill_in_macro_buttons() {
     }
 }
 
+// Filling in playlists selector:
+function fill_in_playlists_selector() {
+    // getting playlists
+    try{
+        var plists = JSON.parse( control_cmd( 'player get_playlists' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+        return;
+    }
+    // clearing selector options
+    select_clear_options(ElementId="playlist_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("playlist_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( i in plists) {
+        var option = document.createElement("option");
+        option.text = plists[i];
+        mySel.add(option);
+    }
+    var option = document.createElement("option");
+    option.text = '-CLEAR-';
+    mySel.add(option);
+}
+
+// Filling in track selector:
+function fill_in_track_selector() {
+    // getting tracks
+    try{
+        var tracks = JSON.parse( control_cmd( 'player list_playlist' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+        return;
+    }
+    // clearing selector options
+    select_clear_options(ElementId="track_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("track_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( i in tracks) {
+        var option = document.createElement("option");
+        option.text = tracks[i];
+        mySel.add(option);
+    }
+    mySel.add(option);
+}
+
 // Runs a macro
 function run_macro(mFname){
 
@@ -794,8 +902,7 @@ function run_macro(mFname){
     }
     setTimeout( tmp, 200, mName );  // 'mName' is given as argument for 'tmp'
 
-    hold_tmp_msg = 3;
-    tmp_msg = 'Please wait for "' + mName + '"';
+    display_tmp_msg( 'Please wait for "' + mName + '"', 3);
 }
 
 // Manages the LU_offset slider
@@ -805,6 +912,13 @@ function LU_slider_action(slider_value){
 
 
 ///////////////  MISCEL INTERNAL ////////////
+
+// Displays a temporary message for some seconds within the upper frame.
+function display_tmp_msg(msg, timeout){
+    hold_tmp_msg    = timeout;     // these two are global variables checked when
+    tmp_msg         = msg;         // every update
+    document.getElementById("main_cside").innerText = tmp_msg;
+}
 
 // Hightlights a macro button
 function highlight_macro_button(id){
