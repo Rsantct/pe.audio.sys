@@ -198,7 +198,13 @@ echo "(i) Done."
 echo ""
 
 ########################################################################
-# And updates the updater script
+# Symlink to use the SOCKET version of server.py (can change in a future)
+########################################################################
+ln -s $HOME/pe.audio.sys/share/server.py.SOCKET \
+      pe.audio.sys/share/server.py  1>/dev/null 2>&1
+
+########################################################################
+# Finally updates the updater script
 ########################################################################
 cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 
