@@ -78,39 +78,32 @@ CURRENT_MD          = METATEMPLATE.copy()
 CURRENT_MD_REFRESH  = 2
 
 
-def dump_metadata_file(md):
-    with open(PLAYER_META_PATH, 'w') as f:
-        f.write( json.dumps( md ))
-
-
-# Gets metadata from a remote pe.audio.sys system
+# Get metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
-    md = ''
     md = METATEMPLATE.copy()
-    ans = send_cmd( cmd='player get_meta',
-                    host=host, port=port, timeout=1)
     try:
-        md = json.loads(ans)
+        tmp = send_cmd( cmd='player get_meta',
+                        host=host, port=port, timeout=1)
+        md = json.loads(tmp)
     except:
         pass
     return md
 
 
 # Controls the playback on a remote pe.audio.sys system
-def remote_player_control( cmd, arg, host, port):
+def remote_player_control( cmd, arg, host, port=9990):
     try:
-        tmp = send_cmd( cmd=f'player {cmd} {arg}',
+        rem_state = send_cmd( cmd=f'player {cmd} {arg}',
                         host=host, port=port, timeout=1)
-        result = json.loads(tmp)
     except:
-        result = 'play'
-    return result
+        rem_state = 'play'
+    return rem_state
 
 
-# Generic function to get meta from any player: MPD, Mplayer or Spotify
-def player_get_meta():
+# Get metadata of current playing track
+def get_meta():
     """ Returns a dictionary with the current track metadata
-        '{player: xxxx, artist: xxxx, album:xxxx, title:xxxx, etc... }'
+        including the involved source player
     """
     md = METATEMPLATE.copy()
 
@@ -144,8 +137,6 @@ def player_get_meta():
         # so this way we can query metadata from the remote address.
         host = SOURCES[source]["jack_pname"].split(':')[0]
         port = SOURCES[source]["jack_pname"].split(':')[-1]
-
-        # (i) we assume that the remote pe.audio.sys listen at standard 9990 port
         if is_IP(host):
             if not port.isdigit():
                 port = 9990
@@ -160,14 +151,12 @@ def player_get_meta():
 
 # Generic function to control any player
 def playback_control(cmd, arg=''):
-    """ controls the playback
+    """ controls the playback, depending on the involved source player
         returns: 'stop' | 'play' | 'pause'
     """
 
     result = 'stop'
     source = read_state_from_disk()['input']
-
-    # (i) result depends on different source modules:
 
     # MPD
     if source == 'mpd':
@@ -214,11 +203,8 @@ def playback_control(cmd, arg=''):
 
 # Manage playlists
 def playlists_control(cmd, arg):
-    """ works with:
-        - Spotify Desktop
-        - MPD
+    """ (i) This only works with Spotify Desktop or MPD
     """
-
     result = []
     source = read_state_from_disk()['input']
 
@@ -238,7 +224,9 @@ def playlists_control(cmd, arg):
 
 # control of random mode / shuffle in some players
 def random_control(arg):
-
+    """ Controls the random mode player playback mode
+        (i) currently only works for MPD
+    """
     result = 'n/a'
     source = read_state_from_disk()['input']
 
@@ -257,6 +245,9 @@ def random_control(arg):
 
 # Getting all info in a dict {state, random_mode, metadata}
 def get_all_info():
+    """ A wrapper to get all playback related info at once,
+        useful for web control clients querying
+    """
     return {
             'state':        playback_control( 'state' ),
             'random_mode':  random_control('get'),
@@ -265,24 +256,25 @@ def get_all_info():
             }
 
 
-# auto-started when loading this module
+# Auto-started when loading this module
 def init():
-    """ This init function will thread the 'store_meta' LOOP forever, which
-        updates:
-            - the global runtime variable CURRENT_MD,
-            - the metadata disk file.
+    """ This init function will thread storing metadata LOOP FOREVER
     """
 
-    def store_meta(period=2):
+    def store_meta_loop(period=2):
         global CURRENT_MD
         while True:
-            CURRENT_MD = player_get_meta()
-            dump_metadata_file( CURRENT_MD )
+            # Update the global runtime variable CURRENT_MD
+            CURRENT_MD = get_meta()
+            # Save metadata to disk file.
+            with open(PLAYER_META_PATH, 'w') as f:
+                f.write( json.dumps( CURRENT_MD ) )
+            # Wait for period
             sleep(period)
 
     # Loop storing metadata
     period = CURRENT_MD_REFRESH
-    meta_loop = threading.Thread( target=store_meta, args=(period,) )
+    meta_loop = threading.Thread( target=store_meta_loop, args=(period,) )
     meta_loop.start()
 
 
@@ -292,21 +284,25 @@ def do(cmd_phrase):
         - in:   a command phrase
         - out:  a string result (dicts are json dumped)
     """
+    def read_cmd_phrase( cmd_phrase ):
+        cmd, arg = '', ''
+        chunks = cmd_phrase.strip().split(' ')
+        cmd = chunks[0]
+        if chunks[1:]:
+            # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
+            arg = ' '.join(chunks[1:])
+        return cmd, arg
 
-    cmd_phrase = cmd_phrase.strip()
     result = 'nothing done'
 
-    # Reading command phrase:
-    cmd, arg = '', ''
-    chunks = cmd_phrase.split(' ')
-    cmd = chunks[0]
-    if chunks[1:]:
-        # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
-        arg = ' '.join(chunks[1:])
+    # Reading command phrase, then processing
+    cmd, arg = read_cmd_phrase( cmd_phrase )
 
     # PLAYBACK CONTROL / STATE
-    if cmd in ('stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff', 'state'):
-        result = playback_control( cmd )
+    if cmd in ( 'state',
+                'stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff',
+                'play_track'):
+        result = playback_control( cmd, arg )
 
     # RANDOM MODE
     elif cmd == 'random_mode':
@@ -324,11 +320,7 @@ def do(cmd_phrase):
     elif '_playlist' in cmd:
         result = playlists_control( cmd, arg )
 
-    # Special command for DISC TRACK playback
-    elif cmd == 'play_track':
-        result = playback_control( cmd, arg )
-
-    # EJECTS unconditionally the CD tray
+    # EJECTS the CD tray (managed by mplayer)
     elif cmd == 'eject':
         result = mplayer_control('eject', service='cdda')
 
