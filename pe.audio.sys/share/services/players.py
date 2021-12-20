@@ -92,11 +92,10 @@ def remote_get_meta(host, port=9990):
 
 # Controls the playback on a remote pe.audio.sys system
 def remote_player_control( cmd, arg, host, port=9990):
-    try:
-        rem_state = send_cmd( cmd=f'player {cmd} {arg}',
-                        host=host, port=port, timeout=1)
-    except:
-        rem_state = 'play'
+    # short timeout for remote LAN machine conn failure
+    timeout = .5
+    rem_state = send_cmd( cmd=f'player {cmd} {arg}',
+                          host=host, port=port, timeout=timeout)
     return rem_state
 
 
@@ -293,8 +292,6 @@ def do(cmd_phrase):
             arg = ' '.join(chunks[1:])
         return cmd, arg
 
-    result = 'nothing done'
-
     # Reading command phrase, then processing
     cmd, arg = read_cmd_phrase( cmd_phrase )
 
@@ -323,6 +320,9 @@ def do(cmd_phrase):
     # EJECTS the CD tray (managed by mplayer)
     elif cmd == 'eject':
         result = mplayer_control('eject', service='cdda')
+
+    else:
+        result = f'(players) unknown command \'{cmd}\''
 
     if type(result) != str:
         result = json.dumps(result)
