@@ -246,6 +246,8 @@ def zita_client(argvs):
 def play_url(arg):
     """ Aux for playback an url stream
     """
+    # As per this function is a compound function, I have decided
+    # to hold it here instead of inside the players module
 
     def istreams_query(url):
         """ Order the istreams daemon script to playback an internet stream url
