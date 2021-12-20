@@ -465,9 +465,9 @@ def send_cmd( cmd, sender='', verbose=False, timeout=60,
             s.close()
 
     except Exception as e:
-        ans = e
+        ans = str(e)
         if verbose:
-            print( f'{Fmt.RED}({sender}) {host}:{port} {e} {Fmt.END}' )
+            print( f'{Fmt.RED}({sender}) {host}:{port} \'{ans}\' {Fmt.END}' )
 
     return ans
 
