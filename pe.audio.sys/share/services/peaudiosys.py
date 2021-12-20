@@ -246,7 +246,6 @@ def process_aux( cmd, arg='' ):
 
     # BEGIN of process_aux
     cmd = cmd.lower()
-    result = 'bad command'
 
     # AMPLIFIER SWITCHING
     if cmd == 'amp_switch':
@@ -393,7 +392,11 @@ def process_aux( cmd, arg='' ):
         else:
             result = 'usage: warning set message | warning clear'
 
+    else:
+        result = f'(aux) bad command \'{cmd}\''
+
     return result
+
 
 # A timer to clear the warning message field inside .aux_info
 def warning_expire(timeout=5):
