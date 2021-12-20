@@ -96,7 +96,7 @@ def do( cmd_phrase ):
         if type(result) != str:
             result = json.dumps(result)
 
-        # Logging avoiding non-relevant commands
+        # Avoids logging non-relevant commands
         if  ('state'        not in cmd)  and \
             ('state'        not in args) and \
             ('get_'         not in cmd)  and \
