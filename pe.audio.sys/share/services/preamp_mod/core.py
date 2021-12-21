@@ -38,8 +38,8 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel       import *
-from share.jack_mod     import *
-from share.brutefir_mod import *
+from share.miscel_mod   import jack_mod as jack
+from share.miscel_mod   import brutefir_mod as bf
 
 
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
@@ -128,7 +128,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
 
         # Level detected
         if dBFS > NOISE_FLOOR:
-            if not bf_is_running():
+            if not bf.is_running():
                 print(f'(powersave) signal detected, requesting to restart Brutefir')
                 convolver_on_driver.set()
             lowSigElapsed = 0
@@ -137,7 +137,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
 
         # No level detected
         if dBFS < NOISE_FLOOR and lowSigElapsed >= MAX_WAIT:
-            if bf_is_running():
+            if bf.is_running():
                 print(f'(powersave) low level during {sec2min(MAX_WAIT)}, '
                        'requesting to stop Brutefir' )
                 convolver_off_driver.set()
@@ -239,7 +239,7 @@ def connect_monitors():
     """
     if CONFIG["source_monitors"]:
         for monitor in CONFIG["source_monitors"]:
-            jack_connect_bypattern('pre_in_loop', monitor)
+            jack.connect_bypattern('pre_in_loop', monitor)
 
 
 class Preamp(object):
@@ -286,12 +286,12 @@ class Preamp(object):
         self.inputs = CONFIG["sources"]
         # The state dictionary
         self.state = read_state_from_disk()
-        self.state["convolver_runs"] = bf_is_running()
+        self.state["convolver_runs"] = bf.is_running()
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
         self.state["peq_set"] = get_peq_in_use()
-        self.state["fs"] = jack_get_samplerate()
+        self.state["fs"] = jack.get_samplerate()
         # The target curves available under the 'eq' folder
         self.target_sets = find_target_sets()
         # The available span for tone curves
@@ -302,7 +302,7 @@ class Preamp(object):
         # Max authorised balance
         self.balance_max = float(CONFIG["balance_max"])
         # Initiate brutefir input connected ports (used from switch_convolver)
-        self.bf_sources = bf_get_in_connections()
+        self.bf_sources = bf.get_in_connections()
 
         # Powersave
         #   State file info
@@ -398,8 +398,8 @@ class Preamp(object):
 
         if mode == 'off':
 
-            if bf_is_running():
-                self.bf_sources = bf_get_in_connections()
+            if bf.is_running():
+                self.bf_sources = bf.get_in_connections()
                 # Allows other Brutefir, kills just our.
                 Popen(f'pkill -f  "brutefir\ brutefir_config"', shell=True)
                 # Brutefir 1.0m process is 'brutefir.real'
@@ -410,12 +410,12 @@ class Preamp(object):
 
         elif mode == 'on':
 
-            if not bf_is_running():
+            if not bf.is_running():
 
                 # This avoids that powersave loop kills Brutefir
                 self.ps_reset_elapsed.set()
 
-                result = bf_restart_and_reconnect(self.bf_sources)
+                result = bf.restart_and_reconnect(self.bf_sources)
                 if result == 'done':
                     print(f'{Fmt.BLUE}{Fmt.BOLD}(core) BRUTEFIR RESUMED{Fmt.END}')
                     self._validate( self.state ) # this includes mute
@@ -463,8 +463,8 @@ class Preamp(object):
 
         if headroom >= 0:
             # APPROVED
-            bf_set_gains( candidate )
-            bf_set_eq( eq_mag, eq_pha )
+            bf.set_gains( candidate )
+            bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
             return 'done'
         else:
@@ -473,7 +473,7 @@ class Preamp(object):
 
 
     def save_state(self):
-        self.state["convolver_runs"] = bf_is_running()
+        self.state["convolver_runs"] = bf.is_running()
         with open(STATE_PATH, 'w') as f:
             f.write( json.dumps( self.state ) )
 
@@ -576,7 +576,7 @@ class Preamp(object):
             if value.lower() == 'right':
                 value = 'r'
             self.state["solo"] = value.lower()
-            bf_set_gains( self.state )
+            bf.set_gains( self.state )
             return 'done'
         else:
             return 'bad option'
@@ -585,7 +585,7 @@ class Preamp(object):
     def set_polarity(self, value, *dummy):
         if value in ('+', '-', '++', '--', '+-', '-+'):
             self.state["polarity"] = value.lower()
-            bf_set_gains( self.state )
+            bf.set_gains( self.state )
             return 'done'
         else:
             return 'bad option'
@@ -602,7 +602,7 @@ class Preamp(object):
                                                  [ self.state["muted"] ]
                         } [ value.lower() ]
                 self.state["muted"] = value
-                bf_set_gains( self.state )
+                bf.set_gains( self.state )
                 return 'done'
         except:
             return 'bad option'
@@ -611,7 +611,7 @@ class Preamp(object):
     def set_midside(self, value, *dummy):
         if value.lower() in ( 'mid', 'side', 'off' ):
             self.state["midside"] = value.lower()
-            bf_set_gains( self.state )
+            bf.set_gains( self.state )
         else:
             return 'bad option'
         return 'done'
@@ -634,7 +634,7 @@ class Preamp(object):
                                   }[ self.state["subsonic"] ]
                      } [ value.lower() ]
 
-            result = bf_set_subsonic( nvalue )
+            result = bf.set_subsonic( nvalue )
 
             if result == 'done':
                 self.state["subsonic"] = nvalue
@@ -649,7 +649,7 @@ class Preamp(object):
 
 
     def get_eq(self, *dummy):
-        freq, mag , pha = bf_read_eq()
+        freq, mag , pha = bf.read_eq()
         return { 'band': freq.tolist(), 'mag': mag.tolist(),
                                         'pha': pha.tolist() }
 
@@ -661,12 +661,12 @@ class Preamp(object):
             w = '' # warnings
 
             # clearing 'preamp' connections
-            jack_clear_preamp()
+            jack.clear_preamp()
 
             # connecting the new SOURCE to PREAMP input
             # (i) Special case 'remoteXXX' source name can have a ':port' suffix
             jport = CONFIG["sources"][source]["jack_pname"].split(':')[0]
-            res = jack_connect_bypattern(jport, 'pre_in')
+            res = jack.connect_bypattern(jport, 'pre_in')
 
             if res != 'ordered':
                 w += res
@@ -714,7 +714,7 @@ class Preamp(object):
 
         # Source = 'none'
         if source == 'none':
-            jack_clear_preamp()
+            jack.clear_preamp()
             self.state["input"] = source
             result = 'done'
 
@@ -807,7 +807,7 @@ class Convolver(object):
 
         # lspk_ways are the XO filter stages definded inside brutefir_config
         # 'f.WW.C' where WW:fr|lo|mi|hi|sw and C:L|R
-        self.lspk_ways = bf_get_config()['lspk_ways']
+        self.lspk_ways = bf.get_config()['lspk_ways']
 
         # debug
         #print('drc_sets:', self.drc_sets)
@@ -820,7 +820,7 @@ class Convolver(object):
 
     def set_drc(self, drc, *dummy):
         if drc in self.drc_sets or drc == 'none':
-            bf_set_drc( drc )
+            bf.set_drc( drc )
             return 'done'
         else:
             return f'drc set \'{drc}\' not available'
@@ -828,7 +828,7 @@ class Convolver(object):
 
     def set_xo(self, xo_set, *dummy):
         if xo_set in self.xo_sets:
-            bf_set_xo( self.lspk_ways, self.xo_coeffs, xo_set )
+            bf.set_xo( self.lspk_ways, self.xo_coeffs, xo_set )
             return 'done'
         else:
             return f'xo set \'{xo_set}\' not available'
