@@ -301,7 +301,7 @@ def check_state_file():
 
 def update_bfeq_graph():
     print(f'({ME}) processing Brutefir EQ graph to web/images in background')
-    sp.Popen(['python3', f'{MAINFOLDER}/share/brutefir_eq2png.py'])
+    sp.Popen(['python3', f'{MAINFOLDER}/share/miscel_mod/brutefir_eq2png.py'])
 
 
 def prepare_drc_graphs():
@@ -370,7 +370,7 @@ if __name__ == "__main__":
         print(f'{Fmt.MAGENTA}({ME}) Managing a temporary \'core\' instance.{Fmt.END}')
 
         # - BRUTEFIR
-        bfstart = core.bf_restart_and_reconnect( ['pre_in_loop:output_1',
+        bfstart = core.bf.restart_and_reconnect( ['pre_in_loop:output_1',
                                                   'pre_in_loop:output_2'] )
         if bfstart == 'done':
             print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) BRUTEFIR STARTED.{Fmt.END}')
