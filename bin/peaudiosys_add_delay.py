@@ -2,7 +2,8 @@
 """
     Adds Brutefir's outputs delay.
 
-    This tool is intended to compensate for multiroom listening.
+    This tool is intended to compensate for multiroom listening tuning,
+    anyway you can use the command 'aux add_delay X'
 
     Usage:
 
@@ -18,18 +19,19 @@ import  sys
 import  os
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-from    share.brutefir_mod  import *
-from    share.miscel        import send_cmd, get_bf_samplerate
+print( 'importing modules takes a while ...')
+from  miscel_mod    import brutefir_mod as bf
+from  miscel        import send_cmd, get_bf_samplerate
 
 
 def print_delays():
     """ Prints out the delays on Brutefir outputs.
     """
     FS          = int( get_bf_samplerate() )
-    outs        = bf_get_current_outputs()
-    maxdelay    = int( bf_get_config()['maxdelay'] )
+    outs        = bf.get_current_outputs()
+    maxdelay    = int( bf.get_config()['maxdelay'] )
     maxdelay_ms = int( maxdelay / FS  * 1e3)
 
     print( f'Brutefir max available outputs delay: {maxdelay} samples ({maxdelay_ms} ms)' )
@@ -48,15 +50,15 @@ if __name__ == '__main__':
 
 
     # Resuming Brutefir from powesave
-    print( 'resuming Brutefir from powersave ...')
-    print( send_cmd('convolver on') )
+    if not bf.is_running():
+        print( 'resuming Brutefir from powersave ...')
+        print( send_cmd('convolver on') )
 
     # Test if Brutefir is available
-    test = bf_cli('')
+    test = bf.cli('')
     if not test:
         print( 'Brutefir not available')
         sys.exit()
-
 
     # Reading command line
     for opc in sys.argv[1:]:
@@ -69,7 +71,10 @@ if __name__ == '__main__':
             print_delays()
             sys.exit()
 
-        elif opc.isdigit():
-            delay = float(sys.argv[1])
-            print( 'adding delay: ', bf_add_delay(delay) )
+        else:
+            try:
+                delay = float(opc)
+                print( 'adding delay: ', bf.add_delay(delay) )
+            except:
+                print( f'bad delay \'{opc}\'' )
 
