@@ -35,10 +35,12 @@ from    socket      import socket
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.jack_mod import  *
-from share.miscel   import  CONFIG, LSPK_FOLDER, EQ_CURVES, \
-                            BFCFG_PATH, BFDEF_PATH, \
-                            get_bf_samplerate, calc_gain, Fmt
+from share.miscel       import  CONFIG, LSPK_FOLDER, EQ_CURVES, \
+                                BFCFG_PATH, BFDEF_PATH, \
+                                get_bf_samplerate, calc_gain, Fmt
+
+from share.miscel_mod   import jack_mod as jack
+
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
@@ -49,7 +51,7 @@ if CONFIG["web_config"]["show_graphs"]:
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
 
-def bf_cli(cmd):
+def cli(cmd):
     """ A socket client that queries commands to Brutefir
     """
     # using 'with' will disconnect the socket when done
@@ -69,7 +71,7 @@ def bf_cli(cmd):
     return ans
 
 
-def bf_set_subsonic(mode):
+def set_subsonic(mode):
     """ Subsonic filter is applied into the 'level' filtering stage.
         Coefficients must be named: "subsonic.mp" and/or "subsonic.lp"
     """
@@ -83,7 +85,7 @@ def bf_set_subsonic(mode):
     else:
         cmd = 'cfc "f.lev.L" -1; cfc "f.lev.R" -1;'
 
-    result = bf_cli(cmd)
+    result = cli(cmd)
 
     if "There is no coefficient set" in result:
         return 'subsonic coeff not available'
@@ -91,7 +93,7 @@ def bf_set_subsonic(mode):
         return 'done'
 
 
-def bf_set_gains( state ):
+def set_gains( state ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
         - Routes channels to listening modes 'mid' (mono) or 'side' (L-R).
@@ -154,10 +156,10 @@ def bf_set_gains( state ):
     Lcmd = f'cfia "f.lev.L" "in.L" m{LL} ; cfia "f.lev.L" "in.R" m{LR}'
     Rcmd = f'cfia "f.lev.R" "in.L" m{RL} ; cfia "f.lev.R" "in.R" m{RR}'
 
-    bf_cli( f'{Lcmd}; {Rcmd}' )
+    cli( f'{Lcmd}; {Rcmd}' )
 
 
-def bf_set_eq( eq_mag, eq_pha ):
+def set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module,
         also will dump an EQ graph png file
     """
@@ -174,8 +176,8 @@ def bf_set_eq( eq_mag, eq_pha ):
     mag_str = ', '.join(mag_pairs)
     pha_str = ', '.join(pha_pairs)
 
-    bf_cli('lmc eq "c.eq" mag '   + mag_str)
-    bf_cli('lmc eq "c.eq" phase ' + pha_str)
+    cli('lmc eq "c.eq" mag '   + mag_str)
+    cli('lmc eq "c.eq" phase ' + pha_str)
 
     # Keeping the global updated
     if not (last_eq_mag == eq_mag).all():
@@ -186,11 +188,11 @@ def bf_set_eq( eq_mag, eq_pha ):
                                       is_lin_phase=CONFIG["bfeq_linear_phase"] )
 
 
-def bf_read_eq():
+def read_eq():
     """ Returns the current freqs, magnitude and phase
         as rendered into the Brutefir eq coeff.
     """
-    ans = bf_cli('lmc eq "c.eq" info;')
+    ans = cli('lmc eq "c.eq" info;')
     for line in ans.split('\n'):
         if line.strip()[:5] == 'band:':
             freq = line.split()[1:]
@@ -204,7 +206,7 @@ def bf_read_eq():
             np.array(pha).astype(np.float)
 
 
-def bf_set_drc( drcID ):
+def set_drc( drcID ):
     """ Changes the FIR for DRC at runtime
     """
 
@@ -215,10 +217,10 @@ def bf_set_drc( drcID ):
         cmd = ( f'cfc "f.drc.L" "drc.L.{drcID}";'
                 f'cfc "f.drc.R" "drc.R.{drcID}";' )
 
-    bf_cli( cmd )
+    cli( cmd )
 
 
-def bf_set_xo( ways, xo_coeffs, xoID ):
+def set_xo( ways, xo_coeffs, xoID ):
     """ Changes the FIRs for XOVER at runtime
     """
 
@@ -258,10 +260,10 @@ def bf_set_xo( ways, xo_coeffs, xoID ):
         cmd += f'cfc "{way}" "{BMcoeff}"; '
 
     #print (cmd)
-    bf_cli( cmd )
+    cli( cmd )
 
 
-def bf_get_config():
+def get_config():
     """
         Read brutefir_config, returns a dictionary:
 
@@ -417,7 +419,7 @@ def bf_get_config():
                 }
 
 
-def bf_get_config_outputs():
+def get_config_outputs():
     """ Read outputs from 'brutefir_config' file, then gives a dictionary.
     """
     outputs = {}
@@ -463,18 +465,18 @@ def bf_get_config_outputs():
     return outputs
 
 
-def bf_is_running():
-    if jack_get_ports(pattern='brutefir'):
+def is_running():
+    if jack.get_ports(pattern='brutefir'):
         return True
     else:
         return False
 
 
-def bf_get_in_connections():
-    bf_inputs = jack_get_ports('brutefir', is_input=True)
+def get_in_connections():
+    bf_inputs = jack.get_ports('brutefir', is_input=True)
     src_ports = []
     for p in bf_inputs:
-        srcs = jack_get_all_connections(p)
+        srcs = jack.get_all_connections(p)
         for src in srcs:
             src_ports.append( src )
     if src_ports:
@@ -483,7 +485,7 @@ def bf_get_in_connections():
         return ['pre_in_loop:output_1', 'pre_in_loop:output_2']
 
 
-def bf_restart_and_reconnect(bf_sources=[]):
+def restart_and_reconnect(bf_sources=[]):
     """ Restarts Brutefir as external process (Popen),
         then check Brutefir spawn connections to system ports,
         then reconnects Brutefir inputs.
@@ -509,7 +511,7 @@ def bf_restart_and_reconnect(bf_sources=[]):
                     f'{"."*int((120-tries)/6)}{Fmt.END}')
 
         # Getting the bf out ports list
-        bf_out_ports = jack_get_ports('brutefir', is_output=True)
+        bf_out_ports = jack.get_ports('brutefir', is_output=True)
 
         # Ensuring that ports are available
         if len(bf_out_ports) < 2:
@@ -520,7 +522,7 @@ def bf_restart_and_reconnect(bf_sources=[]):
         # Counting if all bf_out_ports are properly bonded to system ports
         n = 0
         for p in bf_out_ports:
-            conns = jack_get_all_connections(p)
+            conns = jack.get_all_connections(p)
             n += len(conns)
         if n == len(bf_out_ports):
             # We are done ;-)
@@ -537,7 +539,7 @@ def bf_restart_and_reconnect(bf_sources=[]):
     # Wait for brutefir input ports to be available
     tries = 50      # ~ 10 sec
     while tries:
-        bf_in_ports = jack_get_ports('brutefir', is_input=True)
+        bf_in_ports = jack.get_ports('brutefir', is_input=True)
         if len(bf_in_ports) >= 2:
             break
         else:
@@ -551,7 +553,7 @@ def bf_restart_and_reconnect(bf_sources=[]):
 
     # Restore input connections
     for a, b in zip(bf_sources, bf_in_ports):
-        res = jack_connect(a, b)
+        res = jack.connect(a, b)
         if res != 'done':
             warnings += f' {res}'
 
@@ -561,7 +563,7 @@ def bf_restart_and_reconnect(bf_sources=[]):
         return warnings
 
 
-def bf_get_running_filters():
+def get_running_filters():
 
     # auxiliary to sum all attenuations inside a filter stage
     def add_atten_pol(f):
@@ -599,7 +601,7 @@ def bf_get_running_filters():
                 }
 
     # query list of filter in Brutefir
-    lines = bf_cli('lf').split('\n')
+    lines = cli('lf').split('\n')
 
     # scanning filters
     f = {}
@@ -636,11 +638,11 @@ def bf_get_running_filters():
     return filters
 
 
-def bf_get_current_outputs():
+def get_current_outputs():
     """ Read outputs from running Brutefir, then gets a dictionary.
     """
 
-    lines = bf_cli('lo').split('\n')
+    lines = cli('lo').split('\n')
     outputs = {}
 
     i = lines.index('> Output channels:') + 1
@@ -661,7 +663,7 @@ def bf_get_current_outputs():
     return outputs
 
 
-def bf_add_delay(ms):
+def add_delay(ms):
     """ Will add a delay to all outputs, relative to the  delay values
         as configured under 'brutefir_config'.
         Useful for multiroom simultaneous listening.
@@ -669,7 +671,7 @@ def bf_add_delay(ms):
 
     result  = 'nothing done'
 
-    outputs = bf_get_config_outputs()
+    outputs = get_config_outputs()
     FS      = int( get_bf_samplerate() )
 
     # From ms to samples
@@ -677,7 +679,7 @@ def bf_add_delay(ms):
 
     cmd = ''
     too_much = False
-    max_available    = int( bf_get_config()['maxdelay'] )
+    max_available    = int( get_config()['maxdelay'] )
     max_available_ms = max_available / FS * 1e3
 
     for o in outputs:
@@ -697,7 +699,7 @@ def bf_add_delay(ms):
     # Issue new delay to Brutefir's outputs
     if not too_much:
         #print(cmd) # debug
-        result = bf_cli( cmd ).lower()
+        result = cli( cmd ).lower()
         #print(result) # debug
         if not 'unknown command' in result and \
            not 'out of range' in result and \
