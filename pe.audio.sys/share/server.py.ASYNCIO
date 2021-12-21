@@ -62,7 +62,7 @@ async def handle_client(reader, writer):
         print(f'(server-{SERVICE}) Rx: {cmd}')
 
     # Processing the command and reading the result of execution
-    result = MODULE.do( cmd )
+    result = PROCESSOR_MOD.do( cmd )
 
     # Sending back the result
     writer.write( result.encode() )
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     # Importing the service module to be used later when processing commands
     # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
-    MODULE = __import__(SERVICE)
+    PROCESSOR_MOD = __import__(SERVICE)
 
     print( f'{Fmt.BOLD}{Fmt.BLUE}(server.py) will use \'{SERVICE}.py\' module, '
            f'listening at {ADDR}:{PORT} ...{Fmt.END}' )

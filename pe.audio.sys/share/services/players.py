@@ -277,23 +277,12 @@ def init():
     meta_loop.start()
 
 
-# Interface entry function for this module plugged inside 'server.py'
-def do(cmd_phrase):
+# Interface function for this module
+def do(cmd, arg):
     """ Entry interface function for a parent server.py listener.
         - in:   a command phrase
         - out:  a string result (dicts are json dumped)
     """
-    def read_cmd_phrase( cmd_phrase ):
-        cmd, arg = '', ''
-        chunks = cmd_phrase.strip().split(' ')
-        cmd = chunks[0]
-        if chunks[1:]:
-            # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
-            arg = ' '.join(chunks[1:])
-        return cmd, arg
-
-    # Reading command phrase, then processing
-    cmd, arg = read_cmd_phrase( cmd_phrase )
 
     # PLAYBACK CONTROL / STATE
     if cmd in ( 'state',
@@ -323,9 +312,6 @@ def do(cmd_phrase):
 
     else:
         result = f'(players) unknown command \'{cmd}\''
-
-    if type(result) != str:
-        result = json.dumps(result)
 
     return result
 

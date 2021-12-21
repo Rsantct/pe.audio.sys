@@ -50,38 +50,31 @@ preamp.save_state()
 convolver = Convolver()
 
 
-# MAIN FUNCTION FOR COMMAND PROCESSING
-def process_commands( full_command ):
+# Interface function for this module
+def do( cmd, argstring ):
     """ Processes commands for audio control
-        - input:  the command phrase.
-        - output: 'done'             for OK command execution
-                  'a warning phrase' for NOK command execution
+
+        (i) The full_command sintax:  <command> [arg [add] ]
+            'arg' is given only with some commands,
+                  as an option for relative values ordering.
     """
 
-    def analize_full_command(full_cmd):
-        """ returns a tuple ( <command>, <arg>, <add:True|False> )
+    def analize_arg_add(argstring):
+        """ returns a tuple ( <arg>, <add:True|False> )
         """
-        # The full_command sintax:  <command> [arg [add] ]
-        # 'arg' is given only with some commands
-        # 'add' is given as an option for relative values ordering
 
-        command, arg, add = '', '', False
+        arg, add = '', False
 
-        cmd_list = full_cmd.replace('\r', '').replace('\n', '').split()
+        args_list = argstring.replace('\r', '').replace('\n', '').split()
 
-        if not cmd_list[0:]:
-            return ('', '', False)
+        if args_list[0:]:
+            if args_list[-1] == 'add':
+                add = True
+                arg = ' '.join( args_list[:-1] )
+            else:
+                arg = ' '.join( args_list[:] )
 
-        command = cmd_list[0]
-        if cmd_list[1:]:
-            arg = cmd_list[1]
-            if cmd_list[2:]:
-                if cmd_list[2] == 'add':
-                    add = True
-                else:
-                    return ('', '', False)
-
-        return (command, arg, add)
+        return (arg, add)
 
     # (i) Below we use *dummy to accommodate the parser mechanism wich
     # will include two arguments for any call here, even when not necessary.
@@ -116,16 +109,10 @@ def process_commands( full_command ):
         return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
 
 
-    # HERE BEGINS THE COMMAND PROCESSING:
-    result  = 'nothing has been done'
+    # extract 'add' option for relative changes
+    arg, add = analize_arg_add(argstring)
 
-    # Analize the full_command phrase or doing nothing.
-    command, arg, add = analize_full_command(full_command)
-    if not command:
-        # Do nothing
-        return result
-
-    # Parsing the command to his related function
+    # COMMAND PROCESSING by parsing the command to his related function:
     try:
         result = {
 
@@ -168,30 +155,19 @@ def process_commands( full_command ):
 
             'help':             print_help
 
-            } [ command.lower() ] ( arg, add )
+            } [ cmd.lower() ] ( arg, add )
+
+        # ************************************
+        # ** KEEPING UPDATED THE STATE FILE **
+        # ************************************
+        if result:
+            preamp.save_state()
 
     except KeyError:
-        result = f'(preamp) unknown command: {command}'
+        result = f'(preamp) unknown command: \'{cmd}\''
 
     except Exception as e:
-        result = f'(preamp) {command} ERROR: {e}'
+        result = f'(preamp) {cmd} ERROR: {str(e)}'
 
     return result
 
-
-# INTERFACE FUNCTION TO PLUG THIS MODULE ON SERVER.PY
-# AND ** KEEPING UP TO DATE THE STATE FILE **
-def do( cmd_phrase ):
-
-    cmd_phrase = cmd_phrase.strip()
-    result = 'nothing done'
-
-    result = process_commands( cmd_phrase )
-
-    if type(result) != str:
-        result = json.dumps(result)
-
-    if result != 'nothing done':
-        preamp.save_state()
-
-    return result
