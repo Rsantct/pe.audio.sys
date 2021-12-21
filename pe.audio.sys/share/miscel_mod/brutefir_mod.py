@@ -61,10 +61,10 @@ def cli(cmd):
             s.connect( ('localhost', 3000) )
             s.send( f'{cmd}; quit;\n'.encode() )
             while True:
-                tmp = s.recv(1024).decode()
+                tmp = s.recv(1024)
                 if not tmp:
                     break
-                ans += tmp
+                ans += tmp.decode()
             s.close()
         except:
             print( f'(brutefir_mod) unable to connect to Brutefir:3000' )
@@ -698,13 +698,11 @@ def add_delay(ms):
 
     # Issue new delay to Brutefir's outputs
     if not too_much:
-        #print(cmd) # debug
-        result = cli( cmd ).lower()
-        #print(result) # debug
-        if not 'unknown command' in result and \
-           not 'out of range' in result and \
-           not 'invalid' in result and \
-           not 'error' in result:
+        ans = cli( cmd ).lower()
+        if not 'unknown command' in ans and \
+           not 'out of range' in ans and \
+           not 'invalid' in ans and \
+           not 'error' in ans:
                 result = 'done'
         else:
                 result = 'Brutefir error'
