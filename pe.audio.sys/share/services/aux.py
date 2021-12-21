@@ -34,8 +34,9 @@ import  threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from    share.brutefir_mod  import  bf_add_delay, bf_is_running
 from    share.miscel        import  *
+from    share.miscel_mod.brutefir_mod import add_delay as bf_add_delay,     \
+                                             is_running as bf_is_running
 
 
 def dump_aux_info():
@@ -344,7 +345,7 @@ def add_delay(arg):
     # (i) Brutefir must be running
     if not bf_is_running():
         send_cmd('preamp convolver on')
-    result = bf_add_delay(float(arg))
+    return bf_add_delay(float(arg))
 
 
 def do_restart_peaudiosys():
