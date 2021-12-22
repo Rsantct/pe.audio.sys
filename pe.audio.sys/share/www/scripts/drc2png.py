@@ -9,7 +9,7 @@ ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER, get_bf_samplerate
+from share.miscel import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER, read_bf_config_fs
 
 import  numpy as np
 from    scipy       import signal
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                    '5K', '10K', '20K']
 
     # Get sample rate
-    FS = get_bf_samplerate()
+    FS = read_bf_config_fs()
     if verbose:
         print( f'(drc2png) using sample rate: {FS}' )
 
