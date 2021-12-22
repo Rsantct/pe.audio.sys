@@ -344,7 +344,7 @@ if __name__ == "__main__":
 
     # STARTING:
     if mode in ('all'):
-        # If necessary will prepare DRC GRAPHS for the web page
+        # If necessary will prepare DRC GRAPHS for use of the web page
         if CONFIG["web_config"]["show_graphs"]:
             prepare_drc_graphs()
 
