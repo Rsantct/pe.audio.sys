@@ -677,7 +677,7 @@ function play_track_number(N) {
 function play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
-        control_cmd( 'aux play ' + url );
+        control_cmd( 'aux play_url ' + url );
     }
 }
 
@@ -707,18 +707,23 @@ function ampli(mode) {
 
 // Queries the remote amplifier switch state
 function ampli_switch_update() {
+    var amp_state = '';
     try{
-        var amp_state = control_cmd( 'aux amp_switch state' )
-                           .replace('\n','');
-        // cosmetic for button not void
-        if ( ! amp_state ) {
-            var amp_state = '-';
+        var tmp = control_cmd( 'aux amp_switch state' ).replace('\n','');
+        if ( tmp != 'off' && tmp != 'on' ) {
+            amp_state = '';
+        }else{
+            amp_state = tmp;
         }
     }catch(e){
         console.log( 'Amp switch error', e.name, e.message );
-        var amp_state = '-';
     }
-    document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
+    if (amp_state) {
+        document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
+        document.getElementById("OnOffButton").style.display = 'block';
+    }else{
+        document.getElementById("OnOffButton").style.display = 'none';
+    }
 }
 
 // MAIN SELECTOR manages inputs:

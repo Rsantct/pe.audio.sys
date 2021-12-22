@@ -72,8 +72,6 @@ from share.miscel import    MAINFOLDER, CONFIG, timesec2string, read_last_lines
 sys.path.append( os.path.dirname(__file__) )
 import cdda
 
-ME          = __file__.split('/')[-1]
-
 
 # Aux to convert a given formatted time string "hh:mm:ss.cc" to seconds
 def timestring2sec(t):
@@ -113,7 +111,7 @@ def cdda_load():
         output:     --
         I/O:        .cdda_info (w), a dict with album and tracks
     """
-    print( f'({ME}) loading disk ...' )
+    print( f'(mplayer) loading disk ...' )
 
     # Save disk info into a json file
     cdda.save_disc_metadata()
@@ -127,13 +125,13 @@ def cdda_load():
     while n:
         if cdda_is_loaded():
             break
-        print( f'({ME}) waiting for Mplayer to load disk' )
+        print( f'(mplayer) waiting for Mplayer to load disk' )
         sleep(1)
         n -= 1
     if n:
-        print( f'({ME}) Mplayer disk loaded' )
+        print( f'(mplayer) Mplayer disk loaded' )
     else:
-        print( f'({ME}) TIMED OUT detecting Mplayer disk' )
+        print( f'(mplayer) TIMED OUT detecting Mplayer disk' )
 
 
 # Aux to retrieve the current track an time info
@@ -238,7 +236,7 @@ def playing_status(service=''):
 
 # Aux to send Mplayer commands through by the corresponding fifo
 def send_mplayer_cmd(cmd, service):
-    #print(f'({ME}) sending \'{cmd}\' to Mplayer (.{service}_fifo)') # DEBUG only
+    #print(f'(mplayer) sending \'{cmd}\' to Mplayer (.{service}_fifo)') # DEBUG only
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
     if cmd == 'stop':
@@ -368,7 +366,7 @@ def mplayer_control(cmd, arg='', service=''):
                 chapter = int(curr_track) - 1
                 cmd = f'seek_chapter {str(chapter)} 1'  # 1: absolute seek
             else:
-                print( f'({ME}) BAD track {cmd[11:]}' )
+                print( f'(mplayer) BAD track {cmd[11:]}' )
                 return 'bad track number'
 
         if cmd:
@@ -380,7 +378,7 @@ def mplayer_control(cmd, arg='', service=''):
             pre_connect('on')
 
     else:
-        print( f'({ME}) unknown Mplayer service \'{service}\'' )
+        print( f'(mplayer) unknown Mplayer service \'{service}\'' )
 
     return status
 

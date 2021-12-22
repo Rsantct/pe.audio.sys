@@ -49,8 +49,6 @@ sys.path.append(f'{UHOME}/pe.audio.sys')
 from share.miscel                       import send_cmd, CDDA_INFO_PATH
 from share.services.players_mod.cdda    import save_disc_metadata
 
-ME    =  __file__.split('/')[-1]
-
 # OPTIONAL USER CONFIG
 USE_CD_MACRO = False
 
@@ -101,22 +99,22 @@ def check_for_CDDA(d):
         tmp = check_output( f'cdinfo -a -d {CDROM}'.split() ).decode().strip()
 
         if ':' in tmp:
-            print( f'({ME}) trying to play the CD Audio disk' )
+            print( f'(autoplay_cdda) trying to play the CD Audio disk' )
             # autoplay the disc
             autoplay_CDDA()
 
         elif 'no_disc' in tmp:
-            print( f'({ME}) no disc' )
+            print( f'(autoplay_cdda) no disc' )
             # flushing .cdda_info
             save_disc_metadata()
 
         elif 'data_disc' in tmp:
-            print( f'({ME}) data disc' )
+            print( f'(autoplay_cdda) data disc' )
             # flushing .cdda_info
             save_disc_metadata()
 
     except:
-        print( f'({ME}) This script needs \'cdtool\' (command line cdrom tool)' )
+        print( f'(autoplay_cdda) This script needs \'cdtool\' (command line cdrom tool)' )
 
 
 def stop():

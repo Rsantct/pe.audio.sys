@@ -50,7 +50,6 @@ EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
-PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
 CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
 BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
@@ -157,7 +156,7 @@ def timesec2string(x):
 
 # Reads the FS to be used by Brutefir
 # (i) This function is intentionally kept here, to be used even before Brutefir runs.
-def get_bf_samplerate():
+def read_bf_config_fs():
     """ Retrieves loudspeaker's filters FS:
             - from         brutefir_config    (the loudspeaker config file),
             - or from   ~/.brutefir_defaults  (the default config file).
@@ -465,9 +464,9 @@ def send_cmd( cmd, sender='', verbose=False, timeout=60,
             s.close()
 
     except Exception as e:
-        ans = e
+        ans = str(e)
         if verbose:
-            print( f'{Fmt.RED}({sender}) {host}:{port} {e} {Fmt.END}' )
+            print( f'{Fmt.RED}({sender}) {host}:{port} \'{ans}\' {Fmt.END}' )
 
     return ans
 

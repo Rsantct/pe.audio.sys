@@ -82,6 +82,7 @@ if [ -d "pe.audio.sys" ]; then
 
     # major updates moved some files, so let's clean them all
     rm -rf  pe.audio.sys/share/services     >/dev/null 2>&1
+    rm -rf  pe.audio.sys/share/miscel_mod   >/dev/null 2>&1
     rm -rf  pe.audio.sys/share/www          >/dev/null 2>&1
     rm      pe.audio.sys/share/*.py         >/dev/null 2>&1
 fi

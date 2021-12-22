@@ -92,11 +92,10 @@ def remote_get_meta(host, port=9990):
 
 # Controls the playback on a remote pe.audio.sys system
 def remote_player_control( cmd, arg, host, port=9990):
-    try:
-        rem_state = send_cmd( cmd=f'player {cmd} {arg}',
-                        host=host, port=port, timeout=1)
-    except:
-        rem_state = 'play'
+    # short timeout for remote LAN machine conn failure
+    timeout = .5
+    rem_state = send_cmd( cmd=f'player {cmd} {arg}',
+                          host=host, port=port, timeout=timeout)
     return rem_state
 
 
@@ -278,25 +277,12 @@ def init():
     meta_loop.start()
 
 
-# Interface entry function for this module plugged inside 'server.py'
-def do(cmd_phrase):
+# Interface function for this module
+def do(cmd, arg):
     """ Entry interface function for a parent server.py listener.
         - in:   a command phrase
         - out:  a string result (dicts are json dumped)
     """
-    def read_cmd_phrase( cmd_phrase ):
-        cmd, arg = '', ''
-        chunks = cmd_phrase.strip().split(' ')
-        cmd = chunks[0]
-        if chunks[1:]:
-            # allows spaces inside the arg part, e.g. 'load_playlist Hard Rock'
-            arg = ' '.join(chunks[1:])
-        return cmd, arg
-
-    result = 'nothing done'
-
-    # Reading command phrase, then processing
-    cmd, arg = read_cmd_phrase( cmd_phrase )
 
     # PLAYBACK CONTROL / STATE
     if cmd in ( 'state',
@@ -324,8 +310,8 @@ def do(cmd_phrase):
     elif cmd == 'eject':
         result = mplayer_control('eject', service='cdda')
 
-    if type(result) != str:
-        result = json.dumps(result)
+    else:
+        result = f'(players) unknown command \'{cmd}\''
 
     return result
 
