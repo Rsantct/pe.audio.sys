@@ -117,7 +117,9 @@ def manage_amp_switch(mode):
     # Optionally will stop the current player as per CONFIG
     if new_state == 'off':
         if 'amp_off_stops_player' in CONFIG and CONFIG['amp_off_stops_player']:
-            send_cmd('player pause', timeout=1)
+            curr_input = read_state_from_disk()['input']
+            if not curr_input.startswith('remote'):
+                send_cmd('player pause', timeout=1)
 
     return result
 
