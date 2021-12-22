@@ -44,7 +44,7 @@ from share.miscel_mod   import jack_mod as jack
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
-    import brutefir_eq2png
+    from brutefir_eq2png import do_graph as bf_eq2png_do_graph
 
 
 # Global to avoid dumping EQ magnitude png graph if not changed
@@ -184,8 +184,7 @@ def set_eq( eq_mag, eq_pha ):
         last_eq_mag = eq_mag
         # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            brutefir_eq2png.do_graph( freqs, eq_mag,
-                                      is_lin_phase=CONFIG["bfeq_linear_phase"] )
+            bf_eq2png_do_graph(freqs, eq_mag, is_lin_phase=CONFIG["bfeq_linear_phase"])
 
 
 def read_eq():
@@ -711,3 +710,15 @@ def add_delay(ms):
         result = f'max delay {int(max_available_ms)} ms exceeded'
 
     return result
+
+
+# Autoexec on loading this module
+def init():
+    # Dumping the EQ graph to a png file
+    if CONFIG["web_config"]["show_graphs"]:
+        freqs, eq_mag, _ = read_eq()
+        bf_eq2png_do_graph(freqs, eq_mag, is_lin_phase=CONFIG["bfeq_linear_phase"])
+
+
+# AUTOEXEC on loading this module
+init()
