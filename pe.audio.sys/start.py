@@ -299,11 +299,6 @@ def check_state_file():
                 recover_state(reason='missed')
 
 
-def update_bfeq_graph():
-    print(f'({ME}) processing Brutefir EQ graph to web/images in background')
-    sp.Popen(['python3', f'{MAINFOLDER}/share/miscel_mod/brutefir_eq2png.py'])
-
-
 def prepare_drc_graphs():
     print(f'({ME}) processing drc sets to web/images/{LOUDSPEAKER} in background')
     sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
@@ -387,11 +382,6 @@ if __name__ == "__main__":
         del core
         print(f'{Fmt.MAGENTA}({ME}) Closing the temporary \'core\' instance.{Fmt.END}')
 
-
-    if mode in ('all', 'server'):
-        # Will update Brutefir EQ graph for the web page
-        if CONFIG["web_config"]["show_graphs"]:
-            update_bfeq_graph()
 
     # The 'peaudiosys' SERVER always runs, so that we can do basic operation
     manage_server(mode='start')
