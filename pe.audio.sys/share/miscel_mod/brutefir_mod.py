@@ -35,9 +35,10 @@ from    socket      import socket
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel       import  CONFIG, LSPK_FOLDER, EQ_CURVES, \
-                                BFCFG_PATH, BFDEF_PATH, \
-                                get_bf_samplerate, calc_gain, Fmt
+from share.miscel       import  CONFIG, LSPK_FOLDER, EQ_CURVES,             \
+                                BFCFG_PATH, BFDEF_PATH, read_bf_config_fs,  \
+                                calc_gain, Fmt
+
 
 from share.miscel_mod   import jack_mod as jack
 
@@ -58,6 +59,7 @@ def cli(cmd):
     ans = ''
     with socket() as s:
         try:
+            s.settimeout(1)
             s.connect( ('localhost', 3000) )
             s.send( f'{cmd}; quit;\n'.encode() )
             while True:
@@ -187,11 +189,42 @@ def set_eq( eq_mag, eq_pha ):
             bf_eq2png_do_graph(freqs, eq_mag, is_lin_phase=CONFIG["bfeq_linear_phase"])
 
 
+def read_brutefir_config_bands():
+    """ Just read the bands defined within the "eq" section in brutefir_config
+    """
+    bf_cfg = f'{LSPK_FOLDER}/brutefir_config'
+    with open( bf_cfg, 'r') as f:
+        lines = f.readlines()
+
+    freq = ''
+    in_bands = False
+    for line in lines:
+        line = line.strip()
+        if 'bands:' in line:
+            in_bands = True
+            line = line.split('bands:')[-1]
+        if in_bands:
+            freq += line.replace(';', '').replace('}','').strip()
+            if ';' in line:
+                break
+
+    freq = freq.split(',')
+    freq = np.array(freq).astype(np.float)
+
+    return freq
+
+
 def read_eq():
     """ Returns the current freqs, magnitude and phase
         as rendered into the Brutefir eq coeff.
     """
     ans = cli('lmc eq "c.eq" info;')
+
+    # In case of brutefir not running
+    if not ans:
+        freq = read_brutefir_config_bands()
+        return freq, np.zeros(freq.size), np.zeros(freq.size)
+
     for line in ans.split('\n'):
         if line.strip()[:5] == 'band:':
             freq = line.split()[1:]
@@ -671,7 +704,7 @@ def add_delay(ms):
     result  = 'nothing done'
 
     outputs = get_config_outputs()
-    FS      = int( get_bf_samplerate() )
+    FS      = int( read_bf_config_fs() )
 
     # From ms to samples
     delay = int( FS  * ms / 1e3)
