@@ -27,7 +27,7 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
 from miscel         import *
-from brutefir_mod   import *
+from miscel_mod     import brutefir_mod as bf
 
 
 def do_printout():
@@ -135,14 +135,14 @@ if __name__ == "__main__" :
 
 
     # Reading Brutefir configuration
-    cfg = bf_get_config()
+    cfg = bf.get_config()
     coeffs = cfg["coeffs"]
 
     # Reading filters_running
-    filters_running = bf_get_running_filters()
+    filters_running = bf.get_running_filters()
 
     # Reading current delays
-    curr_outputs = bf_get_current_outputs()
+    curr_outputs = bf.get_current_outputs()
     curr_delays = []
     for o in curr_outputs:
         if o.isdigit():

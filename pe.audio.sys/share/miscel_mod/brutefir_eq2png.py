@@ -18,25 +18,29 @@
 """
     A module to dump an EQ stage graph to share/www/images/brutefir_eq.png
 
-    Command line usage: brutefir_eq2png.py [--verbose]
-"""
-import sys
-import os
-import yaml
-from socket import socket
-import numpy as np
+    In addition, command line usage is available:
 
-import matplotlib
+        brutefir_eq2png.py [--verbose]
+"""
+import  sys
+import  os
+import  numpy as np
+import  yaml
+from    socket import socket
+
+import  matplotlib
 # (i) Agg is a SAFE backend to avoid "tkinter.TclError: couldn't connect to display"
 #     under certain circumstances.
 #     https://matplotlib.org/faq/usage_faq.html#what-is-a-backend
 #     https://matplotlib.org/faq/howto_faq.html#working-with-threads
 # Comment out this line if you want to test plotting under your standard backend
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+import  matplotlib.pyplot as plt
 
 
-UHOME       = os.path.expanduser("~")
+UHOME = os.path.expanduser("~")
+
+
 RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
 lineColor   = 'grey'
 verbose     = False

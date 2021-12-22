@@ -25,6 +25,9 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" A JACK wrapper
+"""
+
 from time import sleep
 import jack
 
@@ -32,7 +35,7 @@ JCLI = jack.Client('tmp', no_start_server=True)
 JCLI.activate()
 
 
-def jack_connect(p1, p2, mode='connect', verbose=True):
+def connect(p1, p2, mode='connect', verbose=True):
     """ Low level tool to connect / disconnect a pair of ports.
     """
 
@@ -59,7 +62,7 @@ def jack_connect(p1, p2, mode='connect', verbose=True):
     return result
 
 
-def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect' ):
+def connect_bypattern( cap_pattern, pbk_pattern, mode='connect' ):
     """ High level tool to connect/disconnect a given port name patterns.
         Also works for port alias patterns.
     """
@@ -97,7 +100,7 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect' ):
 
     mode = 'disconnect' if ('dis' in mode or 'off' in mode) else 'connect'
     for cap_port, pbk_port in zip(cap_ports, pbk_ports):
-        jack_connect(cap_port, pbk_port, mode)
+        connect(cap_port, pbk_port, mode)
 
 
     if not errors:
@@ -106,27 +109,27 @@ def jack_connect_bypattern( cap_pattern, pbk_pattern, mode='connect' ):
         return errors
 
 
-def jack_clear_preamp():
+def clear_preamp():
     """ Force clearing ANY clients, no matter what input was selected
     """
     preamp_ports = JCLI.get_ports('pre_in_loop', is_input=True)
     for preamp_port in preamp_ports:
         for client in JCLI.get_all_connections(preamp_port):
-            jack_connect( client, preamp_port, mode='off' )
+            connect( client, preamp_port, mode='off' )
 
 
-def jack_get_samplerate():
+def get_samplerate():
     """ wrap function """
     return JCLI.samplerate
 
 
-def jack_get_all_connections(pname):
+def get_all_connections(pname):
     """ wrap function """
     ports = JCLI.get_all_connections(pname)
     return ports
 
 
-def jack_get_ports(pattern='',  is_audio=True, is_midi=False,
+def get_ports(pattern='',  is_audio=True, is_midi=False,
                                 is_input=False, is_output=False,
                                 is_physical=False, can_monitor=False,
                                 is_terminal=False ):

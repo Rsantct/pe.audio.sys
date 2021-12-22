@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     # A server that listen for new remote listening clients to emerge
     print( f'(remote_volume) Keep listening for new remotes ...' )
-    server.SERVICE = 'remote_volume_daemon'
-    server.MODULE = __import__(__name__)
-    server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5,
-                       verbose=True)
+    server.SERVICE       = 'remote_volume_daemon'
+    server.PROCESSOR_MOD = __import__(__name__)
+    server.VERBOSE       = True
+    server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5)

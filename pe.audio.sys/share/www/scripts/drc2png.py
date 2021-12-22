@@ -5,11 +5,10 @@
 import sys
 import os
 
-ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER, get_bf_samplerate
+from share.miscel import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER, read_bf_config_fs
 
 import  numpy as np
 from    scipy       import signal
@@ -102,11 +101,11 @@ def png_is_outdated(drc_set):
             png_ctime = os.path.getctime(png_path)
             if (png_ctime - pcm_ctime) < 0:
                 if verbose:
-                    print(f'({ME}) found old PNG file for "{drc_set}"')
+                    print(f'(drc2png) found old PNG file for "{drc_set}"')
                 return True
         except:
             if verbose:
-                print(f'({ME}) PNG file for "{drc_set}" not found')
+                print(f'(drc2png) PNG file for "{drc_set}" not found')
             return True
 
     return False
@@ -118,7 +117,7 @@ def prepare_IMGFOLDER():
     except FileExistsError:
         pass
     except:
-        print(f'{ME} unexpected error when mkdir "{IMGFOLDER}"')
+        print(f'drc2png unexpected error when mkdir "{IMGFOLDER}"')
 
 
 if __name__ == '__main__':
@@ -143,7 +142,7 @@ if __name__ == '__main__':
                    '5K', '10K', '20K']
 
     # Get sample rate
-    FS = get_bf_samplerate()
+    FS = read_bf_config_fs()
     if verbose:
         print( f'(drc2png) using sample rate: {FS}' )
 
@@ -157,11 +156,11 @@ if __name__ == '__main__':
         # Check for outdated PNG file
         if not png_is_outdated(drc_set):
             if verbose:
-                print(f'({ME}) found PNG file for {LOUDSPEAKER}: {drc_set}')
+                print(f'(drc2png) found PNG file for {LOUDSPEAKER}: {drc_set}')
             continue
         else:
             if verbose:
-                print(f'({ME}) processing PNG file for {LOUDSPEAKER}: {drc_set}')
+                print(f'(drc2png) processing PNG file for {LOUDSPEAKER}: {drc_set}')
 
         fig, ax = plt.subplots()
         fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
@@ -194,5 +193,5 @@ if __name__ == '__main__':
         fpng = f'{IMGFOLDER}/drc_{drc_set}.png'
         plt.savefig( fpng, facecolor=WEBCOLOR )
         if verbose:
-            print( f'({ME}) saved: \'{fpng}\' ' )
+            print( f'(drc2png) saved: \'{fpng}\' ' )
         #plt.show()

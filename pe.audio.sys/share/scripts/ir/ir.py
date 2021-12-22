@@ -157,7 +157,6 @@ def main_TM():
 if __name__ == "__main__":
 
     THISPATH = os.path.dirname(os.path.abspath(__file__))
-    ME = __file__.split('/')[-1]
 
     if '-h' in sys.argv:
         print(__doc__)
@@ -180,7 +179,7 @@ if __name__ == "__main__":
             EOPtolerance = REMCFG['EOPtolerance'] if REMCFG['EOPtolerance'] else 5
             maxVariance  = REMCFG['maxVariance']  if REMCFG['maxVariance']  else 5
     except:
-        print(f'({ME}) ERROR with \'{THISPATH}/ir.config\'')
+        print(f'(ir) ERROR with \'{THISPATH}/ir.config\'')
         exit()
 
     # testing mode to learn new keys

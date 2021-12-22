@@ -156,7 +156,7 @@ def timesec2string(x):
 
 # Reads the FS to be used by Brutefir
 # (i) This function is intentionally kept here, to be used even before Brutefir runs.
-def get_bf_samplerate():
+def read_bf_config_fs():
     """ Retrieves loudspeaker's filters FS:
             - from         brutefir_config    (the loudspeaker config file),
             - or from   ~/.brutefir_defaults  (the default config file).
