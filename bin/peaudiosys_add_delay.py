@@ -23,13 +23,13 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
 print( 'importing modules takes a while ...')
 from  miscel_mod    import brutefir_mod as bf
-from  miscel        import send_cmd, get_bf_samplerate
+from  miscel        import send_cmd, read_bf_config_fs
 
 
 def print_delays():
     """ Prints out the delays on Brutefir outputs.
     """
-    FS          = int( get_bf_samplerate() )
+    FS          = int( read_bf_config_fs() )
     outs        = bf.get_current_outputs()
     maxdelay    = int( bf.get_config()['maxdelay'] )
     maxdelay_ms = int( maxdelay / FS  * 1e3)
