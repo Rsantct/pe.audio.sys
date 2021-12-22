@@ -18,7 +18,9 @@
 """
     A module to dump an EQ stage graph to share/www/images/brutefir_eq.png
 
-    Command line usage: brutefir_eq2png.py [--verbose]
+    In addition, command line usage is available:
+
+        brutefir_eq2png.py [--verbose]
 """
 import  sys
 import  os
@@ -36,7 +38,9 @@ matplotlib.use('Agg')
 import  matplotlib.pyplot as plt
 
 
-UHOME       = os.path.expanduser("~")
+UHOME = os.path.expanduser("~")
+
+
 RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
 lineColor   = 'grey'
 verbose     = False
