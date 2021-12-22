@@ -44,7 +44,6 @@ from   time import sleep, time, ctime
 import os
 import sys
 
-ME    = __file__.split('/')[-1]
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
@@ -72,7 +71,7 @@ def prepare_extra_cards(channels=2):
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
-        print(f'({ME}) loading resampled extra card: {card}')
+        print(f'(start) loading resampled extra card: {card}')
         #print(cmd) # DEBUG
         sp.Popen(cmd.split(), stdout=sys.stdout, stderr=sys.stderr)
 
@@ -114,10 +113,10 @@ def check_jloops():
         sleep(1)
         tries -= 1
     if tries:
-        print(f'{Fmt.BLUE}({ME}) JACK LOOPS STARTED{Fmt.END}')
+        print(f'{Fmt.BLUE}(start) JACK LOOPS STARTED{Fmt.END}')
         return True
     else:
-        print(f'{Fmt.BOLD}({ME}) JACK LOOPS FAILED{Fmt.END}')
+        print(f'{Fmt.BOLD}(start) JACK LOOPS FAILED{Fmt.END}')
         return False
 
 
@@ -138,7 +137,7 @@ def start_jack_stuff():
 
     jack_backend_options = CONFIG["jack_backend_options"] \
                     .replace('$autoCard', CONFIG["system_card"]) \
-                    .replace('$autoFS', str(get_bf_samplerate()))
+                    .replace('$autoFS', str(read_bf_config_fs()))
 
     cmdlist = ['jackd']
 
@@ -150,11 +149,11 @@ def start_jack_stuff():
 
     # Firewire: reset the Firewire Bus and run ffado-dbus-server
     if 'firewire' in cmdlist:
-        print(f'{Fmt.BOLD}({ME}) resetting the FIREWIRE BUS, sorry for users '
+        print(f'{Fmt.BOLD}(start) resetting the FIREWIRE BUS, sorry for users '
               f'using other FW things :-|{Fmt.END}')
         sp.Popen('ffado-test BusReset'.split())
         sleep(1)
-        print(f'{Fmt.BLUE}({ME}) running FIREWIRE DBUS SERVER ...{Fmt.END}')
+        print(f'{Fmt.BLUE}(start) running FIREWIRE DBUS SERVER ...{Fmt.END}')
         sp.Popen('killall -KILL ffado-dbus-server', shell=True)
         sp.Popen('ffado-dbus-server 1>/dev/null 2>&1', shell=True)
         sleep(2)
@@ -172,9 +171,9 @@ def start_jack_stuff():
     tries = 10
     while tries:
         if jack_is_running():
-            print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) JACKD STARTED{Fmt.END}')
+            print(f'{Fmt.BOLD}{Fmt.BLUE}(start) JACKD STARTED{Fmt.END}')
             break
-        print(f'({ME}) waiting for jackd ' + '.' * tries)
+        print(f'(start) waiting for jackd ' + '.' * tries)
         sleep(.5)
         tries -= 1
     # Still will wait a few, convenient for fast CPUs
@@ -204,14 +203,14 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
 
     if mode == 'stop':
         # Stop
-        print(f'{Fmt.RED}({ME}) stopping \'server.py peaudiosys\'{Fmt.END}')
+        print(f'{Fmt.RED}(start) stopping \'server.py peaudiosys\'{Fmt.END}')
         sp.Popen( f'pkill -KILL -f "server.py peaudiosys" \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
     elif mode == 'start':
         # Start
-        print(f'{Fmt.BLUE}({ME}) starting \'server.py peaudiosys\'{Fmt.END}')
+        print(f'{Fmt.BLUE}(start) starting \'server.py peaudiosys\'{Fmt.END}')
         cmd = f'python3 {MAINFOLDER}/share/server.py peaudiosys' \
                                                     f' {address} {port}'
         if todevnull:
@@ -237,15 +236,15 @@ def stop_processes(mode):
 
     if mode in ('all', 'stop'):
         # Stop Brutefir
-        print(f'({ME}) STOPPING BRUTEFIR')
+        print(f'(start) STOPPING BRUTEFIR')
         sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
 
         # Stop Jack Loops Daemon
-        print(f'({ME}) STOPPING JACK LOOPS')
+        print(f'(start) STOPPING JACK LOOPS')
         sp.Popen('pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True)
 
         # Stop Jack
-        print(f'({ME}) STOPPING JACKD')
+        print(f'(start) STOPPING JACKD')
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
 
     if mode in ('all', 'stop', 'server'):
@@ -261,7 +260,7 @@ def run_scripts(mode='start'):
         #     e.g the ecasound_peq, so we need to extract the script name.
         if type(script) == dict:
             script = list(script.keys())[0]
-        print(f'({ME}) will {mode} the script \'{script}\' ...')
+        print(f'(start) will {mode} the script \'{script}\' ...')
         # (i) Notice that we are open to run scripts writen in python, bash, etc...
         sp.Popen(f'{MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
                                   stdout=sys.stdout, stderr=sys.stderr)
@@ -277,7 +276,7 @@ def check_state_file():
 
     def recover_state(reason='damaged'):
         sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
-        print(f'{Fmt.BOLD}({ME}) ERROR \'.state\' file was {reason}, ' +
+        print(f'{Fmt.BOLD}(start) ERROR \'.state\' file was {reason}, ' +
               f'it has been restored from \'.state.BAK\'{Fmt.END}')
         now = ctime(time())
         with open(state_log_file, 'a') as f2:
@@ -290,7 +289,7 @@ def check_state_file():
             # if last field is ok, let's assume the whole file is ok
             if '"xo_set":' in state:
                 sp.Popen(f'cp {state_file} {state_file}.BAK'.split())
-                print(f'{Fmt.BLUE}({ME}) (i) .state copied to .state.BAK{Fmt.END}')
+                print(f'{Fmt.BLUE}(start) (i) .state copied to .state.BAK{Fmt.END}')
 
             # file damaged, lets recover from backup, and log to state.log
             else:
@@ -300,7 +299,7 @@ def check_state_file():
 
 
 def prepare_drc_graphs():
-    print(f'({ME}) processing drc sets to web/images/{LOUDSPEAKER} in background')
+    print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
     sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
 
@@ -339,7 +338,7 @@ if __name__ == "__main__":
     stop_processes(mode)
 
     if mode in ('stop', 'shutdown'):
-        print(f'({ME}) Bye!')
+        print(f'(start) Bye!')
         sys.exit()
 
     # STARTING:
@@ -351,7 +350,7 @@ if __name__ == "__main__":
         # Starting JACK, EXTERNAL_CARDS and JLOOPS
         jack_stuff = start_jack_stuff()
         if  jack_stuff != 'done':
-            print(f'{Fmt.BOLD}({ME}) Problems starting JACK: {jack_stuff}{Fmt.END}')
+            print(f'{Fmt.BOLD}(start) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
 
     if mode in ('all', 'scripts'):
@@ -362,15 +361,15 @@ if __name__ == "__main__":
 
         # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
         import share.services.preamp_mod.core as core
-        print(f'{Fmt.MAGENTA}({ME}) Managing a temporary \'core\' instance.{Fmt.END}')
+        print(f'{Fmt.MAGENTA}(start) Managing a temporary \'core\' instance.{Fmt.END}')
 
         # - BRUTEFIR
         bfstart = core.bf.restart_and_reconnect( ['pre_in_loop:output_1',
                                                   'pre_in_loop:output_2'] )
         if bfstart == 'done':
-            print(f'{Fmt.BOLD}{Fmt.BLUE}({ME}) BRUTEFIR STARTED.{Fmt.END}')
+            print(f'{Fmt.BOLD}{Fmt.BLUE}(start) BRUTEFIR STARTED.{Fmt.END}')
         else:
-            print(f'({Fmt.BOLD}{ME}) Problems starting BRUTEFIR: {bfstart}')
+            print(f'({Fmt.BOLD}start) Problems starting BRUTEFIR: {bfstart}')
             sys.exit()
 
         # - RESTORE ON_INIT AUDIO settings
@@ -380,7 +379,7 @@ if __name__ == "__main__":
         core.connect_monitors()
 
         del core
-        print(f'{Fmt.MAGENTA}({ME}) Closing the temporary \'core\' instance.{Fmt.END}')
+        print(f'{Fmt.MAGENTA}(start) Closing the temporary \'core\' instance.{Fmt.END}')
 
 
     # The 'peaudiosys' SERVER always runs, so that we can do basic operation
@@ -393,7 +392,7 @@ if __name__ == "__main__":
             sleep(1)
             mname = CONFIG["run_macro"]
             if mname:
-                print( f'{Fmt.BLUE}({ME}) triyng macro \'{mname}\'{Fmt.END}' )
+                print( f'{Fmt.BLUE}(start) triyng macro \'{mname}\'{Fmt.END}' )
                 sp.Popen( f'{MAINFOLDER}/macros/{mname}'.split() )
 
     # END
