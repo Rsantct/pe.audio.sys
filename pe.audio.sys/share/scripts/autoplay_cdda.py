@@ -49,6 +49,8 @@ sys.path.append(f'{UHOME}/pe.audio.sys')
 from share.miscel                       import send_cmd, CDDA_INFO_PATH
 from share.services.players_mod.cdda    import save_disc_metadata
 
+ME = 'autoplay_cdda'
+
 # OPTIONAL USER CONFIG
 USE_CD_MACRO = False
 

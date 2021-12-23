@@ -11,6 +11,9 @@ from time import sleep
 from subprocess import Popen
 
 
+ME = 'radio_macro'
+
+
 # DEFAULT CONFIG: intended to be modified when importing this module
 #                 from a real user macro N_xxxxxxx
 

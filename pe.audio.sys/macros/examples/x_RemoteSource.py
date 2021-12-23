@@ -18,11 +18,26 @@ import os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-from miscel import send_cmd, get_my_ip, get_remote_source_info
+from miscel import send_cmd, get_my_ip, get_remote_sources_info
 
+
+REMOTE_SOURCE_NAME = "remoteXXXXXX"
 
 # Getting remote source parameters
-source, remote_addr, remote_port  = get_remote_source_info()
+remote_sources = get_remote_sources_info()
+if not remote_sources:
+    print(f'(remote_source) ERROR remote sources not available')
+    sys.exit()
+
+found = False
+for item in remote_sources:
+    sname, remote_addr, remote_port  = item
+    if sname == REMOTE_SOURCE_NAME:
+        found = True
+        break
+if not found:
+    print(f'(remote_source) ERROR remote source {REMOTE_SOURCE_NAME} not found')
+    sys.exit()
 
 
 # Restarting zita process on sender side (sender will do only if needed)
@@ -44,7 +59,7 @@ print(f'Balancing delays for listening along with the remote loudspeaker')
 
 # Switching local source
 send_cmd(  'player pause' )
-send_cmd( f'preamp input {source}' )
+send_cmd( f'preamp input {REMOTE_SOURCE_NAME}' )
 
 # -------- OPTIONAL --------
 # Linking the relative changes in volume from the remote sender,

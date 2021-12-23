@@ -52,6 +52,7 @@ from   share.miscel         import *
 
 def prepare_extra_cards(channels=2):
     """ This launch resamplers that connects extra sound cards into Jack
+        (void)
     """
     if not CONFIG['external_cards']:
         return
@@ -78,6 +79,7 @@ def prepare_extra_cards(channels=2):
 
 def run_jloops():
     """ Jack loops launcher
+        (void)
     """
     # Jack loops launcher external daemon
     sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py', shell=True)
@@ -85,7 +87,7 @@ def run_jloops():
 
 def check_jloops():
     """ Jack loops checking
-        returns False if checking fails, otherwise returns True
+        (bool)
     """
     # The configured loops
     cfg_loops = []
@@ -113,7 +115,7 @@ def check_jloops():
         sleep(1)
         tries -= 1
     if tries:
-        print(f'{Fmt.BLUE}(start) JACK LOOPS STARTED{Fmt.END}')
+        print(f'{Fmt.BLUE}(start) JACK LOOPS RUNNING{Fmt.END}')
         return True
     else:
         print(f'{Fmt.BOLD}(start) JACK LOOPS FAILED{Fmt.END}')
@@ -121,8 +123,9 @@ def check_jloops():
 
 
 def jack_is_running():
-    ''' checks for jackd process to be running
-    '''
+    """ checks for jackd process to be running
+        (bool)
+    """
     try:
         sp.check_output('jack_lsp >/dev/null 2>&1'.split())
         return True
@@ -132,6 +135,7 @@ def jack_is_running():
 
 def start_jack_stuff():
     """ runs jackd with configured options, jack loops and extrernal cards ports
+        (void)
     """
     warnings = ''
 
@@ -198,9 +202,10 @@ def start_jack_stuff():
         return 'done'
 
 
-def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
-                  todevnull=False):
-
+def manage_server( mode='', address=SRV_HOST, port=SRV_PORT, todevnull=False):
+    """ Manages the server running in background
+        (void)
+    """
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}(start) stopping \'server.py peaudiosys\'{Fmt.END}')
@@ -215,18 +220,17 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT,
                                                     f' {address} {port}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
-                sp.Popen( cmd, shell=True, stdout=fnull,
-                                           stderr=fnull )
+                sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
         else:
-            sp.Popen( cmd, shell=True, stdout=sys.stdout,
-                                       stderr=sys.stderr )
+            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     else:
-        raise Exception(f'usage: manage_server(start|stop)')
+        raise Exception(f'bad manage_server call')
 
 
 def stop_processes(mode):
-
+    """ (void)
+    """
     # Killing any previous instance of start.py
     kill_bill( os.getpid() )
 
@@ -255,6 +259,8 @@ def stop_processes(mode):
 
 
 def run_scripts(mode='start'):
+    """ (void)
+    """
     for script in CONFIG['scripts']:
         # (i) Some elements on the scripts list from config.yml can be a dict,
         #     e.g the ecasound_peq, so we need to extract the script name.
@@ -269,7 +275,8 @@ def run_scripts(mode='start'):
 
 
 def check_state_file():
-    """ a sudden power break out can damage the .state file :-/
+    """ restores a copy of .state if it was damaged by a sudden power break out
+        (void)
     """
     state_file      = STATE_PATH
     state_log_file  = f'{LOG_FOLDER}/state.log'
@@ -299,6 +306,9 @@ def check_state_file():
 
 
 def prepare_drc_graphs():
+    """ used by the control web page
+        (void)
+    """
     print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
     sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
@@ -331,7 +341,7 @@ if __name__ == "__main__":
         sys.stdout = flog
         sys.stderr = flog
 
-    # Lets check STATE FILE '.state'
+    # CHECKING STATE FILE
     check_state_file()
 
     # STOPPING:
@@ -353,8 +363,8 @@ if __name__ == "__main__":
             print(f'{Fmt.BOLD}(start) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
 
+    # USER SCRIPTS
     if mode in ('all', 'scripts'):
-        # Running USER SCRIPTS
         run_scripts()
 
     if mode in ('all'):
@@ -382,14 +392,14 @@ if __name__ == "__main__":
         print(f'{Fmt.MAGENTA}(start) Closing the temporary \'core\' instance.{Fmt.END}')
 
 
-    # The 'peaudiosys' SERVER always runs, so that we can do basic operation
+    # RUN THE SERVER
     manage_server(mode='start')
+    if not server_is_running(who_asks='start'):
+        sys.exit()
 
+    # OPTIONAL USER MACRO AT START
     if mode in ('all'):
-        # OPTIONAL USER MACRO
         if 'run_macro' in CONFIG:
-            # wait a bit for server.py to be ready before running any macro
-            sleep(1)
             mname = CONFIG["run_macro"]
             if mname:
                 print( f'{Fmt.BLUE}(start) triyng macro \'{mname}\'{Fmt.END}' )
