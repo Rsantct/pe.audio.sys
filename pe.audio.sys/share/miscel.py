@@ -32,14 +32,21 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
-with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
-    CONFIG = yaml.safe_load(f)
+try:
+    with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
+        CONFIG = yaml.safe_load(f)
+except:
+    print(f'{Fmt.RED}(share.miscel) ERROR reading \'config.yml\'{Fmt.END}')
+    sys.exit()
+
+
 try:
     SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
 except:
     print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
           f'\'config.yml\'{Fmt.END}')
-    exit()
+    sys.exit()
+
 
 LOUDSPEAKER         = CONFIG['loudspeaker']
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
