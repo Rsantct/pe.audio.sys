@@ -31,7 +31,6 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 
 
-# Config, server addressing and common usage paths and variables
 with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
     CONFIG = yaml.safe_load(f)
 try:
@@ -47,6 +46,7 @@ LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
 MACROS_FOLDER       = f'{MAINFOLDER}/macros'
 STATE_PATH          = f'{MAINFOLDER}/.state'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
+EQ_CURVES           = {}
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
@@ -60,10 +60,10 @@ else:
     AMP_MANAGER     = ''
 
 
-# Some nice ANSI formats for printouts
 # (PLEASE KEEP THIS CLASS AT THE VERY BEGINNING)
 class Fmt:
     """
+    # Some nice ANSI formats for printouts
     # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
 
     0           all attributes off
@@ -141,10 +141,18 @@ class Fmt:
     END             = '\033[0m'
 
 
-# Format a given float (seconds) to a string "hh:mm:ss"
+def _init():
+    """ Autoexec on loading this module
+    """
+    find_eq_curves()
+    if not EQ_CURVES:
+        print( '(miscel) ERROR loading EQ_CURVES from share/eq/' )
+        sys.exit()
+
+
 def timesec2string(x):
-    """ in:     x seconds   (float)
-        out:    'hh:mm:ss'  (string)
+    """ Format a given float (seconds) to "hh:mm:ss"
+        (string)
     """
     # x must be float
     h = int( x / 3600 )         # hours
@@ -154,12 +162,44 @@ def timesec2string(x):
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
-# Reads the FS to be used by Brutefir
-# (i) This function is intentionally kept here, to be used even before Brutefir runs.
+def process_runs(pattern):
+    """ check for a system process to be running by a given pattern
+        (bool)
+    """
+    try:
+        # do NOT use shell=True because pgrep ...  will appear it self.
+        plist = sp.check_output(['pgrep', '-fla', pattern]).decode().split('\n')
+    except:
+        plist = []
+    for p in plist:
+        if pattern in p:
+            return True
+    return False
+
+
+def server_is_running(who_asks='miscel'):
+    """ (bool)
+    """
+    print(f'{Fmt.BLUE}({who_asks}) waiting for the server to be alive ...{Fmt.END}')
+    tries = 30  # up to 15 seconds
+    while tries:
+        if 'loudspeaker' in send_cmd('state'):
+            break
+        sleep(.5)
+        tries -= 1
+    if tries:
+        print(f'{Fmt.BLUE}({who_asks}) server.py is RUNNIG{Fmt.END}')
+        return True
+    else:
+        print(f'{Fmt.BOLD}({who_asks}) server.py NOT RUNNIG{Fmt.END}')
+        return False
+
+
 def read_bf_config_fs():
-    """ Retrieves loudspeaker's filters FS:
+    """ Reads the sampling rate configured in Brutefir
             - from         brutefir_config    (the loudspeaker config file),
             - or from   ~/.brutefir_defaults  (the default config file).
+        (int)
     """
     FS = 0
 
@@ -190,6 +230,7 @@ def read_bf_config_fs():
 def calc_eq( state ):
     """ Calculate the eq curves to be applied in the Brutefir EQ module,
         as per the provided dictionary of state values.
+        (mag, pha: numpy arrays)
     """
     zeros = np_zeros( EQ_CURVES["freqs"].shape[0] )
 
@@ -226,6 +267,7 @@ def calc_gain( state ):
     """ Calculates the gain from:   level,
                                     ref_level_gain
                                     source gain offset
+        (float)
     """
 
     gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
@@ -242,6 +284,7 @@ def get_eq_curve(cname, state):
     """ Retrieves the tone or loudness curve.
         Tone curves depens on state bass & treble.
         Loudness compensation curve depens on the configured refSPL.
+        (mag, pha: numpy arrays)
     """
     # (i) Former FIRtro curves array files xxx.dat were stored in Matlab way,
     #     so when reading them with numpy.loadtxt() it was needed to transpose
@@ -281,12 +324,13 @@ def get_eq_curve(cname, state):
            EQ_CURVES[f'{cname}_pha'][index]
 
 
-# Retrieves EQ curves for tone and loudness countour
 def find_eq_curves():
-    """ Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage in Brutefir
+    """ Updates EQ_CURVES
+        Scans share/eq/ and try to collect the whole set of EQ curves
+        needed for the EQ stage in Brutefir (tone and loudness countour)
+        (void)
     """
-    EQ_CURVES = {}
+    global EQ_CURVES
     eq_files = os.listdir(EQ_FOLDER)
 
     # file names ( 2x loud + 4x tones + freq = total 7 curves)
@@ -321,30 +365,31 @@ def find_eq_curves():
                          np_loadtxt( f'{EQ_FOLDER}/{files[0]}' )
                 pendings -= 1
             else:
-                print(f'(core) too much \'...{fname}\' '
+                print(f'(miscel) too much \'...{fname}\' '
                        'files under share/eq/')
         else:
-            print(f'(core) ERROR finding a \'...{fname}\' '
+            print(f'(miscel) ERROR finding a \'...{fname}\' '
                    'file under share/eq/')
 
     #if not pendings:
     if pendings == 0:
-        return EQ_CURVES
+        pass
     else:
-        return {}
+        EQ_CURVES = {}
 
 
-# Retrieves the sets of available target curves under the share/eq folder.
 def find_target_sets():
-    """
-        Retrieves the sets of available target curves under the share/eq folder.
+    """ Retrieves the sets of available target curves under the share/eq folder.
 
                             file name:              returned set name:
         minimal name        'target_mag.dat'        'target'
         a more usual name   'xxxx_target_mag.dat'   'xxxx'
 
         A 'none' set name is added as default for no target eq to be applied.
+
+        (list of <target names>)
     """
+
     def extract(x):
         """ Aux to extract a meaningful set name, examples:
                 'xxxx_target_mag.dat'   will return 'xxxx'
@@ -363,6 +408,7 @@ def find_target_sets():
 
         return x
 
+
     result = ['none']
 
     files = os.listdir( EQ_FOLDER )
@@ -376,10 +422,10 @@ def find_target_sets():
     return result
 
 
-# Retreives an optional PEQ (parametic eq) Ecasound filename if configured
 def get_peq_in_use():
     """ Finds out the PEQ (parametic eq) filename used by an inserted
         Ecasound sound processor, if included inside config.yml scripts.
+        (filepath: string)
     """
     for item in CONFIG["scripts"]:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
@@ -387,10 +433,10 @@ def get_peq_in_use():
     return 'none'
 
 
-# Sets a peaudiosys parameter as per a given pattern, useful for user macros.
 def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     """ Sets a peaudiosys parameter as per a given pattern.
         This applies only for 'xo', 'drc' and 'target'
+        (result: string)
     """
     result = ''
 
@@ -414,10 +460,10 @@ def set_as_pattern(param, pattern, sender='miscel', verbose=False):
     return result
 
 
-# Waiting for jack ports with name *pattern* to be available
 def wait4ports( pattern, timeout=10 ):
     """ Waits for jack ports with name *pattern* to be available.
         Default timeout 10 s
+        (bool)
     """
     n = timeout * 2
     while n:
@@ -432,10 +478,10 @@ def wait4ports( pattern, timeout=10 ):
         return False
 
 
-# Send a command to a peaudiosys server
 def send_cmd( cmd, sender='', verbose=False, timeout=60,
               host=SRV_HOST, port=SRV_PORT ):
     """ send commands to a pe.audio.sys server
+        (answer: string)
     """
     # (i) socket timeout 60 because Brutefir can need some time
     #     in slow machines after powersave shot it down.
@@ -471,9 +517,9 @@ def send_cmd( cmd, sender='', verbose=False, timeout=60,
     return ans
 
 
-# Checks the Mplayer config file
 def check_Mplayer_config_file(profile='istreams'):
     """ Checks the Mplayer config file
+        (result: string)
     """
     cpath = f'{UHOME}/.mplayer/config'
 
@@ -496,9 +542,9 @@ def check_Mplayer_config_file(profile='istreams'):
         return f'ERROR bad Mplayer profile \'{profile}\''
 
 
-# Auxiliary to detect the Spotify Client in use: desktop or librespot
 def detect_spotify_client(timeout=10):
-    """ the timeout will wait some seconds for the client to be running
+    """ Detects the Spotify Client in use: desktop or librespot
+        (string)
     """
     result = ''
 
@@ -527,25 +573,9 @@ def detect_spotify_client(timeout=10):
     return result
 
 
-# Auxiliary to check for a system process to be running by a pattern
-def process_runs(pattern):
-    """ check for a system process to be running by a given pattern
-    """
-    try:
-        # do NOT use shell=True because pgrep ...  will appear it self.
-        plist = sp.check_output(['pgrep', '-fla', pattern]).decode().split('\n')
-    except:
-        plist = []
-    for p in plist:
-        if pattern in p:
-            return True
-    return False
-
-
-# Kill previous instaces of a process
 def kill_bill(pid=0):
     """ Killing previous instances of a process as per its <pid>.
-        This is mainly used from start.py.
+        (void)
     """
 
     if not pid:
@@ -606,8 +636,10 @@ def kill_bill(pid=0):
     sleep(.5)
 
 
-# Function an wrappers for reading json dicts from disk files
 def read_json_from_file(fname):
+    """ read json dicts from disk files
+        (dictionary)
+    """
     d = {}
     if fname == STATE_PATH:
         d = {'input':'none', 'level':'0.0'}
@@ -623,17 +655,34 @@ def read_json_from_file(fname):
             times -= 1
         sleep(.25)
     return d
+
+
 def read_state_from_disk():
+    """ wrapper for reading the state dict
+        (dictionary)
+    """
     return read_json_from_file(STATE_PATH)
+
+
 def read_metadata_from_disk():
+    """ wrapper for reading the playing metadata dict
+        (dictionary)
+    """
     return read_json_from_file(PLAYER_META_PATH)
+
+
 def read_cdda_info_from_disk():
+    """ wrapper for reading the cdda info dict
+        (dictionary)
+    """
     return read_json_from_file(CDDA_INFO_PATH)
 
 
-# Read the last line from a large file, efficiently.
 def read_last_line(filename=''):
-    # source:
+    """ Read the last line from a large file, efficiently.
+        (string)
+    """
+    # credits:
     # https://stackoverflow.com/questions/46258499/read-the-last-line-of-a-file-in-python
     # For large files it would be more efficient to seek to the end of the file,
     # and move backwards to find a newline.
@@ -661,9 +710,11 @@ def read_last_line(filename=''):
         return ''
 
 
-# Read the last N lines from a large file, efficiently.
 def read_last_lines(filename='', nlines=1):
-    # source:
+    """ Read the last N lines from a large file, efficiently.
+        (list of strings)
+    """
+    # credits:
     # https://stackoverflow.com/questions/46258499/read-the-last-line-of-a-file-in-python
     # For large files it would be more efficient to seek to the end of the file,
     # and move backwards to find a newline.
@@ -694,9 +745,11 @@ def read_last_lines(filename='', nlines=1):
         return ['']
 
 
-# A tool to flush some special temporary files (!) BE CAREFUL WITH THIS
 def force_to_flush_file(fname='', content=''):
-
+    """ A tool to flush some special temporary files
+        (!) BE CAREFUL WITH THIS
+        (result: string)
+    """
     bare_fname = fname.replace(f'{MAINFOLDER}/', '')
 
     if 'pe.audio.sys' not in fname:
@@ -721,8 +774,10 @@ def force_to_flush_file(fname='', content=''):
     return 'ERROR flushing \'fname\''
 
 
-# Validate if a given string is a valid IP address
 def is_IP(s):
+    """ Validate if a given string is a valid IP address
+        (bool)
+    """
     try:
         ipaddress.ip_address(s)
         return True
@@ -730,8 +785,10 @@ def is_IP(s):
         return False
 
 
-# Aux to get my own IP address
 def get_my_ip():
+    """ retrieves the own IP address
+        (string)
+    """
     try:
         tmp = sp.check_output( 'hostname --all-ip-addresses'.split() ).decode()
         return tmp.split()[0]
@@ -739,9 +796,9 @@ def get_my_ip():
         return ''
 
 
-# Gets the selected source from a pe.audio.sys server at <addr>
 def get_remote_selected_source(addr, port=9990):
     """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
+        (string)
     """
     remote_source = ''
     remote_state = send_cmd('state', host=addr, port=port, timeout=1)
@@ -752,13 +809,11 @@ def get_remote_selected_source(addr, port=9990):
     return remote_source
 
 
-# Gets data from a remoteXXXXX defined source
-def get_remote_source_info():
-    ''' Retrieves the remoteXXXXXX source found under the 'sources:' section
+def get_remote_sources_info():
+    ''' Retrieves the remoteXXXXXX sources found under the 'sources:' section
         inside config.yml.
 
-        input:  --
-        output: srcName, srcIp, srcPort:
+        (list of tuples <srcName,srcIp,srcPort>)
     '''
     # Retrieving the remote sender address from 'config.yml'.
     # For a 'remote.....' named source, it is expected to have
@@ -766,33 +821,28 @@ def get_remote_source_info():
     #   jack_pname:  X.X.X.X
     # so this way we can query the remote sender to run 'zita-j2n'
 
-    remote_addr = ''
-    remote_port = 9990
-
+    remotes = []
     for source in CONFIG["sources"]:
         if 'remote' in source:
+            addr = ''
+            port = 9990
             tmp = CONFIG["sources"][source]["jack_pname"]
             tmp_addr = tmp.split(':')[0]
             tmp_port = tmp.split(':')[-1]
             if is_IP(tmp_addr):
-                remote_addr = tmp_addr
+                addr = tmp_addr
+            else:
+                print(f'(miscel) source: \'{source}\' address: \'{tmp_addr}\' not valid')
+                continue
                 if tmp_port.isdigit():
-                    remote_port = int(tmp_port)
-                break
+                    port = int(tmp_port)
+            remotes.append( (source, addr, port ) )
 
-    if not remote_addr:
-        print(f'(zita-n2j) Cannot get remote address from configured sources')
-        sys.exit()
-    if not is_IP(remote_addr):
-        print(f'(zita-n2j) source: \'{source}\' address: \'{remote_addr}\' not valid')
-        sys.exit()
+    if not remotes:
+        print(f'(miscel) Cannot get remote sources')
 
-    return source, remote_addr, remote_port
+    return remotes
 
 
-# EQ curves for tone and loudness contour are mandatory
-# (i) kept last because it depends on the find_eq_curves() function
-EQ_CURVES   = find_eq_curves()
-if not EQ_CURVES:
-    print( '(core) ERROR loading EQ_CURVES from share/eq/' )
-    sys.exit()
+# AUTOEXEC
+_init()
