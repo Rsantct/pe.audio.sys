@@ -2,13 +2,14 @@
 """
     A module to tune a Mplayer radio station and listen to it.
 """
-from os.path import expanduser
-import sys
+from    time            import sleep
+from    subprocess      import Popen
+from    os.path         import expanduser
+import  sys
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import *
-from time import sleep
-from subprocess import Popen
+
+from    share.miscel    import send_cmd, wait4ports
 
 
 ME = 'radio_macro'
@@ -23,6 +24,33 @@ lu_offset       = 9
 loudness_comp   = 'off'
 xo_pattern      = 'mp'
 drc_pattern     = 'mp'
+
+
+def set_as_pattern(param, pattern):
+    """ Sets a peaudiosys parameter as per a given pattern.
+        This applies only for 'xo', 'drc' and 'target'
+        (result: string)
+    """
+    result = ''
+
+    if param not in ('xo', 'drc', 'target'):
+        return "parameter mus be 'xo', 'drc' or 'target'"
+
+    sets = send_cmd(f'get_{param}_sets')
+
+    try:
+        sets = json_loads( sets )
+    except:
+        return result
+
+    for setName in sets:
+
+        if pattern in setName:
+            result = send_cmd( f'set_{param} {setName}',
+                               sender='radio_macro', verbose=True )
+            break
+
+    return result
 
 
 def main():
@@ -79,10 +107,10 @@ def main():
 
     # XO
     if xo_pattern:
-        set_as_pattern('xo', xo_pattern, sender=ME, verbose=True)
+        set_as_pattern('xo', xo_pattern)
         sleep(.5)
 
     # DRC
     if drc_pattern:
-        set_as_pattern('drc', drc_pattern, sender=ME, verbose=True)
+        set_as_pattern('drc', drc_pattern)
         sleep(.5)
