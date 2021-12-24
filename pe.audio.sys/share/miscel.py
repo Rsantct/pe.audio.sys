@@ -155,42 +155,6 @@ def read_bf_config_fs():
     return FS
 
 
-def calc_eq( state ):
-    """ Calculate the eq curves to be applied in the Brutefir EQ module,
-        as per the provided dictionary of state values.
-        (mag, pha: numpy arrays)
-    """
-    zeros = np_zeros( EQ_CURVES["freqs"].shape[0] )
-
-    # getting loudness and tones curves
-    loud_mag, loud_pha = get_eq_curve( 'loud', state )
-    bass_mag, bass_pha = get_eq_curve( 'bass', state )
-    treb_mag, treb_pha = get_eq_curve( 'treb', state )
-
-    # getting target curve
-    target_name = state["target"]
-    if target_name == 'none':
-        targ_mag = zeros
-        targ_pha = zeros
-    else:
-        if target_name != 'target':     # see doc string on find_target_sets()
-            target_name += '_target'
-        targ_mag = np_loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
-        targ_pha = np_loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
-
-    # Compose
-    eq_mag = targ_mag + loud_mag * state["equal_loudness"] \
-                                                + bass_mag + treb_mag
-
-    if CONFIG["bfeq_linear_phase"]:
-        eq_pha = zeros
-    else:
-        eq_pha = targ_pha + loud_pha * state["equal_loudness"] \
-                 + bass_pha + treb_pha
-
-    return eq_mag, eq_pha
-
-
 def calc_gain( state ):
     """ Calculates the gain from:   level,
                                     ref_level_gain
@@ -206,50 +170,6 @@ def calc_gain( state ):
         gain += float( CONFIG["sources"][state["input"]]["gain"] )
 
     return gain
-
-
-def get_eq_curve(cname, state):
-    """ Retrieves the tone or loudness curve.
-        Tone curves depens on state bass & treble.
-        Loudness compensation curve depens on the configured refSPL.
-        (mag, pha: numpy arrays)
-    """
-    # (i) Former FIRtro curves array files xxx.dat were stored in Matlab way,
-    #     so when reading them with numpy.loadtxt() it was needed to transpose
-    #     and flipud in order to access to the curves data in a natural way.
-    #     Currently the curves are stored in pythonic way, so numpy.loadtxt()
-    #     will read directly usable data.
-
-    # Tone eq curves are given [-span...0...-span]
-    if cname == 'bass':
-        bass_center_index = (EQ_CURVES["bass_mag"].shape[0] - 1) // 2
-        index = int(round(state["bass"]))   + bass_center_index
-
-    elif cname == 'treb':
-        treble_center_index = (EQ_CURVES["treb_mag"].shape[0] - 1) // 2
-        index = int(round(state["treble"])) + treble_center_index
-
-    # Using the previously detected flat curve index and
-    # also limiting as per the eq_loud_ceil boolean inside config.yml
-    elif cname == 'loud':
-
-        index_max   = EQ_CURVES["loud_mag"].shape[0] - 1
-        index_flat  = CONFIG['refSPL']
-        index_min   = 0
-        if CONFIG["eq_loud_ceil"]:
-            index_max = index_flat
-
-        if state["equal_loudness"]:
-            index = CONFIG['refSPL'] + state["level"]
-        else:
-            index = index_flat
-        index = int(round(index))
-
-        # Clamp index to the available "loudness deepness" curves set
-        index = max( min(index, index_max), index_min )
-
-    return EQ_CURVES[f'{cname}_mag'][index], \
-           EQ_CURVES[f'{cname}_pha'][index]
 
 
 def find_eq_curves():
