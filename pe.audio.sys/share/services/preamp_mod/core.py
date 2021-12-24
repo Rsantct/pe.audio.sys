@@ -351,6 +351,86 @@ class Preamp(object):
     #     Also notice that we use *dummy to accommodate the preamp.py parser
     #     mechanism wich always will include two arguments for any Preamp call.
 
+    def _calc_eq_curve(self, cname, candidate):
+        """ Retrieves the tone or loudness curve
+            Tone curves depens on candidate-state bass & treble.
+            Loudness compensation curve depens on the configured refSPL.
+            (mag, pha: numpy arrays)
+        """
+        # (i) Former FIRtro curves array files xxx.dat were stored in Matlab way,
+        #     so when reading them with numpy.loadtxt() it was needed to transpose
+        #     and flipud in order to access to the curves data in a natural way.
+        #     Currently the curves are stored in pythonic way, so numpy.loadtxt()
+        #     will read directly usable data.
+
+        # Tone eq curves are given [-span...0...-span]
+        if cname == 'bass':
+            bass_center_idx   = (EQ_CURVES["bass_mag"].shape[0] - 1) // 2
+            index             = int(round(candidate["bass"])) + bass_center_idx
+
+        elif cname == 'treb':
+            treble_center_idx = (EQ_CURVES["treb_mag"].shape[0] - 1) // 2
+            index             = int(round(candidate["treble"])) + treble_center_idx
+
+        # Using the previously detected flat curve index and
+        # also limiting as per the eq_loud_ceil boolean inside config.yml
+        elif cname == 'loud':
+
+            index_max   = EQ_CURVES["loud_mag"].shape[0] - 1
+            index_flat  = CONFIG['refSPL']
+            index_min   = 0
+            if CONFIG["eq_loud_ceil"]:
+                index_max = index_flat
+
+            if candidate["equal_loudness"]:
+                index = CONFIG['refSPL'] + self.state["level"]
+            else:
+                index = index_flat
+            index = int(round(index))
+
+            # Clamp index to the available "loudness deepness" curves set
+            index = max( min(index, index_max), index_min )
+
+        return EQ_CURVES[f'{cname}_mag'][index], \
+               EQ_CURVES[f'{cname}_pha'][index]
+
+
+    def _calc_eq(self, candidate):
+        """ Calculate the eq curves to be applied in the Brutefir EQ module,
+            as per the given candidate tone, loudness and target curves
+            (mag, pha: numpy arrays)
+        """
+        zeros = np.zeros( EQ_CURVES["freqs"].shape[0] )
+
+        # getting loudness and tones curves
+        loud_mag, loud_pha = self._calc_eq_curve( 'loud', candidate )
+        bass_mag, bass_pha = self._calc_eq_curve( 'bass', candidate )
+        treb_mag, treb_pha = self._calc_eq_curve( 'treb', candidate )
+
+        # getting target curve
+        target_name = candidate["target"]
+        if target_name == 'none':
+            targ_mag = zeros
+            targ_pha = zeros
+        else:
+            if target_name != 'target':     # see doc string on find_target_sets()
+                target_name += '_target'
+            targ_mag = np.loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
+            targ_pha = np.loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
+
+        # Compose
+        eq_mag = targ_mag + loud_mag * candidate["equal_loudness"] \
+                 + bass_mag + treb_mag
+
+        if CONFIG["bfeq_linear_phase"]:
+            eq_pha = zeros
+        else:
+            eq_pha = targ_pha + loud_pha * candidate["equal_loudness"] \
+                     + bass_pha + treb_pha
+
+        return eq_mag, eq_pha
+
+
 
     def _print_threads(self):
         """ Console info about active threads
@@ -440,7 +520,7 @@ class Preamp(object):
         """
         gmax            = self.gain_max
         gain            = calc_gain( candidate )
-        eq_mag, eq_pha  = calc_eq( candidate )
+        eq_mag, eq_pha  = self._calc_eq( candidate )
         bal             = candidate["balance"]
 
         headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0)
