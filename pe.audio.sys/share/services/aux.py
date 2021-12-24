@@ -22,11 +22,10 @@
 #   https://watchdog.readthedocs.io/en/latest/
 from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
-import  ipaddress
 import  jack
 import  json
-from    subprocess          import  Popen, check_output
-from    time                import  sleep, strftime
+from    subprocess          import  Popen
+from    time                import  sleep
 import  os
 import  sys
 import  threading
