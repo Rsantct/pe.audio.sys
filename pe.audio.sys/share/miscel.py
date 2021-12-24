@@ -361,33 +361,6 @@ def get_peq_in_use():
     return 'none'
 
 
-def set_as_pattern(param, pattern, sender='miscel', verbose=False):
-    """ Sets a peaudiosys parameter as per a given pattern.
-        This applies only for 'xo', 'drc' and 'target'
-        (result: string)
-    """
-    result = ''
-
-    if param not in ('xo', 'drc', 'target'):
-        return "parameter mus be 'xo', 'drc' or 'target'"
-
-    sets = send_cmd(f'get_{param}_sets')
-
-    try:
-        sets = json_loads( sets )
-    except:
-        return result
-
-    for setName in sets:
-
-        if pattern in setName:
-            result = send_cmd( f'set_{param} {setName}',
-                               sender=sender, verbose=verbose )
-            break
-
-    return result
-
-
 def wait4ports( pattern, timeout=10 ):
     """ Waits for jack ports with name *pattern* to be available.
         Default timeout 10 s
