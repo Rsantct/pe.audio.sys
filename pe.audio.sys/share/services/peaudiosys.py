@@ -21,17 +21,10 @@
     This module is loaded by 'server.py'
 """
 
-#   https://watchdog.readthedocs.io/en/latest/
-from watchdog.observers     import  Observer
-from watchdog.events        import  FileSystemEventHandler
-import  ipaddress
-import  jack
 import  json
-from    subprocess          import  Popen, check_output
-from    time                import  sleep, strftime
+from    time                import  strftime
 import  os
 import  sys
-import  threading
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
