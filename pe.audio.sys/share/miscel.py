@@ -155,23 +155,6 @@ def read_bf_config_fs():
     return FS
 
 
-def calc_gain( state ):
-    """ Calculates the gain from:   level,
-                                    ref_level_gain
-                                    source gain offset
-        (float)
-    """
-
-    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
-                             - state["lu_offset"]
-
-    # Adding here the specific source gain:
-    if state["input"] != 'none':
-        gain += float( CONFIG["sources"][state["input"]]["gain"] )
-
-    return gain
-
-
 def find_eq_curves():
     """ Updates EQ_CURVES
         Scans share/eq/ and try to collect the whole set of EQ curves
@@ -224,50 +207,6 @@ def find_eq_curves():
         pass
     else:
         EQ_CURVES = {}
-
-
-def find_target_sets():
-    """ Retrieves the sets of available target curves under the share/eq folder.
-
-                            file name:              returned set name:
-        minimal name        'target_mag.dat'        'target'
-        a more usual name   'xxxx_target_mag.dat'   'xxxx'
-
-        A 'none' set name is added as default for no target eq to be applied.
-
-        (list of <target names>)
-    """
-
-    def extract(x):
-        """ Aux to extract a meaningful set name, examples:
-                'xxxx_target_mag.dat'   will return 'xxxx'
-                'target_mag.dat'        will return 'target'
-        """
-
-        if x[:6] == 'target':
-            return 'target'
-        else:
-            x = x[:-14]
-
-        # strip trailing unions if used
-        for c in ('.', '-', '_'):
-            if x[-1] == c:
-                x = x[:-1]
-
-        return x
-
-
-    result = ['none']
-
-    files = os.listdir( EQ_FOLDER )
-    tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
-
-    for fname in tfiles:
-        set_name = extract(fname)
-        if not set_name in result:
-            result.append( set_name )
-
-    return result
 
 
 def get_peq_in_use():
