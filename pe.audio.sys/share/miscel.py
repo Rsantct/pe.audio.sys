@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-import  socket              # (i) do not use from socket import socket see below
+import  socket
 import  ipaddress
 from    json import loads as json_loads
 from    time import sleep
@@ -26,25 +26,26 @@ from    numpy import loadtxt as np_loadtxt, zeros as np_zeros
 import  configparser
 import  os
 import  sys
-from    miscel_mod.format import Fmt
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share')
+
+from    miscel_mod.format import Fmt
 
 
 try:
     with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
         CONFIG = yaml.safe_load(f)
 except:
-    print(f'{Fmt.RED}(share.miscel) ERROR reading \'config.yml\'{Fmt.END}')
+    print(f'{Fmt.RED}(miscel) ERROR reading \'config.yml\'{Fmt.END}')
     sys.exit()
 
 
 try:
     SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
 except:
-    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
-          f'\'config.yml\'{Fmt.END}')
+    print(f'{Fmt.RED}(miscel) ERROR reading address/port in \'config.yml\'{Fmt.END}')
     sys.exit()
 
 
