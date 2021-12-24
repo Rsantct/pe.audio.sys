@@ -37,9 +37,11 @@ import threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from share.miscel       import *
 from share.miscel_mod   import jack_mod as jack
 from share.miscel_mod   import brutefir_mod as bf
+
+from miscel import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
+                    read_state_from_disk, get_peq_in_use, Fmt
 
 
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
@@ -293,7 +295,7 @@ class Preamp(object):
         self.state["peq_set"] = get_peq_in_use()
         self.state["fs"] = jack.get_samplerate()
         # The target curves available under the 'eq' folder
-        self.target_sets = find_target_sets()
+        self.target_sets = self._find_target_sets()
         # The available span for tone curves
         self.bass_span   = int( (EQ_CURVES["bass_mag"].shape[0] - 1) / 2 )
         self.treble_span = int( (EQ_CURVES["treb_mag"].shape[0] - 1) / 2 )
@@ -350,6 +352,50 @@ class Preamp(object):
     # (i) Remember to return some result from any method below.
     #     Also notice that we use *dummy to accommodate the preamp.py parser
     #     mechanism wich always will include two arguments for any Preamp call.
+
+    def _find_target_sets(self):
+        """ Retrieves the sets of available target curves under the share/eq folder.
+
+                                file name:              returned set name:
+            minimal name        'target_mag.dat'        'target'
+            a more usual name   'xxxx_target_mag.dat'   'xxxx'
+
+            A 'none' set name is added as default for no target eq to be applied.
+
+            (list of <target names>)
+        """
+
+        def extract(x):
+            """ Aux to extract a meaningful set name, examples:
+                    'xxxx_target_mag.dat'   will return 'xxxx'
+                    'target_mag.dat'        will return 'target'
+            """
+
+            if x[:6] == 'target':
+                return 'target'
+            else:
+                x = x[:-14]
+
+            # strip trailing unions if used
+            for c in ('.', '-', '_'):
+                if x[-1] == c:
+                    x = x[:-1]
+
+            return x
+
+
+        result = ['none']
+
+        files = os.listdir( EQ_FOLDER )
+        tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
+
+        for fname in tfiles:
+            set_name = extract(fname)
+            if not set_name in result:
+                result.append( set_name )
+
+        return result
+
 
     def _calc_eq_curve(self, cname, candidate):
         """ Retrieves the tone or loudness curve
@@ -519,7 +565,7 @@ class Preamp(object):
             does not exceed gain limits
         """
         gmax            = self.gain_max
-        gain            = calc_gain( candidate )
+        gain            = bf.calc_gain( candidate )
         eq_mag, eq_pha  = self._calc_eq( candidate )
         bal             = candidate["balance"]
 
