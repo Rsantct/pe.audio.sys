@@ -90,7 +90,7 @@ def timesec2string(x):
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
-def process_runs(pattern):
+def process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
     """
