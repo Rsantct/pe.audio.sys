@@ -27,24 +27,23 @@
 
 """
 
-import sys
-import os
+import  json
+from    subprocess import Popen
+from    time import time
+import  socket
+from    watchdog.observers import Observer
+from    watchdog.events import FileSystemEventHandler
+import  sys
+import  os
 
 UHOME           = os.path.expanduser("~")
-BASE_DIR        = f'{UHOME}/pe.audio.sys'
-LOG_DIR         = f'{BASE_DIR}/log'
+sys.path.append( f'{UHOME}/pe.audio.sys/share' )
+
+import  server
+from    miscel import CONFIG, send_cmd, get_remote_selected_source, read_last_line
+
+LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
 CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'
-
-sys.path.append( f'{BASE_DIR}/share' )
-import miscel
-import server
-
-import json
-from subprocess import Popen
-from time import time
-import socket
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 
 # ------------- USER CONFIG --------------
@@ -81,7 +80,7 @@ class file_event_handler(FileSystemEventHandler):
 
 
 def get_state():
-    return json.loads( miscel.send_cmd('state') )
+    return json.loads( send_cmd('state') )
 
 
 def detect_remotes():
@@ -98,7 +97,7 @@ def detect_remotes():
         if addr == my_ip:
             continue
 
-        if 'remote' in miscel.get_remote_selected_source(addr).lower():
+        if 'remote' in get_remote_selected_source(addr).lower():
             clients.append(addr)
 
     return clients
@@ -106,7 +105,7 @@ def detect_remotes():
 
 def remote_cmd(cli_addr, cmd):
     print( f'(remote_volume) remote {cli_addr} sending \'{cmd}\'' )
-    miscel.send_cmd( cmd, host=cli_addr, verbose=False )
+    send_cmd( cmd, host=cli_addr, verbose=False )
 
 
 def remote_update_levels(rem_addr):
@@ -124,7 +123,7 @@ def relay_level_changes():
     """
 
     # Read last command from the command log file
-    tmp = miscel.read_last_line( CMD_LOG_PATH )
+    tmp = read_last_line( CMD_LOG_PATH )
     # e.g.: "2020/10/23 17:16:43; level -1 add; done"
     last_cmd = tmp.split(';')[1].strip()
 
@@ -154,7 +153,7 @@ def relay_level_changes():
 
         # Checking if remote is still listening to us
         # then updates the level event to remote
-        if 'remote' in miscel.get_remote_selected_source(rem_addr):
+        if 'remote' in get_remote_selected_source(rem_addr):
             remote_cmd(rem_addr, wanted_cmd)
 
         # else purge from remotes list if not listening anymore
@@ -169,7 +168,7 @@ def broadcast_level_settings():
 
     for rem_addr in remoteClients:
 
-        if 'remote' in miscel.get_remote_selected_source(rem_addr):
+        if 'remote' in get_remote_selected_source(rem_addr):
             remote_update_levels(rem_addr)
         else:
             print( f'remote {rem_addr} not listening by now :-/' )
@@ -258,4 +257,4 @@ if __name__ == "__main__":
     server.SERVICE       = 'remote_volume_daemon'
     server.PROCESSOR_MOD = __import__(__name__)
     server.VERBOSE       = True
-    server.run_server( '0.0.0.0', miscel.CONFIG['peaudiosys_port'] + 5)
+    server.run_server( '0.0.0.0', CONFIG['peaudiosys_port'] + 5)
