@@ -139,4 +139,3 @@ def get_ports(pattern='',  is_audio=True, is_midi=False,
                                     is_physical, can_monitor,
                                     is_terminal )
     return ports
-
