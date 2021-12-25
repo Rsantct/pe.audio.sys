@@ -24,18 +24,22 @@ from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
 import  jack
 import  json
-from    subprocess          import  Popen
+from    subprocess          import  Popen, check_output
 from    time                import  sleep
 import  os
 import  sys
 import  threading
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-from    share.miscel        import  *
-from    share.miscel_mod.brutefir_mod import add_delay as bf_add_delay,     \
-                                             is_running as bf_is_running
+from    miscel              import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
+                                    AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH,\
+                                    read_state_from_disk, send_cmd,         \
+                                    wait4ports, process_is_running, Fmt
+
+from    miscel_mod.brutefir_mod import  add_delay as bf_add_delay,          \
+                                        is_running as bf_is_running
 
 
 def dump_aux_info():
@@ -86,7 +90,9 @@ def manage_amp_switch(mode):
 
 
     def set_amp_state(mode):
-        if not AMP_MANAGER:
+        if 'amp_manager' in CONFIG:
+            AMP_MANAGER     = CONFIG['amp_manager']
+        else:
             return '(aux) amp_manager not configured'
         print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
         Popen( f'{AMP_MANAGER} {mode}', shell=True )
@@ -291,16 +297,14 @@ def manage_lu_monitor(string):
     #   'loudness_monitor.py' was alive in order to release any write to it.
     #   If not alive, any f.write() to LDCTRL_PATH will HANG UP
     #   :-(
-    try:
-        sp.check_output('pgrep -fla loudness_monitor.py'.split())
-    except:
+    if not process_is_running('loudness_monitor.py'):
         return 'ERROR loudness_monitor.py NOT running'
     try:
         with open(LDCTRL_PATH, 'w') as f:
             f.write(string)
         return 'ordered'
-    except:
-        return 'unknown ERROR writing .loudness_control FIFO'
+    except Exception as e:
+        return f'ERROR writing .loudness_control FIFO: {str(e)}'
 
 
 def manage_warning_msg(arg):
