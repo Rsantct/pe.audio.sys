@@ -63,10 +63,6 @@ CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
 BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
-if 'amp_manager' in CONFIG:
-    AMP_MANAGER     = CONFIG['amp_manager']
-else:
-    AMP_MANAGER     = ''
 
 
 def _init():
