@@ -43,9 +43,8 @@ UHOME = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from share.miscel import Fmt, CONFIG
+from share.miscel import CONFIG, Fmt
 import subprocess as sp
-import yaml
 
 
 def get_pulse_cards():
