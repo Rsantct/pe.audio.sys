@@ -45,9 +45,11 @@ import os
 import sys
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-from   share.miscel         import *
+from    miscel import   CONFIG, SRV_HOST, SRV_PORT, STATE_PATH, LOG_FOLDER, \
+                        MAINFOLDER, LOUDSPEAKER, read_bf_config_fs,         \
+                        server_is_running, Fmt, kill_bill
 
 
 def prepare_extra_cards(channels=2):

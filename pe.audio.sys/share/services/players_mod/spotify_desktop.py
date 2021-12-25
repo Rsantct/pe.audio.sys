@@ -75,8 +75,12 @@ def set_shuffle(mode):
     # (!) The command line tool 'playerctl' has a shuffle method
     #     BUT it does not work with Spotify Desktop :-(
     mode = { 'on':'On', 'off':'Off' }[mode]
-    ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
-    #print('---->', ans) # DEBUG
+    try:
+        ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
+        ans = { 'on':'on', 'off':'off', 'On':'on', 'Off':'off' }[ans]
+    except:
+        ans = 'off'
+    return ans
 
 
 def spotify_playlists(cmd, arg=''):

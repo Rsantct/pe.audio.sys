@@ -36,8 +36,7 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel       import  CONFIG, LSPK_FOLDER, EQ_CURVES,             \
-                                BFCFG_PATH, BFDEF_PATH, read_bf_config_fs,  \
-                                calc_gain, Fmt
+                                BFCFG_PATH, read_bf_config_fs, Fmt
 
 
 from share.miscel_mod   import jack_mod as jack
@@ -93,6 +92,23 @@ def set_subsonic(mode):
         return 'subsonic coeff not available'
     else:
         return 'done'
+
+
+def calc_gain( state ):
+    """ Calculates the gain from:   level,
+                                    ref_level_gain
+                                    source gain offset
+        (float)
+    """
+
+    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
+                             - state["lu_offset"]
+
+    # Adding here the specific source gain:
+    if state["input"] != 'none':
+        gain += float( CONFIG["sources"][state["input"]]["gain"] )
+
+    return gain
 
 
 def set_gains( state ):

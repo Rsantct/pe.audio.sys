@@ -45,7 +45,7 @@ import sys
 import os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import is_IP, get_my_ip, send_cmd, get_remote_sources_info
+from miscel import get_my_ip, send_cmd, get_remote_sources_info
 
 
 # Additional buffering (ms) (default 10, safe value 50, WiFi 100)

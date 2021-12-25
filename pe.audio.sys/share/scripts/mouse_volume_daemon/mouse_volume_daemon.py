@@ -55,7 +55,6 @@
 #           because it is always available
 #           (https://www.kernel.org/doc/html/latest/input/input.html#mousedev)
 
-import time
 import subprocess as sp
 import binascii
 import yaml

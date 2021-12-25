@@ -119,7 +119,7 @@ def do_printout():
 
 if __name__ == "__main__" :
 
-    if not process_runs('brutefir'):
+    if not process_is_running('brutefir'):
         print('brutefir process NOT running')
         sys.exit()
 

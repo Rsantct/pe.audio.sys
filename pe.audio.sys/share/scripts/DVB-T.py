@@ -48,7 +48,7 @@ import sys
 import os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import MAINFOLDER, check_Mplayer_config_file
+from miscel import MAINFOLDER, check_Mplayer_config_file, Fmt
 
 
 ## USER SETTINGS: see inside DVB-T.yml

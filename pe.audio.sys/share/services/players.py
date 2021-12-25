@@ -26,19 +26,22 @@
 # .player_metadata  'w'     Stores the current player metadata
 #
 
-from os.path import expanduser, exists, getsize
-import sys
-import subprocess as sp
-import threading
-from time import sleep, strftime
-import json
-from socket import socket
+from    os.path import expanduser
+import  sys
+import  threading
+from    time    import sleep
+import  json
+
 
 UHOME = expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
 sys.path.append(MAINFOLDER)
 
-from  share.miscel                  import  *
+from  share.miscel                  import  CONFIG, PLAYER_META_PATH,       \
+                                            detect_spotify_client,          \
+                                            read_state_from_disk,           \
+                                            read_cdda_info_from_disk,       \
+                                            send_cmd, is_IP
 
 from  players_mod.mpd               import  mpd_control,                \
                                             mpd_meta,                   \
