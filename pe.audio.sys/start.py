@@ -47,9 +47,8 @@ import sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-from    miscel import   CONFIG, SRV_HOST, SRV_PORT, STATE_PATH, LOG_FOLDER, \
-                        MAINFOLDER, LOUDSPEAKER, read_bf_config_fs,         \
-                        server_is_running, Fmt, kill_bill
+from    miscel import   CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER,\
+                        read_bf_config_fs, server_is_running, Fmt, kill_bill
 
 
 def prepare_extra_cards(channels=2):
@@ -204,10 +203,17 @@ def start_jack_stuff():
         return 'done'
 
 
-def manage_server( mode='', address=SRV_HOST, port=SRV_PORT, todevnull=False):
+def manage_server( mode='', todevnull=False):
     """ Manages the server running in background
         (void)
     """
+
+    try:
+        SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
+    except:
+        raise Exception(f'{Fmt.RED}(start) ERROR reading address/port '
+                        f'in \'config.yml\'{Fmt.END}')
+
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}(start) stopping \'server.py peaudiosys\'{Fmt.END}')
