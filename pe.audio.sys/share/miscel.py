@@ -22,7 +22,7 @@ from    json import loads as json_loads
 from    time import sleep
 import  subprocess as sp
 import  yaml
-from    numpy import loadtxt as np_loadtxt, zeros as np_zeros
+from    numpy import loadtxt as np_loadtxt
 import  configparser
 import  os
 import  sys
