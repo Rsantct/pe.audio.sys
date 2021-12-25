@@ -392,7 +392,7 @@ def kill_bill(pid=0):
     sleep(.5)
 
 
-def read_json_from_file(fname):
+def read_json_from_file(fname, tries=5):
     """ read json dicts from disk files
         (dictionary)
     """
@@ -401,14 +401,13 @@ def read_json_from_file(fname):
         d = {'input':'none', 'level':'0.0'}
 
     # It is possible to fail while the file is updating :-/
-    times = 5
-    while times:
+    while tries:
         try:
             with open( fname, 'r') as f:
                 d = json_loads( f.read() )
             break
         except:
-            times -= 1
+            tries -= 1
         sleep(.25)
     return d
 
