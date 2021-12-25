@@ -102,4 +102,3 @@ def do( cmd_phrase ):
                     FLOG.write(f'{logline}\n')
 
     return result
-
