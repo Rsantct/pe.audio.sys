@@ -42,7 +42,7 @@ from share.miscel_mod   import brutefir_mod as bf
 
 from miscel import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
                     LDMON_PATH, MAINFOLDER,                                 \
-                    read_state_from_disk, get_peq_in_use, Fmt
+                    read_state_from_disk, read_json_from_file, get_peq_in_use, Fmt
 
 
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
@@ -70,26 +70,21 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
 
     def read_loudness_monitor():
         # Lets use LU_M (LU Momentary) from .loudness_monitor
-        try:
-            with open(LDMON_PATH, 'r') as f:
-                d = json.loads( f.read() )
-                LU_M = d["LU_M"]
-        except:
+        d = read_json_from_file(LDMON_PATH, tries=1)
+        if 'LU_M' in d:
+            LU_M = d["LU_M"]
+        else:
             LU_M = 0.0
         dBFS = LU_M - 23.0  # LU_M is referred to -23dBFS
         return dBFS
 
 
     def loudness_monitor_is_running():
-        times = 10
-        while times:
-            try:
-                check_output('pgrep -f loudness_monitor.py'.split()).decode()
-                return True
-            except:
-                times -= 1
-            sleep(1)
-        return False
+        try:
+            check_output('pgrep -f loudness_monitor.py'.split()).decode()
+            return True
+        except:
+            return False
 
 
     # Default values:
