@@ -39,7 +39,7 @@ def start():
 
 
 def stop():
-    for m in modules:
+    for m in PAmodules:
         Popen( f'pactl unload-module {m}'.split() )
 
 
