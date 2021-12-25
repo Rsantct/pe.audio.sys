@@ -9,7 +9,7 @@ import  sys
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from    share.miscel    import send_cmd, wait4ports
+from    share.miscel    import send_cmd, wait4ports, Fmt
 
 
 ME = 'radio_macro'
