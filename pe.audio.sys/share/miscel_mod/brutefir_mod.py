@@ -36,8 +36,7 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys')
 
 from share.miscel       import  CONFIG, LSPK_FOLDER, EQ_CURVES,             \
-                                BFCFG_PATH, BFDEF_PATH,                     \
-                                read_bf_config_fs, Fmt
+                                BFCFG_PATH, read_bf_config_fs, Fmt
 
 
 from share.miscel_mod   import jack_mod as jack
