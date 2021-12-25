@@ -225,7 +225,7 @@ def manage_server( mode='', todevnull=False):
         # Start
         print(f'{Fmt.BLUE}(start) starting \'server.py peaudiosys\'{Fmt.END}')
         cmd = f'python3 {MAINFOLDER}/share/server.py peaudiosys' \
-                                                    f' {address} {port}'
+                                                    f' {SRV_HOST} {SRV_PORT}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
                 sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
