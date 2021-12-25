@@ -42,13 +42,6 @@ except:
     sys.exit()
 
 
-try:
-    SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
-except:
-    print(f'{Fmt.RED}(miscel) ERROR reading address/port in \'config.yml\'{Fmt.END}')
-    sys.exit()
-
-
 LOUDSPEAKER         = CONFIG['loudspeaker']
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
 LOG_FOLDER          = f'{MAINFOLDER}/log'
@@ -235,7 +228,7 @@ def wait4ports( pattern, timeout=10 ):
 
 
 def send_cmd( cmd, sender='', verbose=False, timeout=60,
-              host=SRV_HOST, port=SRV_PORT ):
+              host=CONFIG['peaudiosys_address'], port=CONFIG['peaudiosys_port'] ):
     """ send commands to a pe.audio.sys server
         (answer: string)
     """
