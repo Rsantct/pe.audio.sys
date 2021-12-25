@@ -41,6 +41,7 @@ from share.miscel_mod   import jack_mod as jack
 from share.miscel_mod   import brutefir_mod as bf
 
 from miscel import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
+                    LDMON_PATH, MAINFOLDER,                                 \
                     read_state_from_disk, get_peq_in_use, Fmt
 
 
