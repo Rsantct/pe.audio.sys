@@ -27,7 +27,7 @@ More help running **`pe.audio.sys/share/scripts/sound_cards_prepare.py -h`**
 
 ## [  ] Loudspeaker folder
 
-Review the README.md for **naming conventions and files under your loudspaker folder**.
+Go to `60_system files.md` for details on **naming conventions and files under your loudspaker folder**.
 
 ### The `brutefir_config` file
 
