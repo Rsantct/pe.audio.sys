@@ -63,9 +63,9 @@ import os
 #import struct # only to debug see below
 
 UHOME   =  os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
 
-from share.miscel import send_cmd, read_state_from_disk
+from miscel import send_cmd, read_state_from_disk
 
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 try:
