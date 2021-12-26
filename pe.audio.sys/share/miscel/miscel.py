@@ -23,13 +23,9 @@ from    time import sleep
 import  subprocess as sp
 import  configparser
 import  os
-import  sys
 
-UHOME       = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel_mod')
-
-from config import *
-
+from    config import *
+from    fmt    import Fmt
 
 def timesec2string(x):
     """ Format a given float (seconds) to "hh:mm:ss"
