@@ -39,9 +39,7 @@
 import  asyncio
 import  os
 import  sys
-from    miscel import Fmt
-UHOME = os.path.expanduser("~")
-sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
+from    fmt import Fmt
 
 # You can use these properties when importing this module:
 SERVICE = ''
@@ -98,6 +96,8 @@ if __name__ == '__main__':
 
     # Importing the service module to be used later when processing commands
     # https://python-reference.readthedocs.io/en/latest/docs/functions/__import__.html
+    UHOME = os.path.expanduser("~")
+    sys.path.append( f'{UHOME}/pe.audio.sys/share/services' )
     PROCESSOR_MOD = __import__(SERVICE)
 
     print( f'{Fmt.BOLD}{Fmt.BLUE}(server.py) will use \'{SERVICE}.py\' module, '
