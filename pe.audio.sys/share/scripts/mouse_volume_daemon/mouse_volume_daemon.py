@@ -63,7 +63,7 @@ import os
 #import struct # only to debug see below
 
 UHOME   =  os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from miscel import send_cmd, read_state_from_disk
 
@@ -79,6 +79,7 @@ except:
             # .asondrc to have a jack plugin that connects to brutefir
             'beep':         False,
             'alsaplugin':   'brutefir' }
+    print(f'(mouse_volume_daemon) yaml config failed, using:\n{CFG}')
 
 
 def getMouseEvent():
