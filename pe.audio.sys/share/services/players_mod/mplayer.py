@@ -64,10 +64,12 @@ from    time import sleep
 import  jack
 import  os
 import  sys
-UHOME       = os.path.expanduser("~")
 
-sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import    MAINFOLDER, timesec2string, read_last_lines
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    config import    MAINFOLDER
+from    miscel import    timesec2string, read_last_lines
 
 sys.path.append( os.path.dirname(__file__) )
 import cdda
