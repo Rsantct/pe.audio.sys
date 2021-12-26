@@ -16,7 +16,7 @@ import sys
 import os
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from miscel import send_cmd, get_my_ip, get_remote_sources_info
 
