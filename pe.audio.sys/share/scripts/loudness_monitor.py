@@ -32,6 +32,7 @@ from watchdog.events import FileSystemEventHandler
 
 UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share')
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
 from config import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PATH
