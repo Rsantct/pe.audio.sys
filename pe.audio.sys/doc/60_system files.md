@@ -56,6 +56,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
         |-- scripts/        Additional scripts to launch at start up when issued at config.yml,
         |                   (i) Advanced users can hold their own scripts here.
         |
+        |-- miscel/         Common usage system files
+        |
         \-- www/            A web interface to control the system
 
 
