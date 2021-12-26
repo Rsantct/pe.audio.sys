@@ -34,7 +34,7 @@ from    os.path             import expanduser
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel              import CONFIG
+from    config              import CONFIG
 from    preamp_mod.core     import Preamp, Convolver
 
 
