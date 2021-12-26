@@ -33,9 +33,10 @@ import  threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel          import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
-                                AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH,\
-                                read_state_from_disk, send_cmd, is_IP,  \
+from    config          import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
+                                AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH
+
+from    miscel          import  read_state_from_disk, send_cmd, is_IP,  \
                                 wait4ports, process_is_running, Fmt
 
 from    brutefir_mod    import  add_delay as bf_add_delay,              \
