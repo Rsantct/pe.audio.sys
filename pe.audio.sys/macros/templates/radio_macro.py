@@ -7,9 +7,9 @@ from    subprocess      import Popen
 from    os.path         import expanduser
 import  sys
 UHOME = expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    share.miscel    import send_cmd, wait4ports, Fmt
+from    miscel          import send_cmd, wait4ports, Fmt
 
 
 ME = 'radio_macro'
