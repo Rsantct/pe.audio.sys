@@ -34,7 +34,7 @@ UHOME           = os.path.expanduser("~")
 MAINFOLDER      = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-from config import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PATH                              \
+from config import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PATH
 from miscel import  read_state_from_disk, read_metadata_from_disk
 
 
