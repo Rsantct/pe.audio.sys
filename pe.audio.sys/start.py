@@ -47,8 +47,8 @@ import sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from  miscel import CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER,\
-                    read_bf_config_fs, server_is_running, kill_bill, Fmt
+from  config import CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+from  miscel import read_bf_config_fs, server_is_running, kill_bill, Fmt
 
 
 def prepare_extra_cards(channels=2):
