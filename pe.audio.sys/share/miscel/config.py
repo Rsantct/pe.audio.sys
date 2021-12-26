@@ -23,10 +23,6 @@ import  sys
 
 UHOME               = os.path.expanduser("~")
 MAINFOLDER          = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel_mod')
-
-from    fmt import Fmt
-
 CONFIG              = {}
 LOUDSPEAKER         = ''
 EQ_CURVES           = {}
@@ -48,6 +44,7 @@ AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 def _init():
     """ Autoexec on loading this module
     """
+
     global CONFIG, LOUDSPEAKER, EQ_CURVES, LSPK_FOLDER, BFCFG_PATH
 
 
@@ -107,7 +104,7 @@ def _init():
         with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
             CONFIG = yaml.safe_load(f)
     except:
-        print(f'{Fmt.RED}(config) ERROR reading \'config.yml\'{Fmt.END}')
+        print(f'(config) ERROR reading \'config.yml\'')
         sys.exit()
 
     LOUDSPEAKER         = CONFIG['loudspeaker']
