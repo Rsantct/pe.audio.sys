@@ -32,12 +32,11 @@ import json
 import threading
 from time import sleep
 
-
-# FILES of interest (referred from miscel.py)
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH, \
-                   read_state_from_disk, read_metadata_from_disk
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from config import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH
+from miscel import read_state_from_disk, read_metadata_from_disk
 
 
 ## Auxiliary global
