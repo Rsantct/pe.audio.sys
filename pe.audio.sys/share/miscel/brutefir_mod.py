@@ -32,14 +32,11 @@ from    time        import sleep
 import  numpy as np
 from    socket      import socket
 
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, BFCFG_PATH
 
-from share.miscel       import  CONFIG, LSPK_FOLDER, EQ_CURVES,             \
-                                BFCFG_PATH, read_bf_config_fs, Fmt
+from    miscel      import  read_bf_config_fs, Fmt
 
-
-from share.miscel_mod   import jack_mod as jack
+import  jack_mod as jack
 
 
 if CONFIG["web_config"]["show_graphs"]:
