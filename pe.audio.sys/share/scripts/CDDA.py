@@ -24,15 +24,16 @@
     Usage:      CDDA  start | stop | eject
 """
 
-import subprocess as sp
-from pathlib import Path
+import  subprocess as sp
+from    pathlib import Path
+import  os
+import  sys
 
-import os
-import sys
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import CONFIG, MAINFOLDER, check_Mplayer_config_file, Fmt
+from    config import CONFIG, MAINFOLDER
+from    miscel import check_Mplayer_config_file, Fmt
 
 
 ## --- Mplayer options ---
