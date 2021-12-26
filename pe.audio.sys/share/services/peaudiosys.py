@@ -28,11 +28,14 @@ import  sys
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel        import  LOG_FOLDER, Fmt
-from    services      import  preamp
-from    services      import  players
-from    services      import  aux
+from    services    import  preamp
+from    services    import  players
+from    services    import  aux
+
+from    config      import  LOG_FOLDER
+from    fmt         import  Fmt
 
 
 # COMMAND LOG FILE

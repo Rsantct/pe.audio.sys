@@ -25,7 +25,6 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-# IMPORTS  =====================================================================
 import sys
 import os
 from   subprocess import Popen, check_output
@@ -34,15 +33,17 @@ import numpy as np
 from   time import sleep
 import threading
 
+import jack_mod     as jack
+import brutefir_mod as bf
+
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from share.miscel_mod   import jack_mod as jack
-from share.miscel_mod   import brutefir_mod as bf
+from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
+                    LDMON_PATH, MAINFOLDER
 
-from miscel import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
-                    LDMON_PATH, MAINFOLDER,                                 \
-                    read_state_from_disk, read_json_from_file, get_peq_in_use, Fmt
+from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
+                    Fmt
 
 
 # Aux to manage the powersave feature (auto start/stop Brutefir process)

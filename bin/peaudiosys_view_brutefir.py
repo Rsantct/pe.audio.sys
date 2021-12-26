@@ -20,14 +20,15 @@
     Shows the Brutefir configuration, outputs, coeffs and filters
 """
 
-import sys, os
+import sys
+import os
 import subprocess as sp
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel         import *
-from miscel_mod     import brutefir_mod as bf
+from    miscel  import process_is_running, Fmt
+import  brutefir_mod as bf
 
 
 def do_printout():

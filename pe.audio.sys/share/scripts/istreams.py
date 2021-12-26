@@ -42,8 +42,9 @@ import  subprocess as sp
 import  yaml
 import  sys
 import  os
+
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from miscel import check_Mplayer_config_file, Fmt
 

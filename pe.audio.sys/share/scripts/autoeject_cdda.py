@@ -29,10 +29,9 @@ from    time import sleep
 from    subprocess import Popen
 
 UHOME = expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    share.miscel  import    read_state_from_disk, read_metadata_from_disk
+from    miscel  import  read_state_from_disk, read_metadata_from_disk
 
 
 def main_loop():

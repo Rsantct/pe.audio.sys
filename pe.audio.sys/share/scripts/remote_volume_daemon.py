@@ -37,10 +37,11 @@ import  sys
 import  os
 
 UHOME           = os.path.expanduser("~")
-sys.path.append( f'{UHOME}/pe.audio.sys/share' )
+sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
 import  server
-from    miscel import CONFIG, send_cmd, get_remote_selected_source, read_last_line
+from    config  import CONFIG
+from    miscel  import send_cmd, get_remote_selected_source, read_last_line
 
 LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
 CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'

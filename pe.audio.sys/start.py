@@ -45,10 +45,10 @@ import os
 import sys
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel import   CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER,\
-                        read_bf_config_fs, server_is_running, Fmt, kill_bill
+from  config import CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+from  miscel import read_bf_config_fs, server_is_running, kill_bill, Fmt
 
 
 def prepare_extra_cards(channels=2):
@@ -224,8 +224,8 @@ def manage_server( mode='', todevnull=False):
     elif mode == 'start':
         # Start
         print(f'{Fmt.BLUE}(start) starting \'server.py peaudiosys\'{Fmt.END}')
-        cmd = f'python3 {MAINFOLDER}/share/server.py peaudiosys' \
-                                                    f' {SRV_HOST} {SRV_PORT}'
+        cmd = f'python3 {MAINFOLDER}/share/miscel/server.py peaudiosys ' \
+                                                f'{SRV_HOST} {SRV_PORT}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
                 sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)

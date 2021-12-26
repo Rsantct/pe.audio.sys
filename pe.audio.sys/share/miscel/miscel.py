@@ -21,51 +21,11 @@ import  ipaddress
 from    json import loads as json_loads
 from    time import sleep
 import  subprocess as sp
-import  yaml
-from    numpy import loadtxt as np_loadtxt
 import  configparser
 import  os
-import  sys
 
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-sys.path.append(f'{MAINFOLDER}/share')
-
-from    miscel_mod.format import Fmt
-
-
-try:
-    with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
-        CONFIG = yaml.safe_load(f)
-except:
-    print(f'{Fmt.RED}(miscel) ERROR reading \'config.yml\'{Fmt.END}')
-    sys.exit()
-
-
-LOUDSPEAKER         = CONFIG['loudspeaker']
-LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-LOG_FOLDER          = f'{MAINFOLDER}/log'
-MACROS_FOLDER       = f'{MAINFOLDER}/macros'
-STATE_PATH          = f'{MAINFOLDER}/.state'
-EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
-EQ_CURVES           = {}
-LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
-LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
-PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
-CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
-BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
-AMP_STATE_PATH      = f'{UHOME}/.amplifier'
-
-
-def _init():
-    """ Autoexec on loading this module
-    """
-    find_eq_curves()
-    if not EQ_CURVES:
-        print( '(miscel) ERROR loading EQ_CURVES from share/eq/' )
-        sys.exit()
-
+from    config import *
+from    fmt    import Fmt
 
 def timesec2string(x):
     """ Format a given float (seconds) to "hh:mm:ss"
@@ -142,60 +102,6 @@ def read_bf_config_fs():
               f'{Fmt.END}')
 
     return FS
-
-
-def find_eq_curves():
-    """ Updates EQ_CURVES
-        Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage in Brutefir (tone and loudness countour)
-        (void)
-    """
-    global EQ_CURVES
-    eq_files = os.listdir(EQ_FOLDER)
-
-    # file names ( 2x loud + 4x tones + freq = total 7 curves)
-    fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
-                'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
-                'freq.dat' )
-
-    # map dict to get the curve name from the file name
-    cnames = {  'loudness_mag.dat'  : 'loud_mag',
-                'bass_mag.dat'      : 'bass_mag',
-                'treble_mag.dat'    : 'treb_mag',
-                'loudness_pha.dat'  : 'loud_pha',
-                'bass_pha.dat'      : 'bass_pha',
-                'treble_pha.dat'    : 'treb_pha',
-                'freq.dat'          : 'freqs'     }
-
-    pendings = len(fnames)  # 7 curves
-    for fname in fnames:
-
-        # Only one file named as <fname> must be found
-
-        if 'loudness' in fname:
-            prefixedfname = f'ref_{CONFIG["refSPL"]}_{fname}'
-            files = [ x for x in eq_files if prefixedfname in x]
-        else:
-            files = [ x for x in eq_files if fname in x]
-
-        if files:
-
-            if len (files) == 1:
-                EQ_CURVES[ cnames[fname] ] = \
-                         np_loadtxt( f'{EQ_FOLDER}/{files[0]}' )
-                pendings -= 1
-            else:
-                print(f'(miscel) too much \'...{fname}\' '
-                       'files under share/eq/')
-        else:
-            print(f'(miscel) ERROR finding a \'...{fname}\' '
-                   'file under share/eq/')
-
-    #if not pendings:
-    if pendings == 0:
-        pass
-    else:
-        EQ_CURVES = {}
 
 
 def get_peq_in_use():
@@ -590,7 +496,3 @@ def get_remote_sources_info():
         print(f'(miscel) Cannot get remote sources')
 
     return remotes
-
-
-# AUTOEXEC
-_init()

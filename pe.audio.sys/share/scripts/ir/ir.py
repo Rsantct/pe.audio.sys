@@ -28,16 +28,16 @@
             map "keyBytes: actions" inside the file 'ir.config'
 """
 
-import serial
-import sys
-import yaml
-from time import time
-import os
+import  serial
+import  yaml
+from    time import time
+import  sys
+import  os
 
 UHOME = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
-from share.miscel import Fmt, send_cmd
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    miscel import Fmt, send_cmd
 
 
 def irpacket2cmd(p):

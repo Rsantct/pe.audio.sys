@@ -34,11 +34,12 @@ import  json
 
 
 UHOME = expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from  share.miscel                  import  CONFIG, PLAYER_META_PATH,       \
-                                            detect_spotify_client,          \
+
+from  config                        import  CONFIG, PLAYER_META_PATH
+
+from  miscel                        import  detect_spotify_client,          \
                                             read_state_from_disk,           \
                                             read_cdda_info_from_disk,       \
                                             send_cmd, is_IP
