@@ -2,18 +2,19 @@
 """ usage:      drc2png.py [--quiet]
 """
 
-import sys
-import os
-
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-
-from share.miscel import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER, read_bf_config_fs
-
 import  numpy as np
 from    scipy       import signal
 from    matplotlib  import pyplot as plt
-import  yaml
+import  sys
+import  os
+
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    config import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER
+
+from    miscel import read_bf_config_fs
+
 
 # Same color as index.html background-color: rgb(38, 38, 38)
 WEBCOLOR    = (.15, .15, .15)
