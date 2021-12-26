@@ -23,9 +23,9 @@ import sys
 import mpd
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from share.miscel import timesec2string as timeFmt
+from miscel import timesec2string as timeFmt
 
 
 def curr_playlist_is_cdda( port=6600 ):
