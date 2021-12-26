@@ -45,9 +45,10 @@ import os
 import sys
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from   share.miscel         import *
+from  config import CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+from  miscel import read_bf_config_fs, server_is_running, kill_bill, Fmt
 
 
 def prepare_extra_cards(channels=2):
@@ -202,10 +203,17 @@ def start_jack_stuff():
         return 'done'
 
 
-def manage_server( mode='', address=SRV_HOST, port=SRV_PORT, todevnull=False):
+def manage_server( mode='', todevnull=False):
     """ Manages the server running in background
         (void)
     """
+
+    try:
+        SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
+    except:
+        raise Exception(f'{Fmt.RED}(start) ERROR reading address/port '
+                        f'in \'config.yml\'{Fmt.END}')
+
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}(start) stopping \'server.py peaudiosys\'{Fmt.END}')
@@ -216,8 +224,8 @@ def manage_server( mode='', address=SRV_HOST, port=SRV_PORT, todevnull=False):
     elif mode == 'start':
         # Start
         print(f'{Fmt.BLUE}(start) starting \'server.py peaudiosys\'{Fmt.END}')
-        cmd = f'python3 {MAINFOLDER}/share/server.py peaudiosys' \
-                                                    f' {address} {port}'
+        cmd = f'python3 {MAINFOLDER}/share/miscel/server.py peaudiosys ' \
+                                                f'{SRV_HOST} {SRV_PORT}'
         if todevnull:
             with open('/dev/null', 'w') as fnull:
                 sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)

@@ -21,25 +21,21 @@
     This module is loaded by 'server.py'
 """
 
-#   https://watchdog.readthedocs.io/en/latest/
-from watchdog.observers     import  Observer
-from watchdog.events        import  FileSystemEventHandler
-import  ipaddress
-import  jack
 import  json
-from    subprocess          import  Popen, check_output
-from    time                import  sleep, strftime
+from    time                import  strftime
 import  os
 import  sys
-import  threading
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    share.miscel        import  LOG_FOLDER, Fmt
-from    share.services      import  preamp
-from    share.services      import  players
-from    share.services      import  aux
+from    services    import  preamp
+from    services    import  players
+from    services    import  aux
+
+from    config      import  LOG_FOLDER
+from    fmt         import  Fmt
 
 
 # COMMAND LOG FILE
@@ -109,4 +105,3 @@ def do( cmd_phrase ):
                     FLOG.write(f'{logline}\n')
 
     return result
-

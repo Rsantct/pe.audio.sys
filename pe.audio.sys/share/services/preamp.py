@@ -28,17 +28,15 @@
 """ Controls the preamp (inputs, level, tones and convolver)
 """
 
-import sys
-from os.path import expanduser, exists, getsize
+import  sys
+from    os.path             import expanduser
 
 UHOME = expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import Fmt, CONFIG
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from preamp_mod.core import Preamp, Convolver
-import json
-from time import strftime
-from subprocess import Popen
+from    config              import CONFIG
+from    preamp_mod.core     import Preamp, Convolver
+
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()

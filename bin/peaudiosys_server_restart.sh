@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVERPATH="$HOME"/"pe.audio.sys/share/server.py"
+SERVERPATH="$HOME"/"pe.audio.sys/share/miscel/server.py"
 
 opc=$1
 
@@ -30,6 +30,7 @@ if [[ $opc == *'stop'* ]]; then
     exit 0
 fi
 sleep .25
+
 
 # Re-launching the service.
 # (i) It is IMPORTANT to redirect stdout & stderr to keep it alive even

@@ -39,13 +39,15 @@
     Further info at doc/80_Multiroom_pe.audio.sys.md
 
 """
-from subprocess import Popen
-from time import sleep
-import sys
-import os
+from    subprocess import Popen
+from    time import sleep
+import  os
+import  sys
+
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import is_IP, get_my_ip, send_cmd, get_remote_sources_info
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from miscel import get_my_ip, send_cmd, get_remote_sources_info
 
 
 # Additional buffering (ms) (default 10, safe value 50, WiFi 100)

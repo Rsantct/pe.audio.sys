@@ -44,10 +44,11 @@ from    subprocess import check_output, Popen
 from    json import loads as json_loads
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/services')
 
-from share.miscel                       import send_cmd, CDDA_INFO_PATH
-from share.services.players_mod.cdda    import save_disc_metadata
+from    miscel              import send_cmd
+from    players_mod.cdda    import save_disc_metadata
 
 ME = 'autoplay_cdda'
 

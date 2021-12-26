@@ -37,10 +37,12 @@ import  musicbrainzngs as mz
 import  json
 import  sys
 from    os.path import expanduser
-UHOME = expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
 
-from    share.miscel import Fmt, CONFIG, CDDA_INFO_PATH
+UHOME = expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    config import CONFIG, CDDA_INFO_PATH
+from    fmt    import Fmt
 
 
 ## cdrom device to use

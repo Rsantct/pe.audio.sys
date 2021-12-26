@@ -26,16 +26,12 @@ from    os.path import expanduser
 import  sys
 import  threading
 from    time import sleep
-import  json
 from    subprocess import Popen
 
 UHOME = expanduser("~")
-MAINFOLDER = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    share.miscel  import    PLAYER_META_PATH,       \
-                                read_state_from_disk,   \
-                                read_metadata_from_disk
+from    miscel  import  read_state_from_disk, read_metadata_from_disk
 
 
 def main_loop():
@@ -78,7 +74,6 @@ def main_loop():
                 Popen("peaudiosys_control player eject".split())
                 print(f'(autoeject_cdda.py) CD playback is over, disc ejected.')
                 disc_is_over = False
-                tries = 3
 
             # sleep timer
             sleep(timer)

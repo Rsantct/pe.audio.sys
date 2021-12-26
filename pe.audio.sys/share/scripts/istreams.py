@@ -36,16 +36,17 @@
     so you'll need to wait for Mplayer ports to re-emerge before switching
     the preamp input.
 """
-import sys
-import os
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+from    pathlib import Path
+from    time import sleep
+import  subprocess as sp
+import  yaml
+import  sys
+import  os
 
-from miscel import *
-from pathlib import Path
-from time import sleep
-import subprocess as sp
-import yaml
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from miscel import check_Mplayer_config_file, Fmt
 
 
 # Mplayer options:

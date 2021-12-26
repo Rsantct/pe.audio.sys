@@ -39,16 +39,18 @@
     the preamp input.
 """
 
-from pathlib import Path
-from time import sleep
-import subprocess as sp
-import yaml
+from    pathlib import Path
+from    time    import sleep
+import  subprocess as sp
+import  yaml
+import  sys
+import  os
 
-import sys
-import os
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import MAINFOLDER, check_Mplayer_config_file
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share/miscel')
+
+from miscel import check_Mplayer_config_file, Fmt
 
 
 ## USER SETTINGS: see inside DVB-T.yml

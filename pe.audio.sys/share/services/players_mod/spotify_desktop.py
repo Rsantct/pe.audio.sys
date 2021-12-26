@@ -19,24 +19,25 @@
 """ A Spotify Desktop client interface module for players.py
 """
 
-import  os
-import  sys
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-
-from share.miscel   import MAINFOLDER, timesec2string as timeFmt
-
 from    time        import sleep
 from    subprocess  import check_output
 import  yaml
 from    pydbus      import SessionBus
 import  logging
+import  os
+import  sys
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    config  import MAINFOLDER
+from    miscel  import timesec2string as timeFmt
+
 
 LOGFNAME = f'{MAINFOLDER}/log/spotify_desktop.py.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
 
-# BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
+# (i) BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE = '320'
 
 
@@ -75,8 +76,12 @@ def set_shuffle(mode):
     # (!) The command line tool 'playerctl' has a shuffle method
     #     BUT it does not work with Spotify Desktop :-(
     mode = { 'on':'On', 'off':'Off' }[mode]
-    ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
-    #print('---->', ans) # DEBUG
+    try:
+        ans = check_output( f'playerctl shuffle {mode}'.split() ).decode()
+        ans = { 'on':'on', 'off':'off', 'On':'on', 'Off':'off' }[ans]
+    except:
+        ans = 'off'
+    return ans
 
 
 def spotify_playlists(cmd, arg=''):

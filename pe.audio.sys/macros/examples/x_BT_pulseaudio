@@ -6,11 +6,13 @@
     the 'scripts/pulseaudio-BT.py' to be called from config.yml
 
 """
-import sys
 import os
+import sys
+
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
-from share.miscel import send_cmd
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from miscel import send_cmd
 
 
 if __name__ == "__main__":

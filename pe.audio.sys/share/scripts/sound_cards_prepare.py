@@ -37,15 +37,15 @@
         alsactl -f ~/pe.audio.sys/config/asound.MYCARD store MYCARD
 
 """
-import os
-import sys
-UHOME = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-sys.path.append(MAINFOLDER)
+import  subprocess as sp
+import  os
+import  sys
 
-from share.miscel import Fmt, CONFIG
-import subprocess as sp
-import yaml
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    config  import CONFIG
+from    miscel  import Fmt
 
 
 def get_pulse_cards():
@@ -105,7 +105,7 @@ def restore_alsa_card(card):
 
         bareCardName = card.split(':')[-1].split(',')[0]
 
-        asound_file = f'{MAINFOLDER}/config/asound.{bareCardName}'
+        asound_file = f'{UHOME}/pe.audio.sys/config/asound.{bareCardName}'
         try:
             if os.path.isfile( asound_file ):
                 sp.Popen( f'alsactl -f {asound_file} \
@@ -134,7 +134,7 @@ def restore_ffado_card(card):
     '''
 
     guid = card.replace('guid:','')
-    scriptPath = f'{MAINFOLDER}/config/ffado.{guid}.sh'
+    scriptPath = f'{UHOME}/pe.audio.sys/config/ffado.{guid}.sh'
 
     if os.path.isfile( scriptPath ):
         print(  f'{Fmt.BLUE}'

@@ -21,14 +21,15 @@
 
     usage:  node_web_server.py   start|stop
 """
-import sys
-import os
 from subprocess import Popen, check_output
 from time import sleep
+import os
+import sys
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
-from miscel import CONFIG
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from config import CONFIG
 
 ctrlport = CONFIG['peaudiosys_port']
 

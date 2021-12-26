@@ -84,7 +84,7 @@ if [ -d "pe.audio.sys" ]; then
     rm -rf  pe.audio.sys/share/services     >/dev/null 2>&1
     rm -rf  pe.audio.sys/share/miscel_mod   >/dev/null 2>&1
     rm -rf  pe.audio.sys/share/www          >/dev/null 2>&1
-    rm      pe.audio.sys/share/*.py         >/dev/null 2>&1
+    rm      pe.audio.sys/share/*            >/dev/null 2>&1
 fi
 
 ########################################################################
@@ -201,8 +201,8 @@ echo ""
 ########################################################################
 # Symlink to use the SOCKET version of server.py (can change in a future)
 ########################################################################
-ln -s $HOME/pe.audio.sys/share/server.py.SOCKET \
-      pe.audio.sys/share/server.py  1>/dev/null 2>&1
+ln -s $HOME/pe.audio.sys/share/miscel/server.py.SOCKET \
+      $HOME/pe.audio.sys/share/miscel/server.py         1>/dev/null 2>&1
 
 ########################################################################
 # Finally updates the updater script

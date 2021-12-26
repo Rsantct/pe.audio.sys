@@ -19,11 +19,11 @@ import  sys
 import  os
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 print( 'importing modules takes a while ...')
-from  miscel_mod    import brutefir_mod as bf
-from  miscel        import send_cmd, read_bf_config_fs
+import  brutefir_mod as bf
+from    miscel import send_cmd, read_bf_config_fs
 
 
 def print_delays():

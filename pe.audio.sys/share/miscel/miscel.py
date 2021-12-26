@@ -16,139 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-import  socket              # (i) do not use from socket import socket see below
+import  socket
 import  ipaddress
 from    json import loads as json_loads
 from    time import sleep
 import  subprocess as sp
-import  yaml
-from    numpy import loadtxt as np_loadtxt, zeros as np_zeros
 import  configparser
 import  os
-import  sys
 
-UHOME       = os.path.expanduser("~")
-MAINFOLDER  = f'{UHOME}/pe.audio.sys'
-
-
-with open(f'{MAINFOLDER}/config/config.yml', 'r') as f:
-    CONFIG = yaml.safe_load(f)
-try:
-    SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
-except:
-    print(f'{Fmt.RED}(share.miscel) ERROR reading address/port in '
-          f'\'config.yml\'{Fmt.END}')
-    exit()
-
-LOUDSPEAKER         = CONFIG['loudspeaker']
-LOG_FOLDER          = f'{MAINFOLDER}/log'
-LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-MACROS_FOLDER       = f'{MAINFOLDER}/macros'
-STATE_PATH          = f'{MAINFOLDER}/.state'
-EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
-EQ_CURVES           = {}
-LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
-LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
-PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
-CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
-BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
-BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
-AMP_STATE_PATH      = f'{UHOME}/.amplifier'
-if 'amp_manager' in CONFIG:
-    AMP_MANAGER     = CONFIG['amp_manager']
-else:
-    AMP_MANAGER     = ''
-
-
-# (PLEASE KEEP THIS CLASS AT THE VERY BEGINNING)
-class Fmt:
-    """
-    # Some nice ANSI formats for printouts
-    # CREDITS: https://github.com/adoxa/ansicon/blob/master/sequences.txt
-
-    0           all attributes off
-    1           bold (foreground is intense)
-    4           underline (background is intense)
-    5           blink (background is intense)
-    7           reverse video
-    8           concealed (foreground becomes background)
-    22          bold off (foreground is not intense)
-    24          underline off (background is not intense)
-    25          blink off (background is not intense)
-    27          normal video
-    28          concealed off
-    30          foreground black
-    31          foreground red
-    32          foreground green
-    33          foreground yellow
-    34          foreground blue
-    35          foreground magenta
-    36          foreground cyan
-    37          foreground white
-    38;2;#      foreground based on index (0-255)
-    38;5;#;#;#  foreground based on RGB
-    39          default foreground (using current intensity)
-    40          background black
-    41          background red
-    42          background green
-    43          background yellow
-    44          background blue
-    45          background magenta
-    46          background cyan
-    47          background white
-    48;2;#      background based on index (0-255)
-    48;5;#;#;#  background based on RGB
-    49          default background (using current intensity)
-    90          foreground bright black
-    91          foreground bright red
-    92          foreground bright green
-    93          foreground bright yellow
-    94          foreground bright blue
-    95          foreground bright magenta
-    96          foreground bright cyan
-    97          foreground bright white
-    100         background bright black
-    101         background bright red
-    102         background bright green
-    103         background bright yellow
-    104         background bright blue
-    105         background bright magenta
-    106         background bright cyan
-    107         background bright white
-    """
-
-    BLACK           = '\033[30m'
-    RED             = '\033[31m'
-    GREEN           = '\033[32m'
-    YELLOW          = '\033[33m'
-    BLUE            = '\033[34m'
-    MAGENTA         = '\033[35m'
-    CYAN            = '\033[36m'
-    WHITE           = '\033[37m'
-
-    BRIGHTBLACK     = '\033[90m'
-    BRIGHTRED       = '\033[91m'
-    BRIGHTGREEN     = '\033[92m'
-    BRIGHTYELLOW    = '\033[93m'
-    BRIGHTBLUE      = '\033[94m'
-    BRIGHTMAGENTA   = '\033[95m'
-    BRIGHTCYAN      = '\033[96m'
-    BRIGHTWHITE     = '\033[97m'
-
-    BOLD            = '\033[1m'
-    UNDERLINE       = '\033[4m'
-    BLINK           = '\033[5m'
-    END             = '\033[0m'
-
-
-def _init():
-    """ Autoexec on loading this module
-    """
-    find_eq_curves()
-    if not EQ_CURVES:
-        print( '(miscel) ERROR loading EQ_CURVES from share/eq/' )
-        sys.exit()
-
+from    config import *
+from    fmt    import Fmt
 
 def timesec2string(x):
     """ Format a given float (seconds) to "hh:mm:ss"
@@ -162,7 +39,7 @@ def timesec2string(x):
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
-def process_runs(pattern):
+def process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
     """
@@ -227,201 +104,6 @@ def read_bf_config_fs():
     return FS
 
 
-def calc_eq( state ):
-    """ Calculate the eq curves to be applied in the Brutefir EQ module,
-        as per the provided dictionary of state values.
-        (mag, pha: numpy arrays)
-    """
-    zeros = np_zeros( EQ_CURVES["freqs"].shape[0] )
-
-    # getting loudness and tones curves
-    loud_mag, loud_pha = get_eq_curve( 'loud', state )
-    bass_mag, bass_pha = get_eq_curve( 'bass', state )
-    treb_mag, treb_pha = get_eq_curve( 'treb', state )
-
-    # getting target curve
-    target_name = state["target"]
-    if target_name == 'none':
-        targ_mag = zeros
-        targ_pha = zeros
-    else:
-        if target_name != 'target':     # see doc string on find_target_sets()
-            target_name += '_target'
-        targ_mag = np_loadtxt( f'{EQ_FOLDER}/{target_name}_mag.dat' )
-        targ_pha = np_loadtxt( f'{EQ_FOLDER}/{target_name}_pha.dat' )
-
-    # Compose
-    eq_mag = targ_mag + loud_mag * state["equal_loudness"] \
-                                                + bass_mag + treb_mag
-
-    if CONFIG["bfeq_linear_phase"]:
-        eq_pha = zeros
-    else:
-        eq_pha = targ_pha + loud_pha * state["equal_loudness"] \
-                 + bass_pha + treb_pha
-
-    return eq_mag, eq_pha
-
-
-def calc_gain( state ):
-    """ Calculates the gain from:   level,
-                                    ref_level_gain
-                                    source gain offset
-        (float)
-    """
-
-    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
-                             - state["lu_offset"]
-
-    # Adding here the specific source gain:
-    if state["input"] != 'none':
-        gain += float( CONFIG["sources"][state["input"]]["gain"] )
-
-    return gain
-
-
-def get_eq_curve(cname, state):
-    """ Retrieves the tone or loudness curve.
-        Tone curves depens on state bass & treble.
-        Loudness compensation curve depens on the configured refSPL.
-        (mag, pha: numpy arrays)
-    """
-    # (i) Former FIRtro curves array files xxx.dat were stored in Matlab way,
-    #     so when reading them with numpy.loadtxt() it was needed to transpose
-    #     and flipud in order to access to the curves data in a natural way.
-    #     Currently the curves are stored in pythonic way, so numpy.loadtxt()
-    #     will read directly usable data.
-
-    # Tone eq curves are given [-span...0...-span]
-    if cname == 'bass':
-        bass_center_index = (EQ_CURVES["bass_mag"].shape[0] - 1) // 2
-        index = int(round(state["bass"]))   + bass_center_index
-
-    elif cname == 'treb':
-        treble_center_index = (EQ_CURVES["treb_mag"].shape[0] - 1) // 2
-        index = int(round(state["treble"])) + treble_center_index
-
-    # Using the previously detected flat curve index and
-    # also limiting as per the eq_loud_ceil boolean inside config.yml
-    elif cname == 'loud':
-
-        index_max   = EQ_CURVES["loud_mag"].shape[0] - 1
-        index_flat  = CONFIG['refSPL']
-        index_min   = 0
-        if CONFIG["eq_loud_ceil"]:
-            index_max = index_flat
-
-        if state["equal_loudness"]:
-            index = CONFIG['refSPL'] + state["level"]
-        else:
-            index = index_flat
-        index = int(round(index))
-
-        # Clamp index to the available "loudness deepness" curves set
-        index = max( min(index, index_max), index_min )
-
-    return EQ_CURVES[f'{cname}_mag'][index], \
-           EQ_CURVES[f'{cname}_pha'][index]
-
-
-def find_eq_curves():
-    """ Updates EQ_CURVES
-        Scans share/eq/ and try to collect the whole set of EQ curves
-        needed for the EQ stage in Brutefir (tone and loudness countour)
-        (void)
-    """
-    global EQ_CURVES
-    eq_files = os.listdir(EQ_FOLDER)
-
-    # file names ( 2x loud + 4x tones + freq = total 7 curves)
-    fnames = (  'loudness_mag.dat', 'bass_mag.dat', 'treble_mag.dat',
-                'loudness_pha.dat', 'bass_pha.dat', 'treble_pha.dat',
-                'freq.dat' )
-
-    # map dict to get the curve name from the file name
-    cnames = {  'loudness_mag.dat'  : 'loud_mag',
-                'bass_mag.dat'      : 'bass_mag',
-                'treble_mag.dat'    : 'treb_mag',
-                'loudness_pha.dat'  : 'loud_pha',
-                'bass_pha.dat'      : 'bass_pha',
-                'treble_pha.dat'    : 'treb_pha',
-                'freq.dat'          : 'freqs'     }
-
-    pendings = len(fnames)  # 7 curves
-    for fname in fnames:
-
-        # Only one file named as <fname> must be found
-
-        if 'loudness' in fname:
-            prefixedfname = f'ref_{CONFIG["refSPL"]}_{fname}'
-            files = [ x for x in eq_files if prefixedfname in x]
-        else:
-            files = [ x for x in eq_files if fname in x]
-
-        if files:
-
-            if len (files) == 1:
-                EQ_CURVES[ cnames[fname] ] = \
-                         np_loadtxt( f'{EQ_FOLDER}/{files[0]}' )
-                pendings -= 1
-            else:
-                print(f'(miscel) too much \'...{fname}\' '
-                       'files under share/eq/')
-        else:
-            print(f'(miscel) ERROR finding a \'...{fname}\' '
-                   'file under share/eq/')
-
-    #if not pendings:
-    if pendings == 0:
-        pass
-    else:
-        EQ_CURVES = {}
-
-
-def find_target_sets():
-    """ Retrieves the sets of available target curves under the share/eq folder.
-
-                            file name:              returned set name:
-        minimal name        'target_mag.dat'        'target'
-        a more usual name   'xxxx_target_mag.dat'   'xxxx'
-
-        A 'none' set name is added as default for no target eq to be applied.
-
-        (list of <target names>)
-    """
-
-    def extract(x):
-        """ Aux to extract a meaningful set name, examples:
-                'xxxx_target_mag.dat'   will return 'xxxx'
-                'target_mag.dat'        will return 'target'
-        """
-
-        if x[:6] == 'target':
-            return 'target'
-        else:
-            x = x[:-14]
-
-        # strip trailing unions if used
-        for c in ('.', '-', '_'):
-            if x[-1] == c:
-                x = x[:-1]
-
-        return x
-
-
-    result = ['none']
-
-    files = os.listdir( EQ_FOLDER )
-    tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
-
-    for fname in tfiles:
-        set_name = extract(fname)
-        if not set_name in result:
-            result.append( set_name )
-
-    return result
-
-
 def get_peq_in_use():
     """ Finds out the PEQ (parametic eq) filename used by an inserted
         Ecasound sound processor, if included inside config.yml scripts.
@@ -431,33 +113,6 @@ def get_peq_in_use():
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
             return item["ecasound_peq.py"].replace('.ecs', '')
     return 'none'
-
-
-def set_as_pattern(param, pattern, sender='miscel', verbose=False):
-    """ Sets a peaudiosys parameter as per a given pattern.
-        This applies only for 'xo', 'drc' and 'target'
-        (result: string)
-    """
-    result = ''
-
-    if param not in ('xo', 'drc', 'target'):
-        return "parameter mus be 'xo', 'drc' or 'target'"
-
-    sets = send_cmd(f'get_{param}_sets')
-
-    try:
-        sets = json_loads( sets )
-    except:
-        return result
-
-    for setName in sets:
-
-        if pattern in setName:
-            result = send_cmd( f'set_{param} {setName}',
-                               sender=sender, verbose=verbose )
-            break
-
-    return result
 
 
 def wait4ports( pattern, timeout=10 ):
@@ -479,7 +134,7 @@ def wait4ports( pattern, timeout=10 ):
 
 
 def send_cmd( cmd, sender='', verbose=False, timeout=60,
-              host=SRV_HOST, port=SRV_PORT ):
+              host=CONFIG['peaudiosys_address'], port=CONFIG['peaudiosys_port'] ):
     """ send commands to a pe.audio.sys server
         (answer: string)
     """
@@ -636,7 +291,7 @@ def kill_bill(pid=0):
     sleep(.5)
 
 
-def read_json_from_file(fname):
+def read_json_from_file(fname, tries=5):
     """ read json dicts from disk files
         (dictionary)
     """
@@ -645,14 +300,13 @@ def read_json_from_file(fname):
         d = {'input':'none', 'level':'0.0'}
 
     # It is possible to fail while the file is updating :-/
-    times = 5
-    while times:
+    while tries:
         try:
             with open( fname, 'r') as f:
                 d = json_loads( f.read() )
             break
         except:
-            times -= 1
+            tries -= 1
         sleep(.25)
     return d
 
@@ -842,7 +496,3 @@ def get_remote_sources_info():
         print(f'(miscel) Cannot get remote sources')
 
     return remotes
-
-
-# AUTOEXEC
-_init()

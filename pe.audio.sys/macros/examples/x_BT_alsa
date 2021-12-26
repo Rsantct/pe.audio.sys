@@ -12,9 +12,10 @@ import sys
 import os
 
 UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys')
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from share.miscel import CONFIG, send_cmd, read_state_from_disk
+from config import CONFIG
+from miscel import send_cmd, read_state_from_disk
 
 
 ################################################################################
