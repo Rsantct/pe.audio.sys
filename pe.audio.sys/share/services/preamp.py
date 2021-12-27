@@ -89,19 +89,30 @@ def do( cmd, argstring ):
         except:
             return 'bad option'
 
-    # XO and DRC management uses the Convolver objet, so we also still need
-    # to update Preamp.state in addition.
+
+    # The management of the convolver objet needs to update <preamp.state>
     def set_drc(x, *dummy):
         result = convolver.set_drc(x)
         if result == 'done':
             preamp.state['drc_set'] = x
         return result
 
+
     def set_xo(x, *dummy):
         result = convolver.set_xo(x)
         if result == 'done':
             preamp.state['xo_set'] = x
         return result
+
+
+    def add_delay(x, *dummy):
+        """ Add outputs delay, typically for multiroom listening
+        """
+        result = convolver.add_delay(float(x))
+        if result == 'done':
+            preamp.state['extra_delay'] = float(x)
+        return result
+
 
     def print_help(*dummy):
         return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
@@ -147,6 +158,7 @@ def do( cmd, argstring ):
             'drc':              set_drc,
             'set_xo':           set_xo,
             'xo':               set_xo,
+            'add_delay':        add_delay,
 
             'convolver':        preamp.switch_convolver,
             'powersave':        preamp.powersave,
@@ -168,4 +180,3 @@ def do( cmd, argstring ):
         result = f'(preamp) {cmd} ERROR: {str(e)}'
 
     return result
-
