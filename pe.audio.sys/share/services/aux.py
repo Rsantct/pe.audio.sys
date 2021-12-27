@@ -193,7 +193,7 @@ def available_commands():
                 'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
                 'set_loudness_monitor_scope', 'set_lu_monitor_scope',
                 'get_loudness_monitor', 'get_lu_monitor',
-                'restart', 'get_aux_info', 'info', 'add_delay', 'warning'
+                'restart', 'info', 'add_delay', 'warning'
                 ]
     return cmd_list
 
@@ -456,7 +456,7 @@ def do( cmd, arg ):
     elif cmd == 'get_loudness_monitor' or cmd == 'get_lu_monitor':
         result = get_loudness_monitor()
 
-    elif cmd == 'get_aux_info' or cmd == 'info':
+    elif cmd == 'info':
         result = AUX_INFO
 
     elif cmd == 'add_delay':
@@ -469,7 +469,7 @@ def do( cmd, arg ):
         result = do_restart_peaudiosys()
 
     elif cmd == 'help':
-        result = ' '.join( available_commands() )
+        result = ', '.join( available_commands() )
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)

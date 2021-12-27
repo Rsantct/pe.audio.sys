@@ -16,6 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" This module provides the system constants and configured parameters
+    needed for other modules to work:
+    
+        CONFIG          The main set of system parameters
+                        from config/config.yml
+
+        EQ_CURVES       The set of curves to be used by the
+                        EQ stage in Brutefir for tone and
+                        loudness contour compensation
+                                
+        xxx_FOLDER      Common usage folder paths
+        
+        xxx_PATH        Common usage file paths
+        
+"""
 import  yaml
 from    numpy import loadtxt as np_loadtxt
 import  os
