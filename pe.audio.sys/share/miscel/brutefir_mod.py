@@ -65,7 +65,7 @@ def cli(cmd):
                 ans += tmp.decode()
             s.close()
         except:
-            print( f'(brutefir_mod) unable to connect to Brutefir:3000' )
+            print( f'(brutefir_mod) error: unable to connect to Brutefir:3000' )
     return ans
 
 
@@ -530,7 +530,7 @@ def get_in_connections():
         return ['pre_in_loop:output_1', 'pre_in_loop:output_2']
 
 
-def restart_and_reconnect(bf_sources=[]):
+def restart_and_reconnect(bf_sources=[], delay=0.0):
     """ Restarts Brutefir as external process (Popen),
         then check Brutefir spawn connections to system ports,
         then reconnects Brutefir inputs.
@@ -593,6 +593,10 @@ def restart_and_reconnect(bf_sources=[]):
     if not tries:
         warnings += ' Brutefir ERROR getting jack ports available.'
 
+
+    # Settigs outputs delays as required
+    add_delay(delay)
+
     # A safe wait to avoid early connections failures
     sleep(.5)
 
@@ -601,6 +605,7 @@ def restart_and_reconnect(bf_sources=[]):
         res = jack.connect(a, b)
         if res != 'done':
             warnings += f' {res}'
+
 
     if not warnings:
         return 'done'
@@ -744,18 +749,21 @@ def add_delay(ms):
     # Issue new delay to Brutefir's outputs
     if not too_much:
         ans = cli( cmd ).lower()
-        if not 'unknown command' in ans and \
-           not 'out of range' in ans and \
-           not 'invalid' in ans and \
-           not 'error' in ans:
-                result = 'done'
+        if not ans:
+            result = 'Brutefir error'
+        elif not 'unknown command' in ans and \
+             not 'out of range' in ans and \
+             not 'invalid' in ans and \
+             not 'error' in ans:
+            result = 'done'
         else:
-                result = 'Brutefir error'
+            result = 'Brutefir error'
     else:
         print(f'(brutefir_mod) ERROR Brutefir\'s maxdelay is {int(max_available_ms)} ms')
         result = f'max delay {int(max_available_ms)} ms exceeded'
 
     return result
+
 
 
 # Autoexec on loading this module
