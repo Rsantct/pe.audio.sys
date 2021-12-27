@@ -39,16 +39,18 @@
 
 """
 
-import subprocess as sp
-from   time import sleep, time, ctime
-import os
-import sys
+import  subprocess as sp
+from    time import sleep, time, ctime
+from    json import dumps as json_dumps
+import  os
+import  sys
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from  config import CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
-from  miscel import read_bf_config_fs, server_is_running, kill_bill, Fmt
+from    config import   CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+from    miscel import   read_bf_config_fs, server_is_running, kill_bill,        \
+                        read_state_from_disk, force_to_flush_file, Fmt
 
 
 def prepare_extra_cards(channels=2):
@@ -203,6 +205,20 @@ def start_jack_stuff():
         return 'done'
 
 
+def start_brutefir():
+    """ runs Brutefir, connects to pream_in_loop and resets
+        .state file with extra_delay = 0 ms
+    """
+    result = core.bf.restart_and_reconnect( ['pre_in_loop:output_1',
+                                             'pre_in_loop:output_2'],
+                                             delay=0.0 )
+    # Ensuring that .state keeps extra_delay = 0 ms from start
+    tmp_state = read_state_from_disk()
+    tmp_state["extra_delay"] = 0.0
+    force_to_flush_file(STATE_PATH, json_dumps(tmp_state))
+    return result
+
+
 def manage_server( mode='', todevnull=False):
     """ Manages the server running in background
         (void)
@@ -291,7 +307,7 @@ def check_state_file():
 
     def recover_state(reason='damaged'):
         sp.Popen(f'cp {state_file}.BAK {state_file}'.split())
-        print(f'{Fmt.BOLD}(start) ERROR \'.state\' file was {reason}, ' +
+        print(f'{Fmt.BOLD}(start) ERROR \'.state\' file was {reason}, '
               f'it has been restored from \'.state.BAK\'{Fmt.END}')
         now = ctime(time())
         with open(state_log_file, 'a') as f2:
@@ -382,8 +398,7 @@ if __name__ == "__main__":
         print(f'{Fmt.MAGENTA}(start) Managing a temporary \'core\' instance.{Fmt.END}')
 
         # - BRUTEFIR
-        bfstart = core.bf.restart_and_reconnect( ['pre_in_loop:output_1',
-                                                  'pre_in_loop:output_2'] )
+        bfstart = start_brutefir()
         if bfstart == 'done':
             print(f'{Fmt.BOLD}{Fmt.BLUE}(start) BRUTEFIR STARTED.{Fmt.END}')
         else:
