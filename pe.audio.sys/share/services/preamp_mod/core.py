@@ -538,7 +538,8 @@ class Preamp(object):
                 # This avoids that powersave loop kills Brutefir
                 self.ps_reset_elapsed.set()
 
-                result = bf.restart_and_reconnect(self.bf_sources)
+                result = bf.restart_and_reconnect(bf_sources=self.bf_sources,
+                                                  delay=self.state["extra_delay"] )
                 if result == 'done':
                     print(f'{Fmt.BLUE}{Fmt.BOLD}(core) BRUTEFIR RESUMED{Fmt.END}')
                     self._validate( self.state ) # this includes mute
@@ -955,6 +956,10 @@ class Convolver(object):
             return 'done'
         else:
             return f'xo set \'{xo_set}\' not available'
+
+
+    def add_delay(self, ms, *dummy):
+        return bf.add_delay(ms)
 
 
     def get_drc_sets(self, *dummy):
