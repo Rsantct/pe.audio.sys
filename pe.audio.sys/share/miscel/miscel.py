@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
-""" This module provide common usage functions
+""" This module provides common usage functions
 """
 
 import  socket
