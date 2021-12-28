@@ -48,6 +48,8 @@ var metablank = {                   // A player's metadata blank dict
     'track_num':    '',
     'tracks_tot':   ''
     }
+var last_eq_params      = {};       // To evaluate if eq curve changed
+var last_drc            = '';       // To evaluate if drc changed
 var last_disc           = '';       // Helps on refreshing cd tracks list
 var last_input          = '';       // Helps on refreshing sources playlits
 var last_loudspeaker    = '';       // Will detect if audio processes has beeen
@@ -386,10 +388,21 @@ function page_update() {
     // Updates all player stuff
     player_all_update()
 
-    // Artifice to wait 3000 milliseconds to refresh brutefir_eq.png
+    // Updates bf_eq and drc graphs if needed
     if ( show_graphs == true ) {
-        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
-                                                  + Math.floor(Date.now()/3000);
+        if (eq_changed() == true) {
+            // Artifice to avoid using cached image by adding an offset timestamp
+            // inside the  http.GET image source request
+            document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
+                                                      + Math.floor(Date.now()/3000);
+        }
+        if (drc_changed() == true) {
+            // Here we can use cached images because drc graphs does not change
+            document.getElementById("drc_img").src =  'images/'
+                                                    + state.loudspeaker
+                                                    + '/drc_' + state.drc_set
+                                                    + '.png';
+        }
     }
 
     // Displays and updates the playlist loader for some sources when input source changed
@@ -1150,6 +1163,36 @@ function advanced(mode) {
     }
 }
 
+// Aux to evaluate if the set of params that determines an eq curve contour has changed
+function eq_changed(){
+    let result = false;
+    const eq_params = { 'level':    state.level,    'eq_loud':  state.equal_loudness,
+                        'bass':     state.bass,     'treb':     state.treble,
+                        'target':   state.target
+                    };
+    if ( JSON.stringify(eq_params) !== JSON.stringify(last_eq_params) ) {
+        //console.log('eq changed');
+        last_eq_params = eq_params;
+        result = true;
+    }else{
+        result = false;
+    }
+    return result
+}
+
+// Aux to evaluate if the drc has changed
+function drc_changed(){
+    let result = false;
+    if ( state.drc_set !== last_drc ) {
+        //console.log('drc changed');
+        last_drc = state.drc_set;
+        result = true;
+    }else{
+        result = false;
+    }
+    return result
+}
+
 // Toggle displaying graphs
 function graphs_toggle() {
     if ( web_config.show_graphs == false ){
@@ -1165,18 +1208,9 @@ function graphs_toggle() {
     if ( show_graphs == true ){
         document.getElementById("drc_graph").style.display = 'block';
         document.getElementById("bfeq_graph").style.display = 'block';
-        // Points to the current DRC png
-        document.getElementById("drc_img").src =  'images/'
-                                                + state.loudspeaker
-                                                + '/drc_' + state.drc_set
-                                                               + '.png';
-        document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?';
     }else{
         document.getElementById("drc_graph").style.display = 'none';
         document.getElementById("bfeq_graph").style.display = 'none';
-        // Disable loading graph images to save bandwidth on page updates
-        document.getElementById("drc_img").src = '';
-        document.getElementById("bfeq_img").src = '';
     }
 }
 
