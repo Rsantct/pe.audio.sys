@@ -40,11 +40,11 @@ from    miscel          import  read_state_from_disk, send_cmd, is_IP,  \
                                 wait4ports, process_is_running, Fmt
 
 
-AUX_CMD_LIST = ['amp_switch', 'get_macros', 'get_last_macro', 'run_macro',
-                'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
-                'set_loudness_monitor_scope', 'set_lu_monitor_scope',
-                'get_loudness_monitor', 'get_lu_monitor',
-                'info', 'warning', 'restart'
+AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'get_last_macro', 'run_macro',
+                    'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
+                    'set_loudness_monitor_scope', 'set_lu_monitor_scope',
+                    'get_loudness_monitor', 'get_lu_monitor',
+                    'info', 'warning', 'restart'
                 ]
 
 
@@ -58,6 +58,8 @@ def dump_aux_info():
 
 
 def get_web_config():
+    """ used by the control web page client
+    """
 
     wconfig = CONFIG['web_config']
 
@@ -376,7 +378,6 @@ def init():
     global AUX_INFO
     AUX_INFO = {    'amp':                  'off',
                     'loudness_monitor':     0.0,
-                    'web_config':           get_web_config(),
                     'last_macro':           '-',                # cannot be empty
                     'warning':              ''
                 }
@@ -449,10 +450,13 @@ def do( cmd, arg ):
         result = do_restart_peaudiosys()
 
     elif cmd == 'help':
-        result = ', '.join( AUX_CMD_LIST )
+        result = ', '.join( AUX_USER_CMDS )
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)
+
+    elif cmd == 'get_web_config':
+        result = get_web_config()
 
     else:
         result = f'(aux) bad command \'{cmd}\''
