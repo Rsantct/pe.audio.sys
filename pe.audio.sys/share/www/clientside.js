@@ -32,11 +32,15 @@ const URL_PREFIX = '/functions.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 // -----------------------------------------------------------------------------
 
-// SOME GLOBALS
+// GLOBAL VARIABLES
 var state               = {};       // The main state dictionary
+var aux_info            = {};       // Contains: amp_switch, lu_mon, last_macro, warning
 var server_available    = false;
 var show_advanced       = false;    // defaults for display advanced controls
 var show_graphs         = false;    // defaults for show graphs
+var main_selector       = 'inputs'  // Can be 'macros' as per user web_config
+var mFnames             = [];       // List of user macros
+
 var metablank = {                   // A player's metadata blank dict
     'player':       '',
     'time_pos':     '',
@@ -56,97 +60,18 @@ var last_loudspeaker    = '';       // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
 var macro_button_list   = [];
 var hold_selected_track = 0;        // A counter to keep the selected cd track during updates
-var hold_tmp_msg        = 0;        // A counter to keep tmp_msg during updates
-var tmp_msg             = '';       // A temporary message
+var main_cside_msg      = '';       // The message displayed on page header
+var hold_cside_msg      = 0;        // A counter to keep main_cside_msg during updates
 
-// STATIC WEB CONFIGURATION
-try{
-    var web_config = JSON.parse( control_cmd('aux info') )['web_config'];
-}catch(e){
-    console.log('problems with \'aux info\' command', e.name, e.message);
-    var web_config = { 'main_selector':      'inputs',
-                       'hide_LU':            false,
-                       'LU_monitor_enabled': false,
-                       'restart_cmd_info':   '',
-                       'show_graphs':        false,
-                       'user_macros':        []
-                     };
-}
-var main_selector = web_config.main_selector;
-var mFnames = web_config.user_macros;   // User macros
+var web_config          = { 'main_selector':      'inputs',
+                            'hide_LU':            false,
+                            'LU_monitor_enabled': false,
+                            'restart_cmd_info':   '',
+                            'show_graphs':        false,
+                            'user_macros':        []
+                          };
 
 
-// SERVER SIDE COMMUNICATION (updates <server_available>)
-function control_cmd( cmd ) {
-    /*
-    We need synchronous mode (async=false), althougt it is deprecated
-    and not recommended in the main JS thread.
-    https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest
-    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
-    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Synchronous_and_Asynchronous_Requests
-    */
-
-    // avoids http socket lossing some symbols
-    cmd = http_prepare(cmd);
-
-    const myREQ = new XMLHttpRequest();
-
-    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd,
-               async=false);
-    // (i) send() is blocking because async=false, so no handlers
-    //     on myREQ status changes are needed because of this.
-    myREQ.send();
-    ans = myREQ.responseText;
-
-    //console.log('httpTX: ' + cmd);
-    //console.log('httpRX: ' + ans);
-
-    if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
-        server_available = true;
-        return ans;
-    }else{
-        server_available = false;
-        return '';
-    }
-}
-
-
-//////// PAGE MANAGEMENT ////////
-
-// PAGE INITIATE
-function page_initiate(){
-
-    state_update();
-
-    // Macros buttons (!) place this first because
-    // aux server is supposed to be always alive
-    fill_in_macro_buttons();
-
-    // playlists selector for some sources
-    fill_in_playlists_selector();
-
-    // Shows or hides the LU offset slider and the LU monitor bar
-    if ( web_config.hide_LU == true ){
-        document.getElementById("LU_offset").style.display = 'none';
-        document.getElementById("LU_monitor").style.display = 'none';
-    }else{
-        document.getElementById("LU_offset").style.display = 'block';
-        if ( web_config.LU_monitor_enabled == true ){
-            document.getElementById("LU_monitor").style.display = 'block';
-        }
-    }
-
-    // Updates the title of the restart button as per config.yml
-    document.getElementById("restart_switch").title = 'RESTART: ' +
-                                         web_config.restart_cmd_info;
-
-    // Schedules the page_update (only runtime variable items):
-    // Notice: the function call inside setInterval uses NO brackets)
-    setInterval( page_update, AUTO_UPDATE_INTERVAL );
-}
-
-
-// PAGE STATIC ITEMS (HEADER and SELECTORS)
 function fill_in_page_statics(){
 
     // MAIN_SELECTOR
@@ -222,13 +147,7 @@ function fill_in_page_statics(){
 
     // Fills in the LU scope selector
     function fill_in_LUscope_selector() {
-        try{
-            const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
-        }catch(e){
-            console.log( e.name, e.message );
-            return;
-        }
-        select_clear_options(ElementId="LUscopeSelector");
+        select_clear_options( ElementId="LUscopeSelector" );
         const mySel = document.getElementById("LUscopeSelector");
         scopes = ['input', 'album', 'track'];
         for ( i in scopes ) {
@@ -251,8 +170,8 @@ function fill_in_page_statics(){
     }
 
     // Web header:
-    document.getElementById("main_cside").innerText = ':: pe.audio.sys :: ' +
-                                                       state.loudspeaker;
+    main_cside_msg = ':: pe.audio.sys :: ' + state.loudspeaker;
+
 
     // Level cell info
     document.getElementById("levelInfo").title = 'Target volume ref@' +
@@ -270,64 +189,146 @@ function fill_in_page_statics(){
 }
 
 
-// STATE DICT. UPDATE by queriyng the server
 function state_update() {
     try{
-        state = control_cmd('preamp state');
-        // console.log('Rx state:', state); # debug
-        state = JSON.parse( state );
-        if (state == null){
-            document.getElementById("main_cside").innerText =
-                    ':: pe.audio.sys :: preamp OFFLINE';
-            return;
-
-        } else {
-
-            if ( hold_tmp_msg == 0 ){
-
-                let warning = control_cmd('aux warning get');
-
-                if (warning == ''){
-                    document.getElementById("main_cside").innerText =
-                            ':: pe.audio.sys :: ' + state.loudspeaker;
-                } else {
-                    document.getElementById("main_cside").innerText = warning;
-                }
-
-            } else {
-                document.getElementById("main_cside").innerText = tmp_msg;
-                hold_tmp_msg -= 1;
-            }
-
-        }
+        state = JSON.parse( control_cmd('preamp state') );
+        server_available = true;
     }catch(e){
+        server_available = false;
+        document.getElementById("main_cside").innerText =
+                                        ':: pe.audio.sys :: not connected';
         console.log( 'not connected', e.name, e.message );
-        state = {loudspeaker:'not connected'};
     }
 }
 
 
-// PAGE UPDATE (RUNTIME VARIABLE ITEMS):
+function aux_info_refresh(){
+    try{
+        aux_info  = JSON.parse( control_cmd('aux info') );
+    }catch(e){
+        console.log('problems with \'aux info\' command', e.name, e.message);
+        aux_info = {
+                    'amp': 'n/a',
+                    'loudness_monitor': {'LU_I': 0, 'LU_M': 0, 'scope': 'track' },
+                    'last_macro': '-',
+                    'warning': ''
+                    }
+    }
+}
+
+
+function LU_update(){
+
+    // Updates the LU offset slider
+    document.getElementById("LU_slider").value           = (15 - state.lu_offset);
+    document.getElementById("LU_offset_value").innerText =
+                                        'LU offset: ' + -1 * state.lu_offset;
+
+    // Updates the Integrated LU monitor
+    const LU_I  = aux_info.loudness_monitor.LU_I
+    let scope   = aux_info.loudness_monitor.scope
+    // Preferred displaying 'track' instead of 'title'
+    if ( scope == 'title' ) {
+        scope = 'track';
+    }
+    document.getElementById("LU_meter").value           = -LU_I;
+    document.getElementById("LUscopeSelector").value    = scope;
+    if (LU_I <= 0){
+      document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
+    }else{
+      document.getElementById("LU_meter_value").innerHTML ='LU monit: +' + LU_I;
+    }
+
+
+}
+
+
+function graphs_update(){
+    if ( show_graphs == true ) {
+        if (eq_changed() == true) {
+            // Artifice to avoid using cached image by adding an offset timestamp
+            // inside the  http.GET image source request
+            document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
+                                                      + Math.floor(Date.now()/3000);
+        }
+        if (drc_changed() == true) {
+            // Here we can use cached images because drc graphs does not change
+            document.getElementById("drc_img").src =  'images/'
+                                                    + state.loudspeaker
+                                                    + '/drc_' + state.drc_set
+                                                    + '.png';
+        }
+    }
+}
+
+
+function manage_main_cside(){
+
+    // Server warnings have max prioriy
+    if (aux_info.warning !== ''){
+        main_cside_msg = aux_info.warning;
+
+    // If not server warnigs
+    }else{
+        if (hold_cside_msg > 0){
+            hold_cside_msg -= 1;
+        }else{
+            main_cside_msg = '::pe.audio.sys::' + state.loudspeaker;
+        }
+    }
+    document.getElementById("main_cside").innerText = main_cside_msg;
+}
+
+
+function page_initiate(){
+
+    download_web_config();
+
+    state_update();
+
+    document.getElementById("main_cside").innerText = '::pe.audio.sys::'
+                                                    + state.loudspeaker;
+
+
+    fill_in_macro_buttons();
+
+    fill_in_playlists_selector();
+
+    if ( web_config.hide_LU == true ){
+        document.getElementById("LU_offset").style.display = 'none';
+        document.getElementById("LU_monitor").style.display = 'none';
+    }else{
+        document.getElementById("LU_offset").style.display = 'block';
+        if ( web_config.LU_monitor_enabled == true ){
+            document.getElementById("LU_monitor").style.display = 'block';
+        }
+    }
+
+    document.getElementById("restart_switch").title = 'RESTART: ' +
+                                         web_config.restart_cmd_info;
+
+    // Schedules the page_update (only runtime variable items):
+    // Notice: the function call inside setInterval uses NO brackets)
+    setInterval( page_update, AUTO_UPDATE_INTERVAL );
+}
+
+
 function page_update() {
 
-    // Amplifier switching (aux service always runs)
-    ampli_switch_update();
-
-    // Getting the current STATUS
     state_update();
+    // Cancel updating if not connected
+    if (!server_available){
+        document.getElementById("levelInfo").innerHTML  = '--';
+        document.getElementById("main_cside").innerText = ':: pe.audio.sys :: not connected';
+        player_info_clear();
+        player_controls_clear();
+        return;
+    }
 
     // Refresh static stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
         fill_in_page_statics();
         last_loudspeaker = state.loudspeaker;
-    }
-
-    // Cancel updating if not connected
-    if (!server_available){
-        document.getElementById("levelInfo").innerHTML  = '--';
-        player_info_clear();
-        player_controls_clear();
-        return;
     }
 
     // Updates level, balance, and tone info
@@ -336,33 +337,9 @@ function page_update() {
     document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
     document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
 
-
     // Delete level info if convolver off
     if (state.convolver_runs == false){
         document.getElementById("levelInfo").innerHTML  = '--';
-    }
-
-    // Updates the Integrated LU monitor and the LU offset slider
-    document.getElementById("LU_slider").value           = (15 - state.lu_offset);
-    document.getElementById("LU_offset_value").innerText =
-                                        'LU offset: ' + -1 * state.lu_offset;
-    try{
-        const LU_mon_dict = JSON.parse( control_cmd('aux get_loudness_monitor') );
-        const LU_I = LU_mon_dict.LU_I
-        var scope  = LU_mon_dict.scope
-        // Preferred displaying 'track' instead of 'title'
-        if ( scope == 'title' ) {
-            scope = 'track';
-        }
-        document.getElementById("LU_meter").value           = -LU_I;
-        document.getElementById("LUscopeSelector").value    = scope;
-        if (LU_I <= 0){
-          document.getElementById("LU_meter_value").innerHTML ='LU monit: ' + LU_I;
-        }else{
-          document.getElementById("LU_meter_value").innerHTML ='LU monit: +' + LU_I;
-        }
-    }catch(e){
-        console.log('Error getting loudness monitor from server', e.name, e.message);
     }
 
     // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
@@ -385,25 +362,6 @@ function page_update() {
     buttonSubsonicHighlight()
     levelInfoHighlight()
 
-    // Updates all player stuff
-    player_all_update()
-
-    // Updates bf_eq and drc graphs if needed
-    if ( show_graphs == true ) {
-        if (eq_changed() == true) {
-            // Artifice to avoid using cached image by adding an offset timestamp
-            // inside the  http.GET image source request
-            document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
-                                                      + Math.floor(Date.now()/3000);
-        }
-        if (drc_changed() == true) {
-            // Here we can use cached images because drc graphs does not change
-            document.getElementById("drc_img").src =  'images/'
-                                                    + state.loudspeaker
-                                                    + '/drc_' + state.drc_set
-                                                    + '.png';
-        }
-    }
 
     // Displays and updates the playlist loader for some sources when input source changed
     if (last_input != state.input){
@@ -441,12 +399,23 @@ function page_update() {
         document.getElementById( "url_button").style.display = "none";
     }
 
+    aux_info_refresh();
+
+    ampli_switch_refresh();
+
+    LU_update();
+
+    player_all_update();
+
+    graphs_update();
+
+    manage_main_cside();
+
 }
 
 
 //////// PREAMP FUNCTIONS ////////
 
-// MAIN SELECTOR
 function main_select(itemName){
     // (i) The main selector can have two flavors:
     //      - regular input selector management
@@ -466,7 +435,8 @@ function main_select(itemName){
         return result;
     }
 
-    display_tmp_msg( 'Please wait for "' + itemName + '"', 3 );
+    hold_cside_msg = 3;
+    main_cside_msg = 'Please wait for "' + itemName + '"';
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
     // setTimeout( () => { control_cmd('input ' + itemName); }, 200 );
@@ -483,43 +453,93 @@ function main_select(itemName){
     }
     setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
 
-    clear_highlighted();
+    clear_highlighteds();
     document.getElementById('mainSelector').style.color = "white";
 
 }
 
-// DRC selection
+
 function drc_select(drcName){
     control_cmd('set_drc ' + drcName);
-    clear_highlighted();
+    clear_highlighteds();
     document.getElementById('drcSelector').style.color = "white";
 }
 
-// XO selection
+
 function xo_select(xoName){
     control_cmd('set_xo ' + xoName);
-    clear_highlighted();
+    clear_highlighteds();
     document.getElementById('xoSelector').style.color = "white";
 }
 
-// TARGET selection
+
 function target_select(xoName){
     control_cmd('set_target ' + xoName);
-    clear_highlighted();
+    clear_highlighteds();
     document.getElementById('targetSelector').style.color = "white";
 }
 
-// LU_monitor SCOPE selection
+
 function LU_scope_select(scope){
     control_cmd('aux set_loudness_monitor_scope ' + scope);
-    clear_highlighted();
+    clear_highlighteds();
     document.getElementById('LUscopeSelector').style.color = "white";
+}
+
+
+function audio_change(param, value) {
+    state[param] += value;
+    if ( param == 'level') {
+        document.getElementById( 'levelInfo'  ).innerHTML =
+                                    state[param].toFixed(1);
+    }
+    else if( param == 'bass'){
+        document.getElementById( 'bassInfo'   ).innerHTML =
+                         'BASS: ' + state[param].toFixed(0);
+    }
+    else if( param == 'treble'){
+        document.getElementById( 'trebleInfo' ).innerHTML =
+                         'TREB: ' + state[param].toFixed(0);
+    }
+    else if( param == 'balance'){
+        document.getElementById( 'balInfo'    ).innerHTML =
+                         'BAL: '  + state[param].toFixed(0);
+    }
+    else{
+        return;
+    }
+    control_cmd( param + ' ' + value + ' ' + 'add' );
+}
+
+
+function mute_toggle() {
+    state.muted = ! state.muted;
+    buttonMuteHighlight();
+    control_cmd( 'mute toggle' );
+}
+
+
+function equal_loudness_toggle() {
+    state.equal_loudness = ! state.equal_loudness;
+    buttonLoudHighlight();
+    control_cmd( 'equal_loudness toggle' );
+}
+
+
+function mono_toggle() {
+    if (state.midside == "mid" || state.midside == "side"){
+        state.midside = "off";
+    }else{
+        state.midside = "mid";
+    }
+    buttonMonoHighlight();
+    control_cmd( 'mono toggle' );
 }
 
 
 //////// PLAYERS FUNCTIONS ////////
 
-// Controls the player
+
 function playerCtrl(action) {
     if (action == 'random_toggle') {
         control_cmd( 'player random_mode toggle' );
@@ -528,25 +548,22 @@ function playerCtrl(action) {
     }
 }
 
-// Retrieves and updates all player stuff
+
 function player_all_update(){
     try{
-        var player_all_info = control_cmd( 'player get_all_info' );
+        var player_all_info = JSON.parse( control_cmd('player get_all_info') );
         if (player_all_info == "null"){
-            document.getElementById("main_cside").innerText =
-                    ':: pe.audio.sys :: players OFFLINE';
+            main_cside_msg = ':: pe.audio.sys :: players OFFLINE';
             return;
-        } else {
-            player_all_info = JSON.parse(player_all_info);
         }
     }catch(e){
         console.log( 'error getting player info', e.name, e.message );
         return;
     }
 
-    player_controls_update(     player_all_info.state );
-    player_metadata_update(     player_all_info.metadata );
-    player_random_mode_update(  player_all_info.random_mode);
+    player_controls_update(     player_all_info.state       );
+    player_metadata_update(     player_all_info.metadata    );
+    player_random_mode_update(  player_all_info.random_mode );
 
     // Updates tracks list if disc has changed
     if (last_disc != player_all_info.discid) {
@@ -556,7 +573,7 @@ function player_all_update(){
 
 }
 
-// Highlights the random mode button:
+
 function player_random_mode_update(mode){
     if        ( mode=='on' ) {
         document.getElementById("random_toggle_button").style.background  = "rgb(185, 185, 185)";
@@ -568,7 +585,7 @@ function player_random_mode_update(mode){
     }
 }
 
-// Hightlights the corresponding playback button as per the playback state
+
 function player_controls_update(playerState) {
 
     if        ( playerState == 'stop' ) {
@@ -595,7 +612,7 @@ function player_controls_update(playerState) {
     }
 }
 
-// Shows the playing info metadata
+
 function player_metadata_update(d) {
 
 
@@ -641,7 +658,7 @@ function player_metadata_update(d) {
 
 }
 
-// Aux to clear controls when not connected
+
 function player_controls_clear() {
     document.getElementById("buttonStop").style.background  = "rgb(100, 100, 100)";
     document.getElementById("buttonStop").style.color       = "lightgray";
@@ -651,7 +668,7 @@ function player_controls_clear() {
     document.getElementById("buttonPlay").style.color       = "lightgray";
 }
 
-// Aux to clear metadata when not connected
+
 function player_info_clear() {
     document.getElementById("bitrate").innerText = "-\nkbps"
     document.getElementById("artist").innerText = "-"
@@ -662,7 +679,7 @@ function player_info_clear() {
     document.getElementById("title").innerText = "-"
 }
 
-// When changing a playlist selector
+
 function load_playlist(plistname) {
     if (plistname == '-CLEAR-') {
         control_cmd( 'player clear_playlist ' );
@@ -672,7 +689,7 @@ function load_playlist(plistname) {
     }
 }
 
-// Emerge a dialog to select a disk track number to be played (currently not used)
+
 function select_track_number_dialog() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
@@ -680,13 +697,13 @@ function select_track_number_dialog() {
     }
 }
 
-// Plays a track number
+
 function play_track_number(N) {
     control_cmd( 'player play_track ' + N );
     hold_selected_track = 10;
 }
 
-// Sends an url to the server, for it to play
+
 function play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
@@ -695,52 +712,104 @@ function play_url() {
 }
 
 
-//////// AUX FUNCTIONS ////////
+//////// AUX SERVICES FUNCTIONS ////////
 
-// Aux to clearing selector elements, aka options.
-function select_clear_options(ElementId){
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    var mySel = document.getElementById(ElementId);
-    while (mySel.length > 0){
-        mySel.remove( mySel.length-1 );
-    }
-}
-
-// Restart procedure
 function peaudiosys_restart() {
     control_cmd('aux restart');
     advanced('off');
     page_update();
 }
 
-// Switch the amplifier
-function ampli(mode) {
+
+function ampli_set(mode) {
     control_cmd( 'aux amp_switch ' + mode );
 }
 
-// Queries the remote amplifier switch state
-function ampli_switch_update() {
-    var amp_state = '';
-    try{
-        var tmp = control_cmd( 'aux amp_switch state' ).replace('\n','');
-        if ( tmp != 'off' && tmp != 'on' ) {
-            amp_state = '';
-        }else{
-            amp_state = tmp;
-        }
-    }catch(e){
-        console.log( 'Amp switch error', e.name, e.message );
-    }
-    if (amp_state) {
-        document.getElementById("OnOffButton").innerText = amp_state.toUpperCase();
+
+function ampli_switch_refresh() {
+    if ( aux_info.amp == 'off' || aux_info.amp == 'on' ) {
+        document.getElementById("OnOffButton").innerText = aux_info.amp.toUpperCase();
         document.getElementById("OnOffButton").style.display = 'block';
     }else{
         document.getElementById("OnOffButton").style.display = 'none';
     }
 }
 
-// MAIN SELECTOR manages inputs:
+
+function run_macro(mFname){
+
+    control_cmd( 'aux run_macro ' + mFname );
+    last_macro = mFname;
+
+    var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+    clear_highlighteds();
+
+    // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
+    // setTimeout(() => { highlight_macro_button(mName);}, 200);
+    function tmp(mName){
+        highlight_macro_button(mName);
+    }
+    setTimeout( tmp, 200, mName );  // 'mName' is given as argument for 'tmp'
+
+    hold_cside_msg = 3;
+    main_cside_msg = 'Please wait for "' + mName + '"' ;
+}
+
+
+function LU_slider_action(slider_value){
+    control_cmd( 'lu_offset ' + (15 - parseInt(slider_value) ).toString() )
+}
+
+
+///////////////  MISCEL INTERNAL ////////////
+
+function control_cmd( cmd ) {
+    /*
+    We need synchronous mode (async=false), althougt it is deprecated
+    and not recommended in the main JS thread.
+    https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest
+    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
+    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Synchronous_and_Asynchronous_Requests
+    */
+
+    // avoids http socket lossing some symbols
+    cmd = http_prepare(cmd);
+
+    const myREQ = new XMLHttpRequest();
+
+    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd,
+               async=false);
+    // (i) send() is blocking because async=false, so no handlers
+    //     on myREQ status changes are needed because of this.
+    myREQ.send();
+    ans = myREQ.responseText;
+
+    //console.log('httpTX: ' + cmd);
+    //console.log('httpRX: ' + ans);
+
+    if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
+        server_available = true;
+        return ans;
+    }else{
+        server_available = false;
+        return '';
+    }
+}
+
+function download_web_config(){
+    try{
+        web_config  = JSON.parse( control_cmd('aux get_web_config') );
+        main_selector   = web_config.main_selector;
+        mFnames          = web_config.user_macros;
+    }catch(e){
+        console.log('problems with \'aux get_web_config\' command', e.name, e.message);
+}
+}
+
+
 function fill_in_main_as_inputs() {
+    // MAIN SELECTOR manages inputs:
+
     // getting input names
     try{
         var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
@@ -765,8 +834,8 @@ function fill_in_main_as_inputs() {
     mySel.add(option);
 }
 
-// MAIN SELECTOR manages macros
 function fill_in_main_as_macros() {
+    // MAIN SELECTOR manages macros:
 
     // clearing selector options
     select_clear_options(ElementId="mainSelector");
@@ -783,7 +852,6 @@ function fill_in_main_as_macros() {
     }
 }
 
-// Filling in the user's macro buttons
 function fill_in_macro_buttons() {
 
     // If empty macros list, do nothing
@@ -852,7 +920,6 @@ function fill_in_macro_buttons() {
     }
 }
 
-// Filling in playlists selector:
 function fill_in_playlists_selector() {
     // getting playlists
     try{
@@ -879,7 +946,6 @@ function fill_in_playlists_selector() {
     mySel.add(option);
 }
 
-// Filling in track selector:
 function fill_in_track_selector() {
     // getting tracks
     try{
@@ -904,57 +970,30 @@ function fill_in_track_selector() {
     mySel.add(option);
 }
 
-// Runs a macro
-function run_macro(mFname){
 
-    control_cmd( 'aux run_macro ' + mFname );
-    last_macro = mFname;
-
-    var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
-    clear_highlighted();
-
-    // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
-    // setTimeout(() => { highlight_macro_button(mName);}, 200);
-    function tmp(mName){
-        highlight_macro_button(mName);
+function select_clear_options(ElementId){
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    var mySel = document.getElementById(ElementId);
+    while (mySel.length > 0){
+        mySel.remove( mySel.length-1 );
     }
-    setTimeout( tmp, 200, mName );  // 'mName' is given as argument for 'tmp'
-
-    display_tmp_msg( 'Please wait for "' + mName + '"', 3);
-}
-
-// Manages the LU_offset slider
-function LU_slider_action(slider_value){
-    control_cmd( 'lu_offset ' + (15 - parseInt(slider_value) ).toString() )
 }
 
 
-///////////////  MISCEL INTERNAL ////////////
-
-// Displays a temporary message for some seconds within the upper frame.
-function display_tmp_msg(msg, timeout){
-    hold_tmp_msg    = timeout;     // these two are global variables checked when
-    tmp_msg         = msg;         // every update
-    document.getElementById("main_cside").innerText = tmp_msg;
-}
-
-// Hightlights a macro button
 function highlight_macro_button(id){
     document.getElementById(id).className = 'macro_button_highlighted';
 }
 
-// Clear highlighteds
-function clear_highlighted(){
+function clear_highlighteds(){
     for (i = 0; i < macro_button_list.length; i++) {
         document.getElementById(macro_button_list[i]).className = 'macro_button';
     }
-    document.getElementById('mainSelector').style.color   = "rgb(200,200,200)";
+    document.getElementById('mainSelector').style.color     = "rgb(200,200,200)";
     document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
     document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
 
-// Highlights the BASS, TREBLE, BALANCE, MUTE, MONO and LOUDNESS BUTTONS:
 function buttonsToneBalanceHighlight(){
     if ( state.bass < 0 ){
         document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
@@ -987,6 +1026,7 @@ function buttonsToneBalanceHighlight(){
         document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
     }
 }
+
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
@@ -1000,6 +1040,7 @@ function buttonMuteHighlight(){
         document.getElementById("levelInfo").style.color = "white";
     }
 }
+
 function buttonMonoHighlight(){
     if ( state.midside == 'mid' ) {
         document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
@@ -1035,6 +1076,7 @@ function buttonMonoHighlight(){
         document.getElementById("buttonMono").innerText = '-+';
     }
 }
+
 function buttonLoudHighlight(){
     if ( state.equal_loudness == true ) {
         document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
@@ -1044,6 +1086,7 @@ function buttonLoudHighlight(){
         document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
     }
 }
+
 function buttonSubsonicHighlight(){
     if ( state.subsonic == 'off' ) {
         document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
@@ -1059,6 +1102,7 @@ function buttonSubsonicHighlight(){
         document.getElementById("subsonic").innerText = 'SUBS\nlp';
     }
 }
+
 function levelInfoHighlight() {
     // currently only indicates subsonic filter activated
     if (state.subsonic != 'off' ){
@@ -1071,52 +1115,7 @@ function levelInfoHighlight() {
 }
 
 
-// Send preamp changes and display new values
-function audio_change(param, value) {
-    state[param] += value;
-    if ( param == 'level') {
-        document.getElementById( 'levelInfo'  ).innerHTML =
-                                    state[param].toFixed(1);
-    }
-    else if( param == 'bass'){
-        document.getElementById( 'bassInfo'   ).innerHTML =
-                         'BASS: ' + state[param].toFixed(0);
-    }
-    else if( param == 'treble'){
-        document.getElementById( 'trebleInfo' ).innerHTML =
-                         'TREB: ' + state[param].toFixed(0);
-    }
-    else if( param == 'balance'){
-        document.getElementById( 'balInfo'    ).innerHTML =
-                         'BAL: '  + state[param].toFixed(0);
-    }
-    else{
-        return;
-    }
-    control_cmd( param + ' ' + value + ' ' + 'add' );
-}
-function mute_toggle() {
-    state.muted = ! state.muted;
-    buttonMuteHighlight();
-    control_cmd( 'mute toggle' );
-}
-function equal_loudness_toggle() {
-    state.equal_loudness = ! state.equal_loudness;
-    buttonLoudHighlight();
-    control_cmd( 'equal_loudness toggle' );
-}
-function mono_toggle() {
-    if (state.midside == "mid" || state.midside == "side"){
-        state.midside = "off";
-    }else{
-        state.midside = "mid";
-    }
-    buttonMonoHighlight();
-    control_cmd( 'mono toggle' );
-}
-
-// Toggle displaying macro buttons
-function macros_toggle() {
+function macro_buttons_display_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
     if (curMode == 'none') {
         document.getElementById( "macro_buttons").style.display = 'inline-table'
@@ -1129,9 +1128,9 @@ function macros_toggle() {
     fill_in_page_statics();
 }
 
-// Displays or hides the advanced controls section
-// (i) This also allows access to the RESTART button
-function advanced(mode) {
+function display_advanced(mode) {
+    // (i) This also allows access to the RESTART button
+
     if ( mode == 'toggle' ){
         if ( show_advanced !== true ) {
             show_advanced = true;
@@ -1163,8 +1162,8 @@ function advanced(mode) {
     }
 }
 
-// Aux to evaluate if the set of params that determines an eq curve contour has changed
 function eq_changed(){
+    // evaluates if the set of params that determines an eq curve contour has changed
     let result = false;
     const eq_params = { 'level':    state.level,    'eq_loud':  state.equal_loudness,
                         'bass':     state.bass,     'treb':     state.treble,
@@ -1180,7 +1179,6 @@ function eq_changed(){
     return result
 }
 
-// Aux to evaluate if the drc has changed
 function drc_changed(){
     let result = false;
     if ( state.drc_set !== last_drc ) {
@@ -1193,7 +1191,7 @@ function drc_changed(){
     return result
 }
 
-// Toggle displaying graphs
+
 function graphs_toggle() {
     if ( web_config.show_graphs == false ){
         return;
@@ -1214,8 +1212,9 @@ function graphs_toggle() {
     }
 }
 
-// Avoid http socket lossing some symbols
 function http_prepare(x) {
+    // Avoid http socket lossing some symbols
+
     //x = x.replace(' ', '%20');  // leaving spaces as they are
     x = x.replace('!', '%21');
     x = x.replace('"', '%22');
@@ -1235,10 +1234,3 @@ function http_prepare(x) {
     return x;
 }
 
-// Test buttons
-function TESTING1(){
-    //do something
-}
-function TESTING2(){
-    //do something
-}
