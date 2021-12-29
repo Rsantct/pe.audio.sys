@@ -211,12 +211,12 @@
         td#title            { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
 
         table#playback_control{ border-style: none; }
-        td#playback_control_11  { border-style: none; width:12%; display:table-cell; }
-        td#playback_control_12  { border-style: none; width:76%; display:table-cell; }
-        td#playback_control_13  { border-style: none; width:12%; display:table-cell; }
-        td#playback_control_21  { border-style: none; width:12%; display:table-cell; }
-        td#playback_control_22  { border-style: none; width:76%; display:table-cell; }
-        td#playback_control_23  { border-style: none; width:12%; display:table-cell; }
+        td#playback_control_11  { border-style: none; width:10%; display:table-cell; }
+        td#playback_control_12  { border-style: none; width:80%; display:table-cell; }
+        td#playback_control_13  { border-style: none; width:10%; display:table-cell; }
+        td#playback_control_21  { border-style: none; width:10%; display:table-cell; }
+        td#playback_control_22  { border-style: none; width:80%; display:table-cell; }
+        td#playback_control_23  { border-style: none; width:10%; display:table-cell; }
 
 
         table#macro_buttons{ border-style: none; }
@@ -259,7 +259,7 @@
             </td>
             <td id="main_cside"></td>
             <td id="main_rside">
-                <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="advanced('toggle')">&#9881;</button>
+                <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="display_advanced('toggle')">&#9881;</button>
             </td>
         </tr>
     </table>
@@ -272,7 +272,7 @@
             <!-- AMPLI switch -->
             <td id="OnOff"     rowspan="2">
                 <button type="button" id="OnOffButton"
-                        title="Amplifier ON/OFF" onmousedown="ampli('toggle')">-</button>
+                        title="Amplifier ON/OFF" onmousedown="ampli_set('toggle')">-</button>
             </td>
 
             <!-- LOUDNESS control -->
@@ -519,7 +519,7 @@
             </td>
             <td id="playback_control_23" >
                 <!-- MACROS button toggle-->
-                <button type="button" id="macros_toggle_button"  onmousedown="macros_toggle()"
+                <button type="button" id="macros_toggle_button"  onmousedown="macro_buttons_display_toggle()"
                         title="Toggle macro buttons"             style="display:none">
                     ::
                 </button>
