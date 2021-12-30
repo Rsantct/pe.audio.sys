@@ -277,6 +277,23 @@ function manage_main_cside(){
 
 function page_initiate(){
 
+    function download_drc_graphs(){
+        // geat all drc_xxxx.png at once at start, so them will remain in cache.
+        const drc_sets = JSON.parse( control_cmd('preamp get_drc_sets') );
+        for (i in drc_sets){
+            document.getElementById("drc_img").src =  'images/'
+                                                    + state.loudspeaker
+                                                    + '/drc_' + drc_sets[i]
+                                                    + '.png';
+
+
+        }
+        document.getElementById("drc_img").src =  'images/'
+                                                + state.loudspeaker
+                                                + '/drc_none.png';
+    }
+
+
     function download_web_config(){
         try{
             web_config      = JSON.parse( control_cmd('aux get_web_config') );
@@ -375,6 +392,8 @@ function page_initiate(){
     download_web_config();
 
     state_update();
+
+    download_drc_graphs();
 
     manage_main_cside();
 
