@@ -40,7 +40,7 @@ from    miscel          import  read_state_from_disk, send_cmd, is_IP,  \
                                 wait4ports, process_is_running, Fmt
 
 
-AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'get_last_macro', 'run_macro',
+AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'run_macro',
                     'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
                     'set_loudness_monitor_scope', 'set_lu_monitor_scope',
                     'get_loudness_monitor', 'get_lu_monitor',
@@ -421,9 +421,6 @@ def do( cmd, arg ):
 
     elif cmd == 'get_macros':
         result = get_macros()
-
-    elif cmd == 'get_last_macro':
-        result = AUX_INFO['last_macro']
 
     elif cmd == 'run_macro':
         result = run_macro(arg)
