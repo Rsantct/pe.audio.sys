@@ -666,7 +666,7 @@ function page_update() {
 
         // Updates current INPUTS, XO, DRC, and TARGET (PEQ is meant to be static)
         if ( main_sel_mode == 'macros' ){
-            var mName = control_cmd('aux get_last_macro');
+            const mName = aux_info.last_macro;
             document.getElementById("mainSelector").value =
                                 mName.slice(mName.indexOf('_') + 1, mName.length);
         }else{
@@ -774,7 +774,6 @@ function oc_main_select(itemName){
         }else{
             mName = find_macroName(itemName);
             control_cmd( 'aux run_macro ' + mName );
-            last_macro = mName;
         }
     }
     setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
@@ -935,7 +934,6 @@ function oc_run_macro(mFname){
 
 
     control_cmd( 'aux run_macro ' + mFname );
-    last_macro = mFname;
 
     var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
     clear_highlighteds();
