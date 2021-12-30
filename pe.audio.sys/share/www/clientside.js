@@ -21,18 +21,18 @@
        NOTICE: remember do not leaving any console.log active
 */
 
-// -----------------------------------------------------------------------------
-// ------------------------------- CONFIG: -------------------------------------
-// -----------------------------------------------------------------------------
+//////// CONFIGURABLE ITEMS
 //
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/functions.php' if you use Apache+PHP at server side.
 //
 const URL_PREFIX = '/functions.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
-// -----------------------------------------------------------------------------
 
-// GLOBAL VARIABLES
+
+
+//////// GLOBAL VARIABLES
+
 var web_config          = { 'main_selector':      'inputs',
                             'hide_LU':            false,
                             'LU_monitor_enabled': false,
@@ -85,6 +85,8 @@ var main_cside_msg      = '';       // The message displayed on page header
 var hold_cside_msg      = 0;        // A counter to keep main_cside_msg during updates
 
 
+
+//////// PAGE MANAGEMENT
 
 function fill_in_page_statics(){
 
@@ -242,19 +244,6 @@ function fill_in_page_statics(){
     fill_in_LUscope_selector();
 
     show_peq_info();
-}
-
-
-function state_update() {
-    try{
-        state = JSON.parse( control_cmd('preamp state') );
-        server_available = true;
-    }catch(e){
-        server_available = false;
-        document.getElementById("main_cside").innerText =
-                                        ':: pe.audio.sys :: not connected';
-        console.log( 'not connected', e.name, e.message );
-    }
 }
 
 
@@ -969,104 +958,6 @@ function oc_run_macro(mFname){
 }
 
 
-
-///////////////  MISCEL INTERNAL ////////////
-
-function control_cmd( cmd ) {
-    // Communicate with the pe.audio.sys server through the php socket
-
-    /*
-    We need synchronous mode (async=false), althougt it is deprecated
-    and not recommended in the main JS thread.
-    https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest
-    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
-    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Synchronous_and_Asynchronous_Requests
-    */
-
-
-    function http_prepare(x) {
-        // Avoid http socket lossing some symbols
-
-        //x = x.replace(' ', '%20');  // leaving spaces as they are
-        x = x.replace('!', '%21');
-        x = x.replace('"', '%22');
-        x = x.replace('#', '%23');
-        x = x.replace('$', '%24');
-        x = x.replace('%', '%25');
-        x = x.replace('&', '%26');
-        x = x.replace("'", '%27');
-        x = x.replace('(', '%28');
-        x = x.replace(')', '%29');
-        x = x.replace('*', '%2A');
-        x = x.replace('+', '%2B');
-        x = x.replace(',', '%2C');
-        x = x.replace('-', '%2D');
-        x = x.replace('.', '%2E');
-        x = x.replace('/', '%2F');
-        return x;
-    }
-
-
-    cmd = http_prepare(cmd);
-
-    const myREQ = new XMLHttpRequest();
-
-    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd,
-               async=false);
-    // (i) send() is blocking because async=false, so no handlers
-    //     on myREQ status changes are needed because of this.
-    myREQ.send();
-    ans = myREQ.responseText;
-
-    //console.log('httpTX: ' + cmd);
-    //console.log('httpRX: ' + ans);
-
-    if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
-        server_available = true;
-        return ans;
-    }else{
-        server_available = false;
-        return '';
-    }
-}
-
-
-function fill_in_playlists_selector() {
-    // getting playlists
-    try{
-        var plists = JSON.parse( control_cmd( 'player get_playlists' ) );
-    }catch(e){
-        console.log( e.name, e.message );
-        return;
-    }
-    // clearing selector options
-    select_clear_options(ElementId="playlist_selector");
-    // Filling in options in a selector
-    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
-    var mySel = document.getElementById("playlist_selector");
-    var option = document.createElement("option");
-    option.text = '--';
-    mySel.add(option);
-    for ( i in plists) {
-        var option = document.createElement("option");
-        option.text = plists[i];
-        mySel.add(option);
-    }
-    var option = document.createElement("option");
-    option.text = '-CLEAR-';
-    mySel.add(option);
-}
-
-
-function select_clear_options(ElementId){
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    var mySel = document.getElementById(ElementId);
-    while (mySel.length > 0){
-        mySel.remove( mySel.length-1 );
-    }
-}
-
-
 function omd_macro_buttons_display_toggle() {
     var curMode = document.getElementById( "macro_buttons").style.display;
     if (curMode == 'none') {
@@ -1133,6 +1024,117 @@ function omd_graphs_toggle() {
     }else{
         document.getElementById("drc_graph").style.display = 'none';
         document.getElementById("bfeq_graph").style.display = 'none';
+    }
+}
+
+
+
+////////  MISCEL INTERNALS
+
+function control_cmd( cmd ) {
+    // Communicate with the pe.audio.sys server through the php socket
+
+    /*
+    We need synchronous mode (async=false), althougt it is deprecated
+    and not recommended in the main JS thread.
+    https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest
+    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
+    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Synchronous_and_Asynchronous_Requests
+    */
+
+
+    function http_prepare(x) {
+        // Avoid http socket lossing some symbols
+
+        //x = x.replace(' ', '%20');  // leaving spaces as they are
+        x = x.replace('!', '%21');
+        x = x.replace('"', '%22');
+        x = x.replace('#', '%23');
+        x = x.replace('$', '%24');
+        x = x.replace('%', '%25');
+        x = x.replace('&', '%26');
+        x = x.replace("'", '%27');
+        x = x.replace('(', '%28');
+        x = x.replace(')', '%29');
+        x = x.replace('*', '%2A');
+        x = x.replace('+', '%2B');
+        x = x.replace(',', '%2C');
+        x = x.replace('-', '%2D');
+        x = x.replace('.', '%2E');
+        x = x.replace('/', '%2F');
+        return x;
+    }
+
+
+    cmd = http_prepare(cmd);
+
+    const myREQ = new XMLHttpRequest();
+
+    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd,
+               async=false);
+    // (i) send() is blocking because async=false, so no handlers
+    //     on myREQ status changes are needed because of this.
+    myREQ.send();
+    ans = myREQ.responseText;
+
+    //console.log('httpTX: ' + cmd);
+    //console.log('httpRX: ' + ans);
+
+    if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
+        server_available = true;
+        return ans;
+    }else{
+        server_available = false;
+        return '';
+    }
+}
+
+
+function state_update() {
+    try{
+        state = JSON.parse( control_cmd('preamp state') );
+        server_available = true;
+    }catch(e){
+        server_available = false;
+        document.getElementById("main_cside").innerText =
+                                        ':: pe.audio.sys :: not connected';
+        console.log( 'not connected', e.name, e.message );
+    }
+}
+
+
+function fill_in_playlists_selector() {
+    // getting playlists
+    try{
+        var plists = JSON.parse( control_cmd( 'player get_playlists' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+        return;
+    }
+    // clearing selector options
+    select_clear_options(ElementId="playlist_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("playlist_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( i in plists) {
+        var option = document.createElement("option");
+        option.text = plists[i];
+        mySel.add(option);
+    }
+    var option = document.createElement("option");
+    option.text = '-CLEAR-';
+    mySel.add(option);
+}
+
+
+function select_clear_options(ElementId){
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    var mySel = document.getElementById(ElementId);
+    while (mySel.length > 0){
+        mySel.remove( mySel.length-1 );
     }
 }
 
