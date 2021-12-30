@@ -255,12 +255,12 @@
     <table id="main_title" >
         <tr>
             <td id="main_lside" style="display:none">
-                <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="peaudiosys_restart()">&#128585;</button>
+                <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="ck_peaudiosys_restart()">&#128585;</button>
             </td>
             <td id="main_cside">
             </td>
             <td id="main_rside">
-                <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="display_advanced('toggle')">&#9881;</button>
+                <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="ck_display_advanced('toggle')">&#9881;</button>
             </td>
         </tr>
     </table>
@@ -273,7 +273,7 @@
             <!-- AMPLI switch -->
             <td id="OnOff"     rowspan="2">
                 <button type="button" id="OnOffButton"
-                        title="Amplifier ON/OFF" onmousedown="ampli_set('toggle')">-</button>
+                        title="Amplifier ON/OFF" onmousedown="omd_ampli_set('toggle')">-</button>
             </td>
 
             <!-- LEVEL display -->
@@ -283,7 +283,7 @@
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud"
-                        title="Loudness Contour compensation" onmousedown="equal_loudness_toggle()">LC</button>
+                        title="Loudness Contour compensation" onmousedown="omd_equal_loudness_toggle()">LC</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -291,25 +291,25 @@
                 <button id="url_button"
                         title = "enter an URL to be played"
                         style="text-align:center;font-size:0.7em;display:none"
-                        onclick="play_url()">&#9901;
+                        onclick="ck_play_url()">&#9901;
                 </button>
                 <button type="button"   id="track_number_button"
                                         title="Enter a track number"
                                         style="display:none; width:150px"
-                                        onmousedown="select_track_number_dialog()" >#
+                                        onmousedown="omd_select_track_number_dialog()" >#
                 </button>
                 <select                 id="playlist_selector"
                                         title="load a playlist"
                                         style="display:none; width:150px"
-                                        onchange="load_playlist(this.value)" >
+                                        onchange="oc_load_playlist(this.value)" >
                 </select>
                 <select                 id="track_selector"
                                         title="select a track"
                                         style="display:none; width:150px"
-                                        onchange="play_track_number(this.selectedIndex)" >
+                                        onchange="oc_play_track_number(this.selectedIndex)" >
                 </select>
                 <select id="mainSelector"       style="width:150px"
-                        title="Source Selector" onchange="main_select(this.value)" >
+                        title="Source Selector" onchange="oc_main_select(this.value)" >
                 </select>
             </td>
         </tr>
@@ -317,7 +317,7 @@
             <!-- MONO / STEREO control -->
             <td id="MonoInfo">
                 <button type="button" id="buttonMono"
-                        title="Mono/Stereo" onmousedown="mono_toggle()">M</button>
+                        title="Mono/Stereo" onmousedown="omd_mono_toggle()">M</button>
             </td>
         </tr>
     </table>
@@ -330,11 +330,11 @@
             <td id="level_buttons11">
             </td>
             <td id="level_buttons12">
-                <button type="button" onmousedown="audio_change('level', -1)" >
+                <button type="button" onmousedown="omd_audio_change('level', -1)" >
                         &nbsp;-1&nbsp;</button>
-                <button type="button" onmousedown="mute_toggle()" id="buttonMute" >
+                <button type="button" onmousedown="omd_mute_toggle()" id="buttonMute" >
                         &#128263;</button>
-                <button type="button" onmousedown="audio_change('level', +1)" >
+                <button type="button" onmousedown="omd_audio_change('level', +1)" >
                         &nbsp;+1&nbsp;</button>
             </td>
             <td id="level_buttons13">
@@ -349,9 +349,9 @@
                 </button>
             </td>
             <td id="level_buttons22">
-                <button type="button" onmousedown="audio_change('level', -3)" >
+                <button type="button" onmousedown="omd_audio_change('level', -3)" >
                         &nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
-                <button type="button" onmousedown="audio_change('level', +3)" >
+                <button type="button" onmousedown="omd_audio_change('level', +3)" >
                         &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
             </td>
             <td id="level_buttons23">
@@ -371,7 +371,7 @@
       <tr>
         <td id="LU_meter_scope">
           <select id="LUscopeSelector" title="LU scope selector"
-                  onchange="LU_scope_select(this.value)">
+                  onchange="oc_LU_scope_select(this.value)">
           </select>
         </td>
         <td id="LU_offset_value">LU offset: --
@@ -381,7 +381,7 @@
             <input  id="LU_slider" class="LU_slider" type="range"
                     min="0" step="3" max="15.0"
                     title="Adjust as monitored LU to balance Loudness Compensation and target volume"
-                    oninput="LU_slider_action(this.value)">
+                    oninput="oi_LU_slider_action(this.value)">
         </td>
       </tr>
     </table>
@@ -416,25 +416,25 @@
       <table>
         <tr>
             <td id="treble">
-                <button type="button"   id='treb-'    onmousedown="audio_change('treble', -1)"  >-</button>
+                <button type="button"   id='treb-'    onmousedown="omd_audio_change('treble', -1)"  >-</button>
                 <span id="trebleInfo">treble</span>
-                <button type="button"   id='treb+'    onmousedown="audio_change('treble', +1)"  >+</button>
+                <button type="button"   id='treb+'    onmousedown="omd_audio_change('treble', +1)"  >+</button>
             </td>
             <td id="balance">
-                <button type="button"   id='bal-'     onmousedown="audio_change('balance', -1)"  >-</button>
+                <button type="button"   id='bal-'     onmousedown="omd_audio_change('balance', -1)"  >-</button>
                 <span id="balInfo">BAL</span>
-                <button type="button"   id='bal+'     onmousedown="audio_change('balance', +1)"  >+</button>
+                <button type="button"   id='bal+'     onmousedown="omd_audio_change('balance', +1)"  >+</button>
             </td>
         </tr>
         <tr>
             <td id="bass">
-                <button type="button"   id='bass-'    onmousedown="audio_change('bass', -1)"  >-</button>
+                <button type="button"   id='bass-'    onmousedown="omd_audio_change('bass', -1)"  >-</button>
                 <span id="bassInfo">bass</span>
-                <button type="button"   id='bass+'    onmousedown="audio_change('bass', +1)"  >+</button>
+                <button type="button"   id='bass+'    onmousedown="omd_audio_change('bass', +1)"  >+</button>
             </td>
             <td id="target">
                 <span>
-                target c.&nbsp;<select id="targetSelector"  onchange="target_select(this.value)" ></select>
+                target c.&nbsp;<select id="targetSelector"  onchange="oc_target_select(this.value)" ></select>
                 </span>
             </td>
         </tr>
@@ -443,12 +443,12 @@
         <tr>
             <td id="xo">
                 <span>XO:
-                <select id="xoSelector"     onchange="xo_select(this.value)" ></select>
+                <select id="xoSelector"     onchange="oc_xo_select(this.value)" ></select>
                 </span>
             </td>
             <td id="drc">
                 <span >DRC:
-                <select id="drcSelector"    onchange="drc_select(this.value)" ></select>
+                <select id="drcSelector"    onchange="oc_drc_select(this.value)" ></select>
                 </span>
             </td>
             <td id="peq">
@@ -457,7 +457,7 @@
                 </span>
             </td>
             <td id="graphs_toggle">
-                <button type="button" title="toggle EQ graphs" onmousedown="graphs_toggle()">G</button>
+                <button type="button" title="toggle EQ graphs" onmousedown="omd_graphs_toggle()">G</button>
             </td>
         </tr>
       </table>
@@ -496,14 +496,14 @@
             <td id="playback_control_11">
             </td>
             <td id="playback_control_12" >
-                <button type="button" id="buttonPrevious" onmousedown="playerCtrl('previous')" >&lt;|           </button>
-                <button type="button" id="buttonRew"      onmousedown="playerCtrl('rew')"      >&lt;&lt;        </button>
-                <button type="button" id="buttonFF"       onmousedown="playerCtrl('ff')"       >&gt;&gt;        </button>
-                <button type="button" id="buttonNext"     onmousedown="playerCtrl('next')"     >|&gt;           </button>
+                <button type="button" id="buttonPrevious" onmousedown="omd_playerCtrl('previous')" >&lt;|           </button>
+                <button type="button" id="buttonRew"      onmousedown="omd_playerCtrl('rew')"      >&lt;&lt;        </button>
+                <button type="button" id="buttonFF"       onmousedown="omd_playerCtrl('ff')"       >&gt;&gt;        </button>
+                <button type="button" id="buttonNext"     onmousedown="omd_playerCtrl('next')"     >|&gt;           </button>
             </td>
             <td id="playback_control_13" >
                 <!-- random playback button -->
-                <button type="button" id="random_toggle_button"  onmousedown="playerCtrl('random_toggle')"
+                <button type="button" id="random_toggle_button"  onmousedown="omd_playerCtrl('random_toggle')"
                         title="Toggle random playback">
                     &#8644;
                 </button>
@@ -513,14 +513,14 @@
             <td id="playback_control_21" >
             </td>
             <td id="playback_control_22" >
-                <button type="button" id="buttonEject"    onmousedown="playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
-                <button type="button" id="buttonStop"     onmousedown="playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
-                <button type="button" id="buttonPause"    onmousedown="playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
-                <button type="button" id="buttonPlay"     onmousedown="playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
+                <button type="button" id="buttonEject"    onmousedown="omd_playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
+                <button type="button" id="buttonStop"     onmousedown="omd_playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
+                <button type="button" id="buttonPause"    onmousedown="omd_playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
+                <button type="button" id="buttonPlay"     onmousedown="omd_playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
             </td>
             <td id="playback_control_23" >
                 <!-- MACROS button toggle-->
-                <button type="button" id="macros_toggle_button"  onmousedown="macro_buttons_display_toggle()"
+                <button type="button" id="macros_toggle_button"  onmousedown="omd_macro_buttons_display_toggle()"
                         title="Toggle macro buttons"             style="display:none">
                     ::
                 </button>
