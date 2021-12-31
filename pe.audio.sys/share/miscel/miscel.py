@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with 'pe.audio.sys'.  If not, see <https://www.gnu.org/licenses/>.
 
+""" This module provides common usage functions
+"""
+
 import  socket
 import  ipaddress
 from    json import loads as json_loads

@@ -39,8 +39,13 @@ from    config          import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
 from    miscel          import  read_state_from_disk, send_cmd, is_IP,  \
                                 wait4ports, process_is_running, Fmt
 
-from    brutefir_mod    import  add_delay as bf_add_delay,              \
-                                is_running as bf_is_running
+
+AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'run_macro',
+                    'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
+                    'set_loudness_monitor_scope', 'set_lu_monitor_scope',
+                    'get_loudness_monitor', 'get_lu_monitor',
+                    'info', 'warning', 'restart'
+                ]
 
 
 def dump_aux_info():
@@ -53,6 +58,8 @@ def dump_aux_info():
 
 
 def get_web_config():
+    """ used by the control web page client
+    """
 
     wconfig = CONFIG['web_config']
 
@@ -184,18 +191,6 @@ def get_loudness_monitor():
             else:
                 result = {'LU_I': 0.0, 'LU_M':0.0, 'scope': 'album'}
         return result
-
-
-def available_commands():
-    """ List of end user commands managed under this module
-    """
-    cmd_list = ['amp_switch', 'get_macros', 'get_last_macro', 'run_macro',
-                'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
-                'set_loudness_monitor_scope', 'set_lu_monitor_scope',
-                'get_loudness_monitor', 'get_lu_monitor',
-                'restart', 'get_aux_info', 'info', 'add_delay', 'warning'
-                ]
-    return cmd_list
 
 
 def warning_expire(timeout=5):
@@ -344,16 +339,6 @@ def manage_warning_msg(arg):
     return result
 
 
-def add_delay(arg):
-    """ Add outputs delay, can be useful for multiroom listening
-    """
-    print(f'(aux) ordering adding {arg} ms of delay.')
-    # (i) Brutefir must be running
-    if not bf_is_running():
-        send_cmd('preamp convolver on')
-    return bf_add_delay(float(arg))
-
-
 def do_restart_peaudiosys():
     try:
         restart_cmd = CONFIG["restart_cmd"]
@@ -393,7 +378,6 @@ def init():
     global AUX_INFO
     AUX_INFO = {    'amp':                  'off',
                     'loudness_monitor':     0.0,
-                    'web_config':           get_web_config(),
                     'last_macro':           '-',                # cannot be empty
                     'warning':              ''
                 }
@@ -438,9 +422,6 @@ def do( cmd, arg ):
     elif cmd == 'get_macros':
         result = get_macros()
 
-    elif cmd == 'get_last_macro':
-        result = AUX_INFO['last_macro']
-
     elif cmd == 'run_macro':
         result = run_macro(arg)
 
@@ -456,11 +437,8 @@ def do( cmd, arg ):
     elif cmd == 'get_loudness_monitor' or cmd == 'get_lu_monitor':
         result = get_loudness_monitor()
 
-    elif cmd == 'get_aux_info' or cmd == 'info':
+    elif cmd == 'info':
         result = AUX_INFO
-
-    elif cmd == 'add_delay':
-        result = add_delay(arg)
 
     elif cmd == 'zita_client':
         result = zita_client(arg)
@@ -469,10 +447,13 @@ def do( cmd, arg ):
         result = do_restart_peaudiosys()
 
     elif cmd == 'help':
-        result = ' '.join( available_commands() )
+        result = ', '.join( AUX_USER_CMDS )
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)
+
+    elif cmd == 'get_web_config':
+        result = get_web_config()
 
     else:
         result = f'(aux) bad command \'{cmd}\''
