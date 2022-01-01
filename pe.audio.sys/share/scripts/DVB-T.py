@@ -28,10 +28,10 @@
     User settings (presets) can be configured at
         pe.audio.sys/config/DVB-T.yml
 
-    Usage:      DVB   start   [ <preset_num> | <channel_name> ]
-                      stop
-                      preset  <preset_num>
-                      name    <channel_name>
+    Usage:    DVB-T.py  start   [ <preset_num> | <channel_name> ]
+                        stop
+                        preset  <preset_num>
+                        name    <channel_name>
 
     Notice:
     When loading a new stream, Mplayer jack ports will dissapear for a while,

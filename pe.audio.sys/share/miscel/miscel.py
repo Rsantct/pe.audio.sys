@@ -50,7 +50,7 @@ def process_is_running(pattern):
         # do NOT use shell=True because pgrep ...  will appear it self.
         plist = sp.check_output(['pgrep', '-fla', pattern]).decode().split('\n')
     except:
-        plist = []
+        return False
     for p in plist:
         if pattern in p:
             return True
