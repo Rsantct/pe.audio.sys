@@ -94,6 +94,9 @@ def cdda_is_loaded():
         output:     True | False
         I/O:        .cdda_fifo (w),  .cdda_events (r)
     """
+    # Avoid writing to a FIFO if mplayer was not working for some reason
+    if not process_is_running('cdda_fifo'):
+        return False
     # Querying Mplayer to get the FILENAME
     # (if it results void it means no playing)
     with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
@@ -148,6 +151,9 @@ def cdda_get_current_track():
     #     'pausing_keep', otherwise pause will be released.
 
     def get_disc_pos():
+        # Avoid writing to a FIFO if mplayer was not working for some reason
+        if not process_is_running('cdda_fifo'):
+            return 0.0
         # 'get_time_pos': elapsed secs refered to the whole loaded.
         with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
             f.write( 'pausing_keep get_time_pos\n' )
