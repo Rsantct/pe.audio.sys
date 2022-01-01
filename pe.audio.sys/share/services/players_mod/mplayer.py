@@ -69,14 +69,15 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config import    MAINFOLDER
-from    miscel import    timesec2string, read_last_lines
+from    miscel import    timesec2string, read_last_lines, process_is_running
 
 sys.path.append( os.path.dirname(__file__) )
 import cdda
 
 
-# Aux to convert a given formatted time string "hh:mm:ss.cc" to seconds
 def timestring2sec(t):
+    """ convert a given formatted time string "hh:mm:ss.cc" to seconds
+    """
     s = 0.0
     t = t.split(':')
     if len(t) > 2:
@@ -88,7 +89,6 @@ def timestring2sec(t):
     return s
 
 
-# Aux function to check if Mplayer has loaded a disc
 def cdda_is_loaded():
     """ input:      --
         output:     True | False
@@ -107,9 +107,9 @@ def cdda_is_loaded():
     return False
 
 
-# Aux to load all disc tracks into Mplayer playlist
 def cdda_load():
-    """ input:      --
+    """ load all disc tracks into Mplayer playlist
+        input:      --
         output:     --
         I/O:        .cdda_info (w), a dict with album and tracks
     """
@@ -136,9 +136,9 @@ def cdda_load():
         print( f'(mplayer) TIMED OUT detecting Mplayer disk' )
 
 
-# Aux to retrieve the current track an time info
 def cdda_get_current_track():
-    """ input:      ---
+    """ Retrieves the current track an time info
+        input:      ---
         output:     trackNum (int), trackPos (float)
         I/O:        .cdda_fifo (w), .cdda_events (r)
     """
@@ -191,8 +191,9 @@ def cdda_get_current_track():
     return trackNum, trackPos
 
 
-# Aux to disconect Mplayer jack ports from preamp ports.
 def pre_connect(mode, pname=cdda.CD_JACK_PNAME):
+    """ Manage Mplayer jack ports connections to preamp ports.
+    """
     # (i) Mplayer cdda pausing becomes on strange behavior,
     #     a stutter audio frame stepping phenomena,
     #     even if a 'pausing_keep mute 1' command was issued.
@@ -212,14 +213,17 @@ def pre_connect(mode, pname=cdda.CD_JACK_PNAME):
     return
 
 
-# Aux to query Mplayer if paused or playing
 def playing_status(service=''):
-    """ Mplayer status: play or pause
+    """ Retrieves Mplayer status: play, pause, n/a
     """
     if not service:
         return 'n/a'
 
     result = 'play'
+
+    # Avoid writing to a FIFO if mplayer was not working for some reason
+    if not process_is_running(f'{service}_fifo'):
+        return 'n/a'
 
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( 'pausing_keep_force get_property pause\n' )
@@ -236,11 +240,16 @@ def playing_status(service=''):
     return result
 
 
-# Aux to send Mplayer commands through by the corresponding fifo
 def send_mplayer_cmd(cmd, service):
-    #print(f'(mplayer) sending \'{cmd}\' to Mplayer (.{service}_fifo)') # DEBUG only
+    """ Send Mplayer commands through by the corresponding fifo
+    """
+    # Avoid writing to a FIFO if mplayer was not working for some reason
+    if not process_is_running(f'{service}_fifo'):
+        return
+
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( f'{cmd}\n' )
+
     if cmd == 'stop':
         # Mplayer needs a while to report the actual state ANS_pause=yes
         sleep(2)
@@ -259,7 +268,6 @@ def mplayer_playlists(cmd, arg='', service=''):
     return result
 
 
-# MAIN Mplayer control (used for all Mplayer services: DVB, iSTREAMS and CD)
 def mplayer_control(cmd, arg='', service=''):
     """ Sends a command to Mplayer trough by its input fifo
         input:  a command string
@@ -385,7 +393,6 @@ def mplayer_control(cmd, arg='', service=''):
     return status
 
 
-# MAIN Mplayer metadata
 def mplayer_get_meta(md, service):
     """ gets metadata from Mplayer as per
         http://www.mplayerhq.hu/DOCS/tech/slave.txt
