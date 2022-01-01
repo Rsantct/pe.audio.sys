@@ -70,7 +70,7 @@ var metablank           = {         // A player's metadata blank dict
 
 var server_available    = false;
 var show_advanced       = false;    // defaults for display advanced controls
-var show_graphs         = false;    // defaults for show graphs
+var hide_graphs         = true;     // defaults for displaying graphs
 
 var last_eq_params      = {};       // To evaluate if eq curve changed
 var last_drc            = '';       // To evaluate if drc changed
@@ -267,6 +267,9 @@ function manage_main_cside(){
 function page_initiate(){
 
     function download_drc_graphs(){
+        if (web_config.show_graphs==false){
+            return;
+        }
         // geat all drc_xxxx.png at once at start, so them will remain in cache.
         const drc_sets = JSON.parse( control_cmd('preamp get_drc_sets') );
         for (i in drc_sets){
@@ -290,6 +293,9 @@ function page_initiate(){
             mFnames         = web_config.user_macros;
             document.getElementById("restart_switch").title = 'RESTART: ' +
                                                                web_config.restart_cmd_info;
+            if (web_config.show_graphs==false){
+                document.getElementById( "button_toggleEQgraphs").style.display = "none";
+            }
         }catch(e){
             console.log('problems with \'aux get_web_config\' command', e.name, e.message);
         }
@@ -642,7 +648,7 @@ function page_update() {
         }
 
 
-        if ( show_graphs == true ) {
+        if ( hide_graphs == false ) {
             if (eq_changed() == true) {
                 // Artifice to avoid using cached image by adding an offset timestamp
                 // inside the  http.GET image source request
@@ -1011,14 +1017,14 @@ function omd_graphs_toggle() {
     if ( web_config.show_graphs == false ){
         return;
     }
-    if ( show_graphs !== true ) {
-        show_graphs = true;
+    if ( hide_graphs == true ) {
+        hide_graphs = false;
     }
     else {
-        show_graphs = false;
+        hide_graphs = true;
     }
 
-    if ( show_graphs == true ){
+    if ( hide_graphs == false ){
         document.getElementById("drc_graph").style.display = 'block';
         document.getElementById("bfeq_graph").style.display = 'block';
     }else{
