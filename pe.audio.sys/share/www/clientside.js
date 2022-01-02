@@ -252,7 +252,8 @@ function manage_main_cside(){
     // Server warnings have max prioriy
     if (aux_info.warning !== ''){
         main_cside_msg = aux_info.warning;
-
+    }else if (state.convolver_runs==false){
+        main_cside_msg = '( sleeping )';
     }else{
         if (hold_cside_msg > 0){
             hold_cside_msg -= 1;
