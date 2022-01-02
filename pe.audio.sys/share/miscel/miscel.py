@@ -30,6 +30,16 @@ import  os
 from    config import *
 from    fmt    import Fmt
 
+
+def sec2min(s):
+    """ Format a given float (seconds) to "XXmYYs"
+        (string)
+    """
+    m = s // 60
+    s = s % 60
+    return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
+
+
 def timesec2string(x):
     """ Format a given float (seconds) to "hh:mm:ss"
         (string)
