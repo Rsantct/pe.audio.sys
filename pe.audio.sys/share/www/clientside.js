@@ -541,14 +541,12 @@ function page_update() {
             last_disc = player_all_info.discid;
         }
 
-        // Displays and updates the playlist loader for some sources when input source changed
+        // Updates the playlist loader when input source changed, keep hidden if empty.
         if (last_input != state.input){
-            if ( state.input == "mpd"     ||
-                 state.input == "spotify" ) {
-                fill_in_playlists_selector()
+            const plists = fill_in_playlists_selector();
+            if ( plists.length > 0 ) {
                 document.getElementById( "playlist_selector").style.display = "inline";
-            }
-            else {
+            }else{
                 document.getElementById( "playlist_selector").style.display = "none";
             }
             last_input = state.input;
@@ -1111,15 +1109,19 @@ function state_update() {
 
 
 function fill_in_playlists_selector() {
+
     // getting playlists
+    var plists = [];
     try{
-        var plists = JSON.parse( control_cmd( 'player get_playlists' ) );
+        plists = JSON.parse( control_cmd( 'player get_playlists' ) );
     }catch(e){
         console.log( e.name, e.message );
-        return;
+        return plists;
     }
+
     // clearing selector options
     select_clear_options(ElementId="playlist_selector");
+
     // Filling in options in a selector
     // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
     var mySel = document.getElementById("playlist_selector");
@@ -1134,6 +1136,8 @@ function fill_in_playlists_selector() {
     var option = document.createElement("option");
     option.text = '-CLEAR-';
     mySel.add(option);
+
+    return plists
 }
 
 
