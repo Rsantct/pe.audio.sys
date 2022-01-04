@@ -36,7 +36,6 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 var web_config          = { 'main_selector':      'inputs',
                             'hide_LU':            false,
                             'LU_monitor_enabled': false,
-                            'restart_cmd_info':   '',
                             'show_graphs':        false,
                             'user_macros':        []
                           };
@@ -292,8 +291,6 @@ function page_initiate(){
             web_config      = JSON.parse( control_cmd('aux get_web_config') );
             main_sel_mode   = web_config.main_selector;
             mFnames         = web_config.user_macros;
-            document.getElementById("restart_switch").title = 'RESTART: ' +
-                                                               web_config.restart_cmd_info;
             if (web_config.show_graphs==false){
                 document.getElementById( "button_toggleEQgraphs").style.display = "none";
             }
@@ -922,9 +919,16 @@ function ck_play_url() {
 
 //////// AUX 'onmousedown' 'onclick' 'oninput' page handlers ////////
 
+function ck_server_restart() {
+    control_cmd('server_restart');
+    ck_display_advanced('off');
+    page_update();
+}
+
+
 function ck_peaudiosys_restart() {
-    control_cmd('aux restart');
-    advanced('off');
+    control_cmd('peaudiosys_restart');
+    ck_display_advanced('off');
     page_update();
 }
 
@@ -978,7 +982,7 @@ function omd_macro_buttons_display_toggle() {
 
 
 function ck_display_advanced(mode) {
-    // (i) This also allows access to the RESTART button
+    // (i) This also allows access to the RESTART buttons
 
     if ( mode == 'toggle' ){
         if ( show_advanced !== true ) {
