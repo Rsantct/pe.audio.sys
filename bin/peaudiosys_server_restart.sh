@@ -4,6 +4,7 @@ SERVERPATH="$HOME"/"pe.audio.sys/share/miscel/server.py"
 
 opc=$1
 
+
 # Reading TCP address and port from the pe.audio.sy config file
 ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
 ADDR=${ADDR//\"/}; CTL_ADDR=${ADDR//\'/}
@@ -25,6 +26,10 @@ fi
 
 
 # Killing the running service:
+server_is_runnnig=$(pgrep -fla "server.py peaudiosys")
+if [[ ! $server_is_runnnig ]]; then
+    echo "(i) pe.audio.sys server was not running."
+fi
 pkill -KILL -f "server.py peaudiosys"
 if [[ $opc == *'stop'* ]]; then
     exit 0

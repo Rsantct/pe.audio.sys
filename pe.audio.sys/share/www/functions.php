@@ -66,11 +66,40 @@
     }
 
 
-    // Communicates to the pe.audio.sys TCP server.
+    // Communicates with the "peaudiosys" TCP server.
     function system_socket ($cmd) {
 
         $address =         get_config( "peaudiosys_address" );
         $port    = intval( get_config( "peaudiosys_port"    ) );
+
+        // Creates a TCP socket
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($socket === false) {
+            echo "socket_create() failed: " . socket_strerror(socket_last_error()) . "\n";
+        }
+        $result = socket_connect($socket, $address, $port);
+        if ($result === false) {
+            echo "socket_connect() failed: ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
+        }
+        // Sends and receive:
+        socket_write($socket, $cmd, strlen($cmd));
+        //
+        // (!) read ENOUGH BYTES e.g. 1024 to avoid large responses to be truncated.
+        //
+        $out = socket_read($socket, 1024);
+        //  (i) sending quit and empty the buffer currently not in use, just close:
+        //socket_write($socket, "quit", strlen("quit"));
+        //socket_read($socket, 1024);   // empties the receiving buffer
+        socket_close($socket);
+        return $out;
+    }
+
+
+    // Communicates with the "restart" TCP server (at next port)
+    function restart_socket ($cmd) {
+
+        $address =         get_config( "peaudiosys_address" );
+        $port    = intval( get_config( "peaudiosys_port"    ) ) + 1;
 
         // Creates a TCP socket
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -110,6 +139,15 @@
     // echo system_socket('control', 'status'); // DEBUG
 
     $command = $_REQUEST["command"];
-    echo system_socket( $command );
 
+    if ($command === "server_restart"       ||
+        $command === "peaudiosys_restart"   ) {
+
+        echo restart_socket( $command );
+
+    } else {
+
+        echo system_socket( $command );
+
+    }
 ?>

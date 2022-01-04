@@ -36,7 +36,6 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 var web_config          = { 'main_selector':      'inputs',
                             'hide_LU':            false,
                             'LU_monitor_enabled': false,
-                            'restart_cmd_info':   '',
                             'show_graphs':        false,
                             'user_macros':        []
                           };
@@ -252,7 +251,8 @@ function manage_main_cside(){
     // Server warnings have max prioriy
     if (aux_info.warning !== ''){
         main_cside_msg = aux_info.warning;
-
+    }else if (state.convolver_runs==false){
+        main_cside_msg = '( sleeping )';
     }else{
         if (hold_cside_msg > 0){
             hold_cside_msg -= 1;
@@ -291,8 +291,6 @@ function page_initiate(){
             web_config      = JSON.parse( control_cmd('aux get_web_config') );
             main_sel_mode   = web_config.main_selector;
             mFnames         = web_config.user_macros;
-            document.getElementById("restart_switch").title = 'RESTART: ' +
-                                                               web_config.restart_cmd_info;
             if (web_config.show_graphs==false){
                 document.getElementById( "button_toggleEQgraphs").style.display = "none";
             }
@@ -540,14 +538,12 @@ function page_update() {
             last_disc = player_all_info.discid;
         }
 
-        // Displays and updates the playlist loader for some sources when input source changed
+        // Updates the playlist loader when input source changed, keep hidden if empty.
         if (last_input != state.input){
-            if ( state.input == "mpd"     ||
-                 state.input == "spotify" ) {
-                fill_in_playlists_selector()
+            const plists = fill_in_playlists_selector();
+            if ( plists.length > 0 ) {
                 document.getElementById( "playlist_selector").style.display = "inline";
-            }
-            else {
+            }else{
                 document.getElementById( "playlist_selector").style.display = "none";
             }
             last_input = state.input;
@@ -923,9 +919,16 @@ function ck_play_url() {
 
 //////// AUX 'onmousedown' 'onclick' 'oninput' page handlers ////////
 
+function ck_server_restart() {
+    control_cmd('server_restart');
+    ck_display_advanced('off');
+    page_update();
+}
+
+
 function ck_peaudiosys_restart() {
-    control_cmd('aux restart');
-    advanced('off');
+    control_cmd('peaudiosys_restart');
+    ck_display_advanced('off');
     page_update();
 }
 
@@ -979,7 +982,7 @@ function omd_macro_buttons_display_toggle() {
 
 
 function ck_display_advanced(mode) {
-    // (i) This also allows access to the RESTART button
+    // (i) This also allows access to the RESTART buttons
 
     if ( mode == 'toggle' ){
         if ( show_advanced !== true ) {
@@ -1110,15 +1113,19 @@ function state_update() {
 
 
 function fill_in_playlists_selector() {
+
     // getting playlists
+    var plists = [];
     try{
-        var plists = JSON.parse( control_cmd( 'player get_playlists' ) );
+        plists = JSON.parse( control_cmd( 'player get_playlists' ) );
     }catch(e){
         console.log( e.name, e.message );
-        return;
+        return plists;
     }
+
     // clearing selector options
     select_clear_options(ElementId="playlist_selector");
+
     // Filling in options in a selector
     // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
     var mySel = document.getElementById("playlist_selector");
@@ -1133,6 +1140,8 @@ function fill_in_playlists_selector() {
     var option = document.createElement("option");
     option.text = '-CLEAR-';
     mySel.add(option);
+
+    return plists
 }
 
 

@@ -82,8 +82,9 @@ CURRENT_MD          = METATEMPLATE.copy()
 CURRENT_MD_REFRESH  = 2
 
 
-# Get metadata from a remote pe.audio.sys system
 def remote_get_meta(host, port=9990):
+    """ Get metadata from a remote pe.audio.sys system
+    """
     md = METATEMPLATE.copy()
     try:
         tmp = send_cmd( cmd='player get_meta',
@@ -94,8 +95,9 @@ def remote_get_meta(host, port=9990):
     return md
 
 
-# Controls the playback on a remote pe.audio.sys system
 def remote_player_control( cmd, arg, host, port=9990):
+    """ Controls the playback on a remote pe.audio.sys system
+    """
     # short timeout for remote LAN machine conn failure
     timeout = .5
     rem_state = send_cmd( cmd=f'player {cmd} {arg}',
@@ -103,7 +105,6 @@ def remote_player_control( cmd, arg, host, port=9990):
     return rem_state
 
 
-# Get metadata of current playing track
 def get_meta():
     """ Returns a dictionary with the current track metadata
         including the involved source player
@@ -152,20 +153,17 @@ def get_meta():
     return md
 
 
-# Generic function to control any player
 def playback_control(cmd, arg=''):
-    """ controls the playback, depending on the involved source player
+    """ Controls the playback, depending on the involved source player.
         returns: 'stop' | 'play' | 'pause'
     """
 
     result = 'stop'
     source = read_state_from_disk()['input']
 
-    # MPD
     if source == 'mpd':
         result = mpd_control(cmd, arg)
 
-    # Spotify
     elif source.lower() == 'spotify':
         if   SPOTIFY_CLIENT == 'desktop':
             result = spotify_control(cmd, arg)
@@ -174,19 +172,15 @@ def playback_control(cmd, arg=''):
         else:
             result = 'stop'
 
-    # DVB-T.py
     elif 'tdt' in source or 'dvb' in source:
         result = mplayer_control(cmd=cmd, service='dvb')
 
-    # istreams.py
     elif source in ['istreams', 'iradio']:
         result = mplayer_control(cmd=cmd, service='istreams')
 
-    # CDDA.py
     elif source == 'cd':
         result = mplayer_control(cmd=cmd, arg=arg, service='cdda')
 
-    # A remote pe.audio.sys source
     elif source.startswith('remote'):
         # For a 'remote.....' named source, it is expected to have
         # an IP address kind of in its jack_pname field:
@@ -204,9 +198,9 @@ def playback_control(cmd, arg=''):
     return result
 
 
-# Manage playlists
 def playlists_control(cmd, arg):
-    """ (i) This only works with Spotify Desktop or MPD
+    """ Manage playlists.
+        (i) Currently only works with: Spotify Desktop, MPD.
     """
     result = []
     source = read_state_from_disk()['input']
@@ -225,10 +219,9 @@ def playlists_control(cmd, arg):
     return result
 
 
-# control of random mode / shuffle in some players
 def random_control(arg):
-    """ Controls the random mode player playback mode
-        (i) currently only works for MPD
+    """ Controls the random/shuffle playback mode
+        (i) Currently only works with: MPD
     """
     result = 'n/a'
     source = read_state_from_disk()['input']
@@ -246,7 +239,6 @@ def random_control(arg):
     return result
 
 
-# Getting all info in a dict {state, random_mode, metadata}
 def get_all_info():
     """ A wrapper to get all playback related info at once,
         useful for web control clients querying
@@ -259,9 +251,9 @@ def get_all_info():
             }
 
 
-# Auto-started when loading this module
+# Autoexec when loading this module
 def init():
-    """ This init function will thread storing metadata LOOP FOREVER
+    """ This init function will thread the storing metadata LOOP FOREVER
     """
 
     def store_meta_loop(period=2):
@@ -281,36 +273,29 @@ def init():
     meta_loop.start()
 
 
-# Interface function for this module
+# Main interface function for this module
 def do(cmd, arg):
     """ Entry interface function for a parent server.py listener.
         - in:   a command phrase
         - out:  a string result (dicts are json dumped)
     """
 
-    # PLAYBACK CONTROL / STATE
-    if cmd in ( 'state',
-                'stop', 'pause', 'play', 'next', 'previous', 'rew', 'ff',
-                'play_track'):
+    if cmd in ( 'state', 'stop', 'pause', 'play', 'next', 'previous',
+                'rew', 'ff', 'play_track'):
         result = playback_control( cmd, arg )
 
-    # RANDOM MODE
     elif cmd == 'random_mode':
         result = random_control(arg)
 
-    # Getting METADATA
     elif cmd == 'get_meta':
         result = CURRENT_MD
 
-    # Getting all info in a dict {state, random_mode, metadata}
     elif cmd == 'get_all_info':
         result = get_all_info()
 
-    # PLAYLISTS
     elif '_playlist' in cmd:
         result = playlists_control( cmd, arg )
 
-    # EJECTS the CD tray (managed by mplayer)
     elif cmd == 'eject':
         result = mplayer_control('eject', service='cdda')
 
@@ -320,5 +305,5 @@ def do(cmd, arg):
     return result
 
 
-# Will AUTO-START init() when loading this module
+# Autoexec when loading this module
 init()

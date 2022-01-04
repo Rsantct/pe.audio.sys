@@ -162,20 +162,18 @@ Here you are an uncommented bare example of `config.yml`:
         - librespot.py
         - zita_link.py
 
+
     peaudiosys_address:     localhost
     peaudiosys_port:        9990
 
     amp_manager:            /home/predic/bin/ampli.sh
     amp_off_stops_player:   true
 
-    restart_cmd: peaudiosys_restart.sh
-
     web_config:
         hide_LU: false
         show_graphs: true
         main_selector: 'inputs'
         
-
     LU_reset_scope: album
 
     cdrom_device:  /dev/cdrom
