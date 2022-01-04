@@ -263,11 +263,6 @@ amp_manager:                       # for instance: /home/pi/bin/ampli.sh
 # Amplifier switch off will stop the current player:
 amp_off_stops_player: true
 
-# Put here some command line (from your PATH) you want to run
-# when ordering the 'aux restart' command
-# e.g.: 'sudo reboot', 'peaudiosys_restart.sh'
-restart_cmd: ~/pe.audio.sys/start.py all
-
 # Control web page behavior
 web_config:
     # hide the LU offset slider and the LU monitor bar
