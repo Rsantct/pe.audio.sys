@@ -44,7 +44,7 @@ AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'run_macro',
                     'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
                     'set_loudness_monitor_scope', 'set_lu_monitor_scope',
                     'get_loudness_monitor', 'get_lu_monitor',
-                    'info', 'warning', 'restart'
+                    'info', 'warning'
                 ]
 
 
@@ -73,8 +73,7 @@ def get_web_config():
         if wconfig['main_selector'] not in ('inputs', 'macros'):
             wconfig['main_selector'] = 'inputs'
 
-    # Complete some additional info
-    wconfig['restart_cmd_info']   = CONFIG['restart_cmd']
+    # Adding LU_monitor_enabled
     wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
                                               in CONFIG['scripts'] else False
 
@@ -339,21 +338,6 @@ def manage_warning_msg(arg):
     return result
 
 
-def do_restart_peaudiosys():
-    try:
-        restart_cmd = CONFIG["restart_cmd"]
-    except:
-        restart_cmd = f'{UHOME}/start.py all'
-    try:
-        Popen( f'{restart_cmd}'.split() )
-        result = f'ordered: \'{restart_cmd}\''
-        print( f'{Fmt.BOLD}(aux) {result}{Fmt.END}' )
-    except:
-        result = f'error running \'{restart_cmd}\''
-        print( f'{Fmt.BOLD}(aux) {result}{Fmt.END}' )
-    return result
-
-
 # Handler class to do actions when a file change occurs.
 class files_event_handler(FileSystemEventHandler):
     """ will do something when <wanted_path> file changes
@@ -442,9 +426,6 @@ def do( cmd, arg ):
 
     elif cmd == 'zita_client':
         result = zita_client(arg)
-
-    elif cmd == 'restart':
-        result = do_restart_peaudiosys()
 
     elif cmd == 'help':
         result = ', '.join( AUX_USER_CMDS )

@@ -11,9 +11,17 @@ if [ -z $1 ] ; then
     exit 0
 fi
 
-branch=$1
-ORIG=$HOME/tmp/pe.audio.sys-$branch
+# --auto for unattended maintenance
+if [ $1 = "--auto" ]; then
+    automode=1
+    branch="master"
+else
+    automode=0
+    branch=$1
+fi
 
+
+ORIG=$HOME/tmp/pe.audio.sys-$branch
 # If not found the requested branch
 if [ ! -d $ORIG ]; then
     echo
@@ -24,25 +32,32 @@ if [ ! -d $ORIG ]; then
     exit 0
 fi
 
-# Wanna keep current configurations?
+
 keepConfig="1"
-read -r -p "WARNING: will you keep current config? [Y/n] " tmp
-if [ "$tmp" = "n" ] || [ "$tmp" = "N" ]; then
-    echo All files will be overwritten.
-    read -r -p "Are you sure? [y/N] " tmp
-    if [ "$tmp" = "y" ] || [ "$tmp" = "Y" ]; then
-        keepConfig=""
-    else
-        keepConfig="1"
-        echo Will keep current config.
+
+if [ $automode -eq 0 ]; then
+
+    # Wanna keep current configurations?
+    read -r -p "WARNING: will you keep current config? [Y/n] " tmp
+    if [ "$tmp" = "n" ] || [ "$tmp" = "N" ]; then
+        echo All files will be overwritten.
+        read -r -p "Are you sure? [y/N] " tmp
+        if [ "$tmp" = "y" ] || [ "$tmp" = "Y" ]; then
+            keepConfig=""
+        else
+            keepConfig="1"
+            echo Will keep current config.
+        fi
     fi
+
+    read -r -p "WARNING: continue updating? [y/N] " tmp
+    if [ "$tmp" != "y" ] && [ "$tmp" != "Y" ]; then
+        echo Bye.
+        exit 0
+    fi
+
 fi
 
-read -r -p "WARNING: continue updating? [y/N] " tmp
-if [ "$tmp" != "y" ] && [ "$tmp" != "Y" ]; then
-    echo Bye.
-    exit 0
-fi
 
 ########################################################################
 # BACK UP USER CONFIG FILES
@@ -204,6 +219,13 @@ echo ""
 ln -s $HOME/pe.audio.sys/share/miscel/server.py.SOCKET \
       $HOME/pe.audio.sys/share/miscel/server.py         1>/dev/null 2>&1
 
+
+########################################################################
+# Restore drc png files under www/images
+########################################################################
+python3 pe.audio.sys/share/www/scripts/drc2png.py 1>/dev/null 2>&1 &
+
+
 ########################################################################
 # Finally updates the updater script
 ########################################################################
@@ -212,10 +234,13 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 ########################################################################
 # END
 ########################################################################
-
+if [ $automode -eq 1 ]; then
+    echo "END of automatic update, bye!"
+    exit 0
+fi
 
 ########################################################################
-#                            WEB PAGE
+#                            WEB SITE
 ########################################################################
 
 ########################################################################
@@ -276,4 +301,3 @@ else
     sed -i -e "/const\ URL_PREFIX/c\const\ URL_PREFIX\ =\ \'\/\';" \
            "${HOME}"/pe.audio.sys/share/www/clientside.js
 fi
-

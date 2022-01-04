@@ -43,7 +43,7 @@ from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
                     LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
-                    Fmt
+                    sec2min, Fmt
 
 
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
@@ -61,12 +61,6 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
                                 to a no signal source to avoid killing brutefir
                                 suddenly (see Preamp.select_source#NewSource)
     """
-
-
-    def sec2min(s):
-        m = s // 60
-        s = s % 60
-        return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
 
 
     def read_loudness_monitor():

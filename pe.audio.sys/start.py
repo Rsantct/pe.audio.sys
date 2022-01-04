@@ -219,34 +219,33 @@ def start_brutefir():
     return result
 
 
-def manage_server( mode='', todevnull=False):
+def manage_server( mode='', service='peaudiosys'):
     """ Manages the server running in background
         (void)
     """
 
     try:
-        SRV_HOST, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
+        SRV_ADDR, SRV_PORT = CONFIG['peaudiosys_address'], CONFIG['peaudiosys_port']
     except:
         raise Exception(f'{Fmt.RED}(start) ERROR reading address/port '
                         f'in \'config.yml\'{Fmt.END}')
 
     if mode == 'stop':
         # Stop
-        print(f'{Fmt.RED}(start) stopping \'server.py peaudiosys\'{Fmt.END}')
-        sp.Popen( f'pkill -KILL -f "server.py peaudiosys" \
+        print(f'{Fmt.RED}(start) stopping \'server.py {service}\'{Fmt.END}')
+        sp.Popen( f'pkill -KILL -f "server.py {service}" \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
     elif mode == 'start':
         # Start
-        print(f'{Fmt.BLUE}(start) starting \'server.py peaudiosys\'{Fmt.END}')
-        cmd = f'python3 {MAINFOLDER}/share/miscel/server.py peaudiosys ' \
-                                                f'{SRV_HOST} {SRV_PORT}'
-        if todevnull:
-            with open('/dev/null', 'w') as fnull:
-                sp.Popen(cmd, shell=True, stdout=fnull, stderr=fnull)
-        else:
-            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+        if service == 'restart':
+            SRV_PORT += 1
+        print(f'{Fmt.BLUE}(start) starting \'server.py ' \
+              f'{service} {SRV_ADDR}:{SRV_PORT}\'{Fmt.END}')
+        cmd = f'python3 {MAINFOLDER}/share/miscel/server.py ' \
+              f'{service} {SRV_ADDR} {SRV_PORT}'
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     else:
         raise Exception(f'bad manage_server call')
@@ -276,8 +275,9 @@ def stop_processes(mode):
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
 
     if mode in ('all', 'stop', 'server'):
-        # Stops the server:
-        manage_server(mode='stop')
+        # Stop the servers:
+        manage_server(mode='stop', service='peaudiosys')
+        manage_server(mode='stop', service='restart')
 
     sleep(1)
 
@@ -415,8 +415,9 @@ if __name__ == "__main__":
         print(f'{Fmt.MAGENTA}(start) Closing the temporary \'core\' instance.{Fmt.END}')
 
 
-    # RUN THE SERVER
-    manage_server(mode='start')
+    # RUN THE SERVERS
+    manage_server(mode='start', service='restart')
+    manage_server(mode='start', service='peaudiosys')
     if not server_is_running(who_asks='start'):
         sys.exit()
 

@@ -88,8 +88,6 @@ All commands prefixed with `aux`:
 
     set_LU_monitor_scope  album | track     Choose the LU-I metering scope
 
-    restart                                 Restarts pe.audio.sys
-
     add_delay   xx                          Delays xx ms the sound card outputs, e.g for multiroom listening
 
 

@@ -255,7 +255,12 @@
     <table id="main_title" >
         <tr>
             <td id="main_lside" style="display:none">
-                <button id="restart_switch" title="RESTART" style="font-size:0.7em" onclick="ck_peaudiosys_restart()">&#128585;</button>
+                <button title="soft server reset" style="font-size:0.7em"
+                        onclick="ck_server_restart()"> &#128585;
+                </button>
+                <button title="hard pe.audio.sys reset" style="font-size:0.7em"
+                        onclick="ck_peaudiosys_restart()"> &#10071;
+                </button>
             </td>
             <td id="main_cside"></td>
             <td id="main_rside">
