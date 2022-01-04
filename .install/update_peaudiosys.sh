@@ -219,6 +219,13 @@ echo ""
 ln -s $HOME/pe.audio.sys/share/miscel/server.py.SOCKET \
       $HOME/pe.audio.sys/share/miscel/server.py         1>/dev/null 2>&1
 
+
+########################################################################
+# Restore drc png files under www/images
+########################################################################
+python3 pe.audio.sys/share/www/scripts/drc2png.py 1>/dev/null 2>&1 &
+
+
 ########################################################################
 # Finally updates the updater script
 ########################################################################
@@ -227,8 +234,6 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 ########################################################################
 # END
 ########################################################################
-
-
 if [ $automode -eq 1 ]; then
     echo "END of automatic update, bye!"
     exit 0
@@ -296,4 +301,3 @@ else
     sed -i -e "/const\ URL_PREFIX/c\const\ URL_PREFIX\ =\ \'\/\';" \
            "${HOME}"/pe.audio.sys/share/www/clientside.js
 fi
-
