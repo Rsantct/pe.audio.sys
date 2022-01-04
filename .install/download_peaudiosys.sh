@@ -40,8 +40,8 @@ mkdir $HOME/tmp > /dev/null 2>&1
 cd $HOME/tmp
 
 # Removes any existent master.zip or predic directory for this branch:
-rm $branch.zip
-rm -r pe.audio.sys-$branch
+rm -f $branch.zip
+rm -rf pe.audio.sys-$branch
 
 # Downloads the zip
 wget "$gitsite"/pe.audio.sys/archive/"$branch".zip
@@ -56,4 +56,4 @@ cp -f pe.audio.sys-$branch/.install/update_peaudiosys.sh   .
 
 # And back to home
 cd
-rm download_peaudiosys.sh > /dev/null 2>&1
+rm download_peaudiosys.sh 1>/dev/null 2>&1
