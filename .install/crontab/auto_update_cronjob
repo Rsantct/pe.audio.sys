@@ -1,0 +1,4 @@
+
+# Download and update pe.audio.sys from AudioHumLab (master branch)
+# every day at late night 4:00 am
+00  04  *   *   *   sh $HOME/tmp/download_peaudiosys.sh --auto; sh $HOME/tmp/update_peaudiosys.sh --auto
