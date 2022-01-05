@@ -240,6 +240,7 @@ if [ $automode -eq 1 ]; then
     if [ -e $sauc ]; then
         sh $sauc
     fi
+    $HOME/bin/peaudiosys_server_restart.sh
     echo "END of automatic update, bye!"
     exit 0
 fi
