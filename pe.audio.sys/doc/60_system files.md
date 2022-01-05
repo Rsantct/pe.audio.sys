@@ -183,6 +183,9 @@ Here you are an uncommented bare example of `config.yml`:
     powersave_minutes:        10  # Time in minutes before shutting down Brutefir
 
     spotify_playlists_file: spotify_plists.yml
+    
+    auto_update: true
+
 
 # The `share/eq` folder
 

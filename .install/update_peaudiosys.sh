@@ -227,17 +227,28 @@ python3 pe.audio.sys/share/www/scripts/drc2png.py 1>/dev/null 2>&1 &
 
 
 ########################################################################
-# Finally updates the updater script
+# Finally updates the updater script under ~/tmp/
 ########################################################################
 cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 
 ########################################################################
-# END
+# AUTOUPDATE MODE
 ########################################################################
 if [ $automode -eq 1 ]; then
+    # Mofifies the user crontab with daily updates if auto_update is configured
+    sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
+    if [ -e $sauc ]; then
+        sh $sauc
+    fi
     echo "END of automatic update, bye!"
     exit 0
 fi
+
+########################################################################
+# END
+########################################################################
+
+
 
 ########################################################################
 #                            WEB SITE
