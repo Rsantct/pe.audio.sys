@@ -282,7 +282,9 @@ powersave:              false
 powersave_noise_floor: -70
 powersave_minutes:      10  # Time in minutes before shutting down Brutefir
 
-# update_peaudiosys.sh will add a cronjob to auto update from
-# AudioHumLab master branch, every day late at night (see crontab -l)
+
+# =========================      AUTO UPDATE      ==============================
+# Will add a cronjob in order to auto update from AudioHumLab master branch, 
+# every day late at night (see crontab -l)
 # Recommended 'true' unless you want to update manually.
 auto_update:   true
