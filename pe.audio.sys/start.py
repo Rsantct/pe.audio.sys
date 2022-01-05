@@ -365,8 +365,15 @@ if __name__ == "__main__":
         sys.stdout = flog
         sys.stderr = flog
 
+
     # CHECKING STATE FILE
     check_state_file()
+
+    # OPTIONAL auto update from AudioHumLab master branch, every day late at night
+    if mode in ('all'):
+        if 'auto_update' in CONFIG and CONFIG["auto_update"] == True:
+            cmd = f'sh {UHOME}/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh'
+            sp.Popen(cmd , shell=True)
 
     # STOPPING:
     stop_processes(mode)
