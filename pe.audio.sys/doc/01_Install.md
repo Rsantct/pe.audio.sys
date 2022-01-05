@@ -23,7 +23,12 @@ At this point, the install scripts and the whole 'master' repo will be located u
 
 Say **'N'** when asked *keep your current config?*.
 
-## Maintenance:
+
+## Automatic updates:
+
+You can disable `auto_update` inside the config file (default enabled)
+
+## Manual updates:
  
 1) Download the last repo from github:
 
@@ -37,10 +42,6 @@ where `my_branch` can be 'master' or whatever branch name you want to test
 
 Say **'Y'** when asked *keep your current config?*.
 
-
-## Automatic updates:
-
-You can configure `auto_update: true` inside the config file
 
 
 ## The control web page
