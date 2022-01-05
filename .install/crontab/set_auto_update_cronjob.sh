@@ -29,9 +29,19 @@ else
     echo "auto_update not enabled, will remove job from your crontab if necessary."
 
     cp $HOME/tmp/curr_crontab $HOME/tmp/new_crontab
-    while IFS= read -r line; do
-        grep -Fv "$line" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
-    done < "$HOME/tmp/pe.audio.sys-master/.install/crontab/auto_update_cronjob"
+
+    # Use this to remove exact lines matching within the auto_update_cronjob file
+    #while IFS= read -r line; do
+    #    grep -Fv "$line" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
+    #done < "$HOME/tmp/pe.audio.sys-master/.install/crontab/auto_update_cronjob"
+
+
+    # or use this to remove similar lines as per the below given patterns
+    p="update pe.audio.sys"
+    grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
+    p="update_peaudiosys.sh --auto"
+    grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
+
 
     cat $HOME/tmp/new_crontab | crontab -
     echo "(i) Please check 'crontab -l'"
