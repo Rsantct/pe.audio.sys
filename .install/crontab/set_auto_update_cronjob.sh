@@ -11,7 +11,7 @@ AUTOUPDATE=$( grep auto_update ~/pe.audio.sys/config/config.yml     \
 crontab -l > $HOME/tmp/curr_crontab
 
 
-if [ $AUTOUPDATE = "true" ]; then
+if [ "$AUTOUPDATE" = "true" ]; then
 
     already_updating=$( grep "update_peaudiosys.sh" $HOME/tmp/curr_crontab \
                           | grep -v ^\# )
