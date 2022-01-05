@@ -38,13 +38,18 @@ where `my_branch` can be 'master' or whatever branch name you want to test
 Say **'Y'** when asked *keep your current config?*.
 
 
-### The web page
+## Automatic updates:
+
+You can configure `auto_update: true` inside the config file
+
+
+## The control web page
 
 You can access to the control web from some LAN computer or smartphone.
 
     http://yourMachineHostname.local
 
-#### Node.js (user space service)
+### Node.js (user space service)
 
 You need to install the Node.js package, 
 
@@ -62,7 +67,7 @@ To test the server, login as your regular user and run:
 
 then browse http://yourIP:8080
 
-##### Running the Node.js server at start up:
+#### Running the Node.js server at start up:
 
 Please add this under your `scripts:` section inside `config.yml`
 
@@ -70,7 +75,7 @@ Please add this under your `scripts:` section inside `config.yml`
     - node_web_server.py
 
 
-#### Apache + PHP (system wide service)
+### Apache + PHP (system wide service)
 
 Last step in installing/updating script will update your pe.audio.sys web site configuration under Apache (you'll need sudo credentials).
 
