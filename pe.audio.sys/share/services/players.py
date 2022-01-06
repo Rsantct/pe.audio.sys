@@ -39,9 +39,9 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from  config                        import  CONFIG, PLAYER_META_PATH
 
-from  miscel                        import  detect_spotify_client,          \
-                                            read_state_from_disk,           \
-                                            read_cdda_info_from_disk,       \
+from  miscel                        import  detect_spotify_client,      \
+                                            read_state_from_disk,       \
+                                            read_cdda_info_from_disk,   \
                                             send_cmd, is_IP
 
 from  players_mod.mpd               import  mpd_control,                \
@@ -58,6 +58,7 @@ from  players_mod.librespot         import  librespot_control,          \
 from  players_mod.spotify_desktop   import  spotify_control,            \
                                             spotify_meta,               \
                                             spotify_playlists
+
 
 ## Getting sources list
 SOURCES = CONFIG["sources"]

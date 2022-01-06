@@ -44,11 +44,12 @@ SPOTIFY_BITRATE = '320'
 # The DBUS INTERFACE with the Spotify Desktop client.
 # You can browse it also by command line tool:
 #   $ mdbus2 org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2
-bus      = SessionBus()
 spotibus = None
-tries = 5
+tries = 3
 while tries:
     try:
+        # SessionBus will work if D-Bus has an available X11 $DISPLAY
+        bus      = SessionBus()
         spotibus = bus.get( 'org.mpris.MediaPlayer2.spotify',
                             '/org/mpris/MediaPlayer2' )
         logging.info(f'spotibus OK')
@@ -56,7 +57,7 @@ while tries:
     except Exception as e:
         logging.info(f'spotibus FAILED: {e}')
         tries -=1
-        sleep(1)
+        sleep(.5)
 
 # USER PLAYLISTS
 plist_file = f'{MAINFOLDER}/config/spotify_plists.yml'
@@ -110,7 +111,6 @@ def spotify_control(cmd, arg=''):
         input:  a command string
         output: the resulting status string
     """
-
     result = 'not connected'
 
     if not spotibus:

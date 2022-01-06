@@ -235,13 +235,15 @@ cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 # AUTOUPDATE MODE
 ########################################################################
 if [ $automode -eq 1 ]; then
+
     # Mofifies the user crontab with daily updates if auto_update is configured
     sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
     if [ -e $sauc ]; then
         sh $sauc
     fi
-    # (!) server restart disabled because it fails when executed from cron :-/
-    #$HOME/bin/peaudiosys_server_restart.sh
+
+    $HOME/bin/peaudiosys_server_restart.sh
+
     echo "END of automatic update, bye!"
     exit 0
 fi
@@ -249,6 +251,7 @@ fi
 ########################################################################
 # END
 ########################################################################
+
 
 
 
