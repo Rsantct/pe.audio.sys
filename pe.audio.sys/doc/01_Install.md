@@ -26,7 +26,7 @@ Say **'N'** when asked *keep your current config?*.
 
 ## Automatic updates:
 
-You can disable `auto_update` inside the config file (default enabled)
+You can disable `auto_update` inside the config file (default enabled). Be sure that your Linux has `anacron` installed in order to support automatic updates.
 
 ## Manual updates:
  
