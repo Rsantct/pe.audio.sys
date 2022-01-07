@@ -39,7 +39,7 @@ else
     # or use this to remove similar lines as per the below given patterns
     p="update pe.audio.sys"
     grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
-    p="update_peaudiosys.sh --auto"
+    p="pe.audio.sys/config/anacrontab"
     grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
 
 
