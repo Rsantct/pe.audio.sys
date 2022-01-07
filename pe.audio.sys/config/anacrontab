@@ -3,4 +3,5 @@
 # once at day when possible.
 
 # period delay  job-identifier  command
-1        1      auto_update     sh $HOME/tmp/download_peaudiosys.sh --auto; sh $HOME/tmp/update_peaudiosys.sh --auto
+# (days) (min)
+1        5      auto_update     sh $HOME/tmp/download_peaudiosys.sh --auto; sh $HOME/tmp/update_peaudiosys.sh --auto
