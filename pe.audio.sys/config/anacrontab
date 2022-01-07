@@ -1,5 +1,5 @@
 # This anacrontab will be called daily from the user's crontab
-# if auto_update was configured
+# if auto_update was enabled
 
 # period delay  job-identifier  command
 1        1      auto_update     sh $HOME/tmp/download_peaudiosys.sh --auto; sh $HOME/tmp/update_peaudiosys.sh --auto
