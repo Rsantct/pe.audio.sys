@@ -1,3 +1,3 @@
 
-# Update pe.audio.sys from AudioHumLab (master branch) every day
-00  04  *   *   *   sh $HOME/tmp/download_peaudiosys.sh --auto; sh $HOME/tmp/update_peaudiosys.sh --auto
+# Queries anacron to update pe.audio.sys from AudioHumLab (master branch) every day
+@hourly  /usr/sbin/anacron -s -t $HOME/pe.audio.sys/config/anacrontab -S $HOME/pe.audio.sys/log
