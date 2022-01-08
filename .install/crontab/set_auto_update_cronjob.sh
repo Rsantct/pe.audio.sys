@@ -13,7 +13,7 @@ crontab -l > $HOME/tmp/curr_crontab
 
 if [ "$AUTOUPDATE" = "true" ]; then
 
-    already_updating=$( grep -F "config/anacrontab" $HOME/tmp/curr_crontab \
+    already_updating=$( grep -F "share/miscel/anacrontab" $HOME/tmp/curr_crontab \
                           | grep -v ^\# )
 
     if [ "$already_updating" ]; then
@@ -39,7 +39,7 @@ else
     # or use this to remove similar lines as per the below given patterns
     p="update pe.audio.sys"
     grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
-    p="pe.audio.sys/config/anacrontab"
+    p="pe.audio.sys/share/miscel/anacrontab"
     grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
 
 
