@@ -13,7 +13,7 @@ crontab -l > $HOME/tmp/curr_crontab
 
 if [ "$AUTOUPDATE" = "true" ]; then
 
-    already_updating=$( grep "update_peaudiosys.sh" $HOME/tmp/curr_crontab \
+    already_updating=$( grep -F "config/anacrontab" $HOME/tmp/curr_crontab \
                           | grep -v ^\# )
 
     if [ "$already_updating" ]; then
