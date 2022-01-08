@@ -2,7 +2,7 @@
 # if auto_update was enabled. Anacron takes care of running the job
 # once at day when possible.
 
-# period delay  job-identifier  command
+# period delay  job-identifier      command
 # (days) (min)
-1        5      auto_download   sh $HOME/tmp/download_peaudiosys.sh --auto
-1        5      auto_update     sh $HOME/tmp/update_peaudiosys.sh --auto
+1        5      anacron_download    sh $HOME/tmp/download_peaudiosys.sh --auto
+1        5      anacron_update      sh $HOME/tmp/update_peaudiosys.sh --auto
