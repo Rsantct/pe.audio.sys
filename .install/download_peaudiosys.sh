@@ -44,10 +44,9 @@ rm -f $branch.zip
 rm -rf pe.audio.sys-$branch
 
 # Downloads the zip
-if [ $1 = "--auto" ]; then
-    wget --no-verbose "$gitsite"/pe.audio.sys/archive/"$branch".zip
-else
-    wget --verbose    "$gitsite"/pe.audio.sys/archive/"$branch".zip
+if ! wget --no-verbose "$gitsite"/pe.audio.sys/archive/"$branch".zip; then
+    echo "ERROR downloading. Bye."
+    exit -1
 fi
 
 # Unzip
