@@ -44,17 +44,18 @@ rm -f $branch.zip
 rm -rf pe.audio.sys-$branch
 
 # Downloads the zip
-echo "please wait while downloading ... .. ."
+echo "Please wait while downloading ... .. ."
 if ! wget --no-verbose "$gitsite"/pe.audio.sys/archive/"$branch".zip; then
     exit 1
 fi
 
 # Unzip
-echo "please wait while unzipping ... .. ."
+echo "Please wait while unzipping ... .. ."
 if ! unzip -q $branch.zip; then
     echo "error with zip file"
     exit 1
 fi
+unzip -z $branch.zip
 rm -f $branch.zip
 
 # Drops the installing (download and update) scripts into tmp/ to be accesible
