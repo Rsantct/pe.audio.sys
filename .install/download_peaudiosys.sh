@@ -44,14 +44,18 @@ rm -f $branch.zip
 rm -rf pe.audio.sys-$branch
 
 # Downloads the zip
+echo "please wait while downloading ... .. ."
 if ! wget --no-verbose "$gitsite"/pe.audio.sys/archive/"$branch".zip; then
-    echo "ERROR downloading. Bye."
-    exit -1
+    exit 1
 fi
 
 # Unzip
-unzip $branch.zip
-rm $branch.zip
+echo "please wait while unzipping ... .. ."
+if ! unzip -q $branch.zip; then
+    echo "error with zip file"
+    exit 1
+fi
+rm -f $branch.zip
 
 # Drops the installing (download and update) scripts into tmp/ to be accesible
 cp -f pe.audio.sys-$branch/.install/download_peaudiosys.sh .
@@ -59,4 +63,4 @@ cp -f pe.audio.sys-$branch/.install/update_peaudiosys.sh   .
 
 # And back to home
 cd
-rm download_peaudiosys.sh 1>/dev/null 2>&1
+rm -f download_peaudiosys.sh
