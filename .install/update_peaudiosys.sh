@@ -38,11 +38,11 @@ keepConfig="1"
 if [ $automode -eq 0 ]; then
 
     # Wanna keep current configurations?
-    read -r -p "WARNING: will you keep current config? [Y/n] " tmp
-    if [ "$tmp" = "n" ] || [ "$tmp" = "N" ]; then
+    read -r -p "WARNING: will you keep current config? [Y/n] " ans
+    if [ "$ans" = "n" ] || [ "$ans" = "N" ]; then
         echo All files will be overwritten.
-        read -r -p "Are you sure? [y/N] " tmp
-        if [ "$tmp" = "y" ] || [ "$tmp" = "Y" ]; then
+        read -r -p "Are you sure? [y/N] " ans
+        if [ "$ans" = "y" ] || [ "$ans" = "Y" ]; then
             keepConfig=""
         else
             keepConfig="1"
@@ -50,8 +50,8 @@ if [ $automode -eq 0 ]; then
         fi
     fi
 
-    read -r -p "WARNING: continue updating? [y/N] " tmp
-    if [ "$tmp" != "y" ] && [ "$tmp" != "Y" ]; then
+    read -r -p "WARNING: continue updating? [y/N] " ans
+    if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
         echo Bye.
         exit 0
     fi
@@ -60,7 +60,27 @@ fi
 
 
 ########################################################################
-# BACK UP USER CONFIG FILES
+# IF NO CHANGES IN ZIP COMMENT, WILL CANCEL UPDATING WITH EXIT CODE
+########################################################################
+if [ -f $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH ]; then
+    if diff $HOME/tmp/pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH \
+            $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH  1>/dev/null ; then
+
+        echo "NO changes to update. Bye."
+
+        exit 1
+    fi
+fi
+
+
+########################################################################
+# BACKUP FILES FOR FUTURE ROLLBACK
+########################################################################
+$HOME/bin/peaudiosys_backup.sh --backup
+
+
+########################################################################
+# SAFE COPY OF USER CONFIG FILES
 ########################################################################
 
 # ALSA .asoundrc is distributed as a .sample file and not updated here.
@@ -204,14 +224,6 @@ touch pe.audio.sys/.mpd_events
 touch pe.audio.sys/.playerctl_spotify_events
 touch pe.audio.sys/.spotify_events
 
-########################################################################
-# A helping file to identify the current branch
-########################################################################
-touch pe.audio.sys/THIS_IS_"$branch"_BRANCH
-echo "as per update_peaudiosys.sh" > pe.audio.sys/THIS_IS_"$branch"_BRANCH
-echo ""
-echo "(i) Done."
-echo ""
 
 ########################################################################
 # Symlink to use the SOCKET version of server.py (can change in a future)
@@ -231,6 +243,14 @@ python3 pe.audio.sys/share/www/scripts/drc2png.py 1>/dev/null 2>&1 &
 ########################################################################
 cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 
+
+########################################################################
+# END
+########################################################################
+echo
+echo "(i) Done."
+echo
+
 ########################################################################
 # AUTOUPDATE MODE
 ########################################################################
@@ -242,17 +262,9 @@ if [ $automode -eq 1 ]; then
         sh $sauc
     fi
 
-    $HOME/bin/peaudiosys_server_restart.sh
-
     echo "END of automatic update, bye!"
     exit 0
 fi
-
-########################################################################
-# END
-########################################################################
-
-
 
 
 ########################################################################
