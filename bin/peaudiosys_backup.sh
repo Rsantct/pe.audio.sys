@@ -1,7 +1,12 @@
 #!/bin/bash
 
 function print_help {
-    echo "usage:   peaudiosys_backup.sh  -backup | -restore"
+    echo
+    echo "    A tool to backup or restore pe.audio.sys files to/from"
+    echo "        tmp/peaudiosys.bak_xxxxxxx"
+    echo
+    echo "    usage:   peaudiosys_backup.sh  --backup | --restore"
+    echo
 }
 
 
