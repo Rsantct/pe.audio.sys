@@ -15,7 +15,7 @@ else
     gitsite="https://github.com/AudioHumLab"
 fi
 
-# --auto for unattended maintenance
+# --auto unattended maintenance
 if [ $1 = "--auto" ]; then
     automode=1
     gitsite="https://github.com/AudioHumLab"
@@ -35,33 +35,35 @@ if [ $automode -eq 0 ]; then
     fi
 fi
 
-# Prepare temp directory
 mkdir $HOME/tmp > /dev/null 2>&1
+
 cd $HOME/tmp
 
-# Removes any existent master.zip or predic directory for this branch:
+# delete if any previous zip here, then download and unzip
 rm -f $branch.zip
-rm -rf pe.audio.sys-$branch
-
-# Downloads the zip
 echo "Please wait while downloading ... .. ."
 if ! wget --no-verbose "$gitsite"/pe.audio.sys/archive/"$branch".zip; then
+    echo "error downloading fron github"
     exit 1
 fi
-
-# Unzip
+rm -rf pe.audio.sys-$branch
 echo "Please wait while unzipping ... .. ."
 if ! unzip -q $branch.zip; then
     echo "error with zip file"
     exit 1
 fi
+
+# Console informative
 unzip -z $branch.zip
+
+# Special file containing the unique zip comment,
+# in order to check if updates are needed.
+unzip -z $branch.zip > pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH
+
 rm -f $branch.zip
 
-# Drops the installing (download and update) scripts into tmp/ to be accesible
 cp -f pe.audio.sys-$branch/.install/download_peaudiosys.sh .
 cp -f pe.audio.sys-$branch/.install/update_peaudiosys.sh   .
 
-# And back to home
 cd
 rm -f download_peaudiosys.sh
