@@ -65,7 +65,7 @@ fi
 
 # 'sauc' will add or remove the daily updates in crontab
 # as per auto_update: true|false inside config.yml
-sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
+sauc="$HOME/tmp/pe.audio.sys-""$branch""/.install/crontab/set_auto_update_cronjob.sh"
 if [ -e $sauc ]; then
     sh $sauc
 fi
