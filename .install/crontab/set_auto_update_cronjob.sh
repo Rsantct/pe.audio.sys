@@ -41,6 +41,8 @@ else
     grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
     p="pe.audio.sys/share/miscel/anacrontab"
     grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
+    p="peaudiosys_restart.sh"
+    grep -Fvi "$p" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
 
 
     cat $HOME/tmp/new_crontab | crontab -
