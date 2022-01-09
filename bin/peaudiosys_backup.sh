@@ -3,7 +3,7 @@
 function print_help {
     echo
     echo "    A tool to backup or restore pe.audio.sys files to/from"
-    echo "        tmp/peaudiosys.bak_xxxxxxx"
+    echo "        tmp/peaudiosys.bak_YYYYMMDD.tar.bz2"
     echo
     echo "    usage:"
     echo
@@ -18,12 +18,11 @@ function print_help {
 function do_backup {
     cd
 
-    now=$(date +%Y%m%d.%H%M%S)
+    now=$(date +%Y%m%d)
 
     tar --exclude=*.wav             \
         --exclude=*.dat             \
         --exclude=*.png             \
-        --exclude=*.pcm             \
         --exclude=*config/asound*   \
         --exclude=*loudspeakers/*example*   \
         --exclude=*loudspeakers/*test*      \
@@ -33,6 +32,7 @@ function do_backup {
         --exclude=*share/eq*        \
         --exclude=*.sample*         \
         -cjf $HOME/tmp/peaudiosys.bak_"$now".tar.bz2    \
+            pe.audio.sys/THIS_IS*               \
             pe.audio.sys/start.py               \
             pe.audio.sys/config                 \
             pe.audio.sys/loudspeakers           \
