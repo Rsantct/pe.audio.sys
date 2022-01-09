@@ -5,7 +5,12 @@ function print_help {
     echo "    A tool to backup or restore pe.audio.sys files to/from"
     echo "        tmp/peaudiosys.bak_xxxxxxx"
     echo
-    echo "    usage:   peaudiosys_backup.sh  --backup | --restore"
+    echo "    usage:"
+    echo
+    echo "      peaudiosys_backup.sh  --backup"
+    echo "      peaudiosys_backup.sh  --restore [path/to/tarfile*]"
+    echo
+    echo "          * if not given, will use the most recent found."
     echo
 }
 
@@ -45,10 +50,21 @@ function do_backup {
 
 
 function do_restore {
+
+    # arguments $n are passed when calling the function,
+    # and they have function scope.
+
+    if [[ -f "$1" ]]; then
+        tar_file="$1"
+    else
+        tar_file=$(ls -1 tmp/peaudiosys.bak_* | sort | tail -n1)
+        echo "Using: ""$tar_file"
+    fi
+
+
     cd
-    last_tar=$(ls -1 tmp/peaudiosys.bak_* | sort | tail -n1)
-    if [[ -f "$last_tar" ]]; then
-        read -r -p "Want to restore from: ""$last_tar"" (y/N) ? " ans
+    if [[ -f "$tar_file" ]]; then
+        read -r -p "Want to restore from: ""$tar_file"" (y/N) ? " ans
         if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
             echo 'Ok, nothing done. Bye.'
             exit 0
@@ -59,8 +75,8 @@ function do_restore {
             exit 0
         fi
 
-        echo "Extracting ""$last_tar"" ... .. ."
-        if tar -xjf $last_tar -C $HOME; then
+        echo "Extracting ""$tar_file"" ... .. ."
+        if tar -xjf $tar_file -C $HOME; then
             echo "Done."
             exit 0
         else
@@ -69,7 +85,7 @@ function do_restore {
         fi
 
     else
-        echo "error with ""$last_tar"
+        echo "error with ""$tar_file"
         exit 1
     fi
 }
@@ -79,7 +95,7 @@ if [[ $1 == *"-b"* ]]; then
     do_backup
 
 elif [[ $1 == *"-r"* ]]; then
-    do_restore
+    do_restore $2
 else
     print_help
 fi
