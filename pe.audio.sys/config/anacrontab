@@ -1,7 +1,0 @@
-# This anacrontab will be called daily from the user's crontab
-# if auto_update was enabled. Anacron takes care of running the job
-# once at day when possible.
-
-# period delay  job-identifier  command
-# (days) (min)
-1        5      auto_update     sh $HOME/tmp/download_peaudiosys.sh --auto; sh $HOME/tmp/update_peaudiosys.sh --auto
