@@ -43,7 +43,12 @@ function do_restore {
     cd
     last_tar=$(ls -1 tmp/peaudiosys.bak_* | sort | tail -n1)
     if [[ -f "$last_tar" ]]; then
-        read -r -p "want to restore from: ""$last_tar"" (y/N) ? " ans
+        read -r -p "Want to restore from: ""$last_tar"" (y/N) ? " ans
+        if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
+            echo 'Ok, nothing done. Bye.'
+            exit 0
+        fi
+        read -r -p "Are you sure to overwrite ~/pe.audio.sys (y/N) ? " ans
         if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
             echo 'Ok, nothing done. Bye.'
             exit 0
