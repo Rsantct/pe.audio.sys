@@ -53,9 +53,6 @@ if ! unzip -q $branch.zip; then
     exit 1
 fi
 
-# Console informative
-unzip -z $branch.zip
-
 # Special file containing the unique zip comment,
 # in order to check if updates are needed.
 unzip -z $branch.zip > pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH
@@ -67,3 +64,5 @@ cp -f pe.audio.sys-$branch/.install/update_peaudiosys.sh   .
 
 cd
 rm -f download_peaudiosys.sh
+
+echo "Done."
