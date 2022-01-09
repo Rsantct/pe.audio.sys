@@ -254,14 +254,14 @@ echo
 ########################################################################
 # AUTOUPDATE MODE
 ########################################################################
+
+# 'sauc' will add or remove the daily updates in crontab
+# as per auto_update: true|false inside config.yml
+sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
+if [ -e $sauc ]; then
+    sh $sauc
+fi
 if [ $automode -eq 1 ]; then
-
-    # Mofifies the user crontab with daily updates if auto_update is configured
-    sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
-    if [ -e $sauc ]; then
-        sh $sauc
-    fi
-
     echo "END of automatic update, bye!"
     exit 0
 fi
