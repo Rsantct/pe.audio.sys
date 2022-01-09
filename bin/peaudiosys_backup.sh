@@ -53,13 +53,20 @@ function do_restore {
             echo 'Ok, nothing done. Bye.'
             exit 0
         fi
-        read -r -p "Are you sure to overwrite ~/pe.audio.sys (y/N) ? " ans
+        read -r -p "Are you sure to overwrite ~/pe.audio.sys, ~/bin (y/N) ? " ans
         if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
             echo 'Ok, nothing done. Bye.'
             exit 0
         fi
 
-        echo WIP
+        echo "Extracting ""$last_tar"" ... .. ."
+        if tar -xjf $last_tar -C $HOME; then
+            echo "Done."
+            exit 0
+        else
+            echo "Error extracting tar file"
+            exit 1
+        fi
 
     else
         echo "error with ""$last_tar"
