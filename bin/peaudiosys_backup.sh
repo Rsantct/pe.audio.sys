@@ -44,6 +44,7 @@ function do_backup {
             pe.audio.sys/share/www              \
             bin/peaudiosys*
 
+    echo -n "(peaudiosys_backup.sh) "
     ls -sh tmp/peaudiosys.bak_"$now".tar.bz2
 
 }
