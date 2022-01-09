@@ -60,6 +60,18 @@ fi
 
 
 ########################################################################
+# AUTOUPDATE MODE
+########################################################################
+
+# 'sauc' will add or remove the daily updates in crontab
+# as per auto_update: true|false inside config.yml
+sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
+if [ -e $sauc ]; then
+    sh $sauc
+fi
+
+
+########################################################################
 # IF NO CHANGES IN ZIP COMMENT, WILL CANCEL UPDATING WITH EXIT CODE
 ########################################################################
 if [ -f $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH ]; then
@@ -251,16 +263,10 @@ echo
 echo "(i) Done."
 echo
 
+
 ########################################################################
 # AUTOUPDATE MODE
 ########################################################################
-
-# 'sauc' will add or remove the daily updates in crontab
-# as per auto_update: true|false inside config.yml
-sauc="$HOME/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh"
-if [ -e $sauc ]; then
-    sh $sauc
-fi
 if [ $automode -eq 1 ]; then
     echo "END of automatic update, bye!"
     exit 0
