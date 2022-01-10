@@ -6,7 +6,7 @@ Find them here:
 
 For more details see here:
 
-https://github.com/AudioHumLab/pe.audio.sys/tree/master/pe.audio.sys/doc/60_system%20files.md
+[60_system files.md](../../doc/60_system%20files.md)
 
 
 **IMPORTANT:**
