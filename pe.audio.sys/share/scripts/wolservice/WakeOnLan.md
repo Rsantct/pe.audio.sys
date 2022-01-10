@@ -33,4 +33,4 @@ On your 24x7 micro PC you'll need:
 
 Then, simply bookmark `http://microPC_IP:8081` on your favourite smartphone or tablet web browser.
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/wol_web_page.png" align="center" width="250" ></a>
+<a href="url"><img src="../../../doc/images/wol_web_page.png" align="center" width="250" ></a>
