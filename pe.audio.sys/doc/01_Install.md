@@ -30,7 +30,7 @@ Be sure that your Linux has `anacron` installed in order to support automatic up
 
 Run this only on the first install:
 
-    `sh ~/tmp/pe.audio.sys-backup/.install/crontab/set_auto_update_cronjob.sh --force`
+    sh ~/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh --force
 
 (i) You can disable `auto_update` inside the config file (default enabled). 
 
