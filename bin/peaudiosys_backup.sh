@@ -17,6 +17,7 @@ function print_help {
 
 function do_backup {
     cd
+    mkdir -p tmp
 
     now=$(date +%Y%m%d)
 
