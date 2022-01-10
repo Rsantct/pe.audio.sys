@@ -33,17 +33,17 @@ https://torger.se/anders/brutefir.html#config_6
 
 **`htop`** displays CPU% usage:
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/htop.png" align="center" width="600" ></a>
+<a href="url"><img src="./images/htop.png" align="center" width="600" ></a>
 
 
 **Qjackctl** displays JACK RT real time index information:
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/qjackctl_RT_index.png" align="center" width="400" ></a>
+<a href="url"><img src="./images/qjackctl_RT_index.png" align="center" width="400" ></a>
 
 
 **Brutefir** real time index can be obtained by issuing the `rti` command, which is similar to the CPU% load of the Brutefir process:
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/bf_rti.png" align="center" width="400" ></a>
+<a href="url"><img src="./images/bf_rti.png" align="center" width="400" ></a>
 
 
 
@@ -61,7 +61,7 @@ Run JACK and Brutefir alone, without the whole pe.audio.sys scripts.
 
 ***(PLEASE switch-off your AMPLIFIER or jack_disconnect system:playback_X)***
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/testing_latency.png" align="center" width="800" ></a>
+<a href="url"><img src="./images/testing_latency.png" align="center" width="800" ></a>
 
 Play trial and error with JACK **`--period xxx`**. Choose a power of 2 value, and equal or smaller than the `brutefir_config` **partition size**.
 
