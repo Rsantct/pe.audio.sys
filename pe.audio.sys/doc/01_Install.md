@@ -21,26 +21,35 @@ At this point, the install scripts and the whole 'master' repo will be located u
 
     `sh tmp/update_peaudiosys.sh master`
 
-Say **'N'** when asked *keep your current config?*.
+**IMPORTANT** say **'N'** when asked *keep your current config?*.
 
 
 ## Automatic updates:
 
-You can disable `auto_update` inside the config file (default enabled). Be sure that your Linux has `anacron` installed in order to support automatic updates.
+Be sure that your Linux has `anacron` installed in order to support automatic updates.
+
+Run this only on the first install:
+
+    sh ~/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh --force
+
+(i) You can disable `auto_update` inside the config file (default enabled). 
+
 
 ## Manual updates:
+
+Manual updates can be done whenever you want, by following the two steps below:
  
-1) Download the last repo from github:
+**(1)** Download the last repo from github:
 
-    `sh tmp/download_peaudiosys.sh <my_brach>`
+    `sh tmp/download_peaudiosys.sh my_brach`
 
-where `my_branch` can be 'master' or whatever branch name you want to test
+where `my_branch` can be `master` or whatever branch name you want to test
 
-2) Update your system:
+**(2)** Update your system:
 
-    `sh tmp/update_peaudiosys.sh <my_brach>`
+    `sh tmp/update_peaudiosys.sh my_brach`
 
-Say **'Y'** when asked *keep your current config?*.
+**IMPORTANT** say **'Y'** when asked *keep your current config?*.
 
 
 

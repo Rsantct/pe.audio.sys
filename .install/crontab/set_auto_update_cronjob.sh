@@ -1,21 +1,26 @@
 #!/bin/sh
 
-echo "--------------------------------------------------------------------------"
-
-AUTOUPDATE=$( grep auto_update ~/pe.audio.sys/config/config.yml     \
-                | awk -F':' '{print $2}'                            \
-                | awk -F'#' '{print $1}'                            \
-                | awk '{ gsub(/ /,""); print }' )
-
-
 myfullpath=$(realpath $0)
-
-mybranch=$(echo $myfullpath | cut -d'/' -f5 | cut -d'-' -f2)
-
-if [ ! $mybranch ]; then
+MYBRANCH=$(echo $myfullpath | cut -d'/' -f5 | cut -d'-' -f2)
+if [ ! $MYBRANCH ]; then
     echo "error running .install/crontab/set_auto_update_cronjob.sh, bye :-/"
     exit 1
 fi
+
+
+AUTOUPDATE="false"
+if [ -f $HOME/pe.audio.sys/config/config.yml ]; then
+    AUTOUPDATE=$( grep auto_update $HOME/pe.audio.sys/config/config.yml     \
+                    | awk -F':' '{print $2}'                                \
+                    | awk -F'#' '{print $1}'                                \
+                    | awk '{ gsub(/ /,""); print }' )
+fi
+if [ "$1" = "--force" ]; then
+    AUTOUPDATE="true"
+fi
+
+
+echo "--------------------------------------------------------------------------"
 
 
 crontab -l > $HOME/tmp/curr_crontab
@@ -31,7 +36,7 @@ if [ "$AUTOUPDATE" = "true" ]; then
     else
         echo "Will add a daily auto-update to your crontab."
         cat  $HOME/tmp/curr_crontab                                                  \
-             $HOME/tmp/pe.audio.sys-"$mybranch"/.install/crontab/auto_update_cronjob \
+             $HOME/tmp/pe.audio.sys-"$MYBRANCH"/.install/crontab/auto_update_cronjob \
                |  crontab -
         echo "(i) Please check 'crontab -l'"
     fi
@@ -44,7 +49,7 @@ else
     # Use this to remove exact lines matching within the auto_update_cronjob file
     #while IFS= read -r line; do
     #    grep -Fv "$line" $HOME/tmp/new_crontab > $HOME/tmp/tmp && mv $HOME/tmp/tmp $HOME/tmp/new_crontab
-    #done < $HOME/tmp/pe.audio.sys-"$mybranch"/.install/crontab/auto_update_cronjob
+    #done < $HOME/tmp/pe.audio.sys-"$MYBRANCH"/.install/crontab/auto_update_cronjob
 
 
     # or use this to remove similar lines as per the below given patterns
