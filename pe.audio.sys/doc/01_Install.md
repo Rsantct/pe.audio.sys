@@ -37,15 +37,15 @@ Run this only on the first install:
 
 ## Manual updates:
 
-Manual updates can be done whenever you want.
+Manual updates can be done whenever you want, by following the below two steps:
  
-1) Download the last repo from github:
+**(1)** Download the last repo from github:
 
     `sh tmp/download_peaudiosys.sh my_brach`
 
 where `my_branch` can be `master` or whatever branch name you want to test
 
-2) Update your system:
+**(2)** Update your system:
 
     `sh tmp/update_peaudiosys.sh my_brach`
 
