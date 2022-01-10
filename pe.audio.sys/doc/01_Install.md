@@ -12,7 +12,7 @@ You need **Python>=3.6** and all python stuff as indicated in **[README.md](http
 
     ```
     cd
-    wget https://raw.githubusercontent.com/AudioHumLab/pe.audio.sys/master/.install/download_peaudiosys.sh
+    wget https://raw.githubusercontent.com/Rsantct/pe.audio.sys/master/.install/download_peaudiosys.sh
     sh download_peaudiosys.sh master
     ```
 At this point, the install scripts and the whole 'master' repo will be located under `~/tmp` (and also deleted the above downloaded)
