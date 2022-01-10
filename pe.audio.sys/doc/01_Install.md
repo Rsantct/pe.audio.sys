@@ -21,7 +21,7 @@ At this point, the install scripts and the whole 'master' repo will be located u
 
     `sh tmp/update_peaudiosys.sh master`
 
-IMPORTANT say **'N'** when asked *keep your current config?*.
+**IMPORTANT** say **'N'** when asked *keep your current config?*.
 
 
 ## Automatic updates:
@@ -37,7 +37,7 @@ Run this only on the first install:
 
 ## Manual updates:
 
-Manual updates can be done whenever you want, by following the below two steps:
+Manual updates can be done whenever you want, by following the two steps below:
  
 **(1)** Download the last repo from github:
 
@@ -49,7 +49,7 @@ where `my_branch` can be `master` or whatever branch name you want to test
 
     `sh tmp/update_peaudiosys.sh my_brach`
 
-IMPORTANT say **'Y'** when asked *keep your current config?*.
+**IMPORTANT** say **'Y'** when asked *keep your current config?*.
 
 
 
