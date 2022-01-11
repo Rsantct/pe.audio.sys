@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Starts and stops Mplayer for CDDA playback.
+    Start or stop Mplayer for CDDA playback.
 
     Also used to CD play control and disk eject.
 
