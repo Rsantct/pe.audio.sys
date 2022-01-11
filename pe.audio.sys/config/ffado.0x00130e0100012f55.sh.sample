@@ -1,3 +1,7 @@
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 # SAFFIRE (white 8x analog out) FFADO DBUS MIXER RESTORING FOR "SOUND CARD" REGULAR MODE
 # http://subversion.ffado.org/wiki/ffadoMixerGuides
 
