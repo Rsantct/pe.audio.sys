@@ -4,7 +4,6 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
-
 """
     Start or stop the LCD server and lcd_daemon.py
 
