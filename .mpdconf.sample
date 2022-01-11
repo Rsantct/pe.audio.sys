@@ -1,3 +1,6 @@
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
 #
 # https://www.musicpd.org/doc/html/user.html#configuration
 # to check compiled features:   mpd --version
