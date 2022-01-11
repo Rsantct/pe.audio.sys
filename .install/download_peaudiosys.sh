@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 if [ -z $1 ] ; then
     echo "usage:"
     echo "    download_peaudiosys.sh  branch_name [git_repo]"
