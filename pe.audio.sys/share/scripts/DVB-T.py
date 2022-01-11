@@ -4,7 +4,8 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
-""" Starts and stops Mplayer for DVB-T playback.
+"""
+    Start or stop Mplayer for DVB-T playback.
 
     Also used to change on the fly the played stream.
 
