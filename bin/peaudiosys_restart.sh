@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 # Failed to connect to session bus for device reservation: Unable to autolaunch a dbus-daemon without a
 # $DISPLAY for X11
 #

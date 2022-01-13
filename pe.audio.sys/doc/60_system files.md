@@ -265,7 +265,7 @@ You are free to insert any other sound processor, Jack is your friend. To automa
 
 Brutefir is the last element and the only one that interfaces with the sound card Jack ports. The loudspeakers are a two way set, connected at the last sound card ports. 
 
-![jack_wiring](https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/jack_routing_sample.png)
+![jack_wiring](./images/jack_routing_sample.png)
 
 
 # The loudspeaker

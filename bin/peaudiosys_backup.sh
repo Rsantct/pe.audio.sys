@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 function print_help {
     echo
     echo "    A tool to backup or restore pe.audio.sys files to/from"
@@ -17,6 +21,7 @@ function print_help {
 
 function do_backup {
     cd
+    mkdir -p tmp
 
     now=$(date +%Y%m%d)
 

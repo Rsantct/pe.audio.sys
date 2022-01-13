@@ -70,7 +70,7 @@ Basically, it is spected to found a custom made bash script for your card settin
 (i) `ffado-dbus-server` has to be running as a background process, `start.py` will do it, but at this moment you'll need to run it in a dedicated terminal.
 
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/ffado-mixer.png" align="center" width="480" ></a>
+<a href="url"><img src="./images/ffado-mixer.png" align="center" width="480" ></a>
 
 
 

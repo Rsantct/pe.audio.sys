@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 myfullpath=$(realpath $0)
 MYBRANCH=$(echo $myfullpath | cut -d'/' -f5 | cut -d'-' -f2)
 if [ ! $MYBRANCH ]; then

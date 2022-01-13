@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 # (i) NOTICE:   When maintaining this script, do NOT edit it directly
 #               from ~/tmp/ because it will be modified on runtime.
 #               So edit it apart, copy to ~/tmp/ and test it.

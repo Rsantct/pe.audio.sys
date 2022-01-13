@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 """
     Uso interno.
     Rutinas para presentar texto grande a pantalla completa:

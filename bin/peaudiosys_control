@@ -1,8 +1,10 @@
 #!/bin/bash
 
-#
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 # A command line tool to control the system
-#
 
 # Reading TCP address and port from the pe.audio.sy config file
 ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config/config.yml | grep -v \# | awk '{print $NF}' )
