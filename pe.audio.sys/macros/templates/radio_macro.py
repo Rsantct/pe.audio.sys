@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 """
     A module to tune a Mplayer radio station and listen to it.
 """

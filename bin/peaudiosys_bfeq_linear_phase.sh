@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 if [[ $1 ]]; then
 
     if [[ $1 == *"true"* || $1 == *"false"* ]]; then

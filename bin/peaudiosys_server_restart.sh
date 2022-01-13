@@ -1,9 +1,12 @@
 #!/bin/bash
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 SERVERPATH="$HOME"/"pe.audio.sys/share/miscel/server.py"
 
 opc=$1
-
 
 # Reading TCP address and port from the pe.audio.sy config file
 ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )

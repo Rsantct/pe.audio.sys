@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 """
     Use this under a Desktop installation.
 

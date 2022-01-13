@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 """
     Plots the available curves for the Brutefir smooth EQ module,
     by default located under the 'pe.audio.sys/share/eq' folder.

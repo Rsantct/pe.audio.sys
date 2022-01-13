@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) Rafael Sánchez
+# This file is part of 'pe.audio.sys'
+# 'pe.audio.sys', a PC based personal audio system.
+
 # (i)   This amplifier switch is based on the 'usbrelay' binary,
 #       which manages a simple HID usb relay unit.
 #       Recently Debian offers the packet 'usbrelay'.

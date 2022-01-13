@@ -74,7 +74,7 @@ In addition, you can control unlimited audio sources:
 Simple control from your smartphone, tablet or desktop **web browser**.
 
 
-<a href="url"><img src="https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="400" ></a>
+<a href="url"><img src="./pe.audio.sys/doc/images/web%20inputs%20selector%20and%20macros%20buttons.png" align="center" width="400" ></a>
 
 
 - Main control web features are:
