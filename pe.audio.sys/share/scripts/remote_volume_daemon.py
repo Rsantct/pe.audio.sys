@@ -182,8 +182,8 @@ def do(cmd):
                 remoteClients.append(cli_addr)
                 print( f'(remote_volume) Updated remote listening machines: '
                        f'{remoteClients}' )
-                # set the level settings in remote listener
-                remote_update_levels(cli_addr)
+            # set the level settings in remote listener even if already in remoteClients
+            remote_update_levels(cli_addr)
             result = 'ack'
         else:
             print( f'(remote_volume) Tas tonto: received \'hello\' '
