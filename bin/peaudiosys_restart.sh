@@ -11,7 +11,10 @@
 #
 # Audio device hw:RPiCirrus,0 cannot be acquired...
 # Cannot initialize driver
-export JACK_NO_AUDIO_RESERVATION=1
+JACK_NO_AUDIO_RESERVATION=1
+
+# When crontab restart needs this
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
 
 if [[ $1 == 'stop' ]]; then
     echo '(i) STOPPING pe.audio.sys'
