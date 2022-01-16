@@ -5,10 +5,13 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 
-# When called w/o X environment needs:
-export XDG_RUNTIME_DIR=/run/user/$UID
-export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
-export JACK_NO_AUDIO_RESERVATION=1
+if [[ ! $XDG_CURRENT_DESKTOP ]]; then
+    # Needed when called w/o X environment:
+    export XDG_RUNTIME_DIR=/run/user/$UID
+    export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
+    export JACK_NO_AUDIO_RESERVATION=1
+fi
+
 
 if [[ $1 == 'stop' ]]; then
     echo '(i) STOPPING pe.audio.sys'
