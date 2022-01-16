@@ -4,14 +4,14 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
-# Failed to connect to session bus for device reservation: Unable to autolaunch a dbus-daemon without a
-# $DISPLAY for X11
-#
-# To bypass device reservation via session bus, set JACK_NO_AUDIO_RESERVATION=1 prior to starting jackd.
-#
-# Audio device hw:RPiCirrus,0 cannot be acquired...
-# Cannot initialize driver
-export JACK_NO_AUDIO_RESERVATION=1
+
+if [[ ! $XDG_CURRENT_DESKTOP ]]; then
+    # Needed when called w/o X environment:
+    export XDG_RUNTIME_DIR=/run/user/$UID
+    export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
+    export JACK_NO_AUDIO_RESERVATION=1
+fi
+
 
 if [[ $1 == 'stop' ]]; then
     echo '(i) STOPPING pe.audio.sys'
