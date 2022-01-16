@@ -7,6 +7,7 @@
 
 if [[ ! $XDG_CURRENT_DESKTOP ]]; then
     # Needed when called w/o X environment:
+    export XDG_RUNTIME_DIR=/run/user/$UID
     export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
     export JACK_NO_AUDIO_RESERVATION=1
 fi
