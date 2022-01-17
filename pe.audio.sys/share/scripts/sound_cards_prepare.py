@@ -25,6 +25,7 @@
         alsactl -f ~/pe.audio.sys/config/asound.MYCARD store MYCARD
 
 """
+import  difflib
 import  subprocess as sp
 import  os
 import  sys
@@ -34,6 +35,14 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config  import CONFIG
 from    miscel  import Fmt
+
+
+def simmilar_strings(a, b):
+    ratio =  difflib.SequenceMatcher(a=a.lower(), b=b.lower()).ratio()
+    if ratio >= 0.75:
+        return True
+    else:
+        return False
 
 
 def get_pulse_cards():
@@ -151,18 +160,20 @@ if __name__ == "__main__":
     config_cards    = get_config_yml_cards()
 
     # Release cards from pulseaudio
-    if pa_cards:
-        for pa_card in pa_cards:
-            for config_card in config_cards:
+    for pa_card in pa_cards:
+        for config_card in config_cards:
 
-                # alsa
-                ccname = config_card.replace('hw:', '').split(',')[0]
-                # firewire
-                ccname = config_card.replace('guid:', '').split(',')[0]
+            # alsa
+            ccname = config_card.replace('hw:', '').split(',')[0]
+            # firewire
+            ccname = config_card.replace('guid:', '').split(',')[0]
 
-                if ccname in pa_cards[pa_card]["alsa_name"] or \
-                   ccname in pa_cards[pa_card]["pa_name"]:
+            for paname in pa_cards[pa_card]["alsa_name"], \
+                          pa_cards[pa_card]["pa_name"]:
+
+                if simmilar_strings(ccname, paname):
                     PA_release_card( pa_cards[pa_card]["pa_name"] )
+                    break
 
     # Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
     for card in config_cards:
