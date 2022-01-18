@@ -24,8 +24,6 @@ function do_start {
 
     # (i) Unattended restarts in headless machines can have a weird behavior,
     #     so will retry restarting if necessary up to 3 times.
-    fmtBold=$(tput bold)
-    fmtNormal=$(tput sgr0)
     tries=1
     if [[ $1 == *'-r'* ]]; then
         tries=3
@@ -45,9 +43,9 @@ function do_start {
             break
         else
             if [[ $c -lt $tries ]]; then
-                echo "    ${fmtBold}server.py NOT detected, retrying ...${fmtNormal}"
+                echo "    server.py NOT detected, retrying ..."
             else
-                echo "    ${fmtBold}server.py NOT detected during "$c" attempts. Bye.${fmtNormal}"
+                echo "    server.py NOT detected during "$c" attempts. Bye."
             fi
         fi
 
