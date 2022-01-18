@@ -1097,6 +1097,9 @@ function state_update() {
                                         ':: pe.audio.sys :: not connected';
         console.log( 'not connected', e.name, e.message );
     }
+    if (server_available){
+        document.title = 'pe.audio.sys ' + state.loudspeaker;
+    }
 }
 
 
