@@ -132,10 +132,13 @@ On Debian systems, you can simply add a line inside your `/etc/rc.local` before 
     #!/bin/sh -e
     ...
     ...
-    su -l YourUser -c "python3 /home/YourUser/pe.audio.sys/start.py all --log &"
+    sleep 5 && su -l <YOURUSER> -c "peaudiosys_restart.sh start --retry"
     exit 0
 
-NOTICE: **`start.log`** will help you to debug the starting process.
+NOTES:
+
+- **`pe.audio.sys/log/start.log`** will help you to debug the startup process.
+- sleep 5 helps for the user environment to be ready before starting pe.audio.sys
 
 ## [ ] Restarting script
 
