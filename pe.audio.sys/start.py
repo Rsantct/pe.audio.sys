@@ -257,7 +257,7 @@ def stop_processes(mode):
         manage_server(mode='stop', service='peaudiosys')
         manage_server(mode='stop', service='restart')
 
-    sleep(1)
+    sleep(3)
 
 
 def run_scripts(mode='start'):
