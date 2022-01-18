@@ -73,9 +73,9 @@ elif [[ ! $1 || $1 == *'start' ]]; then
 
 else
     echo
-    echo "USAGE:   peaudiosys_restart.sh  [ start [-r]  |  stop ]"
+    echo "USAGE:   peaudiosys_restart.sh  [ start [--retry]  |  stop ]"
     echo
-    echo "         -r   will retry up to 3 times useful when unattended restarting"
+    echo "         --retry   will retry up to 3 times useful when unattended restarting"
     echo
     echo "         Startup process will be logged in <pe.audio.sys/log/start.log>"
     echo "         For further debugging run manually from a terminal:"
