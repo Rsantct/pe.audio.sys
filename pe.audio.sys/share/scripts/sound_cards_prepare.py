@@ -50,7 +50,7 @@ def get_pulse_cards():
     pa_cards = {}
 
     try:
-        tmp = sp.check_output( 'which pactl'.split() )
+        tmp = sp.check_output( 'which pactl', shell=True )
         tmp = sp.check_output( 'export LANG=en_US.UTF-8 && pactl list cards',
                                 shell=True ).decode().split('\n' )
         new_card = False
