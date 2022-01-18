@@ -46,9 +46,10 @@ def simmilar_strings(a, b):
 
 
 def get_pulse_cards():
+
     pa_cards = {}
+
     try:
-        # if 'pactl' command not available will except
         tmp = sp.check_output( 'which pactl'.split() )
         tmp = sp.check_output( 'export LANG=en_US.UTF-8 && pactl list cards',
                                 shell=True ).decode().split('\n' )
@@ -67,8 +68,8 @@ def get_pulse_cards():
                 pa_cards[cardN]['alsa_name'] = line.split('=')[-1].strip() \
                                                 .replace('"', '')
 
-    except:
-        pass
+    except Exception as e:
+        print(f'(sound_cards_prepare) {str(e)}')
 
     return pa_cards
 
@@ -92,10 +93,11 @@ def PA_release_card( pa_name ):
         print(  f'{Fmt.BLUE}'
                 f'(sound_cards_prepare) releasing '
                 f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
-    except:
+
+    except Exception as e:
         print(  f'{Fmt.RED}'
                 f'(sound_cards_prepare) PROBLEMS releasing '
-                f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
+                f'\'{pa_name}\' in pulseaudio: {str(e)}{Fmt.END}' )
 
 
 def restore_alsa_card(card):
@@ -103,6 +105,7 @@ def restore_alsa_card(card):
         bareCardName = card.split(':')[-1].split(',')[0]
 
         asound_file = f'{UHOME}/pe.audio.sys/config/asound.{bareCardName}'
+
         try:
             if os.path.isfile( asound_file ):
                 sp.Popen( f'alsactl -f {asound_file} restore {bareCardName}',
@@ -114,10 +117,11 @@ def restore_alsa_card(card):
                 print(  f'{Fmt.RED}'
                         f'(sound_cards_prepare) restoring alsa settings: '
                         f'\'{asound_file}\' NOT FOUND{Fmt.END}' )
-        except:
+
+        except Exception as e:
             print(  f'{Fmt.RED}'
-                    f'(sound_cards_prepare) PROBLEMS restoring alsa: '
-                    f'\'{bareCardName}\'{Fmt.END}' )
+                    f'(sound_cards_prepare) PROBLEMS restoring alsa '
+                    f'\'{bareCardName}\': {str(e)}{Fmt.END}' )
 
 
 def restore_ffado_card(card):
