@@ -17,9 +17,7 @@ function do_start {
 
     if [[ ! $XDG_CURRENT_DESKTOP ]]; then
         # Needed for jackd when called w/o X environment:
-        export XDG_RUNTIME_DIR=/run/user/$UID
         export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
-        export JACK_NO_AUDIO_RESERVATION=1
     fi
 
     # (i) Unattended restarts in headless machines can have a weird behavior,
@@ -36,16 +34,27 @@ function do_start {
         echo '    Startup process logged in <pe.audio.sys/log/start.log>'
         $HOME/pe.audio.sys/start.py all --log 1>/dev/null 2>&1 &
 
+        sleep 5
         echo '    waiting for the server to be running ... .. .'
-        sleep 60
-        if [[ $(pgrep -fla "server.py peaudiosys") ]]; then
-            echo "    peaudiosys_restart was OK"
+        n=60
+        ok='false'
+        while [[ $n -gt 0 ]]; do
+            if [[ $(pgrep -fla "server.py peaudiosys") ]]; then
+                ok='true'
+                break
+            fi
+            sleep 1
+            ((n-=1))
+        done
+
+        if [[ $ok == 'true' ]]; then
+            echo "    OK, server runing in "$((60-n))"s"
             break
         else
             if [[ $c -lt $tries ]]; then
-                echo "    server.py NOT detected, retrying ..."
+                echo "    server NOT detected in 60s, retrying ..."
             else
-                echo "    server.py NOT detected during "$c" attempts. Bye."
+                echo "    server NOT detected during "$c" attempts. Bye."
             fi
         fi
 
