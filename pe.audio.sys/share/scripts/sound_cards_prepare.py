@@ -88,7 +88,7 @@ def get_config_yml_cards():
 def PA_release_card( pa_name ):
     """ Release the card from pulseaudio """
     try:
-        sp.Popen( f'pactl set-card-profile {pa_name} off'.split() )
+        sp.Popen( f'pactl set-card-profile {pa_name} off', shell=True )
         print(  f'{Fmt.BLUE}'
                 f'(sound_cards_prepare) releasing '
                 f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
@@ -105,8 +105,8 @@ def restore_alsa_card(card):
         asound_file = f'{UHOME}/pe.audio.sys/config/asound.{bareCardName}'
         try:
             if os.path.isfile( asound_file ):
-                sp.Popen( f'alsactl -f {asound_file} \
-                            restore {bareCardName}'.split() )
+                sp.Popen( f'alsactl -f {asound_file} restore {bareCardName}',
+                          shell=True )
                 print(  f'{Fmt.BLUE}'
                         f'(sound_cards_prepare) restoring alsa settings: '
                         f'\'{asound_file}\'{Fmt.END}' )
