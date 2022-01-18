@@ -138,7 +138,7 @@ On Debian systems, you can simply add a line inside your `/etc/rc.local` before 
 NOTES:
 
 - **`pe.audio.sys/log/start.log`** will help you to debug the startup process.
-- sleep 5 helps for the user environment to be ready before starting pe.audio.sys
+- `sleep 5` helps for the user environment to be ready before starting pe.audio.sys
 
 ## [ ] Restarting script
 
