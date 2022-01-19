@@ -59,7 +59,7 @@ def server_is_running(who_asks='miscel'):
     """ (bool)
     """
     print(f'{Fmt.BLUE}({who_asks}) waiting for the server to be alive ...{Fmt.END}')
-    tries = 30  # up to 15 seconds
+    tries = 60  # up to 30 seconds
     while tries:
         if 'loudspeaker' in send_cmd('state'):
             break
