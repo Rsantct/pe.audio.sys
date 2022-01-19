@@ -22,9 +22,9 @@ function do_start {
 
     # (i) Unattended restarts in headless machines can have a weird behavior,
     #     so will retry restarting if necessary up to 3 times.
-    tries=1
-    if [[ $1 == *'-r'* ]]; then
-        tries=3
+    tries=3
+    if [[ $1 == *'-n'* ]]; then
+        tries=1
     fi
     c=1
     while [[ $c -le $tries ]]; do
@@ -73,9 +73,9 @@ elif [[ ! $1 || $1 == *'start' ]]; then
 
 else
     echo
-    echo "USAGE:   peaudiosys_restart.sh  [ start [--retry]  |  stop ]"
+    echo "USAGE:   peaudiosys_restart.sh  [ start [--noretry]  |  stop ]"
     echo
-    echo "         --retry   will retry up to 3 times useful when unattended restarting"
+    echo "         --noretry   will skip retrying up to 3 times"
     echo
     echo "         Startup process will be logged in <pe.audio.sys/log/start.log>"
     echo "         For further debugging run manually from a terminal:"
