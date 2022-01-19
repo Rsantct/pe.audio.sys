@@ -175,6 +175,8 @@ if __name__ == "__main__":
             for paname in pa_cards[pa_card]["alsa_name"], \
                           pa_cards[pa_card]["pa_name"]:
 
+                # Sometimes PA.alsa.card_name (pactl list cards) is not exactly
+                # the same string as the device name in ALSA (aplay -l)
                 if simmilar_strings(ccname, paname):
                     PA_release_card( pa_cards[pa_card]["pa_name"] )
                     break
