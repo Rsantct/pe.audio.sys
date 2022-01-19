@@ -1,4 +1,4 @@
 
 # Request anacron to update pe.audio.sys (AudioHumLab master) every day, also force restart on 24x7 machines
 @hourly  /usr/sbin/anacron -s -t $HOME/pe.audio.sys/share/miscel/anacrontab -S $HOME/pe.audio.sys/log
-00  05  *   *   *                $HOME/bin/peaudiosys_restart.sh start --retry
+00  05  *   *   *                $HOME/bin/peaudiosys_restart.sh
