@@ -241,11 +241,11 @@ def stop_processes(mode):
                 sp.check_output('pgrep -f jackd'.split())
                 tries -= 1
                 sleep(1)
-
             except:
                 print('(start) jackd was killed')
                 sleep(1)
                 return
+        # This should never happen
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
         sys.exit()
 
