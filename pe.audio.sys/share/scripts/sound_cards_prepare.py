@@ -163,10 +163,12 @@ def restore_ffado_card(card):
 
 if __name__ == "__main__":
 
+    from time import ctime
+
     if sys.argv[1:]:
         if sys.argv[1] == 'start':
             pass
-        if sys.argv[1] == 'stop':
+        elif sys.argv[1] == 'stop':
             sys.exit()
         else:
             print(__doc__)
