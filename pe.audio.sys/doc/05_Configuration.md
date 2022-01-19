@@ -132,13 +132,13 @@ On Debian systems, you can simply add a line inside your `/etc/rc.local` before 
     #!/bin/sh -e
     ...
     ...
-    sleep 5 && su -l <YOURUSER> -c "peaudiosys_restart.sh start --retry &"
+    sleep 5 && su -l <YOURUSER> -c "peaudiosys_restart.sh &"
     exit 0
 
 NOTES:
 
 - **`pe.audio.sys/log/start.log`** will help you to debug the startup process.
-- `sleep 5` helps for the user environment to be ready before starting pe.audio.sys
+- `sleep 5` helps for the user environment to be ready after the power on and before starting pe.audio.sys
 
 ## [ ] Restarting script
 
