@@ -48,7 +48,7 @@ function do_start {
         done
 
         if [[ $ok == 'true' ]]; then
-            echo "    OK, server runing in "$((60-n))"s"
+            echo "    OK, server running in "$((60-n))"s"
             break
         else
             if [[ $c -lt $tries ]]; then
