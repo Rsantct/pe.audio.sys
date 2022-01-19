@@ -132,7 +132,7 @@ On Debian systems, you can simply add a line inside your `/etc/rc.local` before 
     #!/bin/sh -e
     ...
     ...
-    sleep 5 && su -l <YOURUSER> -c "peaudiosys_restart.sh &"
+    sleep 5 && su -l YOUR_USER -c "peaudiosys_restart.sh &"
     exit 0
 
 NOTES:
