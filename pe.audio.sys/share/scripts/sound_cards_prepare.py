@@ -16,17 +16,25 @@
 
         ~/pe.audio.sys/config/asound.XXXXX
 
-    where XXXXX stands for the alsa card name (without 'hw:' prefix)
+    where XXXXX stands for the alsa card name (without the 'hw:' prefix)
 
     Example:
 
-    Prepare your alsamixer settings for MYCARD:
-    
-        alsamixer -D hw:CODEC
-    
-    once done, excecute the following:
+    1. Get your sound card ALSA name:
 
-        alsactl -f ~/pe.audio.sys/config/asound.CODEC store CODEC
+        $ aplay -l
+        ...
+        card 1: CODEC [USB Audio CODEC], device 0: USB Audio [USB Audio]
+        ...
+
+    2. Prepare your alsamixer settings for the 'CODEC' card:
+
+        $ alsamixer -c CODEC
+
+    3. Once done, save the 'CODEC' mixer setting to a file:
+
+        $ alsactl   --file ~/pe.audio.sys/config/asound.CODEC   store CODEC
+
 
 """
 import  difflib
@@ -160,9 +168,12 @@ if __name__ == "__main__":
             pass
         if sys.argv[1] == 'stop':
             sys.exit()
-        elif '-h' in sys.argv[1]:
+        else:
             print(__doc__)
             sys.exit()
+    else:
+        print(__doc__)
+        sys.exit()
 
     pa_cards        = get_pulse_cards()
     config_cards    = get_config_yml_cards()
