@@ -257,7 +257,7 @@ def stop_processes(mode):
         manage_server(mode='stop', service='peaudiosys')
         manage_server(mode='stop', service='restart')
 
-    sleep(1)
+    sleep(3)
 
 
 def run_scripts(mode='start'):
@@ -270,8 +270,8 @@ def run_scripts(mode='start'):
             script = list(script.keys())[0]
         print(f'(start) will {mode} the script \'{script}\' ...')
         # (i) Notice that we are open to run scripts writen in python, bash, etc...
-        sp.Popen(f'{MAINFOLDER}/share/scripts/{script} {mode}', shell=True,
-                                  stdout=sys.stdout, stderr=sys.stderr)
+        cmd = f'{MAINFOLDER}/share/scripts/{script} {mode}'
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
 
