@@ -20,9 +20,13 @@
 
     Example:
 
-    Prepare your alsamixer settings for MYCARD, then execute the following:
+    Prepare your alsamixer settings for MYCARD:
+    
+        alsamixer -D hw:CODEC
+    
+    once done, excecute the following:
 
-        alsactl -f ~/pe.audio.sys/config/asound.MYCARD store MYCARD
+        alsactl -f ~/pe.audio.sys/config/asound.CODEC store CODEC
 
 """
 import  difflib
