@@ -6,10 +6,8 @@
 
 
 function do_stop {
-
     echo '(i) STOPPING pe.audio.sys'
     $HOME/pe.audio.sys/start.py stop
-
 }
 
 
@@ -34,9 +32,10 @@ function do_start {
         echo '    Startup process logged in <pe.audio.sys/log/start.log>'
         $HOME/pe.audio.sys/start.py all --log 1>/dev/null 2>&1 &
 
-        sleep 5
         echo '    waiting for the server to be running ... .. .'
-        n=60
+        # wait a bit to ensure the server is shut down
+        sleep 5
+        n=55
         ok='false'
         while [[ $n -gt 0 ]]; do
             if [[ $(pgrep -fla "server.py peaudiosys") ]]; then
