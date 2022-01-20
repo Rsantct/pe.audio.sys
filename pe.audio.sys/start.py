@@ -234,7 +234,6 @@ def stop_processes(mode):
     """
     def wait4jackdkilled():
         tries = 20
-        jack_running=True
         print('(start) waiting for jackd to be killed ')
         while tries:
             try:
@@ -275,6 +274,7 @@ def stop_processes(mode):
         manage_server(mode='stop', service='peaudiosys')
         manage_server(mode='stop', service='restart')
 
+    # this optimizes instead of a fixed sleep
     wait4jackdkilled()
 
 
@@ -337,21 +337,26 @@ def prepare_log_header():
     """ Writes down the parents processes from which
         start.py has been called, for debugging purposes.
     """
-    # parent
-    ppid = os.getppid()
-    ppname = sp.check_output(f'ps -o cmd= {ppid}'.split()).decode().strip()
-    # grandparent
-    gpid = sp.check_output(f'ps -o ppid= -p {ppid}'.split()).decode().strip()
-    if int(ppid) > 1:
-        gpname = sp.check_output(f'ps -o cmd= {gpid}'.split()).decode().strip()
-    else:
-        gpname = '(kernel)'
-    # great-grandparent
-    ggpid = sp.check_output(f'ps -o ppid= -p {gpid}'.split()).decode().strip()
-    if int(gpid) > 1:
-        ggpname = sp.check_output(f'ps -o cmd= {ggpid}'.split()).decode().strip()
-    else:
-        ggpname = '(kernel)'
+    try:
+        # parent
+        ppid = str(os.getppid())
+        ppname = sp.check_output(f'ps -o cmd= {ppid}'.split()).decode().strip()
+        # grandparent
+        gpid = sp.check_output(f'ps -o ppid= -p {ppid}'.split()).decode().strip()
+        if int(ppid) > 1:
+            gpname = sp.check_output(f'ps -o cmd= {gpid}'.split()).decode().strip()
+        else:
+            gpname = '(kernel)'
+        # great-grandparent
+        ggpid = sp.check_output(f'ps -o ppid= -p {gpid}'.split()).decode().strip()
+        if int(gpid) > 1:
+            ggpname = sp.check_output(f'ps -o cmd= {ggpid}'.split()).decode().strip()
+        else:
+            ggpname = '(kernel)'
+    except:
+        ppid = '?'
+        gpid = '?'
+        ggpid = '?'
 
     try:
         timestamp = sp.check_output('uptime').decode().strip()
@@ -394,9 +399,8 @@ if __name__ == "__main__":
         print(f'start process logged at \'{logPath}\'')
         print('-' * 80)
         prepare_log_header()
+        # We prefer this custom log instead of standard logging module
         fLog = open(logPath, 'a')
-        original_stdout = sys.stdout
-        original_stderr = sys.stderr
         sys.stdout = fLog
         sys.stderr = fLog
 
