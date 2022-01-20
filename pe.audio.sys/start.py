@@ -337,16 +337,15 @@ def prepare_log_header():
     """ Writes down the parents processes from which
         start.py has been called, for debugging purposes.
     """
+    # parent
+    ppid = str(os.getppid())
     try:
-        # parent
-        ppid = str(os.getppid())
         ppname = sp.check_output(f'ps -o cmd= {ppid}'.split()).decode().strip()
     except:
-        ppid    = '?'
         ppname  = '?'
 
+    # grandparent
     try:
-        # grandparent
         gpid = sp.check_output(f'ps -o ppid= -p {ppid}'.split()).decode().strip()
         if int(ppid) > 1:
             gpname = sp.check_output(f'ps -o cmd= {gpid}'.split()).decode().strip()
@@ -356,8 +355,8 @@ def prepare_log_header():
         gpid    = '?'
         gpname  = '?'
 
+    # great-grandparent
     try:
-        # great-grandparent
         ggpid = sp.check_output(f'ps -o ppid= -p {gpid}'.split()).decode().strip()
         if int(gpid) > 1:
             ggpname = sp.check_output(f'ps -o cmd= {ggpid}'.split()).decode().strip()
