@@ -232,6 +232,23 @@ def manage_server( mode='', service='peaudiosys'):
 def stop_processes(mode):
     """ (void)
     """
+    def wait4jackdkilled():
+        tries = 20
+        print('(start) waiting for jackd to be killed ')
+        while tries:
+            try:
+                sp.check_output('pgrep -f jackd'.split())
+                tries -= 1
+                sleep(1)
+            except:
+                print('(start) jackd was killed')
+                sleep(1)
+                return
+        # This should never happen
+        print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
+        sys.exit()
+
+
     # Killing any previous instance of start.py
     kill_bill( os.getpid() )
 
@@ -257,7 +274,8 @@ def stop_processes(mode):
         manage_server(mode='stop', service='peaudiosys')
         manage_server(mode='stop', service='restart')
 
-    sleep(3)
+    # this optimizes instead of a fixed sleep
+    wait4jackdkilled()
 
 
 def run_scripts(mode='start'):
@@ -315,6 +333,57 @@ def prepare_drc_graphs():
     sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
 
 
+def prepare_log_header():
+    """ Writes down the parents processes from which
+        start.py has been called, for debugging purposes.
+    """
+    # parent
+    ppid = str(os.getppid())
+    try:
+        ppname = sp.check_output(f'ps -o cmd= {ppid}'.split()).decode().strip()
+    except:
+        ppname  = '?'
+
+    # grandparent
+    try:
+        gpid = sp.check_output(f'ps -o ppid= -p {ppid}'.split()).decode().strip()
+        if int(ppid) > 1:
+            gpname = sp.check_output(f'ps -o cmd= {gpid}'.split()).decode().strip()
+        else:
+            gpname = '(kernel)'
+    except:
+        gpid    = '?'
+        gpname  = '?'
+
+    # great-grandparent
+    try:
+        ggpid = sp.check_output(f'ps -o ppid= -p {gpid}'.split()).decode().strip()
+        if int(gpid) > 1:
+            ggpname = sp.check_output(f'ps -o cmd= {ggpid}'.split()).decode().strip()
+        else:
+            ggpname = '(kernel)'
+    except:
+        ggpid   = '?'
+        ggpname = '?'
+
+    try:
+        timestamp = sp.check_output('uptime').decode().strip()
+    except:
+        timestamp = ctime()
+
+    with open(logPath, 'w') as f:
+        f.write(f'{Fmt.BLUE}')
+        f.write(f'(i) This is the \'pe.audio.sys/start.py\' log file\n')
+        f.write(f'    {timestamp}\n')
+        f.write(f'    great-grandpa pid is: {ggpid} {ggpname}\n')
+        f.write(f'    grandpa       pid is: {gpid} {gpname}\n')
+        f.write(f'    parent        pid is: {ppid} {ppname}\n')
+        f.write(f'    start.py      pid is: {os.getpid()}\n')
+        f.write(f'{Fmt.BOLD}')
+        f.write(f'    NOTICE THAT MESSAGE LOGGING IS ASYNCHRONOUS\n\n')
+        f.write(f'{Fmt.END}')
+
+
 if __name__ == "__main__":
 
     # READING OPTIONS FROM COMMAND LINE
@@ -334,14 +403,16 @@ if __name__ == "__main__":
         sys.exit()
 
     if logFlag:
+        logPath = f'{LOG_FOLDER}/start.log'
         print('\n' + '-' * 80)
-        print(f'start process logged at \'{LOG_FOLDER}/start.log\'')
+        print(f'start process logged at \'{logPath}\'')
         print('-' * 80)
-        flog = open(f'{LOG_FOLDER}/start.log', 'w')
-        original_stdout = sys.stdout
-        original_stderr = sys.stderr
-        sys.stdout = flog
-        sys.stderr = flog
+        prepare_log_header()
+        # We prefer this custom log instead of standard logging module
+        fLog = open(logPath, 'a')
+        sys.stdout = fLog
+        sys.stderr = fLog
+
 
     # CHECKING STATE FILE
     check_state_file()

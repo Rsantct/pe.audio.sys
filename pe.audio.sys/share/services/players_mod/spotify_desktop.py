@@ -21,7 +21,7 @@ from    config  import MAINFOLDER
 from    miscel  import timesec2string as timeFmt
 
 
-LOGFNAME = f'{MAINFOLDER}/log/spotify_desktop.py.log'
+LOGFNAME = f'{MAINFOLDER}/log/spotify_desktop.log'
 logging.basicConfig(filename=LOGFNAME, filemode='w', level=logging.INFO)
 
 
