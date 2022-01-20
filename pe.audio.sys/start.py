@@ -341,12 +341,22 @@ def prepare_log_header():
         # parent
         ppid = str(os.getppid())
         ppname = sp.check_output(f'ps -o cmd= {ppid}'.split()).decode().strip()
+    except:
+        ppid    = '?'
+        ppname  = '?'
+
+    try:
         # grandparent
         gpid = sp.check_output(f'ps -o ppid= -p {ppid}'.split()).decode().strip()
         if int(ppid) > 1:
             gpname = sp.check_output(f'ps -o cmd= {gpid}'.split()).decode().strip()
         else:
             gpname = '(kernel)'
+    except:
+        gpid    = '?'
+        gpname  = '?'
+
+    try:
         # great-grandparent
         ggpid = sp.check_output(f'ps -o ppid= -p {gpid}'.split()).decode().strip()
         if int(gpid) > 1:
@@ -354,9 +364,8 @@ def prepare_log_header():
         else:
             ggpname = '(kernel)'
     except:
-        ppid = '?'
-        gpid = '?'
-        ggpid = '?'
+        ggpid   = '?'
+        ggpname = '?'
 
     try:
         timestamp = sp.check_output('uptime').decode().strip()
@@ -370,6 +379,7 @@ def prepare_log_header():
         f.write(f'    great-grandpa pid is: {ggpid} {ggpname}\n')
         f.write(f'    grandpa       pid is: {gpid} {gpname}\n')
         f.write(f'    parent        pid is: {ppid} {ppname}\n')
+        f.write(f'    start.py      pid is: {os.getpid()}\n')
         f.write(f'{Fmt.BOLD}')
         f.write(f'    NOTICE THAT MESSAGE LOGGING IS ASYNCHRONOUS\n\n')
         f.write(f'{Fmt.END}')
