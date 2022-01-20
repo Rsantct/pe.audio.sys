@@ -366,8 +366,7 @@ def prepare_log_header():
         f.write(f'    grandpa       pid is: {gpid} {gpname}\n')
         f.write(f'    parent        pid is: {ppid} {ppname}\n')
         f.write(f'{Fmt.BOLD}')
-        f.write(f'    NOTICE THAT THE PRINTOUTS SEQUENCE HERE IS' \
-                f' NOT EXACTLY CHRONOLOGICAL\n\n' )
+        f.write(f'    NOTICE THAT MESSAGE LOGGING IS ASYNCHRONOUS\n\n')
         f.write(f'{Fmt.END}')
 
 
