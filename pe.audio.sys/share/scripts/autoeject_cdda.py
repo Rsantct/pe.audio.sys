@@ -13,13 +13,14 @@
 from    os.path import expanduser
 import  sys
 import  threading
-from    time import sleep
+from    time import sleep, ctime
 from    subprocess import Popen
 
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel  import  read_state_from_disk, read_metadata_from_disk
+from    miscel  import  read_state_from_disk, read_metadata_from_disk, \
+                        LOG_FOLDER
 
 
 def main_loop():
@@ -43,7 +44,7 @@ def main_loop():
             if read_state_from_disk()['input'].lower() == 'cd':
 
                 # check if the track being playe is last one,
-                # also avoid bare default metadata
+                # also avoids bare default metadata
                 if md["track_num"] == md["tracks_tot"] and \
                    md["time_tot"][-2:].isdigit()       and \
                    md["time_tot"]   != '00:00':
@@ -54,13 +55,15 @@ def main_loop():
                                 int(md["time_tot"][-2:]) )  <= 2:
                             disc_is_over = True
 
-            # DEBUG
-            #print(md["time_pos"], md["time_tot"])
 
             if disc_is_over:
+                tmp = f'{ctime()} tpos: {md["time_pos"]}, ttot: {md["time_tot"]}'
+                print(f'(autoeject_cdda) {tmp}')
+                with open(logPath, 'a') as f:
+                    f.write(f'{tmp}, ejecting disc.\n')
                 sleep(2) # courtesy wait
                 Popen("peaudiosys_control player eject".split())
-                print(f'(autoeject_cdda.py) CD playback is over, disc ejected.')
+                print(f'(autoeject_cdda) CD playback is over, disc ejected.')
                 disc_is_over = False
 
             # sleep timer
@@ -78,6 +81,8 @@ def stop():
 
 
 if __name__ == '__main__':
+
+    logPath = f'{LOG_FOLDER}/autoeject_cdda.log'
 
     if sys.argv[1:]:
         if sys.argv[1] == 'start':
