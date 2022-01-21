@@ -27,8 +27,8 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config import   CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
-from    miscel import   read_bf_config_fs, server_is_running, kill_bill,        \
-                        read_state_from_disk, force_to_flush_file, Fmt
+from    miscel import   read_bf_config_fs, server_is_running, process_is_running, \
+                        kill_bill, read_state_from_disk, force_to_flush_file, Fmt
 
 
 def prepare_extra_cards(channels=2):
@@ -270,9 +270,8 @@ def stop_processes(mode):
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
 
     if mode in ('all', 'stop', 'server'):
-        # Stop the servers:
+        # Stop the server:
         manage_server(mode='stop', service='peaudiosys')
-        manage_server(mode='stop', service='restart')
 
     # this optimizes instead of a fixed sleep
     wait4jackdkilled()
@@ -421,6 +420,9 @@ if __name__ == "__main__":
     stop_processes(mode)
 
     if mode in ('stop', 'shutdown'):
+        # keeping the restart service always on
+        if not process_is_running('server.py restart'):
+            manage_server(mode='start', service='restart')
         print(f'(start) Bye!')
         sys.exit()
 
@@ -465,9 +467,11 @@ if __name__ == "__main__":
 
 
     # RUN THE SERVERS
-    manage_server(mode='start', service='restart')
+    if not process_is_running('server.py restart'):
+        manage_server(mode='start', service='restart')
     manage_server(mode='start', service='peaudiosys')
     if not server_is_running(who_asks='start'):
+        print(f'{Fmt.BOLD}(start) PANIC: \'peaudiosys\' service is down. Bye.{Fmt.END}')
         sys.exit()
 
     # OPTIONAL USER MACRO AT START
