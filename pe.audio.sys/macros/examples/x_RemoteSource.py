@@ -9,6 +9,11 @@
 
         share/scripts/zita_link.py
 '''
+### USER CONFIG HERE:
+REM_SRC_NAME = "remoteXXXXXX"
+REM_ADD_DELAY = 100
+LOC_ADD_DELAY = 0
+###
 
 
 from json import loads as json_loads
@@ -21,8 +26,6 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from miscel import send_cmd, get_my_ip, get_remote_sources_info
 
 
-REMOTE_SOURCE_NAME = "remoteXXXXXX"
-
 # Getting remote source parameters
 remote_sources = get_remote_sources_info()
 if not remote_sources:
@@ -32,11 +35,11 @@ if not remote_sources:
 found = False
 for item in remote_sources:
     sname, remote_addr, remote_port  = item
-    if sname == REMOTE_SOURCE_NAME:
+    if sname == REM_SRC_NAME:
         found = True
         break
 if not found:
-    print(f'(remote_source) ERROR remote source {REMOTE_SOURCE_NAME} not found')
+    print(f'(remote_source) ERROR remote source {REM_SRC_NAME} not found')
     sys.exit()
 
 
@@ -48,18 +51,18 @@ send_cmd(f'aux zita_client {my_ip} start', host=remote_addr, port=remote_port)
 # -------- CUSTOM SETUP ----------
 # Balancing delays and  filtering:
 print(f'Balancing delays for listening along with the remote loudspeaker')
-# OPTIONAL LOCAL  SETTINGS (sample)
-#send_cmd('preamp set_xo mp')
-#send_cmd('aux add_delay 150')
-# OPTIONAL REMOTE SETTINGS (sample)
-#send_cmd('preamp set_xo mp',   host=remote_addr, port=remote_port)
-#send_cmd('aux add_delay 150',  host=remote_addr, port=remote_port)
+# OPTIONAL LOCAL  SETTINGS (example)
+#send_cmd( 'set_xo mp')
+#send_cmd(f'add_delay {LOC_ADD_DELAY}')
+# OPTIONAL REMOTE SETTINGS (example)
+#send_cmd( 'set_xo mp',                  host=remote_addr, port=remote_port)
+#send_cmd(f'add_delay {REM_ADD_DELAY}',  host=remote_addr, port=remote_port)
 # --------------------------------
 
 
 # Switching local source
-send_cmd(  'player pause' )
-send_cmd( f'preamp input {REMOTE_SOURCE_NAME}' )
+send_cmd( 'player pause')
+send_cmd(f'input {REM_SRC_NAME}')
 
 # -------- OPTIONAL --------
 # Linking the relative changes in volume from the remote sender,
