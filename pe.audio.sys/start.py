@@ -370,7 +370,7 @@ def prepare_log_header():
 
     with open(logPath, 'w') as f:
         f.write(f'{Fmt.BLUE}')
-        f.write(f'(i) This is the \'pe.audio.sys/start.py\' log file\n')
+        f.write(f'(i) \'{logPath}\'\n')
         f.write(f'    {timestamp}\n')
         f.write(f'    great-grandpa pid is: {ggpid} {ggpname}\n')
         f.write(f'    grandpa       pid is: {gpid} {gpname}\n')
@@ -406,9 +406,9 @@ if __name__ == "__main__":
         print('-' * 80)
         prepare_log_header()
         # We prefer this custom log instead of standard logging module
-        fLog = open(logPath, 'a')
-        sys.stdout = fLog
-        sys.stderr = fLog
+        flog = open(logPath, 'a')
+        sys.stdout = flog
+        sys.stderr = flog
 
 
     # CHECKING STATE FILE
