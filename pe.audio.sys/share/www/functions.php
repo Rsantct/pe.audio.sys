@@ -122,8 +122,7 @@
 
     $command = $_REQUEST["command"];
 
-    if ($command === "server_restart"       ||
-        $command === "peaudiosys_restart"   ) {
+    if ( strpos($command, "_restart") ) {
 
         echo restart_socket( $command );
 
