@@ -123,16 +123,18 @@ def start_jack_stuff():
                     .replace('$autoCard', CONFIG["system_card"]) \
                     .replace('$autoFS', str(read_bf_config_fs()))
 
-    cmdlist = ['jackd']
+    jcmd = 'jackd'
 
     if logFlag:
-        cmdlist += ['--silent']
+        jcmd += ' --silent'
 
-    cmdlist += f'{CONFIG["jack_options"]}'.split() + \
-               f'{jack_backend_options}'.split()
+    jcmd += f' {CONFIG["jack_options"]} {jack_backend_options}'
+
+    if ('-s' not in jcmd) and ('alsa' in jcmd):
+        jcmd += ' --softmode'
 
     # Firewire: reset the Firewire Bus and run ffado-dbus-server
-    if 'firewire' in cmdlist:
+    if 'firewire' in jcmd:
         print(f'{Fmt.BOLD}(start) resetting the FIREWIRE BUS, sorry for users '
               f'using other FW things :-|{Fmt.END}')
         sp.Popen('ffado-test BusReset'.split())
@@ -145,10 +147,10 @@ def start_jack_stuff():
     # Pulseaudio
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
-        cmdlist = ['pasuspender', '--'] + cmdlist
+        jcmd = 'pasuspender -- ' + jcmd
 
     # Launch JACKD process
-    sp.Popen(' '.join(cmdlist), shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    sp.Popen(jcmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     # Will check if JACK ports are available
     sleep(1)
@@ -418,7 +420,7 @@ if __name__ == "__main__":
     stop_processes(mode)
 
     if mode in ('stop', 'shutdown'):
-        # keeping the 'restart' service always on
+        # keeping the restart service always on
         if not process_is_running('server.py restart'):
             manage_server(mode='start', service='restart')
         print(f'(start) Bye!')
