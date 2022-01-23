@@ -13,7 +13,7 @@ from    socket      import socket
 
 from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, BFCFG_PATH
 
-from    miscel      import  read_bf_config_fs, Fmt
+from    miscel      import  read_bf_config_fs, process_is_running, Fmt
 
 import  jack_mod as jack
 
@@ -747,6 +747,10 @@ def add_delay(ms):
 
 # Autoexec on loading this module
 def init():
+
+    if not process_is_running('brutefir'):
+        return
+
     # Dumping the EQ graph to a png file
     if CONFIG["web_config"]["show_graphs"]:
         freqs, eq_mag, _ = read_eq()

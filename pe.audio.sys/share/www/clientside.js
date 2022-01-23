@@ -907,13 +907,6 @@ function ck_play_url() {
 
 //////// AUX 'onmousedown' 'onclick' 'oninput' page handlers ////////
 
-function ck_server_restart() {
-    control_cmd('server_restart');
-    ck_display_advanced('off');
-    page_update();
-}
-
-
 function ck_peaudiosys_restart() {
     control_cmd('peaudiosys_restart');
     ck_display_advanced('off');
