@@ -27,8 +27,8 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config import   CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
-from    miscel import   read_bf_config_fs, server_is_running, kill_bill,        \
-                        read_state_from_disk, force_to_flush_file, Fmt
+from    miscel import   read_bf_config_fs, server_is_running, process_is_running, \
+                        kill_bill, read_state_from_disk, force_to_flush_file, Fmt
 
 
 def prepare_extra_cards(channels=2):
@@ -54,8 +54,7 @@ def prepare_extra_cards(channels=2):
             cmd = cmd.replace("-q", "-Q")
 
         print(f'(start) loading resampled extra card: {card}')
-        #print(cmd) # DEBUG
-        sp.Popen(cmd.split(), stdout=sys.stdout, stderr=sys.stderr)
+        sp.Popen(cmd.split(), shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_jloops():
@@ -124,16 +123,18 @@ def start_jack_stuff():
                     .replace('$autoCard', CONFIG["system_card"]) \
                     .replace('$autoFS', str(read_bf_config_fs()))
 
-    cmdlist = ['jackd']
+    jcmd = 'jackd'
 
     if logFlag:
-        cmdlist += ['--silent']
+        jcmd += ' --silent'
 
-    cmdlist += f'{CONFIG["jack_options"]}'.split() + \
-               f'{jack_backend_options}'.split()
+    jcmd += f' {CONFIG["jack_options"]} {jack_backend_options}'
+
+    if ('-s' not in jcmd) and ('alsa' in jcmd):
+        jcmd += ' --softmode'
 
     # Firewire: reset the Firewire Bus and run ffado-dbus-server
-    if 'firewire' in cmdlist:
+    if 'firewire' in jcmd:
         print(f'{Fmt.BOLD}(start) resetting the FIREWIRE BUS, sorry for users '
               f'using other FW things :-|{Fmt.END}')
         sp.Popen('ffado-test BusReset'.split())
@@ -146,13 +147,13 @@ def start_jack_stuff():
     # Pulseaudio
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
-        cmdlist = ['pasuspender', '--'] + cmdlist
+        jcmd = 'pasuspender -- ' + jcmd
 
     # Launch JACKD process
-    sp.Popen(cmdlist, stdout=sys.stdout, stderr=sys.stderr)
-    sleep(1)
+    sp.Popen(jcmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     # Will check if JACK ports are available
+    sleep(1)
     tries = 10
     while tries:
         if jack_is_running():
@@ -257,22 +258,19 @@ def stop_processes(mode):
         run_scripts(mode='stop')
 
     if mode in ('all', 'stop'):
-        # Stop Brutefir
-        print(f'(start) STOPPING BRUTEFIR')
-        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
-
         # Stop Jack Loops Daemon
         print(f'(start) STOPPING JACK LOOPS')
         sp.Popen('pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True)
-
+        # Stop Brutefir
+        print(f'(start) STOPPING BRUTEFIR')
+        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
         # Stop Jack
         print(f'(start) STOPPING JACKD')
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
 
     if mode in ('all', 'stop', 'server'):
-        # Stop the servers:
+        # Stop the server:
         manage_server(mode='stop', service='peaudiosys')
-        manage_server(mode='stop', service='restart')
 
     # this optimizes instead of a fixed sleep
     wait4jackdkilled()
@@ -290,6 +288,7 @@ def run_scripts(mode='start'):
         # (i) Notice that we are open to run scripts writen in python, bash, etc...
         cmd = f'{MAINFOLDER}/share/scripts/{script} {mode}'
         sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
 
@@ -330,7 +329,7 @@ def prepare_drc_graphs():
         (void)
     """
     print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
-    sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
+    sp.Popen(f'python3 {MAINFOLDER}/share/www/scripts/drc2png.py -q', shell=True)
 
 
 def prepare_log_header():
@@ -373,7 +372,7 @@ def prepare_log_header():
 
     with open(logPath, 'w') as f:
         f.write(f'{Fmt.BLUE}')
-        f.write(f'(i) This is the \'pe.audio.sys/start.py\' log file\n')
+        f.write(f'(i) \'{logPath}\'\n')
         f.write(f'    {timestamp}\n')
         f.write(f'    great-grandpa pid is: {ggpid} {ggpname}\n')
         f.write(f'    grandpa       pid is: {gpid} {gpname}\n')
@@ -409,9 +408,9 @@ if __name__ == "__main__":
         print('-' * 80)
         prepare_log_header()
         # We prefer this custom log instead of standard logging module
-        fLog = open(logPath, 'a')
-        sys.stdout = fLog
-        sys.stderr = fLog
+        flog = open(logPath, 'a')
+        sys.stdout = flog
+        sys.stderr = flog
 
 
     # CHECKING STATE FILE
@@ -421,6 +420,9 @@ if __name__ == "__main__":
     stop_processes(mode)
 
     if mode in ('stop', 'shutdown'):
+        # keeping the restart service always on
+        if not process_is_running('server.py restart'):
+            manage_server(mode='start', service='restart')
         print(f'(start) Bye!')
         sys.exit()
 
@@ -465,9 +467,11 @@ if __name__ == "__main__":
 
 
     # RUN THE SERVERS
-    manage_server(mode='start', service='restart')
+    if not process_is_running('server.py restart'):
+        manage_server(mode='start', service='restart')
     manage_server(mode='start', service='peaudiosys')
     if not server_is_running(who_asks='start'):
+        print(f'{Fmt.BOLD}(start) PANIC: \'peaudiosys\' service is down. Bye.{Fmt.END}')
         sys.exit()
 
     # OPTIONAL USER MACRO AT START
@@ -476,6 +480,9 @@ if __name__ == "__main__":
             mname = CONFIG["run_macro"]
             if mname:
                 print( f'{Fmt.BLUE}(start) triyng macro \'{mname}\'{Fmt.END}' )
-                sp.Popen( f'{MAINFOLDER}/macros/{mname}'.split() )
+                sp.Popen( f'{MAINFOLDER}/macros/{mname}', shell=True )
 
     # END
+    print(f'{Fmt.BOLD}{Fmt.BLUE}(start) END.{Fmt.END}')
+    sys.exit()
+
