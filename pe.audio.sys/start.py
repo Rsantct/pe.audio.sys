@@ -418,7 +418,7 @@ if __name__ == "__main__":
     stop_processes(mode)
 
     if mode in ('stop', 'shutdown'):
-        # keeping the restart service always on
+        # keeping the 'restart' service always on
         if not process_is_running('server.py restart'):
             manage_server(mode='start', service='restart')
         print(f'(start) Bye!')
