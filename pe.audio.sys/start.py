@@ -54,8 +54,7 @@ def prepare_extra_cards(channels=2):
             cmd = cmd.replace("-q", "-Q")
 
         print(f'(start) loading resampled extra card: {card}')
-        #print(cmd) # DEBUG
-        sp.Popen(cmd.split(), stdout=sys.stdout, stderr=sys.stderr)
+        sp.Popen(cmd.split(), shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_jloops():
@@ -149,10 +148,10 @@ def start_jack_stuff():
         cmdlist = ['pasuspender', '--'] + cmdlist
 
     # Launch JACKD process
-    sp.Popen(cmdlist, stdout=sys.stdout, stderr=sys.stderr)
-    sleep(1)
+    sp.Popen(' '.join(cmdlist), shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     # Will check if JACK ports are available
+    sleep(1)
     tries = 10
     while tries:
         if jack_is_running():
@@ -257,14 +256,12 @@ def stop_processes(mode):
         run_scripts(mode='stop')
 
     if mode in ('all', 'stop'):
-        # Stop Brutefir
-        print(f'(start) STOPPING BRUTEFIR')
-        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
-
         # Stop Jack Loops Daemon
         print(f'(start) STOPPING JACK LOOPS')
         sp.Popen('pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True)
-
+        # Stop Brutefir
+        print(f'(start) STOPPING BRUTEFIR')
+        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
         # Stop Jack
         print(f'(start) STOPPING JACKD')
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
@@ -289,6 +286,7 @@ def run_scripts(mode='start'):
         # (i) Notice that we are open to run scripts writen in python, bash, etc...
         cmd = f'{MAINFOLDER}/share/scripts/{script} {mode}'
         sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
     if mode == 'stop':
         sleep(.5)  # this is necessary because of asyncronous stopping
 
@@ -329,7 +327,7 @@ def prepare_drc_graphs():
         (void)
     """
     print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
-    sp.Popen([ 'python3', f'{MAINFOLDER}/share/www/scripts/drc2png.py', '-q' ])
+    sp.Popen(f'python3 {MAINFOLDER}/share/www/scripts/drc2png.py -q', shell=True)
 
 
 def prepare_log_header():
@@ -480,6 +478,9 @@ if __name__ == "__main__":
             mname = CONFIG["run_macro"]
             if mname:
                 print( f'{Fmt.BLUE}(start) triyng macro \'{mname}\'{Fmt.END}' )
-                sp.Popen( f'{MAINFOLDER}/macros/{mname}'.split() )
+                sp.Popen( f'{MAINFOLDER}/macros/{mname}', shell=True )
 
     # END
+    print(f'{Fmt.BOLD}{Fmt.BLUE}(start) END.{Fmt.END}')
+    sys.exit()
+
