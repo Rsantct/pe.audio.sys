@@ -199,7 +199,7 @@ scripts:
     ## This option needs the share/eq/xxxxx.ecs file to be indicated.
     #- ecasound_peq.py: quarter_space.ecs
 
-    ## Releases cards from Pulseaudio and restore alsa mixer settings:
+    ## Restore sound cards mixer settings:
     - sound_cards_prepare.py
 
     ## Runs MPD:
