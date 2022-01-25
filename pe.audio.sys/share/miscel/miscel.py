@@ -15,8 +15,8 @@ import  subprocess as sp
 import  configparser
 import  os
 
-from    config import *
-from    fmt    import Fmt
+from    config      import *
+from    fmt         import Fmt
 
 
 def sec2min(s):

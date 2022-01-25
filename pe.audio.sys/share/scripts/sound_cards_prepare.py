@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Prepapare sound cards to be used under pe.audio.sys.
+    Restore mixer settings for the sound cards used in pe.audio.sys.
 
     This is optional, but recommended.
 
@@ -35,9 +35,9 @@
 
         $ alsactl   --file ~/pe.audio.sys/config/asound.CODEC   store CODEC
 
+    For FFADO, see details in doc/00_firewire_audio_interface.md
 
 """
-import  difflib
 import  subprocess as sp
 import  os
 import  sys
@@ -45,82 +45,16 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config  import CONFIG
-from    miscel  import Fmt
-
-
-def simmilar_strings(a, b):
-    ratio =  difflib.SequenceMatcher(a=a.lower(), b=b.lower()).ratio()
-    if ratio >= 0.75:
-        return True
-    else:
-        return False
-
-
-def get_pulse_cards():
-
-    pa_cards = {}
-
-    try:
-        tmp = sp.check_output( 'export LANG=en_US.UTF-8 && pactl list cards',
-                                shell=True ).decode().split('\n' )
-        new_card = False
-        for line in tmp:
-
-            if line.startswith("Card #"):
-                new_card = True
-                cardN = line.strip()
-                pa_cards[ cardN ] = {}
-
-            if new_card and 'Name: ' in line:
-                pa_cards[cardN]['pa_name'] = line.split(':')[-1].strip()
-
-            if new_card and 'alsa.card_name' in line:
-                pa_cards[cardN]['alsa_name'] = line.split('=')[-1].strip() \
-                                                .replace('"', '')
-
-    except Exception as e:
-        #print(f'(sound_cards_prepare) {str(e)}')
-        pass
-
-    return pa_cards
-
-
-def get_config_yml_cards():
-
-    cards = []
-    cards.append( CONFIG["system_card"] )
-
-    if CONFIG["external_cards"]:
-        for ecard in CONFIG["external_cards"]:
-            cards.append( CONFIG["external_cards"][ecard]["alsacard"] )
-
-    return cards
-
-
-def PA_release_card( pa_name ):
-    """ Release the card from pulseaudio """
-    try:
-        sp.Popen( f'pactl set-card-profile {pa_name} off', shell=True )
-        print(  f'{Fmt.BLUE}'
-                f'(sound_cards_prepare) releasing '
-                f'\'{pa_name}\' in pulseaudio{Fmt.END}' )
-
-    except Exception as e:
-        print(  f'{Fmt.RED}'
-                f'(sound_cards_prepare) PROBLEMS releasing '
-                f'\'{pa_name}\' in pulseaudio: {str(e)}{Fmt.END}' )
+from    sound_cards  import  get_config_cards, alsa_device2short_name, Fmt
 
 
 def restore_alsa_card(card):
 
-        bareCardName = card.split(':')[-1].split(',')[0]
-
-        asound_file = f'{UHOME}/pe.audio.sys/config/asound.{bareCardName}'
+        asound_file = f'{UHOME}/pe.audio.sys/config/asound.{card}'
 
         try:
             if os.path.isfile( asound_file ):
-                sp.Popen( f'alsactl -f {asound_file} restore {bareCardName}',
+                sp.Popen( f'alsactl -f {asound_file} restore {card}',
                           shell=True )
                 print(  f'{Fmt.BLUE}'
                         f'(sound_cards_prepare) restoring alsa settings: '
@@ -133,7 +67,7 @@ def restore_alsa_card(card):
         except Exception as e:
             print(  f'{Fmt.RED}'
                     f'(sound_cards_prepare) PROBLEMS restoring alsa '
-                    f'\'{bareCardName}\': {str(e)}{Fmt.END}' )
+                    f'\'{card}\': {str(e)}{Fmt.END}' )
 
 
 def restore_ffado_card(card):
@@ -161,6 +95,32 @@ def restore_ffado_card(card):
                 f'\'{scriptPath}\' NOT FOUND.{Fmt.END}' )
 
 
+def restore_cards(alsa_devices):
+    """ Restore mixer settigs for pa.audio.sys cards (config.yml)
+    """
+    # Avoiding duplicates, such 'hw:PCH,0' (analog section) and 'hw:PCH,1' (digital)
+    restored = []
+
+    for dev in alsa_devices:
+
+        card = alsa_device2short_name(dev)
+
+        if card not in restored:
+
+            # ALSA
+            if 'hw:' in dev:
+                restore_alsa_card(card)
+            # FFADO
+            elif 'guid:' in dev:
+                restore_ffado_card(card)
+            else:
+                print(  f'{Fmt.RED}'
+                        f'(sound_cards_prepare) UNKNOWN card type: '
+                        f'\'{dev}\'{Fmt.END}' )
+
+            restored.append(card)
+
+
 if __name__ == "__main__":
 
     if sys.argv[1:]:
@@ -175,37 +135,4 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit()
 
-    pa_cards        = get_pulse_cards()
-    config_cards    = get_config_yml_cards()
-
-    # Release cards from pulseaudio
-    for pa_card in pa_cards:
-        for config_card in config_cards:
-
-            # alsa
-            ccname = config_card.replace('hw:', '').split(',')[0]
-            # firewire
-            ccname = config_card.replace('guid:', '').split(',')[0]
-
-            for paname in pa_cards[pa_card]["alsa_name"], \
-                          pa_cards[pa_card]["pa_name"]:
-
-                # Sometimes PA.alsa.card_name (pactl list cards) is not exactly
-                # the same string as the device name in ALSA (aplay -l)
-                if simmilar_strings(ccname, paname):
-                    PA_release_card( pa_cards[pa_card]["pa_name"] )
-                    break
-
-    # Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
-    for card in config_cards:
-
-        if 'hw:' in card:
-            restore_alsa_card(card)
-
-        elif 'guid:' in card:
-            restore_ffado_card(card)
-
-        else:
-            print(  f'{Fmt.RED}'
-                    f'(sound_cards_prepare) UNKNOWN card type: '
-                    f'\'{card}\'{Fmt.END}' )
+    restore_cards( get_config_cards() )
