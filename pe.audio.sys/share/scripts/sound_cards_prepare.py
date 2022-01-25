@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Restore alsa mixer for the sound cards used in pe.audio.sys.
+    Restore mixer settings for the sound cards used in pe.audio.sys.
 
     This is optional, but recommended.
 
@@ -35,6 +35,7 @@
 
         $ alsactl   --file ~/pe.audio.sys/config/asound.CODEC   store CODEC
 
+    For FFADO, see details in doc/00_firewire_audio_interface.md
 
 """
 import  subprocess as sp
@@ -94,8 +95,8 @@ def restore_ffado_card(card):
                 f'\'{scriptPath}\' NOT FOUND.{Fmt.END}' )
 
 
-def restore_alsa_cards(alsa_devices):
-    """ Restore ALSA mixer settigs for pa.audio.sys cards (config.yml)
+def restore_cards(alsa_devices):
+    """ Restore mixer settigs for pa.audio.sys cards (config.yml)
     """
     # Avoiding duplicates, such 'hw:PCH,0' (analog section) and 'hw:PCH,1' (digital)
     restored = []
@@ -106,8 +107,10 @@ def restore_alsa_cards(alsa_devices):
 
         if card not in restored:
 
+            # ALSA
             if 'hw:' in dev:
                 restore_alsa_card(card)
+            # FFADO
             elif 'guid:' in dev:
                 restore_ffado_card(card)
             else:
@@ -132,4 +135,4 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit()
 
-    restore_alsa_cards( get_config_cards() )
+    restore_cards( get_config_cards() )
