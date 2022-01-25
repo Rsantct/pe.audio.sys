@@ -250,6 +250,9 @@ def stop_processes(mode):
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
         sys.exit()
 
+    # Stop the server:
+    if mode in ('all', 'stop', 'server'):
+        manage_server(mode='stop', service='peaudiosys')
 
     # Killing any previous instance of start.py
     kill_bill( os.getpid() )
@@ -268,10 +271,6 @@ def stop_processes(mode):
         # Stop Jack
         print(f'(start) STOPPING JACKD')
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
-
-    if mode in ('all', 'stop', 'server'):
-        # Stop the server:
-        manage_server(mode='stop', service='peaudiosys')
 
     # this optimizes instead of a fixed sleep
     wait4jackdkilled()
