@@ -26,9 +26,10 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config import   CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
-from    miscel import   read_bf_config_fs, server_is_running, process_is_running, \
-                        kill_bill, read_state_from_disk, force_to_flush_file, Fmt
+from config import  CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+from miscel import  read_bf_config_fs, server_is_running, process_is_running, \
+                    kill_bill, read_state_from_disk, force_to_flush_file, Fmt
+from sound_cards import *
 
 
 def prepare_extra_cards(channels=2):
@@ -54,7 +55,7 @@ def prepare_extra_cards(channels=2):
             cmd = cmd.replace("-q", "-Q")
 
         print(f'(start) loading resampled extra card: {card}')
-        sp.Popen(cmd.split(), shell=True, stdout=sys.stdout, stderr=sys.stderr)
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_jloops():
@@ -147,7 +148,7 @@ def start_jack_stuff():
     # Pulseaudio
     if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
                                        shell=True).decode():
-        jcmd = 'pasuspender -- ' + jcmd
+        release_cards_from_pulseaudio()
 
     # Launch JACKD process
     sp.Popen(jcmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
