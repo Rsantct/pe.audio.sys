@@ -55,7 +55,7 @@ def prepare_extra_cards(channels=2):
             cmd = cmd.replace("-q", "-Q")
 
         print(f'(start) loading resampled extra card: {card}')
-        sp.Popen(cmd.split(), shell=True, stdout=sys.stdout, stderr=sys.stderr)
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_jloops():
