@@ -18,7 +18,7 @@
 """
 
 import  subprocess as sp
-from    time import sleep, time, ctime
+from    time import sleep, time, ctime, gmtime, strftime
 from    json import dumps as json_dumps
 import  os
 import  sys
@@ -366,7 +366,8 @@ def prepare_log_header():
         ggpname = '?'
 
     try:
-        timestamp = sp.check_output('uptime').decode().strip()
+        timestamp = strftime('%Y-%m-%d', gmtime()) + ' ' + \
+                    sp.check_output('uptime').decode().strip()
     except:
         timestamp = ctime()
 
