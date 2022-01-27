@@ -8,17 +8,61 @@
 """
 
 import  subprocess as sp
-import  difflib
-from    config  import CONFIG
+import  os
+
+from    config  import CONFIG, MAINFOLDER
 from    fmt     import Fmt
 
 
-def simmilar_strings(a, b):
-    ratio =  difflib.SequenceMatcher(a=a.lower(), b=b.lower()).ratio()
-    if (ratio >= 0.60):
-        return True
+def restore_alsa_mixer(card):
+    """ Call 'altactl' to restore mixer settings from a previously saved file.
+    """
+
+    asound_file = f'{MAINFOLDER}/config/asound.{card}'
+
+    try:
+        if os.path.isfile( asound_file ):
+            sp.Popen( f'alsactl -f {asound_file} restore {card}',
+                      shell=True )
+            print(  f'{Fmt.BLUE}'
+                    f'(sound_cards_prepare) restoring alsa settings: '
+                    f'\'{asound_file}\'{Fmt.END}' )
+        else:
+            print(  f'{Fmt.RED}'
+                    f'(sound_cards_prepare) restoring alsa settings: '
+                    f'\'{asound_file}\' NOT FOUND{Fmt.END}' )
+
+    except Exception as e:
+        print(  f'{Fmt.RED}'
+                f'(sound_cards_prepare) PROBLEMS restoring alsa '
+                f'\'{card}\': {str(e)}{Fmt.END}' )
+
+
+def restore_ffado_mixer(card):
+    ''' Restore mixer settings from a previously saved file.
+
+        FFADO firewire cards need a custom made script, named like:
+
+            ~/pe.audio.sys/config/ffado.0x00130e01000406d2.sh
+
+        where 0x...... is the firewire GUID (see ffado-test ListDevices)
+
+        For details about this script see the 'doc/' folder.
+    '''
+
+    guid = card.replace('guid:','')
+    scriptPath = f'{MAINFOLDER}/config/ffado.{guid}.sh'
+
+    if os.path.isfile( scriptPath ):
+        print(  f'{Fmt.BLUE}'
+                f'(sound_cards_prepare) restoring ffado settings for: '
+                f'\'{card}\'{Fmt.END}' )
+        sp.Popen( f'sh {scriptPath} 1>/dev/null 2>&1', shell=True)
+
     else:
-        return False
+        print(  f'{Fmt.RED}'
+                f'(sound_cards_prepare) ERROR restoring ffado settings: '
+                f'\'{scriptPath}\' NOT FOUND.{Fmt.END}' )
 
 
 def get_aplay_cards():
@@ -39,36 +83,36 @@ def get_aplay_cards():
     return alsa_cards
 
 
-def get_config_cards():
-    """ List of pe.audio.sys 'hx:XXX,N' configured cards (alsa_devices)
+def get_config_sound_devices():
+    """ List of pe.audio.sys 'hx:XXX,N' configured sound devices
     """
-    cards = [ CONFIG["system_card"] ]
-    if CONFIG["external_cards"]:
-        for ecard in CONFIG["external_cards"]:
-            cards.append( CONFIG["external_cards"][ecard]["alsacard"] )
-    return cards
+    devices = [ CONFIG["jack"]["device"] ]
+    ext_cards = CONFIG["jack"]["external_cards"]
+    for card in ext_cards:
+        devices.append( ext_cards[card]["device"] )
+    return devices
 
 
-def alsa_device2short_name(device_string):
+def alsa_device2card(device_string):
     """ Example:
-        Given 'hw:Intel,0', then returns 'Intel'
+        Given an ALSA device 'hw:Intel,0', then returns the card name 'Intel'
     """
     return device_string.split(':')[-1].split(',')[0]
 
 
-def alsa_short2long_name(sname):
+def alsa_card_long_name(card):
     """ Example:
 
             $ aplay -l
             **** List of PLAYBACK Hardware Devices ****
             card 0: PCH [HDA Intel PCH], device 0: ALC889 Analog [ALC889 Analog]
 
-        Given sname='PCH', then returns 'HDA Intel PCH', as used in PA.alsa.card_name
+        Given card='PCH', then returns 'HDA Intel PCH', as used in PA.alsa.card_name
     """
-    result = sname
+    result = card
     aplaycards = get_aplay_cards()
     for apc in aplaycards:
-        if sname == aplaycards[apc]['short_name']:
+        if card == aplaycards[apc]['short_name']:
             result = aplaycards[apc]['long_name']
     return result
 
@@ -122,9 +166,9 @@ def release_cards_from_pulseaudio():
 
     pulse_cards  = get_pulse_cards()
     for pc in pulse_cards:
-        for cc in get_config_cards():
-            cc_short_name = alsa_device2short_name(cc)
-            cc_long_name = alsa_short2long_name(cc_short_name)
-            if pulse_cards[pc]["alsa_name"] == cc_long_name:
+        for cdev in get_config_sound_devices():
+            cname = alsa_device2card(cdev)
+            cname = alsa_card_long_name(cname)
+            if pulse_cards[pc]["alsa_name"] == cname:
                 PA_release_card( pulse_cards[pc]["pa_name"] )
                 break
