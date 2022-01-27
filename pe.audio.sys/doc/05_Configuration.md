@@ -10,13 +10,13 @@ Take the given `config.yml.sample` as a guide for your custom config.
 Main points to check for:
 
     [  ] jack:
-            backend:    dummy      # use 'alsa' later when things seems to work well
+            backend:    dummy       # use 'alsa' later when things seems to work well
             device:     
-            period:     
+            period:     1024
             nperiods:   
-            miscel:     -P 8 -C 2  # simmulates 8 out / 2 in dummy card backend
+            miscel:     -P 8 -C 2   # simmulates 8 out / 2 in dummy card backend
     
-        (i) For now, will use the dummy sound backend, with a channels dimension like your actual sound card.
+        (i) By now, we'll use the dummy sound backend, with a channels dimension like your actual sound card.
 
     [ ] loudspeaker: YOUR_LOUDSPEAKER
 
@@ -75,9 +75,9 @@ For safety purposes, keep the initial 50.0 dB attenuation on `filter "f.lev.L"` 
 Once your `brutefir_config` file is ready, you can test it:
 
 
-- Run Jack with a dummy backend:
+- Run Jack manually with the dummy backend, for instance:
 
-        jackd -d dummy -P8 -C2 -r44100 &  # 8+2 channels
+        jackd -d dummy -P8 -C2 -r44100 &  # simmulates 8out x 2in channels available
 
 - Run Brutefir
     
@@ -114,7 +114,7 @@ Then relogin.
 
 ## [ ] 1st time start up the system
 
-Be sure you have set the DUMMY backend for jack, then run in backgound:
+Be sure you have set the DUMMY backend for jack, as described avobe. Then run in backgound:
 
   **`pe.audio.sys/start.py all &`**
 
