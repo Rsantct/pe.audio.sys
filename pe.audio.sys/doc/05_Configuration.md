@@ -9,11 +9,14 @@ Take the given `config.yml.sample` as a guide for your custom config.
 
 Main points to check for:
 
-    [ ] system_card: hw:ALSANAME
+    [  ] jack:
+            backend:    dummy      # use 'alsa' later when things seems to work well
+            device:     
+            period:     
+            nperiods:   
+            miscel:     -P 8 -C 2  # simmulates 8 out / 2 in dummy card backend
     
-    [ ] jack_backend_options: -r SAMPLERATE -p PERIODSIZE -n PERIODS [--shorts] [--softmode]
-
-        To initial testing, you can select here the dummy sound backend, with a channels dimension like your actual sound card.
+        (i) For now, will use the dummy sound backend, with a channels dimension like your actual sound card.
 
     [ ] loudspeaker: YOUR_LOUDSPEAKER
 
