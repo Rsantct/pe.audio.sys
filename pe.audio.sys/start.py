@@ -138,10 +138,17 @@ def start_jack_stuff():
     else:
         jOpts = f'-R -d {jc["backend"]}'
 
-    jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
+
+    if jc["backend"] != 'dummy':
+        jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
+    else:
+        jBkndOpts  = f'-p {jc["period"]}'
+
     jBkndOpts += f' -r {read_bf_config_fs()}'
+
     if jc["miscel"]:
         jBkndOpts += f' {jc["miscel"]}'
+
     if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
         jBkndOpts += ' --softmode'
 
@@ -162,8 +169,8 @@ def start_jack_stuff():
         release_cards_from_pulseaudio()
 
     # Launch JACKD process
-    sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True, stdout=sys.stdout,
-                                                       stderr=sys.stderr)
+    sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True,  stdout=sys.stdout,
+                                                        stderr=sys.stderr)
 
     # Will check if JACK ports are available
     sleep(1)
