@@ -38,6 +38,8 @@ def load_extra_cards(channels=2):
         (void)
     """
     ext_cards = CONFIG["jack"]["external_cards"]
+    if not ext_cards:
+        return
 
     for card, params in ext_cards.items():
         jack_name = card
@@ -138,6 +140,8 @@ def start_jack_stuff():
 
     jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
     jBkndOpts += f' -r {read_bf_config_fs()}'
+    if jc["miscel"]:
+        jBkndOpts += f' {jc["miscel"]}'
     if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
         jBkndOpts += ' --softmode'
 
