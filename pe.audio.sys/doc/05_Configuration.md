@@ -114,7 +114,7 @@ Then relogin.
 
 ## [ ] 1st time start up the system
 
-Be sure you have set the DUMMY backend for jack, as described avobe. Then run in backgound:
+Be sure you have set the DUMMY backend for jack, as described above. Then run in background:
 
   **`pe.audio.sys/start.py all &`**
 
