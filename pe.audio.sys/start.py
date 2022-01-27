@@ -20,6 +20,7 @@
 import  subprocess as sp
 from    time import sleep, time, ctime, gmtime, strftime
 from    json import dumps as json_dumps
+from    types import SimpleNamespace
 import  os
 import  sys
 
@@ -32,25 +33,33 @@ from miscel import  read_bf_config_fs, server_is_running, process_is_running, \
 from sound_cards import *
 
 
-def prepare_extra_cards(channels=2):
+def load_extra_cards(channels=2):
     """ This launch resamplers that connects extra sound cards into Jack
         (void)
     """
-    if not CONFIG['external_cards']:
-        return
+    ext_cards = CONFIG["jack"]["external_cards"]
 
-    for card, params in CONFIG['external_cards'].items():
+    for card, params in ext_cards.items():
         jack_name = card
-        alsacard  = params['alsacard']
+        device    = params['device']
         resampler = params['resampler']
         quality   = str(params['resamplingQ'])
-        try:
-            misc = params['misc_params']
-        except KeyError:
+        misc      = params['misc_params']
+        if not misc:
             misc = ''
 
-        cmd = f'{resampler} -d {alsacard} -j {jack_name} ' + \
-              f'-c {channels} -q {quality} {misc}'
+        if (not quality) and ('zita' in resampler):
+                quality == 'auto'
+
+
+        cmd = f'{resampler} -d {device} -j {jack_name} -c {channels}'
+
+        if quality:
+            cmd += f' -q {quality}'
+
+        if misc:
+            cmd += f' {misc}'
+
         if 'zita' in resampler:
             cmd = cmd.replace("-q", "-Q")
 
@@ -120,22 +129,20 @@ def start_jack_stuff():
     """
     warnings = ''
 
-    jack_backend_options = CONFIG["jack_backend_options"] \
-                    .replace('$autoCard', CONFIG["system_card"]) \
-                    .replace('$autoFS', str(read_bf_config_fs()))
-
-    jcmd = 'jackd'
+    jc = CONFIG['jack']
 
     if logFlag:
-        jcmd += ' --silent'
+        jOpts = f'-R --silent -d {jc["backend"]}'
+    else:
+        jOpts = f'-R -d {jc["backend"]}'
 
-    jcmd += f' {CONFIG["jack_options"]} {jack_backend_options}'
-
-    if ('-s' not in jcmd) and ('alsa' in jcmd):
-        jcmd += ' --softmode'
+    jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
+    jBkndOpts += f' -r {read_bf_config_fs()}'
+    if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
+        jBkndOpts += ' --softmode'
 
     # Firewire: reset the Firewire Bus and run ffado-dbus-server
-    if 'firewire' in jcmd:
+    if jc["backend"] == 'firewire':
         print(f'{Fmt.BOLD}(start) resetting the FIREWIRE BUS, sorry for users '
               f'using other FW things :-|{Fmt.END}')
         sp.Popen('ffado-test BusReset'.split())
@@ -151,7 +158,8 @@ def start_jack_stuff():
         release_cards_from_pulseaudio()
 
     # Launch JACKD process
-    sp.Popen(jcmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True, stdout=sys.stdout,
+                                                       stderr=sys.stderr)
 
     # Will check if JACK ports are available
     sleep(1)
@@ -172,7 +180,7 @@ def start_jack_stuff():
 
     else:
         # Adding EXTRA SOUND CARDS resampled into jack, aka 'external_cards'
-        prepare_extra_cards()
+        load_extra_cards()
 
         # Emerging JACKLOOPS (external daemon)
         run_jloops()
