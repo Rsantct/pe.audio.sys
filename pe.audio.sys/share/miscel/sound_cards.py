@@ -65,6 +65,33 @@ def restore_ffado_mixer(card):
                 f'\'{scriptPath}\' NOT FOUND.{Fmt.END}' )
 
 
+def restore_all_cards_mixers():
+    """ Restore mixer settigs for all pa.audio.sys cards (config.yml)
+    """
+
+    # Avoiding duplicates, such 'hw:PCH,0' (analog section) and 'hw:PCH,1' (digital)
+    restored = []
+
+    for dev in get_config_sound_devices():
+
+        card = alsa_device2card(dev)
+
+        if card not in restored:
+
+            # ALSA
+            if 'hw:' in dev:
+                restore_alsa_mixer(card)
+            # FFADO
+            elif 'guid:' in dev:
+                restore_ffado_mixer(card)
+            else:
+                print(  f'{Fmt.RED}'
+                        f'(sound_cards_prepare) UNKNOWN card type: '
+                        f'\'{dev}\'{Fmt.END}' )
+
+            restored.append(card)
+
+
 def get_aplay_cards():
     """ Returns a dictionary of cards as listed in 'aplay -l'
     """
