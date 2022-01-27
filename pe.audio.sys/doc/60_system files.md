@@ -86,9 +86,10 @@ Here you are an uncommented bare example of `config.yml`:
 
     jack:
         backend:    alsa
-        device:     hw:CODEC,0
+        device:     hw:USBCARD,0
         period:     1024
         nperiods:   2
+        miscel:
         external_cards:
 
     balance_max:       6.0
