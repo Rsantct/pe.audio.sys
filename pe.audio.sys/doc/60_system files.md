@@ -84,13 +84,13 @@ Some points:
 Here you are an uncommented bare example of `config.yml`:
 
 
-    system_card: hw:UDJ6
-
-    external_cards:
-
-    jack_options:           -R -d alsa
-    jack_backend_options:   -d $autoCard -r $autoFS -P -o 6
-
+    jack:
+        backend:    alsa
+        device:     hw:USBCARD,0
+        period:     1024
+        nperiods:   2
+        miscel:
+        external_cards:
 
     balance_max:       6.0
     gain_max:          0.0
