@@ -4,8 +4,8 @@ jack:
     # nperiods normally set to 2, or 3 for serial interfaces (usb, firewire)
     # miscel parameters examples:
     #   miscel: --shorts    # for 16bit depth
-    #   miscel: -P 8 -C 2   # simmulates 8out x 2in channels for dummy backend
-    #   miscel: -P -o 4     # open 4 playback channels in sound card
+    #   miscel: -P 8 -C 2   # simmulates 8out x 2in channels for DUMMY backend
+    #   miscel: -P -o 4     # open 4 playback channels in ALSA sound card
 
     # optional DUMMY testing backend
     # backend:   dummy
@@ -18,7 +18,7 @@ jack:
     # nperiods:   3
     # miscel:     
     
-    # normal ALSA backend (see devices running aplay -l)
+    # normal ALSA backend (see your device name running aplay -l)
     backend:    alsa
     device:     hw:USB,0
     period:     1024
