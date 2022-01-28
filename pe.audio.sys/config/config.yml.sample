@@ -13,7 +13,7 @@ jack:
     period:     1024
     # nperiods set 2 or 3 for serial interfaces (usb, firewire)
     nperiods:   2
-    # miscel parameters, for example a 4 channels only playback sound card: -P -o 4
+    # miscel parameters, e.g. a 4 channels only playback sound card: -P -o 4
     miscel:     
 
     # Additional cards to be used in jack by resampling,
