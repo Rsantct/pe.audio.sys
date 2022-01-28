@@ -37,9 +37,11 @@ def load_extra_cards(channels=2):
     """ This launch resamplers that connects extra sound cards into Jack
         (void)
     """
-    ext_cards = CONFIG["jack"]["external_cards"]
-    if not ext_cards:
+    jc = CONFIG["jack"]
+    if ('external_cards' not in jc) or (not jc["external_cards"]):
         return
+
+    ext_cards = jc["external_cards"]
 
     for card, params in ext_cards.items():
         jack_name = card
@@ -146,7 +148,7 @@ def start_jack_stuff():
 
     jBkndOpts += f' -r {read_bf_config_fs()}'
 
-    if jc["miscel"]:
+    if ('miscel' in jc) and (jc["miscel"]):
         jBkndOpts += f' {jc["miscel"]}'
 
     if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
