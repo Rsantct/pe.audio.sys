@@ -47,14 +47,19 @@ def load_extra_cards(channels=2):
         jack_name = card
         device    = params['device']
         resampler = params['resampler']
-        quality   = str(params['resamplingQ'])
-        misc      = params['misc_params']
-        if not misc:
+
+        if ('resamplingQ' in params) and (params['resamplingQ']):
+            quality = params['resamplingQ']
+        else:
+            quality = ''
+
+        if ('misc' in params) and (params['misc']):
+            misc = params['misc']
+        else:
             misc = ''
 
         if (not quality) and ('zita' in resampler):
                 quality == 'auto'
-
 
         cmd = f'{resampler} -d {device} -j {jack_name} -c {channels}'
 
