@@ -255,7 +255,7 @@ python3 pe.audio.sys/share/www/scripts/drc2png.py 1>/dev/null 2>&1 &
 
 
 ########################################################################
-# Places the this updater script to be available under ~/tmp/
+# Places this updater script to be available under ~/tmp/
 ########################################################################
 cp "$ORIG"/.install/update_peaudiosys.sh "$HOME"/tmp/
 
