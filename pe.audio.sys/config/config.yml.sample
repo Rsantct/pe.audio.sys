@@ -1,19 +1,28 @@
 # ===========================  JACK CONFIGURATION ==============================
 
 jack:
+    # nperiods normally set to 2, or 3 for serial interfaces (usb, firewire)
+    # miscel parameters examples:
+    #   miscel: --shorts    # for 16bit depth
+    #   miscel: -P 8 -C 2   # simmulates 8out x 2in channels for dummy backend
+    #   miscel: -P -o 4     # open 4 playback channels in sound card
 
-    #backend:   dummy
+    # optional DUMMY testing backend
+    # backend:   dummy
+    # miscel:    -P8 -C2
 
-    #backend:    firewire
-    #device:     guid:0x00130e01000406d2
-
+    # optional FIREWIRE backend (see doc/Firewire)
+    # backend:    firewire
+    # device:     guid:0x00130e01000406d2
+    # period:     1024
+    # nperiods:   3
+    # miscel:     
+    
+    # normal ALSA backend (see devices running aplay -l)
     backend:    alsa
-    device:     hw:0,0
-
+    device:     hw:USB,0
     period:     1024
-    # nperiods set 2 or 3 for serial interfaces (usb, firewire)
     nperiods:   2
-    # miscel parameters, e.g. for 16bit depth:  --shorts
     miscel:     
 
     # Additional cards to be used in jack by resampling,
