@@ -71,3 +71,7 @@ See the `doc/` folder for detailed information about this.
 - New playlist selector for MPD, Spotify
 - New track selector for CD
 - New random playback control
+
+## Jan 2022, version 1.0f
+
+- New `config.yml` layout for jack and sound cards stuff. **PLEASE** update your `config.yml` accordingly (see `config.yml.sample`)

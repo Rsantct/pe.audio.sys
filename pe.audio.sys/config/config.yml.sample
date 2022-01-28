@@ -1,54 +1,58 @@
-# ===========================  SOUND CARDS =====================================
+# ===========================  JACK CONFIGURATION ==============================
 
-# Main system card name (alsa or ffado)
-system_card: hw:0
-#system_card: guid:0x00130e01000406d2
+jack:
+    # nperiods normally set to 2, or 3 for serial interfaces (usb, firewire)
+    # miscel parameters examples:
+    #   miscel: --shorts    # for 16bit depth
+    #   miscel: -P 8 -C 2   # simmulates 8out x 2in channels for DUMMY backend
+    #   miscel: -P -o 4     # open 4 playback channels in ALSA sound card
 
-# Additional cards to be used resampled under jack,
-# either as capture or as playback devices.
-# resamplingQuality: 0..4 for alsa_in/out or 16..96 for zita-a2j/j2a
-# sintax:
-# <card jack name>
-#   {alsacard: ..., resampler: ..., resamplingQ:..., misc_params:...}
-external_cards:
+    # optional DUMMY testing backend
+    # backend:   dummy
+    # miscel:    -P8 -C2
 
-    # sintax:
-    #<descriptor_name>  will be used to name the belonging jack ports
-    #    alsacard: <hw:ALSANAME>
-    #    resampler: <zita-a2j | zita-j2a | alsa_in | alsa_out>
-    #    resamplingQ: <NN>
-    #    misc_params: <''>
+    # optional FIREWIRE backend (see doc/Firewire)
+    # backend:    firewire
+    # device:     guid:0x00130e01000406d2
+    # period:     1024
+    # nperiods:   3
+    # miscel:     
+    
+    # normal ALSA backend (see your device name running aplay -l)
+    backend:    alsa
+    device:     hw:USB,0
+    period:     1024
+    nperiods:   2
+    miscel:     
 
-    # some examples:
-    # This is used to capture
-    #LineIN:
-    #    alsacard: hw:CODEC
-    #    resampler: zita-a2j
-    #    resamplingQ: 96
-    #    misc_params: ''
+    # Additional cards to be used in jack by resampling,
+    # either as capture or as playback devices.
+    # Resampling quality: 0..4 for alsa_in/out or auto|16..96 for zita-a2j/j2a
+    external_cards:
 
-    # This is used just to RTA external monitoring
-    #DEQ2496:
-    #    alsacard: hw:CODEC
-    #    resampler: zita-j2a
-    #    resamplingQ: 48
-    #    misc_params: ''
-
-
-# ===================  JACK SOUND CARD CONFIGURATION  ==========================
-
-# DUMMY backend for testing:
-#jack_options:           -R -d dummy
-#jack_backend_options:   -r 48000 -P 6 -C 2
-
-# ALSA backend (leave $autoCard and $autoFS under options below,
-#               it will be replaced by the actual values)
-jack_options:           -R -d alsa
-jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n2
-
-# FIREWIRE (FFADO) backend:
-#jack_options:           -R -d firewire
-#jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n 3
+    #   sintax:
+    #   <descriptor_name>  will be used to name the belonging jack ports
+    #       device:        <hw:ALSANAME>
+    #       resampler:     <zita-a2j | zita-j2a | alsa_in | alsa_out>
+    #       resamplingQ:   <NN> | auto (zita)
+    #       misc_params:   <.....>
+    #
+    #
+    #   example: an usb device for capture
+    #
+    #   LineIN:
+    #       device:        hw:CODEC
+    #       resampler:     zita-a2j
+    #       resamplingQ:   auto
+    #       misc_params:
+    #
+    #   example: an usb device for signal monitoring
+    #
+    #   external_monitor:
+    #       device:        hw:CODEC
+    #       resampler:     zita-j2a
+    #       resamplingQ:   48
+    #       misc_params:
 
 
 # =========================  LIMITS  ===========================================
@@ -65,6 +69,7 @@ eq_loud_ceil: true
 # Should Brutefir EQ stage to be linear phase?
 bfeq_linear_phase: false
 
+
 # ========================== THE LOUDSPEAKER  ==================================
 
 # Put here your loudspeaker folder name
@@ -75,6 +80,7 @@ refSPL:         83
 
 # Gain dBFS at convolver output to obtain the reference SPL (level = 0.0):
 ref_level_gain: -10.0
+
 
 # ========================= STARTUP BEHAVIOR: ==================================
 # (i) Leave blank these fields to restore from the last state,
@@ -177,13 +183,11 @@ sources:
 # ========================== SOURCE MONITOR PORTS ==============================
 # The source selector will connect the source also here.
 # If an external card is used, then the <monitorName> must match the
-# <descriptor_name> usen in the above external_cards: section.
+# <descriptor_name> usen in the above <external_cards:> section.
 
 source_monitors:
 
-    # syntax
-    # - <monitorName>
-    # - DEQ2496
+    # - external_monitor
 
 # ================ SCRIPTS YOU WANT TO RUN (players, etc...)  ==================
 # The scripts files are located under the share/scripts folder.
@@ -284,7 +288,7 @@ powersave_minutes:      10  # Time in minutes before shutting down Brutefir
 
 
 # =========================      AUTO UPDATE      ==============================
-# Will add a crontab job in order to auto update from AudioHumLab master branch, 
+# Will add a crontab job in order to auto update from AudioHumLab master branch,
 # every day late at night (see crontab -l)
 # Recommended 'true' unless you want to update manually.
 auto_update:   true

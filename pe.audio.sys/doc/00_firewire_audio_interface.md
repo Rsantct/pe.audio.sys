@@ -26,13 +26,12 @@ Anyway, for kernel >=4.2, you can leave the module `snd-dice` to be loaded, then
 
 ## config.yml
 
-**Configure** your card under `config.yml` like this, by using `-n 3` as recommended for serial interfaces:
+**Configure** your card under `config.yml` as following example, by using `-n 3` as recommended for serial interfaces:
 
-    system_card: guid:0x00130e01000406d2
-    ...
-    ...
-    jack_options:           -R -d firewire
-    jack_backend_options:   -d $autoCard -r $autoFS -p 1024 -n 3
+    backend:    firewire
+    device:     guid:0x00130e01000406d2
+    period:     1024    # maybe you can use a smaller period size
+    nperiods:   3
 
 Use `ffado-test ListDevices` to find your card's firewire GUID.
 
