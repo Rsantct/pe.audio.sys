@@ -113,9 +113,9 @@ def get_aplay_cards():
 def get_config_sound_devices():
     """ List of pe.audio.sys 'hx:XXX,N' configured sound devices
     """
-    devices = [ CONFIG["jack"]["device"] ]
-    ext_cards = CONFIG["jack"]["external_cards"]
-    if ext_cards:
+    jc = CONFIG["jack"]
+    devices = [ jc["device"] ]
+    if ('external_cards' in jc) and (jc["external_cards"]):
         for card in ext_cards:
             devices.append( ext_cards[card]["device"] )
     return devices
