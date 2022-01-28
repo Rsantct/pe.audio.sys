@@ -116,6 +116,7 @@ def get_config_sound_devices():
     jc = CONFIG["jack"]
     devices = [ jc["device"] ]
     if ('external_cards' in jc) and (jc["external_cards"]):
+        ext_cards = jc["external_cards"]
         for card in ext_cards:
             devices.append( ext_cards[card]["device"] )
     return devices
