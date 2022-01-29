@@ -16,6 +16,7 @@ from    fmt     import Fmt
 
 def restore_alsa_mixer(card):
     """ Call 'altactl' to restore mixer settings from a previously saved file.
+        (void)
     """
 
     asound_file = f'{MAINFOLDER}/config/asound.{card}'
@@ -48,6 +49,8 @@ def restore_ffado_mixer(card):
         where 0x...... is the firewire GUID (see ffado-test ListDevices)
 
         For details about this script see the 'doc/' folder.
+
+        (void)
     '''
 
     guid = card.replace('guid:','')
@@ -67,6 +70,7 @@ def restore_ffado_mixer(card):
 
 def restore_all_cards_mixers():
     """ Restore mixer settigs for all pa.audio.sys cards (config.yml)
+        (void)
     """
 
     # Avoiding duplicates, such 'hw:PCH,0' (analog section) and 'hw:PCH,1' (digital)
@@ -93,7 +97,8 @@ def restore_all_cards_mixers():
 
 
 def get_aplay_cards():
-    """ Returns a dictionary of cards as listed in 'aplay -l'
+    """ The 'aplay -l' ALSA cards
+        (dictionary)
     """
     alsa_cards = {}
     try:
@@ -111,32 +116,43 @@ def get_aplay_cards():
 
 
 def get_config_sound_devices():
-    """ List of pe.audio.sys 'hx:XXX,N' configured sound devices
+    """ pe.audio.sys 'hx:XXX,N' configured sound devices
+        (list)
     """
     jc = CONFIG["jack"]
+
+    # jack 'dummy' backend could have not 'device' field
+    if ('device' not in jc) or (not jc["device"]):
+        return []
+
     devices = [ jc["device"] ]
+
     if ('external_cards' in jc) and (jc["external_cards"]):
         ext_cards = jc["external_cards"]
         for card in ext_cards:
             devices.append( ext_cards[card]["device"] )
+
     return devices
 
 
 def alsa_device2card(device_string):
-    """ Example:
-        Given an ALSA device 'hw:Intel,0', then returns the card name 'Intel'
+    """ The ALSA card name of a given ALSA device, e.g.:
+        Given 'hw:Intel,0', then returns the card name 'Intel'
+        (string)
     """
     return device_string.split(':')[-1].split(',')[0]
 
 
 def alsa_card_long_name(card):
-    """ Example:
+    """ The ALSA card 'long name' belonging to an ALSA card 'short name', e.g.:
 
             $ aplay -l
             **** List of PLAYBACK Hardware Devices ****
             card 0: PCH [HDA Intel PCH], device 0: ALC889 Analog [ALC889 Analog]
 
-        Given card='PCH', then returns 'HDA Intel PCH', as used in PA.alsa.card_name
+        Given card='PCH', then returns 'HDA Intel PCH', as in PA.alsa.card_name
+
+        (string)
     """
     result = card
     aplaycards = get_aplay_cards()
@@ -147,7 +163,8 @@ def alsa_card_long_name(card):
 
 
 def get_pulse_cards():
-    """ Return a dictionary of cards as listed in 'pactl list cards'
+    """ Pulseaudio 'pactl list cards'
+        (dictionary)
     """
     pa_cards = {}
 
@@ -177,6 +194,7 @@ def get_pulse_cards():
 
 def release_cards_from_pulseaudio():
     """ Release pe.audio.sys cards from Pulseaudio
+        (void)
     """
 
     def PA_release_card( pa_name ):

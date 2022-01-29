@@ -1,11 +1,13 @@
 # ===========================  JACK CONFIGURATION ==============================
 
 jack:
-    # nperiods normally set to 2, or 3 for serial interfaces (usb, firewire)
-    # miscel parameters examples:
-    #   miscel: --shorts    # for 16bit depth
-    #   miscel: -P 8 -C 2   # simmulates 8out x 2in channels for DUMMY backend
-    #   miscel: -P -o 4     # open 4 playback channels in ALSA sound card
+
+    # - Do not configure here sample rate, it will be detected internally.
+    # - nperiods normally set to 2, or 3 for serial interfaces (usb, firewire)
+    # - miscel parameters examples:
+    #     miscel: --shorts    # for 16bit depth
+    #     miscel: -P 8 -C 2   # simmulates 8out x 2in channels for DUMMY backend
+    #     miscel: -P -o 4     # open 4 only playback channels in ALSA sound card
 
     # optional DUMMY testing backend
     # backend:   dummy
