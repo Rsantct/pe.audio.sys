@@ -145,6 +145,11 @@ def start_jack_stuff():
     else:
         jOpts = f'-R -d {jc["backend"]}'
 
+    # default period and nperiod
+    if ('period' not in jc) or not jc["period"]:
+        jc["period"] = 1024
+    if ('nperiods' not in jc) or not jc["nperiods"]:
+        jc["nperiods"] = 2
 
     if jc["backend"] != 'dummy':
         jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
@@ -214,6 +219,7 @@ def start_jack_stuff():
 def start_brutefir():
     """ runs Brutefir, connects to pream_in_loop and resets
         .state file with extra_delay = 0 ms
+        (bool)
     """
     result = core.bf.restart_and_reconnect( ['pre_in_loop:output_1',
                                              'pre_in_loop:output_2'],
@@ -361,6 +367,7 @@ def prepare_drc_graphs():
 def prepare_log_header():
     """ Writes down the parents processes from which
         start.py has been called, for debugging purposes.
+        (void)
     """
     # parent
     ppid = str(os.getppid())
