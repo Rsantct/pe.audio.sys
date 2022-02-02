@@ -49,12 +49,15 @@
 
 
     // Communicates with the "peaudiosys" TCP server.
-    function system_socket ($cmd) {
+    function send_cmd($cmd, $service='peaudiosys') {
 
         $address =         get_config( "peaudiosys_address" );
         $port    = intval( get_config( "peaudiosys_port"    ) );
 
-        // Creates a TCP socket
+        if ($service === 'restart'){
+            $port = $port + 1;
+        }
+
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if ($socket === false) {
             echo "socket_create() failed: " . socket_strerror(socket_last_error()) . "\n";
@@ -63,47 +66,16 @@
         if ($result === false) {
             echo "socket_connect() failed: ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
         }
-        // Sends and receive:
         socket_write($socket, $cmd, strlen($cmd));
-        //
-        // (!) read ENOUGH BYTES e.g. 1024 to avoid large responses to be truncated.
-        //
-        $out = socket_read($socket, 1024);
-        //  (i) sending quit and empty the buffer currently not in use, just close:
-        //socket_write($socket, "quit", strlen("quit"));
-        //socket_read($socket, 1024);   // empties the receiving buffer
+        $ans = '';
+        while ( ($tmp = socket_read($socket, 1000)) !== '') {
+           $ans = $ans.$tmp;
+        }
         socket_close($socket);
-        return $out;
+
+        return $ans;
     }
 
-
-    // Communicates with the "restart" TCP server (at next port)
-    function restart_socket ($cmd) {
-
-        $address =         get_config( "peaudiosys_address" );
-        $port    = intval( get_config( "peaudiosys_port"    ) ) + 1;
-
-        // Creates a TCP socket
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($socket === false) {
-            echo "socket_create() failed: " . socket_strerror(socket_last_error()) . "\n";
-        }
-        $result = socket_connect($socket, $address, $port);
-        if ($result === false) {
-            echo "socket_connect() failed: ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
-        }
-        // Sends and receive:
-        socket_write($socket, $cmd, strlen($cmd));
-        //
-        // (!) read ENOUGH BYTES e.g. 1024 to avoid large responses to be truncated.
-        //
-        $out = socket_read($socket, 1024);
-        //  (i) sending quit and empty the buffer currently not in use, just close:
-        //socket_write($socket, "quit", strlen("quit"));
-        //socket_read($socket, 1024);   // empties the receiving buffer
-        socket_close($socket);
-        return $out;
-    }
 
     ///////////////////////////   MAIN: ///////////////////////////////
     // listen to http request then returns results via standard output
@@ -124,11 +96,11 @@
 
     if ( strpos($command, "_restart") ) {
 
-        echo restart_socket( $command );
+        echo send_cmd($command, 'restart');
 
     } else {
 
-        echo system_socket( $command );
+        echo send_cmd($command, 'peaudiosys');
 
     }
 ?>
