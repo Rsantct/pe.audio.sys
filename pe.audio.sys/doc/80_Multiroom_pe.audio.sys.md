@@ -2,6 +2,10 @@
 
 The file `share/scripts/zita_link.py` allows you to receive the listening source from a ***remote*** pe.audio.sys
 
+**LIMITATION:**
+
+Currently, a multiroom system can have only one 'sender' and various 'receivers'.
+
 #### Needed configuration inside the **RECEIVER** `config.yml`:
 
 - Include `zita_link.py` under the `scripts:` section:
