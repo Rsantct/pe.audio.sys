@@ -105,12 +105,12 @@
 
 
         table#level_buttons_table  { }
-        td#level_buttons11   { border-style: none; width:10%; }
-        td#level_buttons12   { border-style: none; width:80%; }
-        td#level_buttons13   { border-style: none; width:10%; }
-        td#level_buttons21   { border-style: none; width:10%; }
-        td#level_buttons22   { border-style: none; width:80%; }
-        td#level_buttons23   { border-style: none; width:10%; }
+        td#level_buttons11   { border-style: none; width:18%; }
+        td#level_buttons12   { border-style: none; width:64%; }
+        td#level_buttons13   { border-style: none; width:18%; }
+        td#level_buttons21   { border-style: none; width:18%; }
+        td#level_buttons22   { border-style: none; width:64%; }
+        td#level_buttons23   { border-style: none; width:18%; }
 
         /* --- LU OFFSET CELLS --- */
         td#LU_meter_scope    { width:18%; border-style:none ; font-size:.8em; vertical-align: middle;}
@@ -305,7 +305,7 @@
     </div>
 
     <!-- LEVEL butttons -->
-    <div class="level_buttons" id="level_buttons" >
+    <div id="level_buttons" >
         <table id="level_buttons_table">
           <tr>
             <td id="level_buttons11">
@@ -336,10 +336,10 @@
                         &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
             </td>
             <td id="level_buttons23">
-                <button type="button" id="RAOD" style="display:none;font-size:0.7em"
+                <button type="button" id="buttAOD" style="display:none;font-size:0.7em"
                         title="Remove Added Outputs Delay"
-                        onmousedown="control_cmd('preamp add_delay 0')">
-                        RAOD
+                        onmousedown="omd_delay_toggle()">
+                        0 ms
                 </button>
             </td>
           </tr>
@@ -392,7 +392,7 @@
 
 
     <!-- ADVANCED CONTROLS (hidden by default, can be displayed through by a button) -->
-    <div id="advanced_controls" style="display:none; font-size:0.75em;">
+    <div id="div_advanced_controls" style="display:none; font-size:0.75em;">
 
       <table>
         <tr>
