@@ -1006,7 +1006,9 @@ function ck_display_advanced(mode) {
         document.getElementById( "div_advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
-        document.getElementById( "buttAOD").style.display = "none";
+        if ( state.extra_delay === 0 ) {
+            document.getElementById( "buttAOD").style.display = "none";
+        }
         document.getElementById( "subsonic").style.display = "none";
     }
 }
@@ -1263,6 +1265,7 @@ function buttonAODHighlight(){
     } else {
         document.getElementById("buttAOD").style.background = "rgb(100, 0, 0)";
         document.getElementById("buttAOD").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttAOD").style.display = 'inline-table';
     }
 }
 
@@ -1292,3 +1295,5 @@ function levelInfoHighlight() {
         document.getElementById("levelInfo").style.borderColor = "white";
    }
 }
+
+
