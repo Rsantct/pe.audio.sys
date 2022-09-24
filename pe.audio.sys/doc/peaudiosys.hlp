@@ -35,6 +35,7 @@ All commands prefixed with 'preamp':
     balance         xx [add]
     treble          xx [add]
     bass            xx [add]
+    tone_defeat     off | on
     subsonic        off | mp | lp           Activates a subsonic filter ('lp' has flat GD but high latency)
     lu_offset       xx [add]
     loudness        on | off | toggle       Equal loudness contour correction

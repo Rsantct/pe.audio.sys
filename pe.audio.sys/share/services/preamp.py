@@ -127,6 +127,7 @@ def do( cmd, argstring ):
             'balance':          preamp.set_balance,
             'treble':           preamp.set_treble,
             'bass':             preamp.set_bass,
+            'tone_defeat':      preamp.set_tone_defeat,
             'loudness':         preamp.set_equal_loudness,
             'eq_loudness':      preamp.set_equal_loudness,
             'equal_loudness':   preamp.set_equal_loudness,

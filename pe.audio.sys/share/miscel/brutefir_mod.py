@@ -11,7 +11,8 @@ from    time        import sleep
 import  numpy as np
 from    socket      import socket
 
-from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, BFCFG_PATH
+from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, \
+                            BFCFG_PATH, LOG_FOLDER
 
 from    miscel      import  read_bf_config_fs, process_is_running, Fmt
 
@@ -520,7 +521,7 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
 
     # Restarts Brutefir (external process)
     os.chdir(LSPK_FOLDER)
-    Popen('brutefir brutefir_config', shell=True)
+    Popen(f'brutefir brutefir_config 1>{LOG_FOLDER}/brutefir.log 2>&1', shell=True)
     os.chdir(UHOME)
     sleep(1)  # wait a bit for Brutefir to be running
 

@@ -65,6 +65,7 @@ var last_disc           = '';       // Helps on refreshing cd tracks list
 var last_input          = '';       // Helps on refreshing sources playlits
 var last_loudspeaker    = '';       // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
+var last_delay          = 0;        // A helper for the delay toggle button
 
 
 var hold_selected_track = 0;        // A counter to keep the selected cd track during updates
@@ -651,11 +652,12 @@ function page_update() {
 
 
     function preamp_refresh(){
-        // Updates level, balance, and tone info
+        // Updates level, balance, tone and delay info
         document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
         document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
         document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
         document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
+        document.getElementById("buttAOD").innerText = state.extra_delay + ' ms';
 
         // Delete level info if convolver off
         if (state.convolver_runs == false){
@@ -679,8 +681,15 @@ function page_update() {
         buttonMonoHighlight()
         buttonLoudHighlight()
         buttonsToneBalanceHighlight()
+        toneDefeatHighlight()
         buttonSubsonicHighlight()
+        buttonAODHighlight()
         levelInfoHighlight()
+
+        // Used by the delay toggle button
+        if (state.extra_delay !== 0) {
+            last_delay = state.extra_delay;
+        }
     }
 
 
@@ -860,6 +869,13 @@ function omd_mono_toggle() {
 }
 
 
+function omd_delay_toggle() {
+    if (state.extra_delay !== 0) {
+        control_cmd('preamp add_delay 0');
+    }else{
+        control_cmd('preamp add_delay ' + last_delay.toString());
+    }
+}
 
 //////// PLAYER 'onchange' 'onmousedown' 'onclick' page handlers ////////
 
@@ -981,18 +997,22 @@ function ck_display_advanced(mode) {
     }
 
     if ( show_advanced == true ) {
-        document.getElementById( "advanced_controls").style.display = "block";
+        document.getElementById( "div_advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
-        document.getElementById( "RAOD").style.display = "inline-block";
+        document.getElementById( "buttAOD").style.display = "inline-block";
         document.getElementById( "subsonic").style.display = "inline-block";
+        document.getElementById( "tone_defeat").style.display = "inline-block";
     }
     else {
-        document.getElementById( "advanced_controls").style.display = "none";
+        document.getElementById( "div_advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
-        document.getElementById( "RAOD").style.display = "none";
+        if ( state.extra_delay === 0 ) {
+            document.getElementById( "buttAOD").style.display = "none";
+        }
         document.getElementById( "subsonic").style.display = "none";
+        document.getElementById( "tone_defeat").style.display = "none";
     }
 }
 
@@ -1148,6 +1168,23 @@ function clear_highlighteds(){
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
 
+
+function toneDefeatHighlight(){
+    if (state.tone_defeat){
+        document.getElementById("tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("tone_defeat").style.background = "rgb(100, 0, 0)";
+        document.getElementById("tone_defeat").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bassInfo").style.color = "grey";
+        document.getElementById("trebleInfo").style.color = "grey";
+    }else{
+        document.getElementById("tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("tone_defeat").style.background = "rgb(100, 100, 100)";
+        document.getElementById("tone_defeat").style.color = "rgb(180, 180, 180)";
+        document.getElementById("bassInfo").style.color = "white";
+        document.getElementById("trebleInfo").style.color = "white";
+    }
+}
+
 function buttonsToneBalanceHighlight(){
     if ( state.bass < 0 ){
         document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
@@ -1241,16 +1278,32 @@ function buttonLoudHighlight(){
     }
 }
 
+function buttonAODHighlight(){
+    if ( state.extra_delay === 0 ) {
+        document.getElementById("buttAOD").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("buttAOD").style.background = "rgb(100, 100, 100)";
+        document.getElementById("buttAOD").style.color = "rgb(180, 180, 180)";
+    } else {
+        document.getElementById("buttAOD").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("buttAOD").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttAOD").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttAOD").style.display = 'inline-table';
+    }
+}
+
 function buttonSubsonicHighlight(){
     if ( state.subsonic == 'off' ) {
+        document.getElementById("subsonic").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
         document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
         document.getElementById("subsonic").innerText = 'SUBS\n-';
     } else if ( state.subsonic == 'mp' ) {
+        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nmp';
     } else if ( state.subsonic == 'lp' ) {
+        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nlp';
