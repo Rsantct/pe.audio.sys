@@ -681,6 +681,7 @@ function page_update() {
         buttonMonoHighlight()
         buttonLoudHighlight()
         buttonsToneBalanceHighlight()
+        toneDefeatHighlight()
         buttonSubsonicHighlight()
         buttonAODHighlight()
         levelInfoHighlight()
@@ -1001,6 +1002,7 @@ function ck_display_advanced(mode) {
         document.getElementById( "main_lside").style.display = "table-cell";
         document.getElementById( "buttAOD").style.display = "inline-block";
         document.getElementById( "subsonic").style.display = "inline-block";
+        document.getElementById( "tone_defeat").style.display = "inline-block";
     }
     else {
         document.getElementById( "div_advanced_controls").style.display = "none";
@@ -1010,6 +1012,7 @@ function ck_display_advanced(mode) {
             document.getElementById( "buttAOD").style.display = "none";
         }
         document.getElementById( "subsonic").style.display = "none";
+        document.getElementById( "tone_defeat").style.display = "none";
     }
 }
 
@@ -1165,6 +1168,24 @@ function clear_highlighteds(){
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
 
+
+function toneDefeatHighlight(){
+    if (state.tone_defeat){
+        document.getElementById("tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("tone_defeat").style.background = "rgb(100, 0, 0)";
+        document.getElementById("tone_defeat").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bassInfo").style.color = "grey";
+        document.getElementById("trebleInfo").style.color = "grey";
+    }else{
+        document.getElementById("tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("tone_defeat").style.background = "rgb(100, 100, 100)";
+        document.getElementById("tone_defeat").style.color = "rgb(180, 180, 180)";
+        document.getElementById("bassInfo").style.color = "white";
+        document.getElementById("trebleInfo").style.color = "white";
+    }
+}
+
+
 function buttonsToneBalanceHighlight(){
     if ( state.bass < 0 ){
         document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
@@ -1295,5 +1316,3 @@ function levelInfoHighlight() {
         document.getElementById("levelInfo").style.borderColor = "white";
    }
 }
-
-
