@@ -309,6 +309,11 @@
         <table id="level_buttons_table">
           <tr>
             <td id="level_buttons11">
+                <button type="button" id="subsonic" style="display:none;font-size:0.7em"
+                        title="Subsonic Filter"
+                        onmousedown="control_cmd('preamp subsonic rotate')">
+                        SUBS.
+                </button>
             </td>
             <td id="level_buttons12">
                 <button type="button" onmousedown="omd_audio_change('level', -1)" >
@@ -323,11 +328,6 @@
           </tr>
           <tr>
             <td id="level_buttons21">
-                <button type="button" id="subsonic" style="display:none;font-size:0.7em"
-                        title="Subsonic Filter"
-                        onmousedown="control_cmd('preamp subsonic rotate')">
-                        SUBS.
-                </button>
             </td>
             <td id="level_buttons22">
                 <button type="button" onmousedown="omd_audio_change('level', -3)" >
@@ -337,7 +337,7 @@
             </td>
             <td id="level_buttons23">
                 <button type="button" id="buttAOD" style="display:none;font-size:0.7em"
-                        title="Remove Added Outputs Delay"
+                        title="Toggle Output Delay"
                         onmousedown="omd_delay_toggle()">
                         0 ms
                 </button>
