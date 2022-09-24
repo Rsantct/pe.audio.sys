@@ -302,7 +302,7 @@ sed -i s/paudio/$(basename $HOME)/g  $forig_wol
 
 # Using Apache
 if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
-    echo "(i) Will configure www/clientside.js for Apache server"
+    echo "(i) Will configure www/js/main.js for Apache server"
     echo
     echo "(i) Checking the website 'pe.audio.sys'"
     echo "    /etc/apache2/sites-available/pe.audio.sys.conf"
@@ -335,7 +335,7 @@ if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
 
 # Using Node.js
 else
-    echo "(i) Will configure www/clientside.js for Node.js server"
+    echo "(i) Will configure www/js/main.js for Node.js server"
     sed -i -e "/const\ URL_PREFIX/c\const\ URL_PREFIX\ =\ \'\/\';" \
            "${HOME}"/pe.audio.sys/share/www/js/main.js
 fi
