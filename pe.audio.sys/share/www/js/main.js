@@ -13,7 +13,7 @@
 //////// CONFIGURABLE ITEMS
 //
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
-//      or set it '/functions.php' if you use Apache+PHP at server side.
+//      or set it '/php/main.php' if you use Apache+PHP at server side.
 //
 const URL_PREFIX = '/php/main.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
@@ -875,6 +875,7 @@ function omd_delay_toggle() {
     }
 }
 
+
 //////// HANDLERS: PLAYER 'onchange' 'onmousedown' 'onclick' ////////
 
 function omd_playerCtrl(action) {
@@ -916,7 +917,6 @@ function ck_play_url() {
         control_cmd( 'aux play_url ' + url );
     }
 }
-
 
 
 //////// HANDLERS: AUX 'onmousedown' 'onclick' 'oninput' ////////
