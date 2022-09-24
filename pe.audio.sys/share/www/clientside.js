@@ -1185,7 +1185,6 @@ function toneDefeatHighlight(){
     }
 }
 
-
 function buttonsToneBalanceHighlight(){
     if ( state.bass < 0 ){
         document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
@@ -1281,9 +1280,11 @@ function buttonLoudHighlight(){
 
 function buttonAODHighlight(){
     if ( state.extra_delay === 0 ) {
+        document.getElementById("buttAOD").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("buttAOD").style.background = "rgb(100, 100, 100)";
         document.getElementById("buttAOD").style.color = "rgb(180, 180, 180)";
     } else {
+        document.getElementById("buttAOD").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("buttAOD").style.background = "rgb(100, 0, 0)";
         document.getElementById("buttAOD").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttAOD").style.display = 'inline-table';
