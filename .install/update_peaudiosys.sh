@@ -282,7 +282,7 @@ fi
 ########################################################################
 
 ########################################################################
-# clientside.js needs to be adapted depending on you using
+# www/js/main.js needs to be adapted depending on you using
 # Apache or Node.js as your pe.audio.sys http server
 ########################################################################
 a2ensites=$(ls /etc/apache2/sites-enabled/)
