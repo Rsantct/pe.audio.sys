@@ -337,5 +337,5 @@ if test "${a2ensites#*pe.audio.sys}" != "$a2ensites"; then
 else
     echo "(i) Will configure www/clientside.js for Node.js server"
     sed -i -e "/const\ URL_PREFIX/c\const\ URL_PREFIX\ =\ \'\/\';" \
-           "${HOME}"/pe.audio.sys/share/www/clientside.js
+           "${HOME}"/pe.audio.sys/share/www/js/main.js
 fi
