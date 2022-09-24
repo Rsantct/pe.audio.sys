@@ -30,10 +30,10 @@ It is possible to use two server side backend flavours:
 - **Apache+PHP (system wide service)**
 - **Node.js (user space service)**
 
-The only needed configuration (1) has to be done inside the `clientside.js` file:
+The only needed configuration (1) has to be done inside the `main.js` file:
 
      Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
-     or set it '/functions.php' if you use Apache+PHP at server side.
+     or set it '/php/main.php' if you use Apache+PHP at server side.
      
 (1) Above changes are automatically made when running the `tmp/uptade_peaudiosys.sh` installing script.
 
