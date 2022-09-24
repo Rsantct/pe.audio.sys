@@ -1293,14 +1293,17 @@ function buttonAODHighlight(){
 
 function buttonSubsonicHighlight(){
     if ( state.subsonic == 'off' ) {
+        document.getElementById("subsonic").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
         document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
         document.getElementById("subsonic").innerText = 'SUBS\n-';
     } else if ( state.subsonic == 'mp' ) {
+        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nmp';
     } else if ( state.subsonic == 'lp' ) {
+        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nlp';
