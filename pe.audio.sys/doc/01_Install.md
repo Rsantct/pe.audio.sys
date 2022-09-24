@@ -67,7 +67,7 @@ You need to install the Node.js package,
     sudo apt install nodejs node-js-yaml
 
 
-The only needed configuration is the `URL_PREXIX` under `share/www/clientside.js` so that the web page runs when served from our Node.js server.
+The only needed configuration is the `URL_PREXIX` under `share/www/js/main.js` so that the web page runs when served from our Node.js server.
 
 (i) Anyway the script `tmp/update_peaudiosy.sh` will auto configure this properly when updating your system.
 
