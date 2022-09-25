@@ -10,7 +10,7 @@
 */
 
 
-//////// CONFIGURABLE ITEMS
+//////// CONFIGURABLE ITEMS ////////
 //
 //  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
 //      or set it '/php/main.php' if you use Apache+PHP at server side.
@@ -20,7 +20,7 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 
 
 
-//////// GLOBAL VARIABLES
+//////// GLOBAL VARIABLES ////////
 var aux_info            = { 'amp': 'n/a',
                             'loudness_monitor': {'LU_I': 0, 'LU_M': 0, 'scope': 'track' },
                             'last_macro': '-',
@@ -1166,6 +1166,8 @@ function clear_highlighteds(){
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
 
+
+//////// ELEMENTS HIGHLIGHT ////////
 
 function toneDefeatHighlight(){
     if (state.tone_defeat){
