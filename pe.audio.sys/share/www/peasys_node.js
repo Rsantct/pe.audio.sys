@@ -12,6 +12,7 @@
 const NODEJS_PORT = 8080;   // The listening HTTP PORT
 // -----------------------------------------------------------------------------
 
+
 // Importing modules (require)
 const http  = require('http');
 const url   = require('url');
@@ -19,12 +20,19 @@ const fs    = require('fs');
 const net   = require('net');
 const yaml  = require('js-yaml')
 
+
 // Command line '-v' verbose option
 var verbose = false;        // Defaults to disable to printing out some details
+var vv      = false;        // very vervose mode
 const opcs = process.argv.slice(2);
 if ( opcs.indexOf('-v') != -1 ){
     verbose = true;
 }
+if ( opcs.indexOf('-vv') != -1 ){
+    verbose = true;
+    vv      = true;
+}
+
 
 // Reading address & port to communicate to pe.audio.sys
 try {
@@ -37,115 +45,185 @@ try {
     console.log(e);
 }
 
-// The files to be HTTP served here
-const INDEX_HTML_PATH = __dirname + '/index.html';
-const CLISIDE_JS_PATH = __dirname + '/clientside.js';
-const IMG_FOLDER      = __dirname + '/images';
 
 // Helpers to printout http TX and RX chunks w/o repeating them
 var last_cmd_phrase = '';
 var last_http_sent  = '';
 
+
+// Color escape sequences for console.log usage
+// https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
+
+const Reset = "\x1b[0m";
+const Bright = "\x1b[1m";
+const Dim = "\x1b[2m";
+const Underscore = "\x1b[4m";
+const Blink = "\x1b[5m";
+const Reverse = "\x1b[7m";
+const Hidden = "\x1b[8m";
+
+const FgBlack = "\x1b[30m";
+const FgRed = "\x1b[31m";
+const FgGreen = "\x1b[32m";
+const FgYellow = "\x1b[33m";
+const FgBlue = "\x1b[34m";
+const FgMagenta = "\x1b[35m";
+const FgCyan = "\x1b[36m";
+const FgWhite = "\x1b[37m";
+
+const BgBlack = "\x1b[40m";
+const BgRed = "\x1b[41m";
+const BgGreen = "\x1b[42m";
+const BgYellow = "\x1b[43m";
+const BgBlue = "\x1b[44m";
+const BgMagenta = "\x1b[45m";
+const BgCyan = "\x1b[46m";
+const BgWhite = "\x1b[47m";
+
+
 // This is the MAIN function, it is called from the httpServer
 // when some httpRequest is received.
 function onHttpReq( httpReq, httpRes ){
 
+    if (vv) console.log( FgCyan, '(node) httpServer RX:', httpReq.url, Reset );
+
     let server_header = 'pe.audio.sys / Node.js ' + process.version
     httpRes.setHeader('server', server_header);
-    var fpath = '';
 
-    // Serve our HTML code index.html as an http response
+    var fpath = '';
+    var ctype = ''
+
+
+    // HTML code index.html as an http response
     // (i) index_big.html is used for better layout in a landscape tablet screen.
     if (httpReq.url === '/' || httpReq.url === '/index.html'
                             || httpReq.url === '/index_big.html') {
 
-        fpath = INDEX_HTML_PATH;
+        ctype = 'text/html';
+        fpath = __dirname + '/./index.html';
+
         if (httpReq.url === '/index_big.html'){
-            fpath = INDEX_HTML_PATH.replace('index', 'index_big');
+            fpath = fpath.replace('index', 'index_big');
         }
-        console.log( '(node) httpServer TX: text/html', '('+fpath+')' );
 
-        httpRes.writeHead(200,  {'Content-Type': 'text/html'} );
+        httpRes.writeHead(200,  {'Content-Type': ctype} );
         fs.readFile(fpath, 'utf8', (err,data) => {
             if (err) throw err;
             httpRes.write(data);
             httpRes.end();
+            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset );
         });
     }
 
-    // Serve the JAVASCRIPT source file refered from index.html's <src=...>
-    else if (httpReq.url === '/clientside.js') {
 
-        fpath = CLISIDE_JS_PATH;
-        console.log( '(node) httpServer TX: application/javascript',
-                     '('+fpath+')' );
+    // MANIFEST FILE
+    else if (httpReq.url.match(/site\.webmanifest/g)) {
 
-        httpRes.writeHead(200, {'Content-Type': 'application/javascript'});
+        ctype = 'text/plain';
+        fpath = __dirname + httpReq.url;
+
+        httpRes.writeHead(200,  {'Content-Type': ctype} );
         fs.readFile(fpath, 'utf8', (err,data) => {
             if (err) throw err;
             httpRes.write(data);
             httpRes.end();
+            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
         });
     }
 
-    // Serve 'favicon.ico' for mozilla and chrome like browsers
+
+    // CSS
+    else if (httpReq.url.match("\.css$")) {
+
+        ctype = 'text/css';
+        fpath = __dirname + httpReq.url;
+
+        httpRes.writeHead(200,  {'Content-Type': ctype} );
+        fs.readFile(fpath, 'utf8', (err,data) => {
+            if (err) throw err;
+            httpRes.write(data);
+            httpRes.end();
+            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
+        });
+    }
+
+
+    // JAVASCRIPT
+    else if (httpReq.url === '/js/main.js') {
+
+        ctype = 'application/javascript';
+        fpath = __dirname + '/./js/main.js';
+
+        httpRes.writeHead(200, {'Content-Type': ctype});
+        fs.readFile(fpath, 'utf8', (err,data) => {
+            if (err) throw err;
+            httpRes.write(data);
+            httpRes.end();
+            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
+        });
+    }
+
+
+    // FAVICON.ICO for Mozilla and Chrome like browsers
     else if (httpReq.url === '/favicon.ico') {
 
-        let ct = 'image/vnd.microsoft.icon';
-        let favicon_path = __dirname + '/favicon.ico';
+        ctype = 'image/vnd.microsoft.icon';
+        fpath = __dirname + '/favicon.ico';
 
-        httpRes.writeHead(200, {'Content-Type': ct});
+        httpRes.writeHead(200, {'Content-Type': ctype});
         fs.readFile(favicon_path, (err, data) => {
             if (! err) {
                 httpRes.write(data);
                 httpRes.end();
+                if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
             }
         });
     }
 
-    // Serve pe.audio.sys IMAGES.
-    // Pending to use ETag to allow browsers to cache images at client end.
-    // By now, we will use Cache-Control 60 seconds for Safary to chache the
-    // sent image. Firefox uses cached image even if omitted this header.
-    else if ( httpReq.url.slice(0,7) === '/images' ) {
 
-        let ct = 'image';
+    // IMAGES
+    //      Pending to use ETag to allow browsers to cache images at client end.
+    //      By now, we will use Cache-Control 60 seconds for Safary to chache the
+    //      sent image. Firefox uses cached image even if omitted this header.
+    else if ( httpReq.url.match(/\/images/g) ) {
+
+        ctype = 'image';
         if       ( httpReq.url.slice(-4, ) === '.png' ) {
-            ct = 'image/png';
+            ctype = 'image/png';
         }else if ( httpReq.url.slice(-4, ) === '.jpg' ) {
-            ct = 'image/jpg';
+            ctype = 'image/jpg';
         }
-        console.log( '(node) httpServer TX: ' + ct );
 
-        let img_path = IMG_FOLDER + '/' + httpReq.url.split('/').slice(-1, );
+        fpath = __dirname + httpReq.url;
 
         // The browser's clientside javascript will request some stamp ?xxxx
         // after the filename, e.g: images/brutefir_eq.png?xxxx
-        img_path = img_path.split('?').slice(0, 1)[0]
+        fpath = fpath.split('?').slice(0, 1)[0]
 
-        httpRes.writeHead(200, {'Content-Type': ct,
+        httpRes.writeHead(200, {'Content-Type': ctype,
                                 'Cache-Control': 'max-age=60'});
-        fs.readFile(img_path, (err, data) => {
+        fs.readFile(fpath, (err, data) => {
             if (! err) {
                 httpRes.write(data);
                 httpRes.end();
+               if (vv)  console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
             }
         });
     }
 
-    // processing a CLIENT QUERY (url = /?xxxxx)
-    else if (httpReq.url.slice(0,2) === '/?'){
+
+    // A CLIENT QUERY (url = ....?command=....)
+    else if (httpReq.url.match(/\?command=/g)){
 
         let q = url.parse(httpReq.url, true).query;
         let cmd_phrase = q.command;
-
 
         if ( cmd_phrase ){
 
             // debugging received commands but not repeating :-)
             if (last_cmd_phrase !== cmd_phrase){
                 if (verbose){
-                    console.log('(node) httpServer RX: /?command=' + cmd_phrase);
+                    console.log(FgGreen, '(node) httpServer RX: ' + httpReq.url);
                 }
                 last_cmd_phrase = cmd_phrase;
             }
@@ -160,8 +238,8 @@ function onHttpReq( httpReq, httpRes ){
             client.on('error', function(err){
                 httpRes.end();
                 client.destroy();
-                console.log( '(node) cannot connect to pe.audio.sys at '
-                             + PAS_ADDR + ':' + PAS_PORT );
+                console.log( FgRed, '(node) cannot connect to pe.audio.sys at '
+                             + PAS_ADDR + ':' + PAS_PORT, Reset );
             });
 
             // Will use timeout when connecting as a client to the pe.audio.sys server
@@ -170,15 +248,15 @@ function onHttpReq( httpReq, httpRes ){
             //     As per this is a local connection, it is enough about 100 ms
             client.setTimeout(100);
             client.on('timeout', () => {
-              console.log( '(node) client socket timeout to pe.audio.sys at '
-                           + PAS_ADDR + ':' + PAS_PORT );
+              console.log( FgRed, '(node) client socket timeout to pe.audio.sys at '
+                           + PAS_ADDR + ':' + PAS_PORT, Reset );
               client.end();
             });
 
             client.write( cmd_phrase + '\r\n' );
             if (verbose){
-                console.log( '(node) ' + PAS_ADDR + ':' +
-                             PAS_PORT + ' TX: ' + cmd_phrase );
+                console.log( FgGreen, '(node) ' + PAS_ADDR + ':' +
+                             PAS_PORT + ' TX: ' + cmd_phrase, Reset );
             }
 
             // The key (*) - the handler for socket received data -
@@ -187,13 +265,13 @@ function onHttpReq( httpReq, httpRes ){
                 const ans = data.toString();
                 if (verbose){
                     if ( ans.length > 40 ){
-                        console.log( '(node) ' + PAS_ADDR + ':' +
-                                     PAS_PORT + ' RX: ' + ans.slice(0,40) +
-                                     ' ... ...' );
+                        console.log( FgGreen, '(node) ' + PAS_ADDR + ':' +
+                                     PAS_PORT + ' RX:', ans.slice(0,40) +
+                                     ' ... ...', Reset );
                     }
                     else {
-                        console.log( '(node) ' + PAS_ADDR + ':' +
-                                     PAS_PORT + ' RX: ' + ans);
+                        console.log( FgGreen, '(node) ' + PAS_ADDR + ':' +
+                                     PAS_PORT + ' RX:', ans, Reset);
                     }
                 }
 
@@ -209,10 +287,10 @@ function onHttpReq( httpReq, httpRes ){
                     if (last_http_sent !== ans){
                         if (verbose){
                             if ( ans.length > 40 ){
-                                console.log( '(node) httpServer TX: ' + ans.slice(0,40) );
+                                console.log( FgGreen, '(node) httpServer TX: ' + ans.slice(0,40), Reset );
                             }
                             else {
-                                console.log( '(node) httpServer TX: ' + ans );
+                                console.log( FgGreen, '(node) httpServer TX: ' + ans, Reset );
                             }
                         }
                         last_http_sent = ans;
@@ -221,6 +299,17 @@ function onHttpReq( httpReq, httpRes ){
                 httpRes.end();
             });
         }
+    }
+
+
+    // IGNORING the httpRequest
+    else {
+        const ans = 'NACK'
+        ctype = 'text/plain'
+        httpRes.writeHead(200, {'Content-Type': ctype});
+        httpRes.write(ans + '\n');
+        httpRes.end();
+        console.log( FgBlue, '(node) httpServer TX: ', ctype, ans, Reset);
     }
 }
 
