@@ -9,9 +9,6 @@
        NOTICE: remember do not leaving any console.log active
 */
 
-//  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
-//      or set it '/functions.php' if you use Apache+PHP at server side.
-//  (!!!) CURRENTLY ONLY SUPORTED BY APACHE+PHP NOT NODE.JS
 const URL_PREFIX = '/functions.php';
 
 
