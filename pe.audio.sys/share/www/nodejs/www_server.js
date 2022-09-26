@@ -85,7 +85,10 @@ const BgWhite = "\x1b[47m";
 // when some httpRequest is received.
 function onHttpReq( httpReq, httpRes ){
 
+    // DEBUG
     if (vv) console.log( FgCyan, '(node) httpServer RX:', httpReq.url, Reset );
+
+    const docRoot = __dirname + '/../'
 
     let server_header = 'pe.audio.sys / Node.js ' + process.version
     httpRes.setHeader('server', server_header);
@@ -100,7 +103,7 @@ function onHttpReq( httpReq, httpRes ){
                             || httpReq.url === '/index_big.html') {
 
         ctype = 'text/html';
-        fpath = __dirname + '/./index.html';
+        fpath = docRoot + 'index.html';
 
         if (httpReq.url === '/index_big.html'){
             fpath = fpath.replace('index', 'index_big');
@@ -120,7 +123,7 @@ function onHttpReq( httpReq, httpRes ){
     else if (httpReq.url.match(/site\.webmanifest/g)) {
 
         ctype = 'text/plain';
-        fpath = __dirname + httpReq.url;
+        fpath = docRoot + httpReq.url;
 
         httpRes.writeHead(200,  {'Content-Type': ctype} );
         fs.readFile(fpath, 'utf8', (err,data) => {
@@ -136,7 +139,7 @@ function onHttpReq( httpReq, httpRes ){
     else if (httpReq.url.match("\.css$")) {
 
         ctype = 'text/css';
-        fpath = __dirname + httpReq.url;
+        fpath = docRoot + httpReq.url;
 
         httpRes.writeHead(200,  {'Content-Type': ctype} );
         fs.readFile(fpath, 'utf8', (err,data) => {
@@ -152,7 +155,7 @@ function onHttpReq( httpReq, httpRes ){
     else if (httpReq.url === '/js/main.js') {
 
         ctype = 'application/javascript';
-        fpath = __dirname + '/./js/main.js';
+        fpath = docRoot + 'js/main.js';
 
         httpRes.writeHead(200, {'Content-Type': ctype});
         fs.readFile(fpath, 'utf8', (err,data) => {
@@ -168,7 +171,7 @@ function onHttpReq( httpReq, httpRes ){
     else if (httpReq.url === '/favicon.ico') {
 
         ctype = 'image/vnd.microsoft.icon';
-        fpath = __dirname + '/favicon.ico';
+        fpath = docRoot + 'favicon.ico';
 
         httpRes.writeHead(200, {'Content-Type': ctype});
         fs.readFile(favicon_path, (err, data) => {
@@ -194,7 +197,7 @@ function onHttpReq( httpReq, httpRes ){
             ctype = 'image/jpg';
         }
 
-        fpath = __dirname + httpReq.url;
+        fpath = docRoot + httpReq.url;
 
         // The browser's clientside javascript will request some stamp ?xxxx
         // after the filename, e.g: images/brutefir_eq.png?xxxx
