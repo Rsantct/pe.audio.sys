@@ -12,12 +12,11 @@
 
 //////// CONFIGURABLE ITEMS ////////
 //
-//  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
+//  (i) Set URL_PREFIX ='/' if you use the provided nodejs/www_server.js script,
 //      or set it '/php/main.php' if you use Apache+PHP at server side.
 //
 const URL_PREFIX = '/php/main.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
-
 
 
 //////// GLOBAL VARIABLES ////////
