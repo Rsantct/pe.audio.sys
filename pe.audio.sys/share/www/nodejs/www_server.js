@@ -21,9 +21,9 @@ const net   = require('net');
 const yaml  = require('js-yaml')
 
 
-// Command line '-v' verbose option
-var verbose = false;        // Defaults to disable to printing out some details
-var vv      = false;        // very vervose mode
+// Command line option '-v' VERBOSE -vv VERY VERBOSE
+var verbose = false;
+var vv      = false;
 const opcs = process.argv.slice(2);
 if ( opcs.indexOf('-v') != -1 ){
     verbose = true;
@@ -85,111 +85,90 @@ const BgWhite = "\x1b[47m";
 // when some httpRequest is received.
 function onHttpReq( httpReq, httpRes ){
 
-    // DEBUG
+    function http_serve_file(fpath){
+
+        let fileEncoding = 'utf8';
+        if (ctype.match(/image/g)){
+            fileEncoding = null;
+            httpRes.writeHead(200, {'Content-Type': ctype,
+                                    'Cache-Control': 'max-age=60'});
+
+        }else{
+            httpRes.writeHead(200, {'Content-Type': ctype});
+        }
+
+        fs.readFile(fpath, fileEncoding, (err,data) => {
+            if (! err) {
+                httpRes.write(data);
+                httpRes.end();
+                if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset );
+            }else{
+                httpRes.end();
+                if (vv) console.log( FgRed, '(node) httpServer ERROR READING: ', '('+fpath+')', Reset );
+            }
+        });
+
+    };
+
+
+    const   docRoot = __dirname + '/../'
+    var     fpath = '';
+    var     ctype = ''
+
+
+    // VERY VERBOSE MODE
     if (vv) console.log( FgCyan, '(node) httpServer RX:', httpReq.url, Reset );
 
-    const docRoot = __dirname + '/../'
 
-    let server_header = 'pe.audio.sys / Node.js ' + process.version
-    httpRes.setHeader('server', server_header);
-
-    var fpath = '';
-    var ctype = ''
+    // PREPARE HTTP HEADER
+    httpRes.setHeader('server', 'pe.audio.sys / Node.js ' + process.version);
 
 
     // HTML code index.html as an http response
     // (i) index_big.html is used for better layout in a landscape tablet screen.
     if (httpReq.url === '/' || httpReq.url === '/index.html'
                             || httpReq.url === '/index_big.html') {
-
         ctype = 'text/html';
         fpath = docRoot + 'index.html';
-
         if (httpReq.url === '/index_big.html'){
             fpath = fpath.replace('index', 'index_big');
         }
-
-        httpRes.writeHead(200,  {'Content-Type': ctype} );
-        fs.readFile(fpath, 'utf8', (err,data) => {
-            if (err) throw err;
-            httpRes.write(data);
-            httpRes.end();
-            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset );
-        });
+        http_serve_file(fpath);
     }
-
 
     // MANIFEST FILE
     else if (httpReq.url.match(/site\.webmanifest/g)) {
-
         ctype = 'text/plain';
         fpath = docRoot + httpReq.url;
-
-        httpRes.writeHead(200,  {'Content-Type': ctype} );
-        fs.readFile(fpath, 'utf8', (err,data) => {
-            if (err) throw err;
-            httpRes.write(data);
-            httpRes.end();
-            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
-        });
+        http_serve_file(fpath);
     }
-
 
     // CSS
     else if (httpReq.url.match("\.css$")) {
-
         ctype = 'text/css';
         fpath = docRoot + httpReq.url;
-
-        httpRes.writeHead(200,  {'Content-Type': ctype} );
-        fs.readFile(fpath, 'utf8', (err,data) => {
-            if (err) throw err;
-            httpRes.write(data);
-            httpRes.end();
-            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
-        });
+        http_serve_file(fpath);
     }
-
 
     // JAVASCRIPT
     else if (httpReq.url === '/js/main.js') {
-
         ctype = 'application/javascript';
-        fpath = docRoot + 'js/main.js';
-
-        httpRes.writeHead(200, {'Content-Type': ctype});
-        fs.readFile(fpath, 'utf8', (err,data) => {
-            if (err) throw err;
-            httpRes.write(data);
-            httpRes.end();
-            if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
-        });
+        fpath = docRoot + httpReq.url;
+        http_serve_file(fpath);
     }
-
 
     // FAVICON.ICO for Mozilla and Chrome like browsers
-    else if (httpReq.url === '/favicon.ico') {
-
+    else if (httpReq.url.match(/^\/favicon/g)){
         ctype = 'image/vnd.microsoft.icon';
-        fpath = docRoot + 'favicon.ico';
-
-        httpRes.writeHead(200, {'Content-Type': ctype});
-        fs.readFile(favicon_path, (err, data) => {
-            if (! err) {
-                httpRes.write(data);
-                httpRes.end();
-                if (vv) console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
-            }
-        });
+        fpath = docRoot + httpReq.url;
+        http_serve_file(fpath);
     }
-
 
     // IMAGES
     //      Pending to use ETag to allow browsers to cache images at client end.
     //      By now, we will use Cache-Control 60 seconds for Safary to chache the
     //      sent image. Firefox uses cached image even if omitted this header.
     else if ( httpReq.url.match(/\/images/g) ) {
-
         ctype = 'image';
         if       ( httpReq.url.slice(-4, ) === '.png' ) {
             ctype = 'image/png';
@@ -197,23 +176,13 @@ function onHttpReq( httpReq, httpRes ){
             ctype = 'image/jpg';
         }
 
+        // The browser's clientside javascript will request some stamp
+        // after the filename, e.g. images/brutefir_eq.png?554766166
         fpath = docRoot + httpReq.url;
-
-        // The browser's clientside javascript will request some stamp ?xxxx
-        // after the filename, e.g: images/brutefir_eq.png?xxxx
         fpath = fpath.split('?').slice(0, 1)[0]
 
-        httpRes.writeHead(200, {'Content-Type': ctype,
-                                'Cache-Control': 'max-age=60'});
-        fs.readFile(fpath, (err, data) => {
-            if (! err) {
-                httpRes.write(data);
-                httpRes.end();
-               if (vv)  console.log( FgBlue, '(node) httpServer TX: ', ctype, '('+fpath+')', Reset  );
-            }
-        });
+        http_serve_file(fpath);
     }
-
 
     // A CLIENT QUERY (url = ....?command=....)
     else if (httpReq.url.match(/\?command=/g)){
@@ -311,7 +280,7 @@ function onHttpReq( httpReq, httpRes ){
     }
 
 
-    // IGNORING the httpRequest
+    // ELSE IGNORING the httpRequest
     else {
         const ans = 'NACK'
         ctype = 'text/plain'
