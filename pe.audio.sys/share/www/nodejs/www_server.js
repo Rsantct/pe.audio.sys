@@ -248,21 +248,27 @@ function onHttpReq( httpReq, httpRes ){
             // Will use timeout when connecting as a client to the pe.audio.sys server
             // (i) It is a must to ending the socket if timeout happens
             //     https://nodejs.org/api/net.html#net_socket_settimeout_timeout_callback
-            //     As per this is a local connection, it is enough about 100 ms
-            client.setTimeout(100);
+            //     Some heavy commands (i.e. player get_all_info) takes a while > 200 ms
+            if (cmd_phrase.match(/^player/g)){
+                client.setTimeout(300);
+            }else{
+                client.setTimeout(100);
+            }
             client.on('timeout', () => {
+              console.log( FgRed, '(node) sending to pe.audio.sys:', cmd_phrase, Reset);
               console.log( FgRed, '(node) client socket timeout to pe.audio.sys at '
                            + PAS_ADDR + ':' + PAS_PORT, Reset );
               client.end();
             });
 
+            // The socket client is ready to send data through by:
             client.write( cmd_phrase + '\r\n' );
             if (verbose){
                 console.log( FgGreen, '(node) ' + PAS_ADDR + ':' +
                              PAS_PORT + ' TX: ' + cmd_phrase, Reset );
             }
 
-            // The key (*) - the handler for socket received data -
+            // The key (**) ==> the handler for socket received data
             client.on('data', (data) => {
 
                 const ans = data.toString();
@@ -280,9 +286,9 @@ function onHttpReq( httpReq, httpRes ){
 
                 client.end();
 
-                // (*) Important to write and end the httpResponse
-                //     here INSIDE the client.on('data') HANDLER
-                //     because of the handler (and all JS) is asynchronous
+                // (**) Important to write and end the httpResponse
+                //      here INSIDE the client.on('data') HANDLER
+                //      because of the handler (and all JS) is asynchronous
                 httpRes.writeHead(200, {'Content-Type':'text/plain'});
                 if (ans){
                     httpRes.write(ans);
