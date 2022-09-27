@@ -185,7 +185,7 @@ function onHttpReq( httpReq, httpRes ){
         http_serve_file(fpath);
     }
 
-    // A client query (url = ....?command=....)
+    // A query for the server side (url = ....?command=....)
     else if (httpReq.url.match(/\?command=/g)){
 
         let q = url.parse(httpReq.url, true).query;
@@ -201,7 +201,7 @@ function onHttpReq( httpReq, httpRes ){
                 last_cmd_phrase = cmd_phrase;
             }
 
-            // Create a socket client to the pe.audio.sys TCP server
+            // Create a socket client to the pe.audio.sys TCP server side
             const client = net.createConnection( { port:PAS_PORT,
                                                    host:PAS_ADDR },
                                                    () => {
