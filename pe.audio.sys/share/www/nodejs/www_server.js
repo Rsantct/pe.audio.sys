@@ -125,6 +125,8 @@ function onHttpReq( httpReq, httpRes ){
     httpRes.setHeader('server', 'pe.audio.sys / Node.js ' + process.version);
 
 
+    // Parse the requested URL:
+
     // Index.html
     // (i) index_big.html is used for better layout in a landscape tablet screen.
     if (httpReq.url === '/' || httpReq.url === '/index.html'
@@ -281,7 +283,7 @@ function onHttpReq( httpReq, httpRes ){
     }
 
 
-    // Discard the httpRequest
+    // An unaccepted httpRequest
     else {
         const ans = 'NACK'
         ctype = 'text/plain'
