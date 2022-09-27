@@ -85,6 +85,7 @@ const BgWhite = "\x1b[47m";
 // when some httpRequest is received.
 function onHttpReq( httpReq, httpRes ){
 
+    // Sends back a requested file to the browser
     function http_serve_file(fpath){
 
         let fileEncoding = 'utf8';
@@ -116,15 +117,15 @@ function onHttpReq( httpReq, httpRes ){
     var     ctype = ''
 
 
-    // VERY VERBOSE MODE
+    // very verbose mode
     if (vv) console.log( FgCyan, '(node) httpServer RX:', httpReq.url, Reset );
 
 
-    // PREPARE HTTP HEADER
+    // Prepare http header
     httpRes.setHeader('server', 'pe.audio.sys / Node.js ' + process.version);
 
 
-    // HTML code index.html as an http response
+    // Index.html
     // (i) index_big.html is used for better layout in a landscape tablet screen.
     if (httpReq.url === '/' || httpReq.url === '/index.html'
                             || httpReq.url === '/index_big.html') {
@@ -136,35 +137,35 @@ function onHttpReq( httpReq, httpRes ){
         http_serve_file(fpath);
     }
 
-    // MANIFEST FILE
+    // Manifest file
     else if (httpReq.url.match(/site\.webmanifest/g)) {
         ctype = 'text/plain';
         fpath = docRoot + httpReq.url;
         http_serve_file(fpath);
     }
 
-    // CSS
+    // Css
     else if (httpReq.url.match("\.css$")) {
         ctype = 'text/css';
         fpath = docRoot + httpReq.url;
         http_serve_file(fpath);
     }
 
-    // JAVASCRIPT
+    // Javascript
     else if (httpReq.url === '/js/main.js') {
         ctype = 'application/javascript';
         fpath = docRoot + httpReq.url;
         http_serve_file(fpath);
     }
 
-    // FAVICON.ICO for Mozilla and Chrome like browsers
+    // Favicons for Mozilla and Chrome like browsers
     else if (httpReq.url.match(/^\/favicon/g)){
         ctype = 'image/vnd.microsoft.icon';
         fpath = docRoot + httpReq.url;
         http_serve_file(fpath);
     }
 
-    // IMAGES
+    // Images
     //      Pending to use ETag to allow browsers to cache images at client end.
     //      By now, we will use Cache-Control 60 seconds for Safary to chache the
     //      sent image. Firefox uses cached image even if omitted this header.
@@ -184,7 +185,7 @@ function onHttpReq( httpReq, httpRes ){
         http_serve_file(fpath);
     }
 
-    // A CLIENT QUERY (url = ....?command=....)
+    // A client query (url = ....?command=....)
     else if (httpReq.url.match(/\?command=/g)){
 
         let q = url.parse(httpReq.url, true).query;
@@ -280,7 +281,7 @@ function onHttpReq( httpReq, httpRes ){
     }
 
 
-    // ELSE IGNORING the httpRequest
+    // Discard the httpRequest
     else {
         const ans = 'NACK'
         ctype = 'text/plain'
