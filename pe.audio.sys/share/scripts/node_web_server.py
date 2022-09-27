@@ -21,7 +21,7 @@ from config import CONFIG
 
 ctrlport = CONFIG['peaudiosys_port']
 
-cmdline = f'node {UHOME}/pe.audio.sys/share/www/peasys_node.js'
+cmdline = f'node {UHOME}/pe.audio.sys/share/www/nodejs/www_server.js'
 
 
 def stop():

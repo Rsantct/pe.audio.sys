@@ -76,31 +76,4 @@
         return $ans;
     }
 
-
-    ///////////////////////////   MAIN: ///////////////////////////////
-    // listen to http request then returns results via standard output
-
-    /*  http://php.net/manual/en/reserved.variables.request.php
-        PHP server side receives associative arrays, i.e. dictionaries, through by the
-        GET o PUT methods from the client side XMLHttpRequest (usually javascript).
-        The array is what appears after 'functions.php?.......', examples:
-
-            "GET", "functions.php?command=level -15"
-            "GET", "functions.php?command=aux amp_switch on"
-            "GET", "functions.php?command=player stop"
-    */
-
-    // echo system_socket('control', 'status'); // DEBUG
-
-    $command = $_REQUEST["command"];
-
-    if ( strpos($command, "_restart") ) {
-
-        echo send_cmd($command, 'restart');
-
-    } else {
-
-        echo send_cmd($command, 'peaudiosys');
-
-    }
 ?>
