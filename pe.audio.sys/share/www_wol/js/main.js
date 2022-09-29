@@ -9,7 +9,7 @@
        NOTICE: remember do not leaving any console.log active
 */
 
-const URL_PREFIX = '/functions.php';
+const URL_PREFIX = '/php/main.php';
 
 
 // DICT OF CONFIGURED MACHINES
