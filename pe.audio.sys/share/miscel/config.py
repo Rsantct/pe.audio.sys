@@ -38,11 +38,13 @@ STATE_PATH          = f'{MAINFOLDER}/.state'
 TONE_MEMO_PATH      = f'{MAINFOLDER}/.tone_memo'    # a tone_defeat helper
 LOG_FOLDER          = f'{MAINFOLDER}/log'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
+
 MACROS_FOLDER       = f'{MAINFOLDER}/macros'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
 CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
+AUX_INFO_PATH       = f'{MAINFOLDER}/.aux_info'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 
 
