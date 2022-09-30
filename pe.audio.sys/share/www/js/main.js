@@ -22,7 +22,7 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 //////// GLOBAL VARIABLES ////////
 var aux_info            = { 'amp': 'n/a',
                             'loudness_monitor': {'LU_I': 0, 'LU_M': 0, 'scope': 'track' },
-                            'last_macro': '-',
+                            'last_macro': '',
                             'warning': ''
 };
 
@@ -782,7 +782,7 @@ function oc_main_select(itemName){
     }
     setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
 
-    clear_highlighteds();
+    clear_macro_buttons_highlight();
     document.getElementById('mainSelector').style.color = "white";
 
 }
@@ -947,7 +947,7 @@ function oc_run_macro(mFname){
     control_cmd( 'aux run_macro ' + mFname );
 
     var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
-    clear_highlighteds();
+    clear_macro_buttons_highlight();
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
     // setTimeout(() => { highlight_macro_button(mName);}, 200);
@@ -1156,13 +1156,17 @@ function select_clear_options(ElementId){
 
 
 function clear_highlighteds(){
-    for (let i = 0; i < macro_button_list.length; i++) {
-        document.getElementById(macro_button_list[i]).className = 'macro_button';
-    }
     document.getElementById('mainSelector').style.color     = "rgb(200,200,200)";
     document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
     document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
+}
+
+
+function clear_macro_buttons_highlight(){
+    for (let i = 0; i < macro_button_list.length; i++) {
+        document.getElementById(macro_button_list[i]).className = 'macro_button';
+    }
 }
 
 
