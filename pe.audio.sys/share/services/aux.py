@@ -11,7 +11,6 @@
 from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
 import  jack
-import  json
 from    subprocess          import  Popen
 from    time                import  sleep
 import  os
@@ -21,28 +20,18 @@ import  threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config          import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
-                                AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH
+from    config  import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
+                        AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH
 
-from    miscel          import  read_state_from_disk, send_cmd, is_IP,  \
-                                wait4ports, process_is_running, Fmt
+from    miscel  import  *
 
 
 AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'run_macro',
-                    'play_url', 'loudness_monitor_reset', 'lu_monitor_reset' ,
+                    'play_url', 'reset_loudness_monitor', 'reset_lu_monitor' ,
                     'set_loudness_monitor_scope', 'set_lu_monitor_scope',
                     'get_loudness_monitor', 'get_lu_monitor',
                     'info', 'warning'
                 ]
-
-
-def dump_aux_info():
-    # Dynamic updates
-    AUX_INFO['amp'] =               manage_amp_switch( 'state' )
-    AUX_INFO['loudness_monitor'] =  get_loudness_monitor()
-    # Dumping to disk
-    with open(f'{MAINFOLDER}/.aux_info', 'w') as f:
-        f.write( json.dumps(AUX_INFO) )
 
 
 def get_web_config():
@@ -66,62 +55,6 @@ def get_web_config():
                                               in CONFIG['scripts'] else False
 
     return wconfig
-
-
-def manage_amp_switch(mode):
-
-    def get_amp_state():
-        result = 'n/a'
-        try:
-            with open( f'{AMP_STATE_PATH}', 'r') as f:
-                tmp =  f.read().strip()
-            if tmp.lower() in ('0', 'off'):
-                result = 'off'
-            elif tmp.lower() in ('1', 'on'):
-                result = 'on'
-        except:
-            pass
-        return result
-
-
-    def set_amp_state(mode):
-        if 'amp_manager' in CONFIG:
-            AMP_MANAGER     = CONFIG['amp_manager']
-        else:
-            return '(aux) amp_manager not configured'
-        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
-        Popen( f'{AMP_MANAGER} {mode}', shell=True )
-        sleep(1)
-        return get_amp_state()
-
-
-    cur_state = get_amp_state()
-    new_state  = '';
-
-    if mode == 'state':
-        result = cur_state
-
-    elif mode == 'toggle':
-        # if unknown state, this switch defaults to 'on'
-        new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
-
-    elif mode in ('on', 'off'):
-        new_state = mode
-
-    else:
-        result = '(aux) bad amp_switch option'
-
-    if new_state:
-        result = set_amp_state( new_state )
-
-    # Optionally will stop the current player as per CONFIG
-    if new_state == 'off':
-        if 'amp_off_stops_player' in CONFIG and CONFIG['amp_off_stops_player']:
-            curr_input = read_state_from_disk()['input']
-            if not curr_input.startswith('remote'):
-                send_cmd('player pause', timeout=1)
-
-    return result
 
 
 def get_macros(only_web_macros=False):
@@ -161,23 +94,10 @@ def run_macro(mname):
         Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
         AUX_INFO["last_macro"] = mname
         # for others to have fresh 'last_macro'
-        dump_aux_info()
+        dump_aux_info(AUX_INFO)
         return 'ordered'
     else:
         return 'macro not found'
-
-
-def get_loudness_monitor():
-        try:
-            with open(LDMON_PATH, 'r') as f:
-                result = json.loads( f.read() )
-        except:
-            if 'LU_reset_scope' in CONFIG:
-                result = {'LU_I': 0.0, 'LU_M':0.0,
-                          'scope': CONFIG["LU_reset_scope"]}
-            else:
-                result = {'LU_I': 0.0, 'LU_M':0.0, 'scope': 'album'}
-        return result
 
 
 def warning_expire(timeout=5):
@@ -186,7 +106,7 @@ def warning_expire(timeout=5):
     def mytimer(timeout):
         sleep(timeout)
         AUX_INFO['warning'] = ''
-        dump_aux_info()
+        dump_aux_info(AUX_INFO)
     job = threading.Thread(target=mytimer, args=(timeout,))
     job.start()
 
@@ -302,13 +222,13 @@ def manage_warning_msg(arg):
             result = 'warning message in use'
         else:
             AUX_INFO['warning'] = ' '.join(args[1:])
-            dump_aux_info()
+            dump_aux_info(AUX_INFO)
             warning_expire(timeout=60)
             result = 'done'
 
     elif args[0] == 'clear':
         AUX_INFO['warning'] = ''
-        dump_aux_info()
+        dump_aux_info(AUX_INFO)
         result = 'done'
 
     elif args[0] == 'get':
@@ -341,7 +261,7 @@ class files_event_handler(FileSystemEventHandler):
         # DEBUG
         #print( f'(aux) event type: {event.event_type}, file: {event.src_path}' )
         if event.src_path == self.wanted_path:
-            dump_aux_info()
+            dump_aux_info(AUX_INFO)
 
 
 # auto-started when loading this module
@@ -350,12 +270,12 @@ def init():
     global AUX_INFO
     AUX_INFO = {    'amp':                  'off',
                     'loudness_monitor':     0.0,
-                    'last_macro':           '-',                # cannot be empty
+                    'last_macro':           '',
                     'warning':              ''
                 }
 
     # First update
-    dump_aux_info()
+    dump_aux_info(AUX_INFO)
 
     # Starts a WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
@@ -400,7 +320,7 @@ def do( cmd, arg ):
     elif cmd == 'play_url':
         result = play_url(arg)
 
-    elif cmd == 'loudness_monitor_reset' or cmd == 'lu_monitor_reset':
+    elif cmd == 'reset_loudness_monitor' or cmd == 'reset_lu_monitor':
         result = manage_lu_monitor('reset')
 
     elif cmd == 'set_loudness_monitor_scope' or cmd == 'set_lu_monitor_scope':
