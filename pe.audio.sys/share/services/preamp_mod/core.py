@@ -18,8 +18,8 @@ import brutefir_mod as bf
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, LSPK_FOLDER,  \
-                    LDMON_PATH, MAINFOLDER
+from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
+                    LSPK_FOLDER, LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
                     sec2min, Fmt
@@ -264,6 +264,11 @@ class Preamp(object):
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
         self.state["peq_set"] = get_peq_in_use()
         self.state["fs"] = jack.get_samplerate()
+        # tone_memo keeps tone values even when tone_defeat is activated
+        self.state["tone_defeat"] = False
+        self.tone_memo = {}
+        self.tone_memo["bass"]    = self.state["bass"]
+        self.tone_memo["treble"]  = self.state["treble"]
         # The target curves available under the 'eq' folder
         self.target_sets = self._find_target_sets()
         # The available span for tone curves
@@ -447,7 +452,6 @@ class Preamp(object):
         return eq_mag, eq_pha
 
 
-
     def _print_threads(self):
         """ Console info about active threads
         """
@@ -537,7 +541,16 @@ class Preamp(object):
         """
         gmax            = self.gain_max
         gain            = bf.calc_gain( candidate )
-        eq_mag, eq_pha  = self._calc_eq( candidate )
+
+        # (!) Tone defeat control
+        candidate2 = candidate.copy()
+
+        if self.state["tone_defeat"]:
+            candidate2["bass"] = 0
+            candidate2["treble"] = 0
+
+        eq_mag, eq_pha  = self._calc_eq( candidate2 )
+
         bal             = candidate["balance"]
 
         headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0)
@@ -563,6 +576,7 @@ class Preamp(object):
             bf.set_gains( candidate )
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
+            self.save_tone_memo()
             return 'done'
         else:
             # REFUSED
@@ -573,6 +587,13 @@ class Preamp(object):
         self.state["convolver_runs"] = bf.is_running()
         with open(STATE_PATH, 'w') as f:
             f.write( json.dumps( self.state ) )
+
+
+    def save_tone_memo(self):
+        self.tone_memo["bass"]   = self.state["bass"]
+        self.tone_memo["treble"] = self.state["treble"]
+        with open(TONE_MEMO_PATH, 'w') as f:
+            f.write( json.dumps( self.tone_memo ) )
 
 
     def get_state(self, *dummy):
@@ -626,6 +647,27 @@ class Preamp(object):
             return self._validate( candidate )
         else:
             return 'too much'
+
+
+    def set_tone_defeat(self, value, *dummy):
+
+        if type(value) == bool:
+            value = str(value)
+
+        try:
+            if value.lower() in ('false', 'true', 'off', 'on', 'toggle'):
+                value = { 'false': False, 'off': False,
+                          'true' : True,  'on' : True,
+                          'toggle': {False: True, True: False}
+                                                 [ self.state["tone_defeat"] ]
+                        } [ value.lower() ]
+                self.state["tone_defeat"] = value
+                return self._validate( self.state )
+            else:
+                return 'syntax error'
+
+        except Exception as e:
+            return f'internal error: {str(e)}'
 
 
     def set_lu_offset(self, value, relative=False):

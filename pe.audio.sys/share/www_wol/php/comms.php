@@ -6,13 +6,6 @@
     'pe.audio.sys', a PC based personal audio system.
     */
 
-    /*  This is the hidden server side php code.
-        PHP will response to the client via the standard php output, for instance:
-            echo $some_varible;
-            echo "some_string";
-            readfile("some_file_path");
-    */
-
     $UHOME = get_home();
     //echo '---'.$HOME.'---'; // cmdline debugging
 
@@ -77,21 +70,5 @@
         socket_close($socket);
         return $out;
     }
-
-    ///////////////////////////   MAIN: ///////////////////////////////
-    // listen to http request then returns results via standard output
-
-    /*  http://php.net/manual/en/reserved.variables.request.php
-        PHP server side receives associative arrays, i.e. dictionaries, through by the
-        GET o PUT methods from the client side XMLHttpRequest (usually javascript).
-        The array is what appears after 'functions.php?.......', examples:
-
-            "GET", "functions.php?command=wol host_A"
-    */
-
-    //echo system_socket('wol host_A'); // DEBUG
-
-    $command = $_REQUEST["command"];
-    echo system_socket( $command );
 
 ?>

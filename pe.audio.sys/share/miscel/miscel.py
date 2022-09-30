@@ -9,7 +9,7 @@
 
 import  socket
 import  ipaddress
-from    json import loads as json_loads
+from    json import loads as json_loads, dumps as json_dumps
 from    time import sleep
 import  subprocess as sp
 import  configparser
@@ -18,26 +18,18 @@ import  os
 from    config      import *
 from    fmt         import Fmt
 
+# --- pe.audio.sys common usage functions:
 
-def sec2min(s):
-    """ Format a given float (seconds) to "XXmYYs"
-        (string)
+def dump_aux_info(AUX_INFO):
+    """ A helper to write AUX_INFO dict to a file to be accesible
+        by third party processes
     """
-    m = s // 60
-    s = s % 60
-    return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
-
-
-def timesec2string(x):
-    """ Format a given float (seconds) to "hh:mm:ss"
-        (string)
-    """
-    # x must be float
-    h = int( x / 3600 )         # hours
-    x = int( round(x % 3600) )  # updating x to reamining seconds
-    m = int( x / 60 )           # minutes from the new x
-    s = int( round(x % 60) )    # and seconds
-    return f'{h:0>2}:{m:0>2}:{s:0>2}'
+    # Dynamic updates
+    AUX_INFO['amp'] =               manage_amp_switch( 'state' )
+    AUX_INFO['loudness_monitor'] =  get_loudness_monitor()
+    # Dumping to disk
+    with open(AUX_INFO_PATH, 'w') as f:
+        f.write( json_dumps(AUX_INFO) )
 
 
 def process_is_running(pattern):
@@ -71,6 +63,77 @@ def server_is_running(who_asks='miscel'):
     else:
         print(f'{Fmt.BOLD}({who_asks}) server.py NOT RUNNIG{Fmt.END}')
         return False
+
+
+def manage_amp_switch(mode):
+
+    def get_amp_state():
+        result = 'n/a'
+        try:
+            with open( f'{AMP_STATE_PATH}', 'r') as f:
+                tmp =  f.read().strip()
+            if tmp.lower() in ('0', 'off'):
+                result = 'off'
+            elif tmp.lower() in ('1', 'on'):
+                result = 'on'
+        except:
+            pass
+        return result
+
+
+    def set_amp_state(mode):
+        if 'amp_manager' in CONFIG:
+            AMP_MANAGER     = CONFIG['amp_manager']
+        else:
+            return '(aux) amp_manager not configured'
+        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
+        sp.Popen( f'{AMP_MANAGER} {mode}', shell=True )
+        sleep(1)
+        return get_amp_state()
+
+
+    cur_state = get_amp_state()
+    new_state  = '';
+
+    if mode == 'state':
+        result = cur_state
+
+    elif mode == 'toggle':
+        # if unknown state, this switch defaults to 'on'
+        new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
+
+    elif mode in ('on', 'off'):
+        new_state = mode
+
+    else:
+        result = '(aux) bad amp_switch option'
+
+    if new_state:
+        result = set_amp_state( new_state )
+
+    # Optionally will stop the current player as per CONFIG
+    if new_state == 'off':
+        if 'amp_off_stops_player' in CONFIG and CONFIG['amp_off_stops_player']:
+            curr_input = read_state_from_disk()['input']
+            if not curr_input.startswith('remote'):
+                send_cmd('player pause', timeout=1)
+
+    return result
+
+
+def get_loudness_monitor():
+
+        result = read_json_from_file(LDMON_PATH)
+
+        if not result:
+            if 'LU_reset_scope' in CONFIG:
+                result = {'LU_I': 0.0, 'LU_M':0.0,
+                          'scope': CONFIG["LU_reset_scope"]}
+            else:
+                result = {'LU_I': 0.0, 'LU_M':0.0,
+                          'scope': 'album'}
+
+        return result
 
 
 def read_bf_config_fs():
@@ -114,6 +177,54 @@ def get_peq_in_use():
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
             return item["ecasound_peq.py"].replace('.ecs', '')
     return 'none'
+
+
+def get_remote_selected_source(addr, port=9990):
+    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
+        (string)
+    """
+    remote_source = ''
+    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
+    try:
+        remote_source = json_loads(remote_state)["input"]
+    except:
+        pass
+    return remote_source
+
+
+def get_remote_sources_info():
+    ''' Retrieves the remoteXXXXXX sources found under the 'sources:' section
+        inside config.yml.
+
+        (list of tuples <srcName,srcIp,srcPort>)
+    '''
+    # Retrieving the remote sender address from 'config.yml'.
+    # For a 'remote.....' named source, it is expected to have
+    # an IP address kind of in its jack_pname field:
+    #   jack_pname:  X.X.X.X
+    # so this way we can query the remote sender to run 'zita-j2n'
+
+    remotes = []
+    for source in CONFIG["sources"]:
+        if 'remote' in source:
+            addr = ''
+            port = 9990
+            tmp = CONFIG["sources"][source]["jack_pname"]
+            tmp_addr = tmp.split(':')[0]
+            tmp_port = tmp.split(':')[-1]
+            if is_IP(tmp_addr):
+                addr = tmp_addr
+            else:
+                print(f'(miscel) source: \'{source}\' address: \'{tmp_addr}\' not valid')
+                continue
+                if tmp_port.isdigit():
+                    port = int(tmp_port)
+            remotes.append( (source, addr, port ) )
+
+    if not remotes:
+        print(f'(miscel) Cannot get remote sources')
+
+    return remotes
 
 
 def wait4ports( pattern, timeout=10 ):
@@ -229,6 +340,49 @@ def detect_spotify_client(timeout=10):
     return result
 
 
+def read_state_from_disk():
+    """ wrapper for reading the state dict
+        (dictionary)
+    """
+    return read_json_from_file(STATE_PATH)
+
+
+def read_metadata_from_disk():
+    """ wrapper for reading the playing metadata dict
+        (dictionary)
+    """
+    return read_json_from_file(PLAYER_META_PATH)
+
+
+def read_cdda_info_from_disk():
+    """ wrapper for reading the cdda info dict
+        (dictionary)
+    """
+    return read_json_from_file(CDDA_INFO_PATH)
+
+
+def read_json_from_file(fname, tries=5):
+    """ read json dicts from disk files
+        (dictionary)
+    """
+    d = {}
+    if fname == STATE_PATH:
+        d = {'input':'none', 'level':'0.0'}
+
+    # It is possible to fail while the file is updating :-/
+    while tries:
+        try:
+            with open( fname, 'r') as f:
+                d = json_loads( f.read() )
+            break
+        except:
+            tries -= 1
+        sleep(.25)
+    return d
+
+
+# --- generic purpose functions:
+
 def kill_bill(pid=0):
     """ Killing previous instances of a process as per its <pid>.
         (void)
@@ -290,47 +444,6 @@ def kill_bill(pid=0):
         sp.Popen(f'kill -KILL {pid}'.split())
         sleep(.1)
     sleep(.5)
-
-
-def read_json_from_file(fname, tries=5):
-    """ read json dicts from disk files
-        (dictionary)
-    """
-    d = {}
-    if fname == STATE_PATH:
-        d = {'input':'none', 'level':'0.0'}
-
-    # It is possible to fail while the file is updating :-/
-    while tries:
-        try:
-            with open( fname, 'r') as f:
-                d = json_loads( f.read() )
-            break
-        except:
-            tries -= 1
-        sleep(.25)
-    return d
-
-
-def read_state_from_disk():
-    """ wrapper for reading the state dict
-        (dictionary)
-    """
-    return read_json_from_file(STATE_PATH)
-
-
-def read_metadata_from_disk():
-    """ wrapper for reading the playing metadata dict
-        (dictionary)
-    """
-    return read_json_from_file(PLAYER_META_PATH)
-
-
-def read_cdda_info_from_disk():
-    """ wrapper for reading the cdda info dict
-        (dictionary)
-    """
-    return read_json_from_file(CDDA_INFO_PATH)
 
 
 def read_last_line(filename=''):
@@ -451,49 +564,24 @@ def get_my_ip():
         return ''
 
 
-def get_remote_selected_source(addr, port=9990):
-    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
+def sec2min(s):
+    """ Format a given float (seconds) to "XXmYYs"
         (string)
     """
-    remote_source = ''
-    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
-    try:
-        remote_source = json_loads(remote_state)["input"]
-    except:
-        pass
-    return remote_source
+    m = s // 60
+    s = s % 60
+    return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
 
 
-def get_remote_sources_info():
-    ''' Retrieves the remoteXXXXXX sources found under the 'sources:' section
-        inside config.yml.
+def timesec2string(x):
+    """ Format a given float (seconds) to "hh:mm:ss"
+        (string)
+    """
+    # x must be float
+    h = int( x / 3600 )         # hours
+    x = int( round(x % 3600) )  # updating x to reamining seconds
+    m = int( x / 60 )           # minutes from the new x
+    s = int( round(x % 60) )    # and seconds
+    return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
-        (list of tuples <srcName,srcIp,srcPort>)
-    '''
-    # Retrieving the remote sender address from 'config.yml'.
-    # For a 'remote.....' named source, it is expected to have
-    # an IP address kind of in its jack_pname field:
-    #   jack_pname:  X.X.X.X
-    # so this way we can query the remote sender to run 'zita-j2n'
 
-    remotes = []
-    for source in CONFIG["sources"]:
-        if 'remote' in source:
-            addr = ''
-            port = 9990
-            tmp = CONFIG["sources"][source]["jack_pname"]
-            tmp_addr = tmp.split(':')[0]
-            tmp_port = tmp.split(':')[-1]
-            if is_IP(tmp_addr):
-                addr = tmp_addr
-            else:
-                print(f'(miscel) source: \'{source}\' address: \'{tmp_addr}\' not valid')
-                continue
-                if tmp_port.isdigit():
-                    port = int(tmp_port)
-            remotes.append( (source, addr, port ) )
-
-    if not remotes:
-        print(f'(miscel) Cannot get remote sources')
-
-    return remotes

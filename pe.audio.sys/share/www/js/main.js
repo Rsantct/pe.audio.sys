@@ -9,24 +9,29 @@
        NOTICE: remember do not leaving any console.log active
 */
 
-//////// CONFIGURABLE ITEMS
+
+//////// CONFIGURABLE ITEMS ////////
 //
-//  (i) Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
-//      or set it '/functions.php' if you use Apache+PHP at server side.
+//  (i) Set URL_PREFIX ='/' if you use the provided nodejs/www_server.js script,
+//      or set it '/php/main.php' if you use Apache+PHP at server side.
 //
-const URL_PREFIX = '/functions.php';
+const URL_PREFIX = '/php/main.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 
 
-
-//////// GLOBAL VARIABLES
+//////// GLOBAL VARIABLES ////////
+var aux_info            = { 'amp': 'n/a',
+                            'loudness_monitor': {'LU_I': 0, 'LU_M': 0, 'scope': 'track' },
+                            'last_macro': '',
+                            'warning': ''
+};
 
 var web_config          = { 'main_selector':      'inputs',
-                            'hide_LU':            false,
-                            'LU_monitor_enabled': false,
-                            'show_graphs':        false,
-                            'user_macros':        []
-                          };
+                    'hide_LU':            false,
+                    'LU_monitor_enabled': false,
+                    'show_graphs':        false,
+                    'user_macros':        []
+};
 
 var main_sel_mode       = web_config.main_selector;
 
@@ -35,12 +40,6 @@ var mFnames             = web_config.user_macros; // Macro file names
 var macro_button_list   = [];
 
 var state               = {};       // The preamp-convolver state
-
-var aux_info            = { 'amp': 'n/a',
-                            'loudness_monitor': {'LU_I': 0, 'LU_M': 0, 'scope': 'track' },
-                            'last_macro': '-',
-                            'warning': ''
-                           };
 
 var metablank           = {         // A player's metadata blank dict
                             'player':       '',
@@ -52,7 +51,7 @@ var metablank           = {         // A player's metadata blank dict
                             'title':        '',
                             'track_num':    '',
                             'tracks_tot':   ''
-                            };
+};
 
 
 var server_available    = false;
@@ -65,6 +64,7 @@ var last_disc           = '';       // Helps on refreshing cd tracks list
 var last_input          = '';       // Helps on refreshing sources playlits
 var last_loudspeaker    = '';       // Will detect if audio processes has beeen
                                     // restarted with new loudspeaker configuration.
+var last_delay          = 0;        // A helper for the delay toggle button
 
 
 var hold_selected_track = 0;        // A counter to keep the selected cd track during updates
@@ -72,8 +72,7 @@ var main_cside_msg      = '';       // The message displayed on page header
 var hold_cside_msg      = 0;        // A counter to keep main_cside_msg during updates
 
 
-
-//////// PAGE MANAGEMENT
+//////// PAGE MANAGEMENT ////////
 
 function fill_in_page_statics(){
 
@@ -90,11 +89,11 @@ function fill_in_page_statics(){
                 return;
             }
             // clearing selector options
-            select_clear_options(ElementId="mainSelector");
+            select_clear_options("mainSelector");
             // Filling in options in a selector
             // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
             var mySel = document.getElementById("mainSelector");
-            for ( i in inputs) {
+            for ( const i in inputs) {
                 var option = document.createElement("option");
                 option.text = inputs[i];
                 mySel.add(option);
@@ -111,12 +110,12 @@ function fill_in_page_statics(){
             // MAIN SELECTOR manages macros:
 
             // clearing selector options
-            select_clear_options(ElementId="mainSelector");
+            select_clear_options("mainSelector");
 
             // Filling in options in a selector
             // https://www.w3schools.com/jsref/dom_obj_select.asp
             var mySel = document.getElementById("mainSelector");
-            for ( i in mFnames) {
+            for ( const i in mFnames) {
                 var mFname = mFnames[i];
                 var mName  = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
                 var option = document.createElement("option");
@@ -147,9 +146,9 @@ function fill_in_page_statics(){
             console.log( e.name, e.message );
             return;
         }
-        select_clear_options(ElementId="xoSelector");
+        select_clear_options("xoSelector");
         const mySel = document.getElementById("xoSelector");
-        for ( i in xo_sets ) {
+        for ( const i in xo_sets ) {
             var option = document.createElement("option");
             option.text = xo_sets[i];
             mySel.add(option);
@@ -163,9 +162,9 @@ function fill_in_page_statics(){
              console.log( e.name, e.message );
            return;
         }
-        select_clear_options(ElementId="drcSelector");
+        select_clear_options("drcSelector");
         const mySel = document.getElementById("drcSelector");
-        for ( i in drc_sets ) {
+        for ( const i in drc_sets ) {
             var option = document.createElement("option");
             option.text = drc_sets[i];
             mySel.add(option);
@@ -182,9 +181,9 @@ function fill_in_page_statics(){
             console.log( e.name, e.message );
             return;
         }
-        select_clear_options(ElementId="targetSelector");
+        select_clear_options("targetSelector");
         const mySel = document.getElementById("targetSelector");
-        for ( i in target_files ) {
+        for ( const i in target_files ) {
             var option = document.createElement("option");
             option.text = target_files[i];
             mySel.add(option);
@@ -192,10 +191,10 @@ function fill_in_page_statics(){
     }
 
     function fill_in_LUscope_selector() {
-        select_clear_options( ElementId="LUscopeSelector" );
+        select_clear_options("LUscopeSelector");
         const mySel = document.getElementById("LUscopeSelector");
-        scopes = ['input', 'album', 'track'];
-        for ( i in scopes ) {
+        const scopes = ['input', 'album', 'track'];
+        for ( const i in scopes ) {
             var option = document.createElement("option");
             option.text = scopes[i];
             mySel.add(option);
@@ -252,7 +251,7 @@ function manage_main_cside(){
 }
 
 
-function page_initiate(){
+function init(){
 
     function download_drc_graphs(){
         if (web_config.show_graphs==false){
@@ -260,7 +259,7 @@ function page_initiate(){
         }
         // geat all drc_xxxx.png at once at start, so them will remain in cache.
         const drc_sets = JSON.parse( control_cmd('preamp get_drc_sets') );
-        for (i in drc_sets){
+        for (const i in drc_sets){
             document.getElementById("drc_img").src =  'images/'
                                                     + state.loudspeaker
                                                     + '/drc_' + drc_sets[i]
@@ -320,14 +319,14 @@ function page_initiate(){
         bTotal = 3 * ( Math.floor( (bTotal - 1) / 3) + 1 )
 
         var mtable = document.getElementById("macro_buttons");
-        var row  = mtable.insertRow(index=-1);
+        var row  = mtable.insertRow(-1); // at index -1
 
         // Iterate over button available cells
-        for (bPos = 1; bPos <= bTotal; bPos++) {
+        for (let bPos = 1; bPos <= bTotal; bPos++) {
 
             // Iterate over macro filenames
-            found = false;
-            for ( i in mFnames ){
+            let found = false;
+            for ( const i in mFnames ){
                 // Macro file names: 'N_macro_name' where N is the button position
                 var mFname = mFnames[i];
                 var mPos  = mFname.split('_')[0];
@@ -339,7 +338,7 @@ function page_initiate(){
             }
 
             // Insert a cell
-            var cell = row.insertCell(index=-1);
+            var cell = row.insertCell(-1); // at index -1
             cell.className = 'macro_cell';
 
             // Create a button Element
@@ -364,7 +363,7 @@ function page_initiate(){
 
             // Arrange 3 buttons per row
             if ( bPos % 3 == 0 ) {
-                row  = mtable.insertRow(index=-1);
+                row  = mtable.insertRow(-1); // at index -1
             }
         }
     }
@@ -489,14 +488,14 @@ function page_update() {
                 return;
             }
             // clearing selector options
-            select_clear_options(ElementId="track_selector");
+            select_clear_options("track_selector");
             // Filling in options in a selector
             // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
             var mySel = document.getElementById("track_selector");
             var option = document.createElement("option");
             option.text = '--';
             mySel.add(option);
-            for ( i in tracks) {
+            for ( const i in tracks) {
                 var option = document.createElement("option");
                 option.text = tracks[i];
                 mySel.add(option);
@@ -651,11 +650,12 @@ function page_update() {
 
 
     function preamp_refresh(){
-        // Updates level, balance, and tone info
+        // Updates level, balance, tone and delay info
         document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
         document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
         document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
         document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
+        document.getElementById("buttAOD").innerText = state.extra_delay + ' ms';
 
         // Delete level info if convolver off
         if (state.convolver_runs == false){
@@ -679,8 +679,15 @@ function page_update() {
         buttonMonoHighlight()
         buttonLoudHighlight()
         buttonsToneBalanceHighlight()
+        toneDefeatHighlight()
         buttonSubsonicHighlight()
+        buttonAODHighlight()
         levelInfoHighlight()
+
+        // Used by the delay toggle button
+        if (state.extra_delay !== 0) {
+            last_delay = state.extra_delay;
+        }
     }
 
 
@@ -737,8 +744,7 @@ function page_update() {
 }
 
 
-
-//////// AUDIO 'onchange' 'onmousedown' page handlers ////////
+//////// HANDLERS: AUDIO 'onchange' 'onmousedown' ////////
 
 function oc_main_select(itemName){
     // (i) The main selector can have two flavors:
@@ -748,7 +754,7 @@ function oc_main_select(itemName){
     // helper for macros manager behavior
     function find_macroName(x){
         var result = '';
-        for ( i in mFnames ){
+        for ( const i in mFnames ){
             var mFname = mFnames[i];
             var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
             if ( x == mName ){
@@ -776,7 +782,7 @@ function oc_main_select(itemName){
     }
     setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
 
-    clear_highlighteds();
+    clear_macro_buttons_highlight();
     document.getElementById('mainSelector').style.color = "white";
 
 }
@@ -860,8 +866,16 @@ function omd_mono_toggle() {
 }
 
 
+function omd_delay_toggle() {
+    if (state.extra_delay !== 0) {
+        control_cmd('preamp add_delay 0');
+    }else{
+        control_cmd('preamp add_delay ' + last_delay.toString());
+    }
+}
 
-//////// PLAYER 'onchange' 'onmousedown' 'onclick' page handlers ////////
+
+//////// HANDLERS: PLAYER 'onchange' 'onmousedown' 'onclick' ////////
 
 function omd_playerCtrl(action) {
     if (action == 'random_toggle') {
@@ -904,8 +918,7 @@ function ck_play_url() {
 }
 
 
-
-//////// AUX 'onmousedown' 'onclick' 'oninput' page handlers ////////
+//////// HANDLERS: AUX 'onmousedown' 'onclick' 'oninput' ////////
 
 function ck_peaudiosys_restart() {
     control_cmd('peaudiosys_restart');
@@ -934,7 +947,7 @@ function oc_run_macro(mFname){
     control_cmd( 'aux run_macro ' + mFname );
 
     var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
-    clear_highlighteds();
+    clear_macro_buttons_highlight();
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
     // setTimeout(() => { highlight_macro_button(mName);}, 200);
@@ -981,18 +994,22 @@ function ck_display_advanced(mode) {
     }
 
     if ( show_advanced == true ) {
-        document.getElementById( "advanced_controls").style.display = "block";
+        document.getElementById( "div_advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
-        document.getElementById( "RAOD").style.display = "inline-block";
+        document.getElementById( "buttAOD").style.display = "inline-block";
         document.getElementById( "subsonic").style.display = "inline-block";
+        document.getElementById( "tone_defeat").style.display = "inline-block";
     }
     else {
-        document.getElementById( "advanced_controls").style.display = "none";
+        document.getElementById( "div_advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
-        document.getElementById( "RAOD").style.display = "none";
+        if ( state.extra_delay === 0 ) {
+            document.getElementById( "buttAOD").style.display = "none";
+        }
         document.getElementById( "subsonic").style.display = "none";
+        document.getElementById( "tone_defeat").style.display = "none";
     }
 }
 
@@ -1019,7 +1036,7 @@ function omd_graphs_toggle() {
 
 
 
-////////  MISCEL INTERNALS
+////////  MISCEL INTERNALS  ////////
 
 function control_cmd( cmd ) {
     // Communicate with the pe.audio.sys server through the php socket
@@ -1060,12 +1077,12 @@ function control_cmd( cmd ) {
 
     const myREQ = new XMLHttpRequest();
 
-    myREQ.open(method="GET", url = URL_PREFIX + "?command=" + cmd,
-               async=false);
+    // open(method, url, async_mode)
+    myREQ.open("GET", URL_PREFIX + "?command=" + cmd, false);
     // (i) send() is blocking because async=false, so no handlers
     //     on myREQ status changes are needed because of this.
     myREQ.send();
-    ans = myREQ.responseText;
+    let ans = myREQ.responseText;
 
     //console.log('httpTX: ' + cmd);
     //console.log('httpRX: ' + ans);
@@ -1108,7 +1125,7 @@ function fill_in_playlists_selector() {
     }
 
     // clearing selector options
-    select_clear_options(ElementId="playlist_selector");
+    select_clear_options("playlist_selector");
 
     // Filling in options in a selector
     // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
@@ -1116,7 +1133,7 @@ function fill_in_playlists_selector() {
     var option = document.createElement("option");
     option.text = '--';
     mySel.add(option);
-    for ( i in plists) {
+    for ( const i in plists) {
         var option = document.createElement("option");
         option.text = plists[i];
         mySel.add(option);
@@ -1139,14 +1156,38 @@ function select_clear_options(ElementId){
 
 
 function clear_highlighteds(){
-    for (i = 0; i < macro_button_list.length; i++) {
-        document.getElementById(macro_button_list[i]).className = 'macro_button';
-    }
     document.getElementById('mainSelector').style.color     = "rgb(200,200,200)";
     document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
     document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
     document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
 }
+
+
+function clear_macro_buttons_highlight(){
+    for (let i = 0; i < macro_button_list.length; i++) {
+        document.getElementById(macro_button_list[i]).className = 'macro_button';
+    }
+}
+
+
+//////// ELEMENTS HIGHLIGHT ////////
+
+function toneDefeatHighlight(){
+    if (state.tone_defeat){
+        document.getElementById("tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("tone_defeat").style.background = "rgb(100, 0, 0)";
+        document.getElementById("tone_defeat").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bassInfo").style.color = "grey";
+        document.getElementById("trebleInfo").style.color = "grey";
+    }else{
+        document.getElementById("tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("tone_defeat").style.background = "rgb(100, 100, 100)";
+        document.getElementById("tone_defeat").style.color = "rgb(180, 180, 180)";
+        document.getElementById("bassInfo").style.color = "white";
+        document.getElementById("trebleInfo").style.color = "white";
+    }
+}
+
 
 function buttonsToneBalanceHighlight(){
     if ( state.bass < 0 ){
@@ -1181,6 +1222,7 @@ function buttonsToneBalanceHighlight(){
     }
 }
 
+
 function buttonMuteHighlight(){
     if ( state.muted == true ) {
         document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
@@ -1194,6 +1236,7 @@ function buttonMuteHighlight(){
         document.getElementById("levelInfo").style.color = "white";
     }
 }
+
 
 function buttonMonoHighlight(){
     if ( state.midside == 'mid' ) {
@@ -1231,6 +1274,7 @@ function buttonMonoHighlight(){
     }
 }
 
+
 function buttonLoudHighlight(){
     if ( state.equal_loudness == true ) {
         document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
@@ -1241,21 +1285,40 @@ function buttonLoudHighlight(){
     }
 }
 
+
+function buttonAODHighlight(){
+    if ( state.extra_delay === 0 ) {
+        document.getElementById("buttAOD").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("buttAOD").style.background = "rgb(100, 100, 100)";
+        document.getElementById("buttAOD").style.color = "rgb(180, 180, 180)";
+    } else {
+        document.getElementById("buttAOD").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("buttAOD").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttAOD").style.color = "rgb(255, 200, 200)";
+        document.getElementById("buttAOD").style.display = 'inline-table';
+    }
+}
+
+
 function buttonSubsonicHighlight(){
     if ( state.subsonic == 'off' ) {
+        document.getElementById("subsonic").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
         document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
         document.getElementById("subsonic").innerText = 'SUBS\n-';
     } else if ( state.subsonic == 'mp' ) {
+        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nmp';
     } else if ( state.subsonic == 'lp' ) {
+        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
         document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
         document.getElementById("subsonic").innerText = 'SUBS\nlp';
     }
 }
+
 
 function levelInfoHighlight() {
     // currently only indicates subsonic filter activated

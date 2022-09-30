@@ -30,10 +30,10 @@ It is possible to use two server side backend flavours:
 - **Apache+PHP (system wide service)**
 - **Node.js (user space service)**
 
-The only needed configuration (1) has to be done inside the `clientside.js` file:
+The only needed configuration (1) has to be done inside the `main.js` file:
 
-     Set URL_PREFIX ='/' if you use the provided peasys_node.js server script,
-     or set it '/functions.php' if you use Apache+PHP at server side.
+     Set URL_PREFIX ='/' if you use the provided nodejs/www_server.js script,
+     or set it '/php/main.php' if you use Apache+PHP at server side.
      
 (1) Above changes are automatically made when running the `tmp/uptade_peaudiosys.sh` installing script.
 
@@ -53,7 +53,7 @@ If you prefer to run **Node.js** as server side backend, you need to run Node.js
 
 - Or you can launch Node.js at startup through by adding a line inside your system `/etc/rc.local` file as follows:
 
-    `su -l YourUser -c "node /home/YourUser/pe.audio.sys/share/www/peasys_node.js"`
+    `su -l YourUser -c "node /home/YourUser/pe.audio.sys/share/www/nodejs/www_server.js"`
 
 
 ## Screenshots

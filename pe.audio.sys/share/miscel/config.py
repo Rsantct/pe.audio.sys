@@ -4,21 +4,21 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
-""" 
+"""
     This module provides the system constants and configuration
     parameters that other modules need to function:
-    
+
         CONFIG          The main set of system parameters
                         from config/config.yml
 
         EQ_CURVES       The set of curves to be used by the
                         EQ stage in Brutefir for tone and
                         loudness contour compensation
-                                
+
         xxx_FOLDER      Common usage folder paths
-        
+
         xxx_PATH        Common usage file paths
-        
+
 """
 import  yaml
 from    numpy import loadtxt as np_loadtxt
@@ -35,13 +35,16 @@ BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 STATE_PATH          = f'{MAINFOLDER}/.state'
+TONE_MEMO_PATH      = f'{MAINFOLDER}/.tone_memo'    # a tone_defeat helper
 LOG_FOLDER          = f'{MAINFOLDER}/log'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
+
 MACROS_FOLDER       = f'{MAINFOLDER}/macros'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
 CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
+AUX_INFO_PATH       = f'{MAINFOLDER}/.aux_info'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 
 
