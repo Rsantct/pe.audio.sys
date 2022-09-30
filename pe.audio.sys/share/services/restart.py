@@ -26,27 +26,27 @@ if os.path.exists(logFname) and os.path.getsize(logFname) > 10e6:
 print ( f"{Fmt.BLUE}(restart) logging commands in '{logFname}'{Fmt.END}" )
 
 
+def _server_restart():
+    print('restarting the server ... .. .')
+    Popen(f'{UHOME}/bin/peaudiosys_server_restart.sh', shell=True)
+    return '(restart) restarting the server'
+
+
+def _peaudiosys_restart():
+    print('restarting peaudiosys ... .. .')
+    Popen(f'{UHOME}/bin/peaudiosys_restart.sh', shell=True)
+    return '(restart) restarting peaudiosys'
+
+
 # Interface function for this module
 def do( cmd ):
 
-    def server_restart():
-        print('restarting the server ... .. .')
-        Popen(f'{UHOME}/bin/peaudiosys_server_restart.sh', shell=True)
-        return '(restart) restarting the server'
-
-
-    def peaudiosys_restart():
-        print('restarting peaudiosys ... .. .')
-        Popen(f'{UHOME}/bin/peaudiosys_restart.sh', shell=True)
-        return '(restart) restarting peaudiosys'
-
-
     cmd = cmd.strip()
+
     result = f'(restart) bad command \'{cmd}\''
 
-    cmdmap = {  'server_restart':       server_restart,
-                'peaudiosys_restart':   peaudiosys_restart
-              }
+    cmdmap = {  'server_restart':       _server_restart,
+                'peaudiosys_restart':   _peaudiosys_restart }
 
 
     if cmd in cmdmap:
