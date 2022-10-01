@@ -50,6 +50,8 @@
 
     td#LoudnessInfo     { width: 15%; border: none; font-size:1.5em;}
     td#MonoInfo         { width: 15%; border: none; font-size:1.5em;}
+    td#SoloInfo         { width: 15%; border: none; font-size:1.5em;}
+    td#PolarityInfo     { width: 15%; border: none; font-size:1.5em;}
 
     td#input            { width: 25%; text-align: right; border: none;}
 
