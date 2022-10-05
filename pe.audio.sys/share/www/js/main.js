@@ -1111,35 +1111,14 @@ function control_cmd( cmd ) {
     */
 
 
-    function http_prepare(x) {
-        // Avoid http socket lossing some symbols
-
-        //x = x.replace(' ', '%20');  // leaving spaces as they are
-        x = x.replace('!', '%21');
-        x = x.replace('"', '%22');
-        x = x.replace('#', '%23');
-        x = x.replace('$', '%24');
-        x = x.replace('%', '%25');
-        x = x.replace('&', '%26');
-        x = x.replace("'", '%27');
-        x = x.replace('(', '%28');
-        x = x.replace(')', '%29');
-        x = x.replace('*', '%2A');
-        x = x.replace('+', '%2B');
-        x = x.replace(',', '%2C');
-        x = x.replace('-', '%2D');
-        x = x.replace('.', '%2E');
-        x = x.replace('/', '%2F');
-        return x;
-    }
-
-
-    cmd = http_prepare(cmd);
+    // Encoding special chars in the value of the 'command' parameter
+    const value = encodeURIComponent(cmd);
+    const url = URL_PREFIX + '?command=' + value;
 
     const myREQ = new XMLHttpRequest();
 
     // open(method, url, async_mode)
-    myREQ.open("GET", URL_PREFIX + "?command=" + cmd, false);
+    myREQ.open("GET", url, false);
     // (i) send() is blocking because async=false, so no handlers
     //     on myREQ status changes are needed because of this.
     myREQ.send();
