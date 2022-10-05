@@ -71,14 +71,20 @@
                         title="Amplifier ON/OFF" onmousedown="omd_ampli_set('toggle')">-</button>
             </td>
 
+            <!-- LEVEL display -->
+            <td id="levelInfo" rowspan="2" title="Target volume">
+            </td>
+
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
                 <button type="button" id="buttonLoud"
                         title="Loudness Contour compensation" onmousedown="omd_equal_loudness_toggle()">LC</button>
             </td>
 
-            <!-- LEVEL display -->
-            <td id="levelInfo" rowspan="2" title="Target volume">
+            <!-- SOLO control -->
+            <td id="SoloInfo" style="display:none">
+                <button type="button" id="buttonSolo"
+                        title="L|R solo control" onmousedown="omd_solo_rotate()">L|R</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
@@ -113,6 +119,12 @@
             <td id="MonoInfo">
                 <button type="button" id="buttonMono"
                         title="Mono/Stereo" onmousedown="omd_mono_toggle()">M</button>
+            </td>
+
+            <!-- POLARITY control -->
+            <td id="PolarityInfo" style="display:none">
+                <button type="button" id="buttonPolarity"
+                        title="LR polarity control" onmousedown="omd_polarity_rotate()">++</button>
             </td>
         </tr>
     </table>

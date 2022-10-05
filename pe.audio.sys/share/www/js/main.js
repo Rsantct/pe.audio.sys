@@ -677,6 +677,8 @@ function page_update() {
         // Highlights activated buttons and related indicators accordingly
         buttonMuteHighlight()
         buttonMonoHighlight()
+        buttonSoloHighlight()
+        buttonPolarityHighlight()
         buttonLoudHighlight()
         buttonsToneBalanceHighlight()
         toneDefeatHighlight()
@@ -856,13 +858,68 @@ function omd_equal_loudness_toggle() {
 
 
 function omd_mono_toggle() {
-    if (state.midside == "mid" || state.midside == "side"){
-        state.midside = "off";
+
+    // normal: only stereo/mono (off/mid)
+    if (!show_advanced){
+
+        if (state.midside == "mid" || state.midside == "side"){
+            state.midside = "off";
+            control_cmd( 'midside off' );
+        }else{
+            state.midside = "mid";
+            control_cmd( 'midside mid' );
+        }
+
+    // advanced-controls: rotate stereo/mono/L-R (off/mid/side)
     }else{
-        state.midside = "mid";
+
+        if (state.midside == "off"){
+            state.midside = "mid";
+            control_cmd( 'midside mid' );
+        }else if (state.midside == "mid"){
+            state.midside = "side";
+            control_cmd( 'midside side' );
+        }else if (state.midside == "side"){
+            state.midside = "off";
+            control_cmd( 'midside off' );
+        }
     }
+
     buttonMonoHighlight();
-    control_cmd( 'mono toggle' );
+}
+
+
+function omd_solo_rotate() {
+
+    if (state.solo == "off"){
+        control_cmd( 'solo L' );
+    }else if(state.solo == "l"){
+        control_cmd( 'solo R' );
+    }else if(state.solo == "r"){
+        control_cmd( 'solo off' );
+    }
+
+    // Solo highlight falls on the Mono/Stereo Button
+}
+
+
+function omd_polarity_rotate() {
+
+    if (state.polarity == "++"){
+        control_cmd( 'polarity +-' );
+
+    }else if(state.polarity == "+-"){
+        control_cmd( 'polarity -+' );
+
+    }else if(state.polarity == "-+"){
+        control_cmd( 'polarity --' );
+
+    }else if(state.polarity == "--"){
+        control_cmd( 'polarity ++' );
+
+    }
+
+    buttonPolarityHighlight();
 }
 
 
@@ -976,7 +1033,7 @@ function omd_macro_buttons_display_toggle() {
 
 
 function ck_display_advanced(mode) {
-    // (i) This also allows access to the RESTART buttons
+    // (i) This also allows access to the RESTART button
 
     if ( mode == 'toggle' ){
         if ( show_advanced !== true ) {
@@ -997,6 +1054,8 @@ function ck_display_advanced(mode) {
         document.getElementById( "div_advanced_controls").style.display = "block";
         document.getElementById( "level_buttons13").style.display = "table-cell";
         document.getElementById( "main_lside").style.display = "table-cell";
+        document.getElementById( "SoloInfo").style.display = "table-cell";
+        document.getElementById( "PolarityInfo").style.display = "table-cell";
         document.getElementById( "buttAOD").style.display = "inline-block";
         document.getElementById( "subsonic").style.display = "inline-block";
         document.getElementById( "tone_defeat").style.display = "inline-block";
@@ -1005,6 +1064,8 @@ function ck_display_advanced(mode) {
         document.getElementById( "div_advanced_controls").style.display = "none";
         document.getElementById( "level_buttons13").style.display = "none";
         document.getElementById( "main_lside").style.display = "none";
+        document.getElementById( "SoloInfo").style.display = "none";
+        document.getElementById( "PolarityInfo").style.display = "none";
         if ( state.extra_delay === 0 ) {
             document.getElementById( "buttAOD").style.display = "none";
         }
@@ -1050,35 +1111,14 @@ function control_cmd( cmd ) {
     */
 
 
-    function http_prepare(x) {
-        // Avoid http socket lossing some symbols
-
-        //x = x.replace(' ', '%20');  // leaving spaces as they are
-        x = x.replace('!', '%21');
-        x = x.replace('"', '%22');
-        x = x.replace('#', '%23');
-        x = x.replace('$', '%24');
-        x = x.replace('%', '%25');
-        x = x.replace('&', '%26');
-        x = x.replace("'", '%27');
-        x = x.replace('(', '%28');
-        x = x.replace(')', '%29');
-        x = x.replace('*', '%2A');
-        x = x.replace('+', '%2B');
-        x = x.replace(',', '%2C');
-        x = x.replace('-', '%2D');
-        x = x.replace('.', '%2E');
-        x = x.replace('/', '%2F');
-        return x;
-    }
-
-
-    cmd = http_prepare(cmd);
+    // Encoding special chars in the value of the 'command' parameter
+    const value = encodeURIComponent(cmd);
+    const url = URL_PREFIX + '?command=' + value;
 
     const myREQ = new XMLHttpRequest();
 
     // open(method, url, async_mode)
-    myREQ.open("GET", URL_PREFIX + "?command=" + cmd, false);
+    myREQ.open("GET", url, false);
     // (i) send() is blocking because async=false, so no handlers
     //     on myREQ status changes are needed because of this.
     myREQ.send();
@@ -1248,30 +1288,57 @@ function buttonMonoHighlight(){
         document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttonMono").innerText = 'L-R';
     } else {
+        document.getElementById("buttonMono").style = "button";
         document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonMono").style.color = "white";
         document.getElementById("buttonMono").innerText = 'ST';
     }
+
     // 'solo' setting will override displaying mono stereo
     if ( state.solo == 'l' ) {
         document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttonMono").innerText = 'L_';
     } else if ( state.solo == 'r' ) {
         document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
         document.getElementById("buttonMono").innerText = '_R';
     }
-    // temporary experimental 'polarity' setting will override 'midside' and 'solo'
-    if ( state.polarity == '+-' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = '+-';
-    } else if ( state.polarity == '-+' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = '-+';
+
+    // 'polarity' setting will modify the button border
+    if ( state.polarity != '++' ) {
+        document.getElementById("buttonMono").style.border = "3px solid rgb(200, 10, 10)";
+    } else {
+        document.getElementById("buttonMono").style.border = "2px solid rgb(120, 120, 120)";
     }
+}
+
+
+function buttonSoloHighlight(){
+
+    if ( state.solo == 'off' ) {
+        document.getElementById("buttonSolo").style = "button";
+        document.getElementById("buttonSolo").innerText = 'L|R';
+
+    } else if ( state.solo == 'l' ) {
+        document.getElementById("buttonSolo").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonSolo").innerText = 'L_';
+
+    } else if ( state.solo == 'r' ) {
+        document.getElementById("buttonSolo").style.background = "rgb(100, 0, 0)";
+        document.getElementById("buttonSolo").innerText = '_R';
+    }
+
+}
+
+
+function buttonPolarityHighlight(){
+
+    if ( state.polarity != '++' ) {
+        document.getElementById("buttonPolarity").style.background = "rgb(100, 0, 0)";
+
+    } else {
+        document.getElementById("buttonPolarity").style = "button";
+    }
+
+    document.getElementById("buttonPolarity").innerText = state.polarity;
 }
 
 

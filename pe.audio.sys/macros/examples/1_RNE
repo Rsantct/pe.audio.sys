@@ -6,8 +6,8 @@ import templates.radio_macro as rm
 
 rm.mplayer_profile = 'istreams'   # choose an Mplayer profile: "istreams", "dvb"
 rm.preset          = 1            # your DVB or istreams preset number here
-rm.lu_offset       = 9
-rm.loudness_comp   = 'off'
+rm.lu_offset       = 12           # News radio stations often broadcast at a high level
+rm.loudness_comp   = 'on'
 rm.xo_pattern      = 'mp'
 rm.drc_pattern     = 'mp'
 
