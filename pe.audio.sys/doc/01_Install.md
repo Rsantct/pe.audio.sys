@@ -22,7 +22,7 @@ At this point, the install scripts and the whole 'master' repo will be located u
 
     `sh tmp/update_peaudiosys.sh master`
 
-**IMPORTANT** say **'N'** when asked *keep your current config?*.
+**(i) IMPORTANT** say **'N'** when asked *keep your current config?*.
 
 
 ## Automatic updates:
