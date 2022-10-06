@@ -16,7 +16,7 @@ MAINFOLDER = f'{UHOME}/pe.audio.sys'
 def librespot_control(cmd, arg=''):
     """ (i) This is a fake control
         input:  a fake command
-        output: the result is prededined
+        output: the result is predefined
     """
     if cmd == 'get_playlists':
         return []
