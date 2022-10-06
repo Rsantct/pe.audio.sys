@@ -82,6 +82,9 @@ Also install the following packages on your linux installation:
                      fil-plugins zita-ajbridge zita-njbridge \
                      apache2 libapache2-mod-php mc jq anacron
 
+
+You **MUST** be vigilant at the start of the installation to answer YES to the question to enable **"real time" for JACK**.
+
 (i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser. The comand line tool `jq` can be useful to read json files from command line. `anacron` supports daily automatic updates of pe.audio.sys.
 
 
