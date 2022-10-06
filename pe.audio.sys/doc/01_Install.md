@@ -9,7 +9,7 @@ You need **Python>=3.6** and all python stuff as indicated in **[02_Python 3.md]
 
     `rm -r ~/tmp/pe.audio.sys-*`
 
-2) Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it:
+2) Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it as folows:
 
     ```
     cd
