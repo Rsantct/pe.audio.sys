@@ -53,9 +53,9 @@ def start():
           f'--bitrate 320 {backend_opts} ' + \
            '--disable-audio-cache --initial-volume=99'
 
-    logFileName = f'{UHOME}/pe.audio.sys/.librespot_events'
+    eventsFileName = f'{UHOME}/pe.audio.sys/.librespot_events'
 
-    with open(logFileName, 'w') as logfile:
+    with open(eventsFileName, 'w') as logfile:
         Popen( cmd.split(), stdout=logfile, stderr=logfile )
 
 
