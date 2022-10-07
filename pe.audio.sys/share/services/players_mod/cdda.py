@@ -124,8 +124,8 @@ def read_disc_metadata(device=CDROM_DEVICE):
     try:
         result = mz.get_releases_by_discid( disc.id,
                                       includes=['artists', 'recordings'] )
-    except mz.ResponseError:
-        print('(cdda.py) disc not found or bad response')
+    except Exception as e:
+        print(f'{Fmt.BOLD}(cdda.py) disc not found or bad response: {str(e)}{Fmt.END}')
         return simple_md(disc)
 
     # most of discs are 'disc' musicbrainz kinf of
