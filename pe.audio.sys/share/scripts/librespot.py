@@ -5,9 +5,12 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    '/usr/bin/librespot': a headless Spotify Connect player daemon
+    This script manages '/usr/bin/librespot',
+    a headless Spotify Connect player daemon
 
-    use:    librespot.py   start | stop
+    https://github.com/librespot-org/librespot
+
+    Usage:    librespot.py   start | stop
 """
 import sys
 import os
@@ -18,25 +21,13 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 
 
-def try_backends():
-    result = ''
-    ftmp = '/tmp/librespot.test'
-    for be in ('rodio', 'pulseaudio', 'alsa'):
-        with open(ftmp, 'w') as f:
-            tmp = Popen( f'/usr/bin/librespot --name tmp --backend {be} &',
-                                shell=True, stdout=f, stderr=f)
-        sleep(1)
-        Popen( 'pkill -KILL -f "name tmp"', shell=True )
-        with open(ftmp, 'r') as f:
-            tmp = f.read()
-            if 'backend' not in tmp:
-                result = be
-        Popen( f'rm {ftmp}'.split() )
-        sleep(.25)  # lets wait for rm to delete the tmpfile
-        if result:
-            return result
-    print( tmp )
-    exit()
+# CONFIGURATION
+BACKEND = 'alsa'
+ALSADEV = 'aloop'
+OPTLIST = [ '--disable-audio-cache',
+            '--initial-volume=100',
+            '--format F32'
+        ]
 
 
 def start():
@@ -44,14 +35,14 @@ def start():
     # We redirect the them to a temporary file that will be periodically
     # read from a player control daemon.
 
-    backend = try_backends()
-    backend_opts = f'--backend {backend}'
-    if backend == 'alsa':
-        backend_opts += ' --device aloop'
+    backend_opts = f'--backend {BACKEND}'
+    if BACKEND == 'alsa':
+        backend_opts += f' --device {ALSADEV}'
+
+    OPTSTR = ' '.join(OPTLIST)
 
     cmd = f'/usr/bin/librespot --name {gethostname()} ' + \
-          f'--bitrate 320 {backend_opts} ' + \
-           '--disable-audio-cache --initial-volume=99'
+          f'--bitrate 320 {backend_opts} {OPTSTR}'
 
     eventsFileName = f'{UHOME}/pe.audio.sys/.librespot_events'
 
@@ -66,6 +57,7 @@ def stop():
 
 if sys.argv[1:]:
     if sys.argv[1] == 'start':
+        stop()
         start()
     elif sys.argv[1] == 'stop':
         stop()
