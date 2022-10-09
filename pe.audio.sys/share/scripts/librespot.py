@@ -22,6 +22,7 @@ UHOME = os.path.expanduser("~")
 
 
 # CONFIGURATION
+LIBRESP = '/usr/bin/librespot'
 BACKEND = 'alsa'
 ALSADEV = 'aloop'
 OPTLIST = [ '--disable-audio-cache',
@@ -41,13 +42,13 @@ def start():
 
     OPTSTR = ' '.join(OPTLIST)
 
-    cmd = f'/usr/bin/librespot --name {gethostname()} ' + \
+    cmd = f'{LIBRESP} --name {gethostname()} ' + \
           f'--bitrate 320 {backend_opts} {OPTSTR}'
 
-    eventsFileName = f'{UHOME}/pe.audio.sys/.librespot_events'
+    eventsPath = f'{UHOME}/pe.audio.sys/.librespot_events'
 
-    with open(eventsFileName, 'w') as logfile:
-        Popen( cmd.split(), stdout=logfile, stderr=logfile )
+    with open(eventsPath, 'w') as f:
+        Popen( cmd.split(), stdout=f, stderr=f )
 
 
 def stop():
