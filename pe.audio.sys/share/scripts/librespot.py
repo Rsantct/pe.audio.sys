@@ -26,9 +26,11 @@ LIBRESP = '/usr/bin/librespot'
 BACKEND = 'alsa'
 ALSADEV = 'aloop'
 OPTLIST = [ '--disable-audio-cache',
-            '--initial-volume=100',
+            # https://github.com/librespot-org/librespot/wiki/FAQ
+            # For AUDIOPHILES
+            '--mixer softvol --volume-ctrl fixed --initial-volume 100',
             '--format F32'
-        ]
+          ]
 
 
 def start():
