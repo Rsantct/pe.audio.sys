@@ -69,7 +69,7 @@ def librespot_meta(md):
 
         for line in lines[::-1]:
 
-            if line.endswith("loaded"):
+            if line.endswith("loaded\n"):
 
                 # Rust cargo format:
                 if 'player] <' in line:
@@ -78,10 +78,11 @@ def librespot_meta(md):
 
                 # former loaded message format:
                 else:
-                    title =
                     md['title'] = line.split('player: Track "')[-1] \
                                       .split('" loaded')[0]
+
                 break
+
 
     except:
         pass
