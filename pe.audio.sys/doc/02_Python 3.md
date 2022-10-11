@@ -4,14 +4,15 @@
 
 #### Debian packages manager (apt):
 
-First check if packages are available `apt-list python3-xxxx`. If so, simpli do:
-
-
-    sudo apt install python3-pip python3-yaml python3-jack-client python3-mpd \
-             python3-pydbus python3-numpy python3-scipy python3-matplotlib
-
     sudo python3 -m pip install --upgrade setuptools
 
+Check if packages are available by using the '--simulate' flag:
+
+    sudo apt install --simulate python3-pip python3-yaml python3-jack-client python3-mpd \
+             python3-pydbus python3-numpy python3-scipy python3-matplotlib
+
+
+If so, simply repeat the above command without the '--simulate' flag.
 
 #### Python standard packages manager (PIP) alternative:
 

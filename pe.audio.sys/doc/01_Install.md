@@ -9,7 +9,7 @@ You need **Python>=3.6** and all python stuff as indicated in **[02_Python 3.md]
 
     `rm -r ~/tmp/pe.audio.sys-*`
 
-2) Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it:
+2) Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it as folows:
 
     ```
     cd
@@ -22,7 +22,7 @@ At this point, the install scripts and the whole 'master' repo will be located u
 
     `sh tmp/update_peaudiosys.sh master`
 
-**IMPORTANT** say **'N'** when asked *keep your current config?*.
+**(i) IMPORTANT** say **'N'** when asked *keep your current config?*.
 
 
 ## Automatic updates:
@@ -90,11 +90,17 @@ Please add this under your `scripts:` section inside `config.yml`
 
 Last step in installing/updating script will update your pe.audio.sys web site configuration under Apache (you'll need sudo credentials).
 
-So, please install the Apache-PHP module and enable it:
+So, please install the Apache-PHP module:
 
     sudo apt install apache2 libapache2-mod-php
-    sudo a2enmod php7.X     # (i)
-    
-**(i)** replace 7.X with your installed version:
 
-    apt list libapache2-mod-php*
+Prior to enable the module you need to know its version, for instance:
+
+    $ ls /etc/apache2/mods-available/php*
+    /etc/apache2/mods-available/php7.4.conf  /etc/apache2/mods-available/php7.4.load
+
+ 
+So to enable apache-php run:
+
+    sudo a2enmod php7.4
+

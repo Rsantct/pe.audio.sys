@@ -7,13 +7,14 @@
     */
 
     $UHOME = get_home();
-    //echo '---'.$HOME.'---'; // cmdline debugging
+    // echo "UHOME: ".$UHOME."\n"; // cmdline debugging
 
     // Gets the base folder where php code and pe.audio.sys are located
     function get_home() {
         $phpdir = getcwd();
         $pos = strpos($phpdir, 'pe.audio.sys');
-        return substr($phpdir, 0, $pos-1 );
+        $uhome= substr($phpdir, 0, $pos-1);
+        return $uhome;
     }
 
     // Gets single line configured items from the 'wolservice.cfg' YAML file
@@ -53,22 +54,29 @@
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if ($socket === false) {
             echo "socket_create() failed: " . socket_strerror(socket_last_error()) . "\n";
+            return '';
         }
-        $result = socket_connect($socket, $address, $port);
-        if ($result === false) {
-            echo "socket_connect() failed: ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
+
+        socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>0, "usec"=>500));
+        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>0, "usec"=>500));
+
+        $so_result = socket_connect($socket, $address, $port);
+        if ($so_result === false) {
+            echo "(comms.php) socket_connect() failed: ($so_result) " . socket_strerror(socket_last_error($socket)) . "\n";
+            return '';
         }
-        // Sends and receive:
+
+        // PHP ---> App server side
         socket_write($socket, $cmd, strlen($cmd));
-        //
-        // (!) read ENOUGH BYTES e.g. 1024 to avoid large responses to be truncated.
-        //
-        $out = socket_read($socket, 1024);
-        //  (i) sending quit and empty the buffer currently not in use, just close:
-        //socket_write($socket, "quit", strlen("quit"));
-        //socket_read($socket, 1024);   // empties the receiving buffer
+
+        // App server side ---> PHP
+        $ans = '';
+        while ( ($tmp = socket_read($socket, 1000)) !== '') {
+           $ans = $ans.$tmp;
+        }
         socket_close($socket);
-        return $out;
+
+        return $ans;
     }
 
 ?>

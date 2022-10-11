@@ -29,10 +29,12 @@
             "GET", "main.php?command=player stop"
     */
 
-    // echo system_socket('control', 'status'); // DEBUG
+    //echo send_cmd('state', 'peaudiosys'); // DEBUG
 
+    // HTTPRequest ---> PHP
     $command = $_REQUEST["command"];
 
+    // PHP ---> App server side
     if ( strpos($command, "_restart") ) {
 
         echo send_cmd($command, 'restart');
