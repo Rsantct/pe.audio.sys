@@ -27,9 +27,9 @@ BACKEND = 'alsa'
 ALSADEV = 'aloop'
 OPTLIST = [ '--disable-audio-cache',
             # https://github.com/librespot-org/librespot/wiki/FAQ
-            # For AUDIOPHILES
-            '--mixer softvol --volume-ctrl fixed --initial-volume 100',
-            '--format F32'
+            # For AUDIOPHILES (ONLY WORKS IN MOST RECENT VERSIONS)
+            #'--mixer softvol --volume-ctrl fixed --initial-volume 100',
+            #'--format F32'
           ]
 
 
