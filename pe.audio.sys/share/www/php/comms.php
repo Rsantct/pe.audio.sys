@@ -6,21 +6,15 @@
     'pe.audio.sys', a PC based personal audio system.
     */
 
-    /*  This is the hidden server side php code.
-        PHP will response to the client via the standard php output, for instance:
-            echo $some_varible;
-            echo "some_string";
-            readfile("some_file_path");
-    */
-
     $UHOME = get_home();
-    //echo '---'.$HOME.'---'; // cmdline debugging
+    // echo "UHOME: ".$UHOME."\n"; // cmdline debugging
 
     // Gets the base folder where php code and pe.audio.sys are located
     function get_home() {
         $phpdir = getcwd();
         $pos = strpos($phpdir, 'pe.audio.sys');
-        return substr($phpdir, 0, $pos-1 );
+        $uhome= substr($phpdir, 0, $pos-1);
+        return $uhome;
     }
 
     // Gets single line configured items from pe.audio.sys 'config.yml' file
@@ -60,13 +54,23 @@
 
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if ($socket === false) {
-            echo "socket_create() failed: " . socket_strerror(socket_last_error()) . "\n";
+            echo "(comms.php) socket_create() failed: " . socket_strerror(socket_last_error()) . "\n";
+            return '';
         }
-        $result = socket_connect($socket, $address, $port);
-        if ($result === false) {
-            echo "socket_connect() failed: ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
+
+        socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>0, "usec"=>500));
+        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>0, "usec"=>500));
+
+        $so_result = socket_connect($socket, $address, $port);
+        if ($so_result === false) {
+            echo "(comms.php) socket_connect() failed: ($so_result) " . socket_strerror(socket_last_error($socket)) . "\n";
+            return '';
         }
+
+        // PHP ---> App server side
         socket_write($socket, $cmd, strlen($cmd));
+
+        // App server side ---> PHP
         $ans = '';
         while ( ($tmp = socket_read($socket, 1000)) !== '') {
            $ans = $ans.$tmp;
@@ -74,6 +78,7 @@
         socket_close($socket);
 
         return $ans;
+
     }
 
 ?>
