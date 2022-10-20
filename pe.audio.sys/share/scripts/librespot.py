@@ -21,16 +21,20 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 
 
-# CONFIGURATION
-LIBRESP = '/usr/bin/librespot'
-BACKEND = 'alsa'
-ALSADEV = 'aloop'
-OPTLIST = [ '--disable-audio-cache',
-            # https://github.com/librespot-org/librespot/wiki/FAQ
-            # For AUDIOPHILES (ONLY WORKS IN MOST RECENT VERSIONS)
-            #'--mixer softvol --volume-ctrl fixed --initial-volume 100',
-            #'--format F32'
-          ]
+# BYNARY
+LIBRESP = '/home/pi/.cargo/bin/librespot'
+
+# BACKEND OPTIONS
+BACKEND_OPTS = f'--backend jackaudio --device librespot'
+
+# MORE OPTIONS LIST (do not configure here: bitrate, name, backend, device)
+MOREOPT = [
+    '--disable-audio-cache',
+    # https://github.com/librespot-org/librespot/wiki/FAQ
+    # For AUDIOPHILES
+    '--mixer softvol --volume-ctrl fixed --initial-volume 100',
+    '--format F32'
+]
 
 
 def start():
@@ -38,23 +42,26 @@ def start():
     # We redirect the them to a temporary file that will be periodically
     # read from a player control daemon.
 
-    backend_opts = f'--backend {BACKEND}'
-    if BACKEND == 'alsa':
-        backend_opts += f' --device {ALSADEV}'
 
-    OPTSTR = ' '.join(OPTLIST)
+    opt_str = ' '.join(MOREOPT)
 
     cmd = f'{LIBRESP} --name {gethostname()} ' + \
-          f'--bitrate 320 {backend_opts} {OPTSTR}'
+          f'--bitrate 320 {BACKEND_OPTS} {opt_str}'
 
     eventsPath = f'{UHOME}/pe.audio.sys/.librespot_events'
 
     with open(eventsPath, 'w') as f:
         Popen( cmd.split(), stdout=f, stderr=f )
 
+    # A daemon to ensure librespot jack port to be connected to librespot_loop
+    watchdog_cmd = f"python3 {UHOME}/pe.audio.sys/share/scripts/" + \
+                    "librespot/librespot_watchdog.py"
+    Popen(watchdog_cmd, shell=True)
+
 
 def stop():
     Popen( 'pkill -KILL -f bin/librespot'.split() )
+    Popen( 'pkill -KILL -f librespot_watchdog'.split() )
     sleep(.5)
 
 
