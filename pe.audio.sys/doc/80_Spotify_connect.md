@@ -45,6 +45,16 @@ The binary will be usually dropped under your cargo folder at `~/.cargo/bin/`
 Simply copy or symlink the binary under `/usr/bin/`
 
 
+## Pre-compiled package for Raspberry Pi
+
+There is available a pre-compiled package called **`Raspotify`** for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
+
+Please, after installing it, disable the default raspotify service
+
+    sudo systemctl stop raspotify.service 
+    sudo systemctl disable raspotify.service 
+
+
 ## Configure pe.audio.sys `config.yml`
     
     sources:
