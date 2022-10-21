@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    This script manages '/usr/bin/librespot',
+    This script manages 'librespot',
     a headless Spotify Connect player daemon
 
     https://github.com/librespot-org/librespot
