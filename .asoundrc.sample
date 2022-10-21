@@ -60,3 +60,9 @@ pcm.alsafile {
         description "To file alsafile.wav"
     }
 }
+
+# Some clients needs to see some control device
+ctl.!default {
+    type hw;
+    card 0;
+}

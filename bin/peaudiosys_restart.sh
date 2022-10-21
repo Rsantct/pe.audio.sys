@@ -13,7 +13,8 @@ function do_stop {
 
 function do_start {
 
-    if [[ ! $XDG_CURRENT_DESKTOP ]]; then
+    #if [[ ! $XDG_CURRENT_DESKTOP ]]; then
+    if [[ ! $DBUS_SESSION_BUS_ADDRESS ]]; then
         # Needed for jackd when called w/o X environment:
         export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
     fi

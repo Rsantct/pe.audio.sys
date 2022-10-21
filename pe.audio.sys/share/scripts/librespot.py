@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    This script manages '/usr/bin/librespot',
+    This script manages 'librespot',
     a headless Spotify Connect player daemon
 
     https://github.com/librespot-org/librespot
@@ -21,31 +21,33 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 
 
-# CONFIGURATION
-LIBRESP = '/usr/bin/librespot'
-BACKEND = 'alsa'
-ALSADEV = 'aloop'
-OPTLIST = [ '--disable-audio-cache',
-            # https://github.com/librespot-org/librespot/wiki/FAQ
-            # For AUDIOPHILES (ONLY WORKS IN MOST RECENT VERSIONS)
-            #'--mixer softvol --volume-ctrl fixed --initial-volume 100',
-            #'--format F32'
-          ]
+# BINARY
+BINARY = '/usr/bin/librespot'
+
+# BACKEND OPTIONS
+BACKEND_OPTS = f'--backend jackaudio --device librespot'
+
+# MORE OPTIONS LIST (do not configure here: bitrate, name, backend, device)
+MOREOPT = [
+    '--disable-audio-cache',
+    # https://github.com/librespot-org/librespot/wiki/FAQ
+    # For AUDIOPHILES
+    '--mixer softvol --volume-ctrl fixed --initial-volume 100',
+    '--format F32'
+]
 
 
 def start():
     # 'librespot' binary prints out the playing track and some info.
-    # We redirect the them to a temporary file that will be periodically
+    # We redirect them to a temporary file that will be periodically
     # read from a player control daemon.
 
-    backend_opts = f'--backend {BACKEND}'
-    if BACKEND == 'alsa':
-        backend_opts += f' --device {ALSADEV}'
 
-    OPTSTR = ' '.join(OPTLIST)
+    moreopt_str = ' '.join(MOREOPT)
 
-    cmd = f'{LIBRESP} --name {gethostname()} ' + \
-          f'--bitrate 320 {backend_opts} {OPTSTR}'
+    cmd = f'{BINARY} --name {gethostname()} ' + \
+          f'--onevent {UHOME}/pe.audio.sys/share/scripts/librespot/bind_ports.sh ' + \
+          f'--bitrate 320 {BACKEND_OPTS} {moreopt_str}'
 
     eventsPath = f'{UHOME}/pe.audio.sys/.librespot_events'
 
