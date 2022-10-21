@@ -39,7 +39,7 @@ MOREOPT = [
 
 def start():
     # 'librespot' binary prints out the playing track and some info.
-    # We redirect the them to a temporary file that will be periodically
+    # We redirect them to a temporary file that will be periodically
     # read from a player control daemon.
 
 
