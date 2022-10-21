@@ -42,7 +42,7 @@ The binary will be usually dropped under your cargo folder at `~/.cargo/bin/`
 
 ## Install
 
-Simply copy the binary under `/usr/bin/`
+Simply copy or symlink the binary under `/usr/bin/`
 
 
 ## Configure pe.audio.sys `config.yml`
@@ -66,13 +66,8 @@ Simply copy the binary under `/usr/bin/`
 
 ## Usage
 
-You can control your headless Spotify player from any device in the same LAN (wifi), such an smartphone or tablet with the standard Spotify App.
+You can control your headless Spotify player from any device in the same LAN (wifi), such an smartphone or tablet with the standard Spotify App. Simply select your player by tapping the Soptify App icon *'Connect to device'*.
 
 Unfortunately pe.audio.sys can not control the playback (play pause etc), this must be done from the Spotify App.
 
 Currently, the only available metadata are the track title and duration. It is not available the track position, the album name, neither the artist name.
-
-
-
-
-
