@@ -66,7 +66,7 @@ Simply copy or symlink the binary under `/usr/bin/`
 
 ## Usage
 
-You can control your headless Spotify player from any device in the same LAN (wifi), such an smartphone or tablet with the standard Spotify App. Simply select your player by tapping the Soptify App icon *'Connect to device'*.
+You can control your headless Spotify player from any device in the same LAN (wifi), such an smartphone or tablet with the official Spotify App. Simply select your player by tapping the Soptify App icon *'Connect to device'*.
 
 Unfortunately pe.audio.sys can not control the playback (play pause etc), this must be done from the Spotify App.
 
