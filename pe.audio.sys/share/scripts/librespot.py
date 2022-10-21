@@ -22,7 +22,7 @@ UHOME = os.path.expanduser("~")
 
 
 # BYNARY
-LIBRESP = '/home/pi/.cargo/bin/librespot'
+BYNARY = '/home/pi/.cargo/bin/librespot'
 
 # BACKEND OPTIONS
 BACKEND_OPTS = f'--backend jackaudio --device librespot'
@@ -43,25 +43,20 @@ def start():
     # read from a player control daemon.
 
 
-    opt_str = ' '.join(MOREOPT)
+    moreopt_str = ' '.join(MOREOPT)
 
-    cmd = f'{LIBRESP} --name {gethostname()} ' + \
-          f'--bitrate 320 {BACKEND_OPTS} {opt_str}'
+    cmd = f'{BYNARY} --name {gethostname()} ' + \
+          f'--onevent {UHOME}/pe.audio.sys/share/scripts/librespot/bind_ports.sh ' + \
+          f'--bitrate 320 {BACKEND_OPTS} {moreopt_str}'
 
     eventsPath = f'{UHOME}/pe.audio.sys/.librespot_events'
 
     with open(eventsPath, 'w') as f:
         Popen( cmd.split(), stdout=f, stderr=f )
 
-    # A daemon to ensure librespot jack port to be connected to librespot_loop
-    watchdog_cmd = f"python3 {UHOME}/pe.audio.sys/share/scripts/" + \
-                    "librespot/librespot_watchdog.py"
-    Popen(watchdog_cmd, shell=True)
-
 
 def stop():
     Popen( 'pkill -KILL -f bin/librespot'.split() )
-    Popen( 'pkill -KILL -f librespot_watchdog'.split() )
     sleep(.5)
 
 
