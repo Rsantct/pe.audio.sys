@@ -21,8 +21,8 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 
 
-# BYNARY
-BYNARY = '/usr/bin/librespot'
+# BINARY
+BINARY = '/usr/bin/librespot'
 
 # BACKEND OPTIONS
 BACKEND_OPTS = f'--backend jackaudio --device librespot'
@@ -45,7 +45,7 @@ def start():
 
     moreopt_str = ' '.join(MOREOPT)
 
-    cmd = f'{BYNARY} --name {gethostname()} ' + \
+    cmd = f'{BINARY} --name {gethostname()} ' + \
           f'--onevent {UHOME}/pe.audio.sys/share/scripts/librespot/bind_ports.sh ' + \
           f'--bitrate 320 {BACKEND_OPTS} {moreopt_str}'
 
