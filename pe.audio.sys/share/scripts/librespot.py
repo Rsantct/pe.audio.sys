@@ -22,7 +22,7 @@ UHOME = os.path.expanduser("~")
 
 
 # BYNARY
-BYNARY = 'usr/bin/librespot'
+BYNARY = '/usr/bin/librespot'
 
 # BACKEND OPTIONS
 BACKEND_OPTS = f'--backend jackaudio --device librespot'
