@@ -6,7 +6,7 @@ On a headless machine, we can use **`librespot`**, an Open Source Spotify client
 
 CREDITS: https://github.com/librespot-org/librespot
 
-In order to costumize the binary with the jackaudio backend and by using the Avahi/Bonjour daemon from the O.S., we need to compile from source.
+In order to customize the binary by having the **jackaudio** backend and by using the **Avahi/Bonjour** daemon from the O.S., we need to compile from source.
 
 ## Compile
 
