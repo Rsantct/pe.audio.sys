@@ -181,8 +181,10 @@ def start_jack_stuff():
         release_cards_from_pulseaudio()
 
     # Launch JACKD process
-    sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True,  stdout=sys.stdout,
-                                                        stderr=sys.stderr)
+    with open(f'{LOG_FOLDER}/jackd.log', 'w') as jlog:
+        sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True,
+                        stdout=jlog,
+                        stderr=jlog)
 
     # Will check if JACK ports are available
     sleep(1)
