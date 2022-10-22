@@ -41,8 +41,13 @@ def mpd_playlists(cmd, arg='', port=6600):
     except:
         return f'ERROR connecting to MPD at port {port}'
 
+
     if cmd == 'get_playlists':
-        result = [ x['playlist'] for x in c.listplaylists() ]
+        # Some setups could use a mount for mpdconf playlist_directory
+        try:
+            result = [ x['playlist'] for x in c.listplaylists() ]
+        except Exception as e:
+            print(f'(mpd.py) {str(e)}')
 
     elif cmd == 'load_playlist':
         c.load(arg)
