@@ -4,7 +4,6 @@
 su -l YOURUSER -c "/home/YOURUSER/bin/ampli.sh on"
 
 # starts pe.audio.sys
-su -l YOURUSER -c "python3 /home/YOURUSER/pe.audio.sys/start.py all --log &"
-
+sleep 5 && su -l YOURUSER -c "peaudiosys_restart.sh start 1>/home/YOURUSER/pe.audio.sys/log/rc.local.log 2>&1 &"
 
 exit 0
