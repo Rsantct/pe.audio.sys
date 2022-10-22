@@ -80,7 +80,7 @@ Also install the following packages on your linux installation:
                      mpd mpc gmpc ncmpcpp mplayer cdtool \
                      ecasound ecatools python3-ecasound ladspa-sdk  \
                      fil-plugins zita-ajbridge zita-njbridge \
-                     apache2 libapache2-mod-php mc jq anacron netcat
+                     apache2 libapache2-mod-php mc jq anacron netcat source-highlight
 
 
 You **MUST** be vigilant at the start of the installation to answer YES to the question to enable **"real time" for JACK**.
