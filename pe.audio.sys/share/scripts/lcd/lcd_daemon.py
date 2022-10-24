@@ -16,19 +16,21 @@ import lcd_client
 import os
 import sys
 import yaml
-import json
 import threading
 from time import sleep
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from config import MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH
-from miscel import read_state_from_disk, read_metadata_from_disk
+from miscel import  json_loads, read_state_from_disk, read_metadata_from_disk,  \
+                    MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH,       \
+                    AUX_INFO_PATH
 
 
-## Auxiliary global
-state = { 'lu_offset': 0 }
+## Auxiliary globals
+state        = { 'lu_offset': 0 }
+last_warning = ''
+
 
 # Reading the LCD SETTINGS:
 try:
@@ -57,7 +59,9 @@ class Changed_files_handler(FileSystemEventHandler):
         # LOUDNESS MONITOR
         if path in (LDMON_PATH):
             update_lcd_loudness_monitor()
-
+        # TEMPORARY WARNINGS
+        if AUX_INFO_PATH in path:
+            show_new_warning()
 
 class Widgets(object):
 
@@ -147,6 +151,29 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
         line += 1
         if line > 4:
             break
+
+
+def show_new_warning():
+    """ This checks for pe.audio.sys temporary warnings
+        changes (looks inside AUX_INFO_PATH)
+    """
+
+    global last_warning
+
+    curr_warn = ''
+
+    try:
+        with open(AUX_INFO_PATH, 'r') as f:
+            curr_warn = json_loads(f.read())["warning"]
+    except:
+        pass
+
+    if curr_warn != last_warning:
+        if curr_warn:
+            show_temporary_screen( curr_warn, timeout=5)
+        last_warning = curr_warn
+
+    return
 
 
 def prepare_main_screen():
@@ -278,7 +305,7 @@ def update_lcd_loudness_monitor(scr='scr_1'):
         try:
             with open(LDMON_PATH, 'r') as f:
                 # e.g. {'LU_I': -6.0, 'scope': 'album'}
-                lu_dict = json.loads( f.read() )
+                lu_dict = json_loads( f.read() )
                 lu_I = lu_dict["LU_I"]
                 break
         except:
