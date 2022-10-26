@@ -6,11 +6,12 @@
 # 'pe.audio.sys', a PC based personal audio system.
 */
 
-// -----------------------------------------------------------------------------
-// ------------------------------ CONFIG ---------------------------------------
-// -----------------------------------------------------------------------------
-const NODEJS_PORT = 8080;   // The listening HTTP PORT
-// -----------------------------------------------------------------------------
+// The DEFAULT listening HTTP PORT unless passed via command line
+let NODEJS_PORT = 8080;
+const myArgs = process.argv.slice(2);
+if (myArgs[0]){
+    NODEJS_PORT = myArgs[0];
+}
 
 
 // Importing modules (require)
