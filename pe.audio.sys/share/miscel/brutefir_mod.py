@@ -21,7 +21,8 @@ import  jack_mod as jack
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
-    from brutefir_eq2png import do_graph as bf_eq2png_do_graph
+    from   brutefir_eq2png import do_graph as bf_eq2png_do_graph
+    import threading
 
 
 # Global to avoid dumping EQ magnitude png graph if not changed
@@ -179,7 +180,13 @@ def set_eq( eq_mag, eq_pha ):
         last_eq_mag = eq_mag
         # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            bf_eq2png_do_graph(freqs, eq_mag, is_lin_phase=CONFIG["bfeq_linear_phase"])
+            # Saving the PNG file can take too long
+            job = threading.Thread(target=bf_eq2png_do_graph,
+                                   args=(freqs,
+                                         eq_mag,
+                                         CONFIG["bfeq_linear_phase"])
+                                  )
+            job.start()
 
 
 def read_brutefir_config_bands():
@@ -743,7 +750,6 @@ def add_delay(ms):
         result = f'max delay {int(max_available_ms)} ms exceeded'
 
     return result
-
 
 
 # Autoexec on loading this module
