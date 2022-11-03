@@ -25,7 +25,7 @@ if CONFIG["web_config"]["show_graphs"]:
     import threading
 
 
-# Global to avoid dumping EQ magnitude png graph if not changed
+# Global to avoid dumping EQ magnitude graph to a PNG file if not changed
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
 
@@ -164,11 +164,13 @@ def set_eq( eq_mag, eq_pha ):
     freqs = EQ_CURVES["freqs"]
     mag_pairs = []
     pha_pairs = []
+
     i = 0
     for freq in freqs:
         mag_pairs.append( str(freq) + '/' + str(round(eq_mag[i], 3)) )
         pha_pairs.append( str(freq) + '/' + str(round(eq_pha[i], 3)) )
         i += 1
+
     mag_str = ', '.join(mag_pairs)
     pha_str = ', '.join(pha_pairs)
 
@@ -180,7 +182,7 @@ def set_eq( eq_mag, eq_pha ):
         last_eq_mag = eq_mag
         # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            # Saving the PNG file can take too long
+            # Threading because saving the PNG file can take too long
             job = threading.Thread(target=bf_eq2png_do_graph,
                                    args=(freqs,
                                          eq_mag,
