@@ -26,14 +26,6 @@ from    config  import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
 from    miscel  import  *
 
 
-AUX_USER_CMDS = [   'amp_switch', 'get_macros', 'run_macro',
-                    'play_url', 'reset_loudness_monitor', 'reset_lu_monitor' ,
-                    'set_loudness_monitor_scope', 'set_lu_monitor_scope',
-                    'get_loudness_monitor', 'get_lu_monitor',
-                    'info', 'warning'
-                ]
-
-
 def get_web_config():
     """ used by the control web page client
     """
@@ -98,17 +90,6 @@ def run_macro(mname):
         return 'ordered'
     else:
         return 'macro not found'
-
-
-def warning_expire(timeout=5):
-    """ Threads a timer to clear the warning message field inside .aux_info
-    """
-    def mytimer(timeout):
-        sleep(timeout)
-        AUX_INFO['warning'] = ''
-        dump_aux_info(AUX_INFO)
-    job = threading.Thread(target=mytimer, args=(timeout,))
-    job.start()
 
 
 def zita_client(argvs):
@@ -210,6 +191,17 @@ def manage_lu_monitor(string):
         return f'ERROR writing .loudness_control FIFO: {str(e)}'
 
 
+def warning_expire(timeout=5):
+    """ Threads a timer to clear the warning message field inside .aux_info
+    """
+    def mytimer(timeout):
+        sleep(timeout)
+        AUX_INFO['warning'] = ''
+        dump_aux_info(AUX_INFO)
+    job = threading.Thread(target=mytimer, args=(timeout,))
+    job.start()
+
+
 def manage_warning_msg(arg):
     """ Manages the warning field under .aux_info than can be used
         from the control web page interface
@@ -244,6 +236,34 @@ def manage_warning_msg(arg):
         result = 'usage: warning set message | warning clear'
 
     return result
+
+
+def alert_new_eq_graph(timeout=3):
+    """ This sets the 'new_eq_graph' field to True for a while
+        so that the web page can realize when the graph is dumped.
+        This helps on slow machines because the PNG graph takes a while
+        after the 'done' is received when issuing some audio command.
+
+        (i) Dumping this to the aux_info file is not needed because web
+            clients pulls this AUX_INFO run time variable not from disk.
+    """
+    def mytimer(timeout):
+        sleep(timeout)
+        AUX_INFO['new_eq_graph'] = False
+    job = threading.Thread(target=mytimer, args=(timeout,))
+    job.start()
+    AUX_INFO['new_eq_graph'] = True
+    return f'alerting for {timeout} s'
+
+
+def get_help():
+    """ List of end user available commands
+    """
+    cmds = ['amp_switch', 'get_macros', 'run_macro', 'play_url',
+            'reset_loudness_monitor', 'reset_lu_monitor' ,
+            'set_loudness_monitor_scope', 'set_lu_monitor_scope',
+            'get_loudness_monitor', 'get_lu_monitor', 'info', 'warning']
+    return ', '.join( cmds )
 
 
 # Handler class to do actions when a file change occurs.
@@ -308,7 +328,7 @@ def do( cmd, arg ):
 
     cmd = cmd.lower()
 
-    if cmd == 'amp_switch':
+    if   cmd == 'amp_switch':
         result = manage_amp_switch(arg)
 
     elif cmd == 'get_macros':
@@ -335,14 +355,17 @@ def do( cmd, arg ):
     elif cmd == 'zita_client':
         result = zita_client(arg)
 
-    elif cmd == 'help':
-        result = ', '.join( AUX_USER_CMDS )
-
     elif cmd == 'warning':
         result = manage_warning_msg(arg)
 
     elif cmd == 'get_web_config':
         result = get_web_config()
+
+    elif cmd == 'alert_new_eq_graph':
+        result = alert_new_eq_graph()
+
+    elif cmd == 'help':
+        result = get_help()
 
     else:
         result = f'(aux) bad command \'{cmd}\''
