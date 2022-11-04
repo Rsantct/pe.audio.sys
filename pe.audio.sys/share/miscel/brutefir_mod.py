@@ -167,15 +167,15 @@ def set_eq( eq_mag, eq_pha ):
             bf_eq2png_do_graph(freqs, eq_mag, CONFIG["bfeq_linear_phase"])
             e.set()
 
-        def flag_to_aux_info_file(e):
+        def flag_to_aux_info(e):
             e.wait()    # waits until set flag is true
             send_cmd('aux alert_new_eq_graph')
 
 
         # Threading because saving the PNG file can take too long
         e  = threading.Event()
-        j1 = threading.Thread(target=do_graph,              args=(e,))
-        j2 = threading.Thread(target=flag_to_aux_info_file, args=(e,))
+        j1 = threading.Thread(target=do_graph,         args=(e,))
+        j2 = threading.Thread(target=flag_to_aux_info, args=(e,))
         j1.start()
         j2.start()
 
