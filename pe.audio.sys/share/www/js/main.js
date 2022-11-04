@@ -647,7 +647,7 @@ function page_update() {
                 // Artifice to avoid using cached image by adding an offset timestamp
                 // inside the  http.GET image source request
                 document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
-                                                          + Math.floor(Date.now()/3000);
+                                                          + Math.floor(Date.now());
             }
             if (drc_changed() == true) {
                 // Here we can use cached images because drc graphs does not change
