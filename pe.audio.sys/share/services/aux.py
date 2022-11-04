@@ -238,7 +238,7 @@ def manage_warning_msg(arg):
     return result
 
 
-def alert_new_eq_graph(timeout=3):
+def alert_new_eq_graph(timeout=1):
     """ This sets the 'new_eq_graph' field to True for a while
         so that the web page can realize when the graph is dumped.
         This helps on slow machines because the PNG graph takes a while
@@ -321,7 +321,7 @@ def init():
 
 
 # Interface function for this module
-def do( cmd, arg ):
+def do( cmd, arg=None ):
     """ input:  command [, arg]
         output: an execution result string
     """
