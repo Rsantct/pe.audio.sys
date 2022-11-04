@@ -52,27 +52,7 @@ This is the preferred because pe.audio.sys will obtain complete metatada info.
 
 If you want a headless system, your friend is **`librespot`** https://github.com/librespot-org/librespot
 
-`librespot` is provided as a package from the [Rust ecosystem](https://crates.io/crates/librespot), so you'll need simply to install `cargo`, the Rust package manager, then install `librespot`:
-
-    sudo apt install cargo
-    cargo install librespot  # This will take a long while to compile
-    
-Don't worry about the --backend option because by default will use Rodio that works as kind of intermediate to use ALSA or Coreaudio, as needed.
-
-Unfortunately, librestpot only provides the current song title, nor artist neither album info.
-    
-#### Raspberry Pi
- 
-There is available a pre-compiled package for arm Raspberry users: raspotify https://github.com/dtcooper/raspotify
-
-Please, after installing it, disable the default raspotify service
-
-    sudo systemctl stop raspotify.service 
-    sudo systemctl disable raspotify.service 
-
-#### Running headless Spotify
-
-Simply add `- librespot.py` under the `scripts:` section inside `config.yml`.
+Please see [80_Spotify_connect.md](https://github.com/Rsantct/pe.audio.sys/blob/wip/pe.audio.sys/doc/80_Spotify_connect.md#spotify-connect-client-aka-librespot)
 
 
 ## Can I run Brutefir compiled from source rather than my distro version

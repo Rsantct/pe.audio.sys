@@ -151,7 +151,7 @@ on_change_input:
 sources:
 
     spotify:
-        jack_pname:     alsa_loop           # (i) same in ALSA players's config
+        jack_pname:     librespot_loop
         gain:           0.0
         xo:
 

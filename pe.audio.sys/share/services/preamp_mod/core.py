@@ -25,6 +25,8 @@ from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
                     sec2min, Fmt
 
 
+ZEROS = np.zeros( EQ_CURVES["freqs"].shape[0] )
+
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
 def powersave_loop( convolver_off_driver, convolver_on_driver,
                     end_loop_flag, reset_elapsed_flag ):
@@ -404,13 +406,14 @@ class Preamp(object):
                 index_max = index_flat
 
             if candidate["equal_loudness"]:
-                index = CONFIG['refSPL'] + self.state["level"]
+                index = CONFIG['refSPL'] + candidate["level"]
             else:
                 index = index_flat
             index = int(round(index))
 
             # Clamp index to the available "loudness deepness" curves set
             index = max( min(index, index_max), index_min )
+
 
         return EQ_CURVES[f'{cname}_mag'][index], \
                EQ_CURVES[f'{cname}_pha'][index]
@@ -421,7 +424,6 @@ class Preamp(object):
             as per the given candidate tone, loudness and target curves
             (mag, pha: numpy arrays)
         """
-        zeros = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
         # getting loudness and tones curves
         loud_mag, loud_pha = self._calc_eq_curve( 'loud', candidate )
@@ -431,8 +433,8 @@ class Preamp(object):
         # getting target curve
         target_name = candidate["target"]
         if target_name == 'none':
-            targ_mag = zeros
-            targ_pha = zeros
+            targ_mag = ZEROS
+            targ_pha = ZEROS
         else:
             if target_name != 'target':     # see doc string on find_target_sets()
                 target_name += '_target'
@@ -444,7 +446,7 @@ class Preamp(object):
                  + bass_mag + treb_mag
 
         if CONFIG["bfeq_linear_phase"]:
-            eq_pha = zeros
+            eq_pha = ZEROS
         else:
             eq_pha = targ_pha + loud_pha * candidate["equal_loudness"] \
                      + bass_pha + treb_pha
@@ -542,7 +544,8 @@ class Preamp(object):
         gmax            = self.gain_max
         gain            = bf.calc_gain( candidate )
 
-        # (!) Tone defeat control
+        # (!) candidate2 leaves candidate tone values untouched
+        #     in case of tone defeat control activated
         candidate2 = candidate.copy()
 
         if self.state["tone_defeat"]:

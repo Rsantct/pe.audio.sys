@@ -24,33 +24,49 @@ function do_backup {
     mkdir -p tmp
 
     now=$(date +%Y%m%d)
+    me=$(hostname)
+    tarpath=$HOME/tmp/peaudiosys.bak_"$me"_"$now".tar.xz
 
-    tar --exclude=*.wav             \
-        --exclude=*.dat             \
-        --exclude=*.png             \
-        --exclude=*config/asound*   \
+    # -j bzip2
+    # -J xzip  slower but ~60% smaller
+
+    tar --directory $HOME                   \
+        --absolute-names                    \
+        -c -j -f "$tarpath"                 \
+                                            \
+        --ignore-failed-read                \
+                                            \
+        --exclude=*.wav                     \
+        --exclude=*.dat                     \
+        --exclude=*.png                     \
+        --exclude=*/doc/*                   \
         --exclude=*loudspeakers/*example*   \
+        --exclude=*loudspeakers/*sample*    \
         --exclude=*loudspeakers/*test*      \
-        --exclude=*/www/images/*    \
-        --exclude=*.pyc             \
-        --exclude=*__pycache__*     \
-        --exclude=*share/eq*        \
-        --exclude=*.sample*         \
-        -cjf $HOME/tmp/peaudiosys.bak_"$now".tar.bz2    \
-            pe.audio.sys/THIS_IS*               \
-            pe.audio.sys/start.py               \
-            pe.audio.sys/config                 \
-            pe.audio.sys/loudspeakers           \
-            pe.audio.sys/macros                 \
-            pe.audio.sys/share/audiotools       \
-            pe.audio.sys/share/miscel           \
-            pe.audio.sys/share/scripts          \
-            pe.audio.sys/share/services         \
-            pe.audio.sys/share/www              \
-            bin/peaudiosys*
+        --exclude=*/www/images/*            \
+        --exclude=*.pyc                     \
+        --exclude=*__pycache__*             \
+        --exclude=*.sample                  \
+        --exclude=*.example                 \
+                                            \
+        pe.audio.sys/THIS_IS*               \
+        pe.audio.sys/.state                 \
+        pe.audio.sys/config                 \
+        pe.audio.sys/loudspeakers           \
+        pe.audio.sys/macros                 \
+        pe.audio.sys/share/eq/*target*      \
+        bin/*                               \
+        .mpdconf                            \
+        .mplayer                            \
+        .asoundrc                           \
+        .profile                            \
+        .crontab.dump                       \
+        .config/xmgc                        \
+        /etc/rc.local                       \
+        /etc/fstab
 
     echo -n "(peaudiosys_backup.sh) "
-    ls -sh tmp/peaudiosys.bak_"$now".tar.bz2
+    ls -sh "$tarpath"
 
 }
 
@@ -82,7 +98,7 @@ function do_restore {
         fi
 
         echo "Extracting ""$tar_file"" ... .. ."
-        if tar -xjf $tar_file -C $HOME; then
+        if tar -x -j -v -f $tar_file -C $HOME; then
             echo "Done."
             exit 0
         else
