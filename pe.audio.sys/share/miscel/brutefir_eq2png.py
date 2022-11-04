@@ -27,7 +27,8 @@ matplotlib.use('Agg')
 import  matplotlib.pyplot as plt
 
 
-UHOME = os.path.expanduser("~")
+UHOME    = os.path.expanduser("~")
+PNG_PATH = f'{UHOME}/pe.audio.sys/share/www/images/brutefir_eq.png'
 
 
 RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
@@ -74,7 +75,7 @@ def get_bf_eq():
 
 
 def do_graph(freqs, magdB, is_lin_phase=False):
-    """ Dupms a graph to share/www/images/brutefir_eq.png
+    """ Dupms a graph to PNG_PATH
     """
     if verbose:
         print( f'(brutefir_eq2png) working ... .. .' )
@@ -107,11 +108,11 @@ def do_graph(freqs, magdB, is_lin_phase=False):
             linewidth=3
             )
     # Save to file
-    fpng = f'{UHOME}/pe.audio.sys/share/www/images/brutefir_eq.png'
-    plt.savefig( fpng, facecolor=RGBweb )
+    plt.savefig( PNG_PATH, facecolor=RGBweb )
     if verbose:
         print( f'(brutefir_eq2png) saved: \'{fpng}\' ' )
-    #plt.show()  # (!) PLEASE comment out the safe backend Agg before using this
+    # (!) PLEASE comment out the safe backend Agg line before using plt.show()
+    #plt.show()
 
 
 if __name__ == '__main__':

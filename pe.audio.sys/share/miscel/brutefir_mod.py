@@ -14,17 +14,19 @@ from    socket      import socket
 from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, \
                             BFCFG_PATH, LOG_FOLDER
 
-from    miscel      import  read_bf_config_fs, process_is_running, Fmt
+from    miscel      import  read_bf_config_fs, process_is_running, Fmt, \
+                            send_cmd
 
 import  jack_mod as jack
 
 
 if CONFIG["web_config"]["show_graphs"]:
     sys.path.append ( os.path.dirname(__file__) )
-    from brutefir_eq2png import do_graph as bf_eq2png_do_graph
+    from   brutefir_eq2png import do_graph as bf_eq2png_do_graph
+    import threading
 
 
-# Global to avoid dumping EQ magnitude png graph if not changed
+# Global to avoid dumping EQ magnitude graph to a PNG file if not changed
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
 
@@ -158,28 +160,49 @@ def set_eq( eq_mag, eq_pha ):
     """ Adjust the Brutefir EQ module,
         also will dump an EQ graph png file
     """
+
+    def save_png():
+
+        def do_graph(e):
+            bf_eq2png_do_graph(freqs, eq_mag, CONFIG["bfeq_linear_phase"])
+            e.set()
+
+        def flag_to_aux_info(e):
+            e.wait()    # waits until set flag is true
+            send_cmd('aux alert_new_eq_graph')
+
+
+        # Threading because saving the PNG file can take too long
+        e  = threading.Event()
+        j1 = threading.Thread(target=do_graph,         args=(e,))
+        j2 = threading.Thread(target=flag_to_aux_info, args=(e,))
+        j1.start()
+        j2.start()
+
+
     global last_eq_mag
 
     freqs = EQ_CURVES["freqs"]
     mag_pairs = []
     pha_pairs = []
+
     i = 0
     for freq in freqs:
         mag_pairs.append( str(freq) + '/' + str(round(eq_mag[i], 3)) )
         pha_pairs.append( str(freq) + '/' + str(round(eq_pha[i], 3)) )
         i += 1
+
     mag_str = ', '.join(mag_pairs)
     pha_str = ', '.join(pha_pairs)
 
     cli('lmc eq "c.eq" mag '   + mag_str)
     cli('lmc eq "c.eq" phase ' + pha_str)
 
-    # Keeping the global updated
+    # Dumping the EQ graph to a png file if curves have changed
     if not (last_eq_mag == eq_mag).all():
-        last_eq_mag = eq_mag
-        # Dumping the EQ graph to a png file
         if CONFIG["web_config"]["show_graphs"]:
-            bf_eq2png_do_graph(freqs, eq_mag, is_lin_phase=CONFIG["bfeq_linear_phase"])
+            save_png()
+        last_eq_mag = eq_mag
 
 
 def read_brutefir_config_bands():
@@ -743,7 +766,6 @@ def add_delay(ms):
         result = f'max delay {int(max_available_ms)} ms exceeded'
 
     return result
-
 
 
 # Autoexec on loading this module

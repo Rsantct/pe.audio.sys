@@ -20,6 +20,10 @@ const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 
 
 //////// GLOBAL VARIABLES ////////
+var state               = {};       // The preamp-convolver state
+
+var player_info         = {};
+
 var aux_info            = { 'amp': 'n/a',
                             'loudness_monitor': {'LU_I': 0, 'LU_M': 0, 'scope': 'track' },
                             'last_macro': '',
@@ -38,8 +42,6 @@ var main_sel_mode       = web_config.main_selector;
 var mFnames             = web_config.user_macros; // Macro file names
 
 var macro_button_list   = [];
-
-var state               = {};       // The preamp-convolver state
 
 var metablank           = {         // A player's metadata blank dict
                             'player':       '',
@@ -273,7 +275,7 @@ function init(){
     }
 
 
-    function download_web_config(){
+    function get_web_config(){
         try{
             web_config      = JSON.parse( control_cmd('aux get_web_config') );
             main_sel_mode   = web_config.main_selector;
@@ -369,9 +371,9 @@ function init(){
     }
 
 
-    download_web_config();
+    get_web_config();
 
-    state_update();
+    state_get();
 
     download_drc_graphs();
 
@@ -391,8 +393,23 @@ function init(){
 
 function page_update() {
 
-    function player_all_update(){
+    function player_get(){
+        try{
+            const tmp = JSON.parse( control_cmd('player get_all_info') );
+            if (tmp != "null"){
+                player_info = tmp;
+            }else{
+                main_cside_msg = ':: pe.audio.sys :: players OFFLINE';
+                return;
+            }
+        }catch(e){
+            console.log( 'error getting player info', e.name, e.message );
+            return;
+        }
+    }
 
+
+    function player_refresh(){
 
         function player_random_mode_update(mode){
             if        ( mode=='on' ) {
@@ -504,25 +521,15 @@ function page_update() {
         }
 
 
-        try{
-            var player_all_info = JSON.parse( control_cmd('player get_all_info') );
-            if (player_all_info == "null"){
-                main_cside_msg = ':: pe.audio.sys :: players OFFLINE';
-                return;
-            }
-        }catch(e){
-            console.log( 'error getting player info', e.name, e.message );
-            return;
-        }
 
-        player_controls_update(     player_all_info.state       );
-        player_metadata_update(     player_all_info.metadata    );
-        player_random_mode_update(  player_all_info.random_mode );
+        player_controls_update(     player_info.state       );
+        player_metadata_update(     player_info.metadata    );
+        player_random_mode_update(  player_info.random_mode );
 
         // Updates tracks list if disc has changed
-        if (last_disc != player_all_info.discid) {
+        if (last_disc != player_info.discid) {
             fill_in_track_selector();
-            last_disc = player_all_info.discid;
+            last_disc = player_info.discid;
         }
 
         // Updates the playlist loader when input source changed, keep hidden if empty.
@@ -561,12 +568,16 @@ function page_update() {
     }
 
 
-    function aux_info_refresh(){
+    function aux_info_get(){
         try{
             aux_info  = JSON.parse( control_cmd('aux info') );
         }catch(e){
             console.log('problems with \'aux info\' command', e.name, e.message);
         }
+    }
+
+
+    function aux_info_refresh(){
         if ( aux_info.amp == 'off' || aux_info.amp == 'on' ) {
             document.getElementById("OnOffButton").innerText = aux_info.amp.toUpperCase();
             document.getElementById("OnOffButton").style.display = 'block';
@@ -576,7 +587,7 @@ function page_update() {
     }
 
 
-    function LU_update(){
+    function LU_refresh(){
         // Updates the LU offset slider
         document.getElementById("LU_slider").value           = (15 - state.lu_offset);
         document.getElementById("LU_offset_value").innerText =
@@ -632,11 +643,13 @@ function page_update() {
 
 
         if ( hide_graphs == false ) {
-            if (eq_changed() == true) {
+        // The temporary 'new_eq_graph' flag helps on slow machines because the new PNG graph
+        // can take a while after the 'done' is received when issuing some audio command.
+            if (eq_changed() == true || aux_info.new_eq_graph == true) {
                 // Artifice to avoid using cached image by adding an offset timestamp
                 // inside the  http.GET image source request
                 document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
-                                                          + Math.floor(Date.now()/3000);
+                                                          + Math.floor(Date.now());
             }
             if (drc_changed() == true) {
                 // Here we can use cached images because drc graphs does not change
@@ -649,7 +662,7 @@ function page_update() {
     }
 
 
-    function preamp_refresh(){
+    function state_refresh(){
         // Updates level, balance, tone and delay info
         document.getElementById("levelInfo").innerHTML  = state.level.toFixed(1);
         document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
@@ -714,9 +727,10 @@ function page_update() {
     }
 
 
-    state_update();
+    // PREAMP STUFF
+    state_get();
 
-    // Cancel updating if not connected
+    //  Cancel updating if not connected
     if (!server_available){
         document.getElementById("levelInfo").innerHTML  = '--';
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: not connected';
@@ -725,19 +739,25 @@ function page_update() {
         return;
     }
 
-    // Refresh static stuff if loudspeaker's audio processes has changed
+    //  Refresh static stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
         fill_in_page_statics();
         last_loudspeaker = state.loudspeaker;
     }
 
-    preamp_refresh();
+    state_refresh();
 
-    player_all_update();
 
+    // PLAYER STUFF
+    player_get();
+    player_refresh();
+
+
+    // AUX STUFF
+    aux_info_get();
     aux_info_refresh();
 
-    LU_update();
+    LU_refresh();
 
     graphs_update();
 
@@ -844,16 +864,16 @@ function omd_audio_change(param, value) {
 
 
 function omd_mute_toggle() {
+    control_cmd( 'mute toggle' );
     state.muted = ! state.muted;
     buttonMuteHighlight();
-    control_cmd( 'mute toggle' );
 }
 
 
 function omd_equal_loudness_toggle() {
+    control_cmd( 'equal_loudness toggle' );
     state.equal_loudness = ! state.equal_loudness;
     buttonLoudHighlight();
-    control_cmd( 'equal_loudness toggle' );
 }
 
 
@@ -1137,7 +1157,7 @@ function control_cmd( cmd ) {
 }
 
 
-function state_update() {
+function state_get() {
     try{
         state = JSON.parse( control_cmd('preamp state') );
         server_available = true;
