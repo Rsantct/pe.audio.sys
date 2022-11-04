@@ -643,7 +643,9 @@ function page_update() {
 
 
         if ( hide_graphs == false ) {
-            if (eq_changed() == true) {
+        // The temporary 'new_eq_graph' flag helps on slow machines because the new PNG graph
+        // can take a while after the 'done' is received when issuing some audio command.
+            if (eq_changed() == true || aux_info.new_eq_graph == true) {
                 // Artifice to avoid using cached image by adding an offset timestamp
                 // inside the  http.GET image source request
                 document.getElementById("bfeq_img").src = 'images/brutefir_eq.png?'
