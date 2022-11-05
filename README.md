@@ -121,7 +121,7 @@ We also recommend **rePhase** for FIR design.
 
 Regarding room correction EQ, you can use both IIR (parametric correction) or FIR (impulse correction).
 
-FIR DRC is supported under a reserver convolver stage on Brutefir.
+FIR DRC is supported under a reserved convolver stage on Brutefir.
 
 IIR DRC can be implemented through by the provided Ecasound add-on script, then bypassing the convolver stage above.
 
