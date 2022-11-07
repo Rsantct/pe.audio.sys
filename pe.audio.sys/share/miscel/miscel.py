@@ -14,6 +14,7 @@ from    time import sleep
 import  subprocess as sp
 import  configparser
 import  os
+import  threading
 
 from    config      import *
 from    fmt         import Fmt
@@ -92,6 +93,21 @@ def manage_amp_switch(mode):
         return get_amp_state()
 
 
+    def wait4_convolver_on():
+        cmax = 30
+        while True:
+            conv_on = read_state_from_disk()["convolver_runs"]
+            if conv_on == True:
+                sleep(3)
+                send_cmd('aux warning clear', timeout=1)
+                break
+            cmax -= 1
+            if not cmax:
+                send_cmd('aux warning clear', timeout=1)
+                break
+            sleep(1)
+
+
     cur_state = get_amp_state()
     new_state  = '';
 
@@ -110,6 +126,14 @@ def manage_amp_switch(mode):
 
     if new_state:
         result = set_amp_state( new_state )
+
+    # Wake up the convolver if sleeping:
+    if new_state == 'on':
+        send_cmd('aux warning set ( waking up ... )', timeout=1)
+        sleep(1)
+        send_cmd('preamp convolver on', timeout=1)
+        job = threading.Thread(target=wait4_convolver_on)
+        job.start()
 
     # Optionally will stop the current player as per CONFIG
     if new_state == 'off':
