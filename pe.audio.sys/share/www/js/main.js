@@ -1132,8 +1132,7 @@ function control_cmd( cmd ) {
 
 
     // Encoding special chars in the value of the 'command' parameter
-    const value = encodeURIComponent(cmd);
-    const url = URL_PREFIX + '?command=' + value;
+    const url = URL_PREFIX + '?command=' + encodeURIComponent(cmd);
 
     const myREQ = new XMLHttpRequest();
 
@@ -1161,14 +1160,11 @@ function state_get() {
     try{
         state = JSON.parse( control_cmd('preamp state') );
         server_available = true;
+        document.title = 'pe.audio.sys ' + state.loudspeaker;
     }catch(e){
         server_available = false;
         document.getElementById("main_cside").innerText =
                                         ':: pe.audio.sys :: not connected';
-        console.log( 'not connected', e.name, e.message );
-    }
-    if (server_available){
-        document.title = 'pe.audio.sys ' + state.loudspeaker;
     }
 }
 
