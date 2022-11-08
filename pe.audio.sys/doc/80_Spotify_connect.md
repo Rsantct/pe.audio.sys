@@ -47,7 +47,7 @@ Simply copy or symlink the binary under `/usr/bin/`, for instance:
     ln -s  ~/.cargo/binlibrespot  /usr/bin/librespot
 
 
-**Warning**: If you install the below referred librespot based package **`Raspotify`**, your /usr/bin/librespot will be overwritten.
+**Warning**: If you install the below referred librespot based package **`Raspotify`**, your `/usr/bin/librespot` will be overwritten.
 
 
 ## Pre-compiled package for Raspberry Pi
