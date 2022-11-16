@@ -92,41 +92,36 @@ def run_macro(mname):
         return 'macro not found'
 
 
-def zita_client(argvs):
-    """ Sends audio to a zita-njbridge (issued from a multiroom receiver)
-    """
-    addr = ''
-    stop = False
+def zita_j2n(args):
+    """ Feeds audio to a zita-j2n port (issued from a multiroom receiver)
 
-    # Reading arguments
-    for argv in argvs.split(' '):
-        if is_IP(argv):
-            addr = argv
-        elif argv == 'stop':
-            stop = True
+        args: a json tuple "(dest, udpport, do_stop)"
+    """
+    dest, udpport, do_stop = json_loads(args)
 
     # Bad address
-    if not addr:
+    if not is_IP(dest):
         return 'bad address'
 
     jcli        = jack.Client(name='zitatmp', no_start_server=True)
-    udpport     = addr.split('.')[-1]
-    zitajname   = f'zita-{udpport}'
+    zitajname   = f'zita-{ dest.split(".")[-1] }'
 
-    # if stop
-    if stop:
+    # STOP mode
+    if do_stop == 'stop':
         Popen( f'pkill -KILL -f {zitajname}'.split() )
+        sleep(.2)
         return f'{zitajname} killed'
 
     jports = jcli.get_ports()
     if not [x for x in jports if zitajname in x.name]:
-        zitacmd     = f'zita-j2n --jname {zitajname} {addr} 65{udpport}'
-        Popen( zitacmd.split() )
+        zitacmd     = f'zita-j2n --jname {zitajname} {dest} {udpport}'
+        with open('/dev/null', 'w') as fnull:
+            Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
         sleep(1)
 
     try:
-        jcli.connect( 'pre_in_loop:output_1', f'zita-{udpport}:in_1' )
-        jcli.connect( 'pre_in_loop:output_2', f'zita-{udpport}:in_2' )
+        jcli.connect( 'pre_in_loop:output_1', f'{zitajname}:in_1' )
+        jcli.connect( 'pre_in_loop:output_2', f'{zitajname}:in_2' )
     except:
         pass
 
@@ -352,8 +347,8 @@ def do( cmd, arg=None ):
     elif cmd == 'info':
         result = AUX_INFO
 
-    elif cmd == 'zita_client':
-        result = zita_client(arg)
+    elif cmd == 'zita_j2n':
+        result = zita_j2n(arg)
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)
