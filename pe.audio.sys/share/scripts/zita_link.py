@@ -35,7 +35,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import get_my_ip, send_cmd, get_remote_sources_info
+from miscel import get_my_ip, send_cmd, get_remote_sources_info, json_dumps
 
 
 # Additional buffering (ms) (default 10, safe value 50, WiFi 100)
@@ -44,33 +44,45 @@ BUFFER = 50
 
 def start():
 
+    global PORT_BASE
+
     for item in REMOTES:
 
-        source, raddr, rport = item
+        _, raddr, rport = item
 
         # RUN REMOTE SENDER:
-        remotecmd   = f'aux zita_client {MY_IP} start'
+        zargs = json_dumps( (MY_IP, PORT_BASE, 'start') )
+        remotecmd   = f'aux zita_j2n {zargs}'
+        print(f'(zitalink) SENDING TO REMOTE: {remotecmd}')
         send_cmd(remotecmd, host=raddr, port=rport)
 
         # RUN LOCAL RECEIVER:
-        zitacmd = f'zita-n2j --jname {raddr} --buff {BUFFER} {MY_IP} {MY_ZITAPORT}'
-        Popen( zitacmd.split() )
-        print( f'(zita-n2j) listening for {MY_IP}:{MY_ZITAPORT}:UDP from {source} @ {raddr}' )
+        zitajname  = f'zita-{ raddr.split(".")[-1] }'
+        zitacmd = f'zita-n2j --jname {zitajname} --buff {BUFFER} {MY_IP} {PORT_BASE}'
+        print(f'(zitalink) RUNNING LOCAL:     {zitacmd}')
+        with open('/dev/null', 'w') as fnull:
+            Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+
+        # (i) zita will use 2 consecutive ports, so let's space by 10
+        PORT_BASE += 10
 
 
 def stop():
 
     for item in REMOTES:
 
-        source, raddr, rport = item
+        _, raddr, rport = item
 
         # REMOTE
-        remotecmd   = f'aux zita_client {MY_IP} stop'
+        zargs = json_dumps( (MY_IP, None, 'stop') )
+        remotecmd = f'aux zita_j2n {zargs}'
         send_cmd(remotecmd, host=raddr, port=rport)
 
         # LOCAL
-        Popen( 'pkill -KILL zita-n2j'.split() )
-        sleep(1)
+        zitajname  = f'zita-{ raddr.split(".")[-1] }'
+        killcmd = f'pkill -KILL -f {zitajname}'
+        Popen( killcmd.split() )
+        sleep(.1)
 
 
 if __name__ == '__main__':
@@ -87,7 +99,7 @@ if __name__ == '__main__':
 
     # The zita UDP port is derived from the last octet of my IP
     MY_IP       = get_my_ip()
-    MY_ZITAPORT = f'65{MY_IP.split(".")[-1]}'
+    PORT_BASE   = 65000
 
     # Reading command line: start | stop
     if sys.argv[1] == 'start':
