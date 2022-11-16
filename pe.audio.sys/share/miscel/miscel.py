@@ -570,10 +570,13 @@ def is_IP(s):
     """ Validate if a given string is a valid IP address
         (bool)
     """
-    try:
-        ipaddress.ip_address(s)
-        return True
-    except:
+    if type(s) == str:
+        try:
+            ipaddress.ip_address(s)
+            return True
+        except:
+            return False
+    else:
         return False
 
 
