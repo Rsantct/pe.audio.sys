@@ -35,8 +35,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import get_my_ip, send_cmd, get_remote_sources_info, json_dumps
-
+from    miscel import *
 
 # Additional buffering (ms) (default 10, safe value 50, WiFi 100)
 BUFFER = 50
@@ -44,27 +43,40 @@ BUFFER = 50
 
 def start():
 
-    global PORT_BASE
+    global UDP_PORT
+    zita_link_ports = {}
 
     for item in REMOTES:
 
-        _, raddr, rport = item
+        source_name, raddr, rport = item
 
-        # RUN REMOTE SENDER:
-        zargs = json_dumps( (MY_IP, PORT_BASE, 'start') )
+        # Trying to RUN REMOTE SENDER (*)
+        zargs = json_dumps( (MY_IP, UDP_PORT, 'start') )
         remotecmd   = f'aux zita_j2n {zargs}'
         print(f'(zitalink) SENDING TO REMOTE: {remotecmd}')
         send_cmd(remotecmd, host=raddr, port=rport)
+        zita_link_ports[source_name] = {'addr': raddr, 'udpport': UDP_PORT}
+
 
         # RUN LOCAL RECEIVER:
-        zitajname  = f'zita-{ raddr.split(".")[-1] }'
-        zitacmd = f'zita-n2j --jname {zitajname} --buff {BUFFER} {MY_IP} {PORT_BASE}'
+        zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
+        zitacmd = f'zita-n2j --jname {zitajname} --buff {BUFFER} {MY_IP} {UDP_PORT}'
         print(f'(zitalink) RUNNING LOCAL:     {zitacmd}')
         with open('/dev/null', 'w') as fnull:
             Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+            sleep(.2)
+            Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
+            Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
+
 
         # (i) zita will use 2 consecutive ports, so let's space by 10
-        PORT_BASE += 10
+        UDP_PORT += 10
+
+    # (*) Saving the zita's UDP PORT for future use because
+    #     the remote sender could not be online at the moment ...
+    with open(f'{MAINFOLDER}/.zita_link_ports', 'w') as f:
+        d = json_dumps( zita_link_ports )
+        f.write(d)
 
 
 def stop():
@@ -79,10 +91,10 @@ def stop():
         send_cmd(remotecmd, host=raddr, port=rport)
 
         # LOCAL
-        zitajname  = f'zita-{ raddr.split(".")[-1] }'
-        killcmd = f'pkill -KILL -f {zitajname}'
-        Popen( killcmd.split() )
-        sleep(.1)
+        zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
+        zitapattern  = f'zita-n2j --jname {zitajname}'
+        Popen( ['pkill', '-KILL', '-f',  zitapattern] )
+        sleep(.2)
 
 
 if __name__ == '__main__':
@@ -98,8 +110,8 @@ if __name__ == '__main__':
         sys.exit()
 
     # The zita UDP port is derived from the last octet of my IP
-    MY_IP       = get_my_ip()
-    PORT_BASE   = 65000
+    MY_IP    = get_my_ip()
+    UDP_PORT = 65000
 
     # Reading command line: start | stop
     if sys.argv[1] == 'start':
