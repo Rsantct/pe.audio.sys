@@ -68,7 +68,6 @@ def start():
             Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
             Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
 
-
         # (i) zita will use 2 consecutive ports, so let's space by 10
         UDP_PORT += 10
 
