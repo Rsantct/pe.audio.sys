@@ -53,14 +53,14 @@ def start():
         # Trying to RUN REMOTE SENDER (*)
         zargs = json_dumps( (MY_IP, UDP_PORT, 'start') )
         remotecmd   = f'aux zita_j2n {zargs}'
-        print(f'(zitalink) SENDING TO REMOTE: {remotecmd}')
+        print(f'(zita_link) SENDING TO REMOTE: {remotecmd}')
         send_cmd(remotecmd, host=raddr, port=rport)
         zita_link_ports[source_name] = {'addr': raddr, 'udpport': UDP_PORT}
 
         # RUN LOCAL RECEIVER:
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
         zitacmd = f'zita-n2j --jname {zitajname} --buff {BUFFER} {MY_IP} {UDP_PORT}'
-        print(f'(zitalink) RUNNING LOCAL:     {zitacmd}')
+        print(f'(zita_link) RUNNING LOCAL:     {zitacmd}')
         with open('/dev/null', 'w') as fnull:
             Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
             sleep(.2)
