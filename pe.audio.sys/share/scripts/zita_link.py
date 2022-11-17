@@ -57,14 +57,7 @@ def start():
         zita_link_ports[source_name] = {'addr': raddr, 'udpport': UDP_PORT}
 
         # RUN LOCAL RECEIVER:
-        zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
-        zitacmd = f'zita-n2j --jname {zitajname} --buff {BUFFER} {MY_IP} {UDP_PORT}'
-        print(f'(zita_link) RUNNING LOCAL:     {zitacmd}')
-        with open('/dev/null', 'w') as fnull:
-            Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
-            sleep(.2)
-            Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
-            Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
+        local_zita_restart(raddr, UDP_PORT, BUFFER)
 
         # (i) zita will use 2 consecutive ports, so let's space by 10
         UDP_PORT += 10
