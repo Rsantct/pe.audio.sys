@@ -57,7 +57,6 @@ def start():
         send_cmd(remotecmd, host=raddr, port=rport)
         zita_link_ports[source_name] = {'addr': raddr, 'udpport': UDP_PORT}
 
-
         # RUN LOCAL RECEIVER:
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
         zitacmd = f'zita-n2j --jname {zitajname} --buff {BUFFER} {MY_IP} {UDP_PORT}'
