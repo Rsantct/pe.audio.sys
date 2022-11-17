@@ -93,26 +93,32 @@ def run_macro(mname):
 
 
 def zita_j2n(args):
-    """ Feeds audio to a zita-j2n port (issued from a multiroom receiver)
+    """ This internal function is always issued from a multiroom receiver.
 
-        args: a json tuple "(dest, udpport, do_stop)"
+        Feeds the preamp audio to a zita-j2n port pointing to the receiver.
+
+        args: a json tuple string "(dest, udpport, do_stop)"
     """
+
     dest, udpport, do_stop = json_loads(args)
 
-    # Bad address
+    # BAD ADDRESS
     if not is_IP(dest):
         return 'bad address'
 
-    jcli        = jack.Client(name='zitatmp', no_start_server=True)
-    zitajname   = f'zita-{ dest.split(".")[-1] }'
+    zitajname = f'zita_j2n_{ dest.split(".")[-1] }'
 
     # STOP mode
     if do_stop == 'stop':
-        Popen( f'pkill -KILL -f {zitajname}'.split() )
+        zitapattern  = f'zita-j2n --jname {zitajname}'
+        Popen( ['pkill', '-KILL', '-f',  zitapattern] )
         sleep(.2)
-        return f'{zitajname} killed'
+        return f'killing {zitajname}'
 
+    # NORMAL mode
+    jcli = jack.Client(name='zitatmp', no_start_server=True)
     jports = jcli.get_ports()
+    result = ''
     if not [x for x in jports if zitajname in x.name]:
         zitacmd     = f'zita-j2n --jname {zitajname} {dest} {udpport}'
         with open('/dev/null', 'w') as fnull:
@@ -122,12 +128,13 @@ def zita_j2n(args):
     try:
         jcli.connect( 'pre_in_loop:output_1', f'{zitajname}:in_1' )
         jcli.connect( 'pre_in_loop:output_2', f'{zitajname}:in_2' )
-    except:
-        pass
+        result = 'done'
+    except Exception as e:
+        result = str(e)
 
     jcli.close()
 
-    return 'done'
+    return result
 
 
 def play_url(arg):
