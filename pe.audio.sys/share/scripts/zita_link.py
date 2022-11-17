@@ -50,11 +50,10 @@ def start():
 
         source_name, raddr, rport = item
 
-        # Trying to RUN REMOTE SENDER (*)
-        zargs = json_dumps( (MY_IP, UDP_PORT, 'start') )
-        remotecmd   = f'aux zita_j2n {zargs}'
-        print(f'(zita_link) SENDING TO REMOTE: {remotecmd}')
-        send_cmd(remotecmd, host=raddr, port=rport)
+        # Trying to RUN THE REMOTE SENDER zita-j2n (*)
+        remote_zita_restart(raddr, rport, UDP_PORT)
+
+        # Append the UPD_PORT to zita_link_ports
         zita_link_ports[source_name] = {'addr': raddr, 'udpport': UDP_PORT}
 
         # RUN LOCAL RECEIVER:
