@@ -251,6 +251,35 @@ def get_remote_sources_info():
     return remotes
 
 
+def remote_zita_restart(raddr, ctrl_port, zita_port):
+    """ Restarting zita-j2n on the multiroom sender's end,
+        pointing to our ip.
+        (i) The sender will do only if needed
+    """
+    zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
+    remotecmd = f'aux zita_j2n {zargs}'
+    send_cmd(remotecmd, host=raddr, port=ctrl_port)
+    print(f'(miscel.py) SENDING TO REMOTE: {remotecmd}')
+
+
+def local_zita_restart(raddr, udp_port, buff_size):
+    """ Running zita-n2j listen ports on the multiroom receiver's end.
+    """
+
+    zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
+    zitacmd = f'zita-n2j --jname {zitajname} --buff {buff_size} {get_my_ip()} {udp_port}'
+
+    # Assign ALIAS to ports to be able to switch by using
+    # the IP port name of a remoteXXXX input in config.yml
+    with open('/dev/null', 'w') as fnull:
+        sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+        sleep(.2)
+        sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
+        sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
+
+    print(f'(miscel.py) RUNNING LOCAL: {zitacmd}')
+
+
 def wait4ports( pattern, timeout=10 ):
     """ Waits for jack ports with name *pattern* to be available.
         Default timeout 10 s
@@ -570,13 +599,10 @@ def is_IP(s):
     """ Validate if a given string is a valid IP address
         (bool)
     """
-    if type(s) == str:
-        try:
-            ipaddress.ip_address(s)
-            return True
-        except:
-            return False
-    else:
+    try:
+        ipaddress.ip_address(s)
+        return True
+    except:
         return False
 
 
