@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+'''
+    A helper macro to listen to a remote pe.audio.sys machine.
+
+    For further details see
+
+        doc/80_Multiroom_pe.audio.sys.md
+
+        share/scripts/zita_link.py
+'''
+### USER CONFIG HERE:
+REM_SRC_NAME = "remoteSalon"
+REM_ADD_DELAY = 180
+###
+
+from json import loads as json_loads
+import sys
+import os
+
+UHOME       = os.path.expanduser("~")
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share/miscel')
+
+from miscel import *
+
+
+# 1) Retrieving ZITA parameters
+raddr, rport, zport = get_remote_zita_params(REM_SRC_NAME)
+if not raddr:
+    print( f'({os.path.basename(__file__)}) ERROR with {REM_SRC_NAME}. Bye :-/' )
+    sys.exit()
+
+
+# 2) Restarting zita process on the sender's end (the sender will do only if needed)
+remote_zita_restart(raddr, rport, zport)
+
+
+# 3) Retrieving the remote loudspeaker
+lspk = json_loads( send_cmd('status', host=raddr, port=rport) )["loudspeaker"]
+
+
+# 4) Balancing delays and adjusting remote filtering as per the remote loudspeaker in use:
+print(f'Adjusting remote delay for loudspeaker: {lspk}')
+send_cmd(f'add_delay {REM_ADD_DELAY}',  host=raddr, port=rport)
+
+# OPTIONAL CUSTOM SETTINGS
+#send_cmd( 'set_xo  SOME_XO',   host=raddr, port=rport)
+#send_cmd( 'set_drc SOME_DRC',  host=raddr, port=rport)
+
+
+# 5) Switching local source
+send_cmd( 'player pause')
+send_cmd(f'preamp input {REM_SRC_NAME}')
+
+
+# 6) Linking the relative changes in volume from the remote sender,
+#    by announcing that we are listening to it.
+#    (The remote script 'remote_volume.py' will listen at remote_port + 5)
+send_cmd('hello', host=raddr, port=rport + 5)
+
+
+# END
+print('End.')
