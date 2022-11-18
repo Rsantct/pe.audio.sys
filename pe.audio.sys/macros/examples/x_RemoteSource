@@ -24,11 +24,16 @@ sys.path.append(f'{MAINFOLDER}/share/miscel')
 
 from miscel import *
 
-# 1) Retrieving the remote loudspeaker
+
+# 1) Retrieving remote address
+raddr, rport = get_remote_source_addr_port(REM_SRC_NAME)
+
+
+# 2) Retrieving the remote loudspeaker
 lspk = json_loads( send_cmd('status', host=raddr, port=rport) )["loudspeaker"]
 
 
-# 2) Balancing delays and adjusting remote filtering as per the remote loudspeaker in use:
+# 3) Balancing delays and adjusting remote filtering as per the remote loudspeaker in use:
 print(f'Adjusting remote delay for loudspeaker: {lspk}')
 send_cmd(f'add_delay {REM_ADD_DELAY}',  host=raddr, port=rport)
 
@@ -37,12 +42,12 @@ send_cmd(f'add_delay {REM_ADD_DELAY}',  host=raddr, port=rport)
 #send_cmd( 'set_drc SOME_DRC',  host=raddr, port=rport)
 
 
-# 3) Switching local source
+# 4) Switching local source
 send_cmd( 'player pause')
 send_cmd(f'preamp input {REM_SRC_NAME}')
 
 
-# 4) Linking the relative changes in volume from the remote sender,
+# 5) Linking the relative changes in volume from the remote sender,
 #    by announcing that we are listening to it.
 #    (The remote script 'remote_volume.py' will listen at remote_port + 5)
 send_cmd('hello', host=raddr, port=rport + 5)
