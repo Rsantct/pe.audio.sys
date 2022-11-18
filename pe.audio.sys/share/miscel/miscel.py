@@ -273,7 +273,7 @@ def local_zita_restart(raddr, udp_port, buff_size):
     # the IP port name of a remoteXXXX input in config.yml
     with open('/dev/null', 'w') as fnull:
         sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
-        sleep(.2)
+        wait4ports(zitajname, 3)
         sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
         sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
 
