@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    A LAN audio receiver based on zita-njbridge from Fons Adriaensen.
+    A LAN audio connection based on zita-njbridge from Fons Adriaensen.
 
     See man zita-njbridge:
 
