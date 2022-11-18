@@ -288,9 +288,9 @@ def remote_zita_restart(raddr, ctrl_port, zita_port):
     """
     zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
     remotecmd = f'aux zita_j2n {zargs}'
-    send_cmd(remotecmd, host=raddr, port=ctrl_port)
+    result = send_cmd(remotecmd, host=raddr, port=ctrl_port)
     print(f'(miscel.py) SENDING TO REMOTE: {remotecmd}')
-
+    return result
 
 def local_zita_restart(raddr, udp_port, buff_size):
     """ Running zita-n2j listen ports on the multiroom receiver's end.
