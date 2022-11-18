@@ -292,6 +292,7 @@ def remote_zita_restart(raddr, ctrl_port, zita_port):
     print(f'(miscel.py) SENDING TO REMOTE: {remotecmd}')
     return result
 
+
 def local_zita_restart(raddr, udp_port, buff_size):
     """ Running zita-n2j listen ports on the multiroom receiver's end.
     """
