@@ -2,11 +2,8 @@
 
 The file `share/scripts/zita_link.py` allows you to receive the listening source from a ***remote*** pe.audio.sys
 
-**LIMITATION:**
 
-Currently, a multiroom system can have only one 'sender' and various 'receivers'.
-
-#### Needed configuration inside the **RECEIVER** `config.yml`:
+### (Needed) Configuration inside the **RECEIVER** `config.yml`:
 
 - Include `zita_link.py` under the `scripts:` section:
 
@@ -18,7 +15,12 @@ Currently, a multiroom system can have only one 'sender' and various 'receivers'
         - zita_link.py
     ```
 
-- Define the remote system as a local source. The source name must include the '***remote***' keyword, and also put the remote ***IP*** (or *IP:PORT*, default port is 9990) in the `jack_pname:` field:
+- Define the remote system as a local source.
+    
+    - The source name must include the **`remote`** keyword
+    - Put the remote **`IP:CTRLPORT`** (default control port is 9990) in the `jack_pname:` field
+
+Example:
 
     ```
     sources:
@@ -26,12 +28,12 @@ Currently, a multiroom system can have only one 'sender' and various 'receivers'
         ...
         remoteLivingRoom:
             gain:       0
-            jack_pname: 192.168.1.123
+            jack_pname: 192.168.1.XXX
     ```
     
-The `zita_link.py` script will autospawn a new jack port named `192.168.1.123`
+The `zita_link.py` script will autospawn a new jack port named `zita_n2j_XXX`
 
-#### Optional configuration inside the **SENDER** `config.yml`:
+### (Optional) Configuration inside the **SENDER** `config.yml`:
 
 - Include `remote_volume_daemon.py` under your `scripts:` section:
 
@@ -47,7 +49,7 @@ The `zita_link.py` script will autospawn a new jack port named `192.168.1.123`
 
 Depending on the processing latency on both the local and the remote pe.audio.sys systems, you may want to customize added delays and/or filtering options.
 
-Just copy the the provided `macros/examples/X_RemoteSource.py` under your `macros/` folder.
+Just copy the the provided `macros/examples/X_RemoteSource` under your `macros/` folder.
 
 Then customize the macro with the needed delays and filtering alternatives for the **local** and/or **remote** pe.audio.sys systems.
 
