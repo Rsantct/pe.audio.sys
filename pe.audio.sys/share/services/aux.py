@@ -123,7 +123,8 @@ def zita_j2n(args):
         zitacmd     = f'zita-j2n --jname {zitajname} {dest} {udpport}'
         with open('/dev/null', 'w') as fnull:
             Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
-        sleep(1)
+
+    wait4ports(zitajname, timeout=3)
 
     try:
         jcli.connect( 'pre_in_loop:output_1', f'{zitajname}:in_1' )
