@@ -49,6 +49,7 @@ def start():
     for item in REMOTES:
 
         source_name, raddr, rport = item
+        print( f'(zita_link.py) Running zita-njbridge for: {source_name}' )
 
         # Trying to RUN THE REMOTE SENDER zita-j2n (*)
         remote_zita_restart(raddr, rport, UDP_PORT)
@@ -62,7 +63,7 @@ def start():
         # (i) zita will use 2 consecutive ports, so let's space by 10
         UDP_PORT += 10
 
-    # (*) Saving the zita's UDP PORT for future use because
+    # (*) Saving the zita's UDP PORTS for future use because
     #     the remote sender could not be online at the moment ...
     with open(f'{MAINFOLDER}/.zita_link_ports', 'w') as f:
         d = json_dumps( zita_link_ports )
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         print(__doc__)
         sys.exit()
 
-    REMOTES = get_remote_sources_info()
+    REMOTES = get_remote_sources()
 
     if not REMOTES:
         print(f'(zita_link) ERROR getting configured remote sources')
