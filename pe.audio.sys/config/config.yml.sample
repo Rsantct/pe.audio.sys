@@ -238,9 +238,6 @@ scripts:
     ## Plays audio streamed from AirPlay sources
     #- shairport-sync.py
 
-    ## A LAN audio receiver
-    #- zita_link.py
-
     ## Controls the volume by a mouse
     #- mouse_volume_daemon.py
 
@@ -253,9 +250,13 @@ scripts:
 
 # ========================= MISCEL CONFIGURATIONS ==============================
 
-# set _address to 'localhost', or set '0.0.0.0' if you want to listen outside
+# Set _address to 'localhost', or set '0.0.0.0' if you want to listen outside
 peaudiosys_address:     localhost
 peaudiosys_port:        9990
+
+# Optional zita-njbridge multiroom remote sources
+zita_udp_base:          65000
+zita_buffer_ms:         50
 
 # CD-ROM device
 cdrom_device:  /dev/cdrom
