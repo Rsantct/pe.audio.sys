@@ -11,7 +11,6 @@
         'all'      :    restart all
         'stop'     :    stop all
         'server'   :    restart tcp server
-        'scripts'  :    restart user scripts
 
     --log   messages redirected to 'pe.audio.sys/log/start.log'
 
@@ -371,9 +370,9 @@ def stop_processes(mode):
     # Killing any previous instance of start.py
     kill_bill( os.getpid() )
 
-    # Stop scripts
-    if mode in ('all', 'stop', 'scripts'):
-        run_scripts(mode='stop')
+    # Stop plugins
+    if mode in ('all', 'stop'):
+        run_plugins(mode='stop')
 
     if mode in ('all', 'stop'):
         # Stop Jack Loops Daemon
@@ -394,17 +393,17 @@ def stop_processes(mode):
     wait4jackdkilled()
 
 
-def run_scripts(mode='start'):
+def run_plugins(mode='start'):
     """ (void)
     """
-    for script in CONFIG['scripts']:
-        # (i) Some elements on the scripts list from config.yml can be a dict,
-        #     e.g the ecasound_peq, so we need to extract the script name.
-        if type(script) == dict:
-            script = list(script.keys())[0]
-        print(f'(start) will {mode} the script \'{script}\' ...')
-        # (i) Notice that we are open to run scripts writen in python, bash, etc...
-        cmd = f'{MAINFOLDER}/share/scripts/{script} {mode}'
+    for plugin in CONFIG['plugins']:
+        # (i) Some elements on the plugins list from config.yml can be a dict,
+        #     e.g the ecasound_peq, so we need to extract the plugin name.
+        if type(plugin) == dict:
+            plugin = list(plugin.keys())[0]
+        print(f'(start) will {mode} the plugin \'{plugin}\' ...')
+        # (i) Notice that we are open to run plugins writen in python, bash, etc...
+        cmd = f'{MAINFOLDER}/share/plugins/{plugin} {mode}'
         sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     if mode == 'stop':
@@ -517,7 +516,7 @@ if __name__ == "__main__":
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
 
-    if mode not in ['all', 'stop', 'server', 'scripts']:
+    if mode not in ['all', 'stop', 'server']:
         print(__doc__)
         sys.exit()
 
@@ -562,9 +561,9 @@ if __name__ == "__main__":
             sys.exit()
 
 
-    # USER SCRIPTS
-    if mode in ('all', 'scripts'):
-        run_scripts()
+    # PLUGINS
+    if mode in ('all'):
+        run_plugins()
 
     if mode in ('all'):
 
