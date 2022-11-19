@@ -194,10 +194,10 @@ def read_bf_config_fs():
 
 def get_peq_in_use():
     """ Finds out the PEQ (parametic eq) filename used by an inserted
-        Ecasound sound processor, if included inside config.yml scripts.
+        Ecasound sound processor, if included inside config.yml plugins section.
         (filepath: string)
     """
-    for item in CONFIG["scripts"]:
+    for item in CONFIG["plugins"]:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
             return item["ecasound_peq.py"].replace('.ecs', '')
     return 'none'
@@ -270,13 +270,13 @@ def get_remote_zita_params(rem_src_name):
     # IP, CTRL_PORT
     raddr, cport = get_remote_source_addr_port(rem_src_name)
 
-    # The ZITA's UDP PORT was assigned by scripts/zita_link.py at the start.
+    # The ZITA's UDP PORT was assigned at the start.
     try:
         with open(f'{MAINFOLDER}/.zita_link_ports', 'r') as f:
             zports = json_loads( f.read() )
             zport  = zports[rem_src_name]['udpport']
     except Exception as e:
-        print( f'(miscel.py) ERROR with .zita_lin_ports: {str(e)}' )
+        print( f'(miscel.py) ERROR with .zita_link_ports: {str(e)}' )
 
     return raddr, cport, zport
 
@@ -402,8 +402,8 @@ def detect_spotify_client(timeout=10):
     """
     result = ''
 
-    # early return if no Spotify script is used:
-    if not any( 'spo' in x.lower() for x in CONFIG['scripts'] ):
+    # Early return if no Spotify plugin is used:
+    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] ):
         return result
 
     tries = timeout
