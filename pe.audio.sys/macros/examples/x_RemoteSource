@@ -7,7 +7,6 @@
 
         doc/80_Multiroom_pe.audio.sys.md
 
-        share/scripts/zita_link.py
 '''
 ### USER CONFIG HERE:
 REM_SRC_NAME = "remoteSalon"
@@ -49,7 +48,7 @@ send_cmd(f'preamp input {REM_SRC_NAME}')
 
 # 5) Linking the relative changes in volume from the remote sender,
 #    by announcing that we are listening to it.
-#    (The remote script 'remote_volume.py' will listen at remote_port + 5)
+#    (The remote plugin 'remote_volume.py' will listen at remote_port + 5)
 send_cmd('hello', host=raddr, port=rport + 5)
 
 
