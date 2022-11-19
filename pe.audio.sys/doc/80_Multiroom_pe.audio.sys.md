@@ -1,24 +1,16 @@
 ## Listen to a remote pe.audio.sys
 
-The file `share/scripts/zita_link.py` allows you to receive the listening source from a ***remote*** pe.audio.sys
+pe.audio.sys integrates an automatic point-to-point LAN audio connection based on zita-njbridge by Fons Adriaensen.
+
+You can listen to a ***remote*** pe.audio.sys
 
 
 ### (Needed) Configuration inside the **RECEIVER** `config.yml`:
 
-- Include `zita_link.py` under the `scripts:` section:
-
-    ```
-    scripts:
-        ...
-        ...
-        ## A LAN audio receiver
-        - zita_link.py
-    ```
-
-- Define the remote system as a local source.
+Define the remote system as a local source.
     
-    - The source name must include the **`remote`** keyword
-    - Put the remote **`IP:CTRLPORT`** (default control port is 9990) in the `jack_pname:` field
+- The source name must include the **`remote`** keyword
+- Put the remote **`IP:CTRLPORT`** (default control port is 9990) in the `jack_pname:` field
 
 Example:
 
@@ -31,11 +23,16 @@ Example:
             jack_pname: 192.168.1.XXX
     ```
     
-The `zita_link.py` script will autospawn a new jack port named `zita_n2j_XXX`
+pe.audio.sys will do automagically:
+
+- Autospawn a new local **jack port** named **`zita_n2j_XXX`**
+
+- Run a remote `zita-j2n` process on the remote machine, pointing to our local one.
+
 
 ### (Optional) Configuration inside the **SENDER** `config.yml`:
 
-- Include `remote_volume_daemon.py` under your `scripts:` section:
+- Include `remote_volume_daemon.py` under their `scripts:` section:
 
     ```
     scripts:
