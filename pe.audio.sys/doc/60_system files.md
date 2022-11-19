@@ -160,7 +160,6 @@ Here you are an uncommented bare example of `config.yml`:
         - istreams.py
         - pulseaudio-jack-sink.py
         - librespot.py
-        - zita_link.py
 
 
     peaudiosys_address:     localhost
