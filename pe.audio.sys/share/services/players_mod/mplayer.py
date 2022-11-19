@@ -280,7 +280,7 @@ def mplayer_control(cmd, arg='', service=''):
                             'eject'
                           )
 
-    # (i) pe.audio.sys scripts redirects Mplayer stdout & stderr
+    # (i) The pe.audio.sys plugin redirects Mplayer stdout & stderr
     #     towards special files:
     #       ~/pe.audio.sys/.<service>_events
     #     so that will capture there the Mplayer's answers when
