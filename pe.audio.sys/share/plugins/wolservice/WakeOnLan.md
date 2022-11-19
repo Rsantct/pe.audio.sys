@@ -1,7 +1,7 @@
 ## Wake On Lan
 
 To remotely WakeOnLan your main pe.audio.sys PC system, you can either:
-  
+
 - Use some smartphone app with WOL capability (geek option)
 - Use the provided auxiliary web page (end user friendly option)
 
@@ -9,7 +9,7 @@ If you have a 24x7 Raspberry Pi kind of Linux based micro PC running at home, yo
 
 
 On your 24x7 micro PC you'll need:
-  
+
 - `sudo apt install wakeonlan`
 
 - Enable the optional apache site configuration:
@@ -20,16 +20,16 @@ On your 24x7 micro PC you'll need:
 
 - Configure the MAC address of your main pe.audio.sys PC system inside
 
-        cp -i pe.audio.sys/scripts/wolservice/wolservice.cfg.sample pe.audio.sys/scripts/wolservice/wolservice.cfg
-        nano pe.audio.sys/scripts/wolservice/wolservice.cfg
+        cp -i pe.audio.sys/plugins/wolservice/wolservice.cfg.sample pe.audio.sys/plugins/wolservice/wolservice.cfg
+        nano pe.audio.sys/plugins/wolservice/wolservice.cfg
 
-- Include `- wolserver.py` inside the `scripts:` section from `config.yml` (1)
+- Include `- wolserver.py` inside the `plugins:` section from `config.yml` (1)
 
 
 
 (1) If your microPC does not run pe.audio.sys, you can simply run the standalone server by yourself:
 
-    python3 pe.audio.sys/share/scripts/wolserver.py 1>/dev/null 2>&1 &
+    python3 pe.audio.sys/share/plugins/wolserver.py 1>/dev/null 2>&1 &
 
 Then, simply bookmark `http://microPC_IP:8081` on your favourite smartphone or tablet web browser.
 

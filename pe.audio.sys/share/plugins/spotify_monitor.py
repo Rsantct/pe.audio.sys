@@ -22,7 +22,7 @@ from subprocess import Popen, check_output
 from time import sleep
 
 UHOME = os.path.expanduser("~")
-SCRIPTSFOLDER = f'{UHOME}/pe.audio.sys/share/scripts'
+PLUGINSFOLDER = f'{UHOME}/pe.audio.sys/share/plugins'
 
 
 def get_playerctl_version():
@@ -56,7 +56,7 @@ def start():
     if v != '-1':
         if v in ('0', '1'):
             v = 1
-        Popen( f'{SCRIPTSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
+        Popen( f'{PLUGINSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
         print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
     else:
         print( '(spotify_monitor) Unable to find playerctl --version)' )

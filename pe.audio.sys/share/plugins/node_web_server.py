@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Auxiliary script to launch the pe.audio.sys web page Node.js server
+    Auxiliary plugin to launch the pe.audio.sys web page Node.js server
 
     usage:  node_web_server.py   start|stop
 """
@@ -39,11 +39,11 @@ def start():
         n -= 1
         sleep(1)
     if n:
-        print('(scripts/node_web_server) launching node web server...')
+        print('(plugins/node_web_server) launching node web server...')
         sleep(1)
         Popen(f'{cmdline} 1>/dev/null 2>&1', shell=True)
     else:
-        print(f'(scripts/node_web_server) TIMEOUT server not detected on :{ctrlport}')
+        print(f'(plugins/node_web_server) TIMEOUT server not detected on :{ctrlport}')
 
 
 if __name__ == '__main__':

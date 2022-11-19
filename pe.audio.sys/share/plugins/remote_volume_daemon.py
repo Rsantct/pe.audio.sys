@@ -193,7 +193,7 @@ def do(cmd):
 
 
 def killme():
-    Popen( f'pkill -f "scripts/remote_volume_daemon.py start"', shell=True )
+    Popen( f'pkill -f "plugins/remote_volume_daemon.py start"', shell=True )
     sys.exit()
 
 

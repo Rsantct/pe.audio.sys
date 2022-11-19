@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
         opc = sys.argv[1]
 
-        # STARTS the script and optionally load a preset/name
+        # STARTS the plugin and optionally load a preset/name
         if opc == 'start':
             start()
             if sys.argv[2:]:
