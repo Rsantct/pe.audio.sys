@@ -303,12 +303,15 @@ def local_zita_restart(raddr, udp_port, buff_size):
     # Assign ALIAS to ports to be able to switch by using
     # the IP port name of a remoteXXXX input in config.yml
     with open('/dev/null', 'w') as fnull:
-        sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
-        wait4ports(zitajname, 3)
-        sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
-        sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
-
-    print(f'(miscel.py) RUNNING LOCAL: {zitacmd}')
+        # Ignore if zita-njbridge is not available
+        try:
+            sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+            wait4ports(zitajname, 3)
+            sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
+            sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
+            print(f'(miscel.py) RUNNING LOCAL: {zitacmd}')
+        except Exception as e:
+            print(f'(miscel.py) ERROR: {e}, you may want run it for a remote source?')
 
 
 def wait4ports( pattern, timeout=10 ):
