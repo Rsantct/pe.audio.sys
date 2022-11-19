@@ -44,7 +44,7 @@ def get_web_config():
 
     # Adding LU_monitor_enabled
     wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
-                                              in CONFIG['scripts'] else False
+                                              in CONFIG['plugins'] else False
 
     return wconfig
 
@@ -145,12 +145,12 @@ def play_url(arg):
     # to hold it here instead of inside the players module
 
     def istreams_query(url):
-        """ Order the istreams daemon script to playback an internet stream url
+        """ Order the istreams daemon plugin to playback an internet stream url
         """
         error = False
 
         # Tune the radio station (Mplayer jack ports will dissapear for a while)
-        Popen( f'{UHOME}/pe.audio.sys/share/scripts/istreams.py url {url}'
+        Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'
                 .split() )
         # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
         sleep(2)
