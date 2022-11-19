@@ -1,8 +1,8 @@
 ## Listen to a remote pe.audio.sys
 
-pe.audio.sys integrates an automatic point-to-point LAN audio connection based on zita-njbridge by Fons Adriaensen.
+_pe.audio.sys_ integrates an automatic point-to-point LAN audio connection based on **zita-njbridge by Fons Adriaensen**.
 
-You can listen to **one or more remote*** pe.audio.sys
+You can listen to **one or more remote** _pe.audio.sys_
 
 
 ### (Needed) Configuration inside the **RECEIVER** `config.yml`:
@@ -23,7 +23,7 @@ Example:
             jack_pname: 192.168.1.XXX
     ```
     
-pe.audio.sys will do automagically:
+_pe.audio.sys_ will do automagically:
 
 - Autospawn a new local **jack port** named **`zita_n2j_XXX`**
 
@@ -48,7 +48,7 @@ Depending on the processing latency on both the local and the remote pe.audio.sy
 
 Just copy the the provided `macros/examples/X_RemoteSource` under your `macros/` folder.
 
-Then customize the macro with the needed delays and filtering alternatives for the **local** and/or **remote** pe.audio.sys systems.
+Then customize the macro with the needed delays and filtering alternatives for the **local** and/or **remote** _pe.audio.sys_ systems.
 
 TIP: you can use any name for the macro file so that it will be meaningfully displayed in the web control page macro buttons, for instance:
 
