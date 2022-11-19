@@ -90,9 +90,9 @@ For a typical setting of 2 ch 44100 Hz 16 bit, the used BW is about 1.7 Mb/s ove
 
 If you use **`scripts/zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously to ALL hosts in your LAN.
 
-So, you can use MULTICAST only in a dedicated wired Ethernet LAN.
+Please USE MULTICAST ONLY in a dedicated wired Ethernet LAN.
 
-If you have a **WiFied LAN, do not use multicast**. It is preferred to use the new client side **`scripts/zita_link.py`**. This script automagically triggers the sender pe.audio.sys system to run a one-to-one `zita-j2n` process.
+If you have a **WiFied LAN, do not use multicast**. Maybe you can use the integrated one-to-one zita-njbridge. See **`doc/Multiroom`**
 
 
 ## How to tune DVB-T channels
