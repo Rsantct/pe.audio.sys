@@ -144,7 +144,7 @@ def main_TM():
 
 if __name__ == "__main__":
 
-    THISPATH = os.path.dirname(os.path.abspath(__file__))
+    CFGPATH = f'{UHOME}/pe.audio.sys/config/ir.config'
 
     if '-h' in sys.argv:
         print(__doc__)
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
     # IR config file
     try:
-        with open(f'{THISPATH}/ir.config', 'r') as f:
+        with open(CFGPATH, 'r') as f:
             IRCFG = yaml.safe_load(f)
             antibound   = IRCFG['antibound']
             REMCFG      = IRCFG['remotes'][ IRCFG['remote'] ]
@@ -167,7 +167,7 @@ if __name__ == "__main__":
             EOPtolerance = REMCFG['EOPtolerance'] if REMCFG['EOPtolerance'] else 5
             maxVariance  = REMCFG['maxVariance']  if REMCFG['maxVariance']  else 5
     except:
-        print(f'(ir) ERROR with \'{THISPATH}/ir.config\'')
+        print(f'(ir) ERROR with \'{CFGPATH}\'')
         exit()
 
     # testing mode to learn new keys
