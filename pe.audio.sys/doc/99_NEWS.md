@@ -75,3 +75,12 @@ See the `doc/` folder for detailed information about this.
 ## Jan 2022, version 1.0f
 
 - New `config.yml` layout for jack and sound cards stuff. **PLEASE** update your `config.yml` accordingly (see `config.yml.sample`)
+
+## Nov 2022, version 1.0e
+
+- The multiroom LAN one-to-one audio connection based on zita-njbridge, becomes integrated, no plugin is needed.
+- Web control page updated: new TONE DEFEAT, new STEREO MODE BUTTONS.
+- LCD now displays temporary messages.
+- Spotify Connect for headless (librespot) updated.
+- Several fixes and updates.
+
