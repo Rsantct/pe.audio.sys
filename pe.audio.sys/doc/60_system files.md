@@ -53,8 +53,8 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
         |
         |-- services/       Services to manage the whole system
         |
-        |-- scripts/        Additional scripts to launch at start up when issued at config.yml,
-        |                   (i) Advanced users can hold their own scripts here.
+        |-- plugins/        Additional scripts to launch at start up when issued at config.yml,
+        |                   (i) Advanced users can hold their own plugins here.
         |
         |-- miscel/         Common usage system files
         |
@@ -68,13 +68,13 @@ All system features are configured under **`config.yml`**.
 
 We provide a **`config.yml.sample`** with clarifying comments, please take a look on it because you'll find there some useful info.
 
-Few user scripts or shared modules can have its own `xxx.yml` file of the same base name for configuration if necessary.
+Plugins or shared modules can have its own `xxx.yml` file of the same base name for configuration if necessary.
 
 This file allows to configure the whole system.
 
 Some points:
 
-- The necessary preamp **loop ports** will be auto spawn under JACK when source `jack_pname` is named `xxx_loop` under the `sources:` section, so your player scripts have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
+- The necessary preamp **loop ports** will be auto spawn under JACK when source `jack_pname` is named `xxx_loop` under the `sources:` section, so your player plugin have not to be aware of create loops, just configure the players to point to these preamp loops accordingly.
 
 - You can force some audio **settings at start up**, see `init_xxxxx` options.
 
@@ -154,7 +154,7 @@ Here you are an uncommented bare example of `config.yml`:
 
     source_monitors:
 
-    scripts:
+    plugins:
         - sound_cards_prepare.py
         - mpd.py
         - istreams.py
@@ -248,7 +248,7 @@ https://github.com/AudioHumLab/audiotools/tree/master/brutefir_eq
 
 If you want to use another sound processors, you can hold here some more files.
 
-For instance, you can use Ecasound to add a parametric EQ processor before Brutefir, for more info see the section `scripts:` under the provided `config.yml.sample` file.
+For instance, you can use Ecasound to add a parametric EQ processor before Brutefir, for more info see the section `plugins:` under the provided `config.yml.sample` file.
 
 # The audio routing
 
@@ -258,9 +258,9 @@ The selected source is an MPD player wich is configured to point to the mpd_loop
 
 The preamp has a unique entrance point: the pre_in_loop. This loops feeds the main audio processor, i.e Brutefir.
 
-You can add another audio processor, e.g. an Ecasound parametric EQ plugin. We provide hera a script that INSERTS it after the pre_in_loop and before the Brutefir input.
+You can add another audio processor, e.g. an Ecasound parametric EQ plugin. We provide hera a plugin that INSERTS it after the pre_in_loop and before the Brutefir input.
 
-You are free to insert any other sound processor, Jack is your friend. To automate it on start up, you can prepare an appropriate script.
+You are free to insert any other sound processor, Jack is your friend. To automate it on start up, you can prepare an appropriate plugin.
 
 Brutefir is the last element and the only one that interfaces with the sound card Jack ports. The loudspeakers are a two way set, connected at the last sound card ports. 
 
