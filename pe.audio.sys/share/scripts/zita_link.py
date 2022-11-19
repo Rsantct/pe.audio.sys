@@ -77,7 +77,7 @@ def stop():
         _, raddr, rport = item
 
         # REMOTE
-        zargs = json_dumps( (MY_IP, None, 'stop') )
+        zargs = json_dumps( (get_my_ip(), None, 'stop') )
         remotecmd = f'aux zita_j2n {zargs}'
         send_cmd(remotecmd, host=raddr, port=rport)
 
@@ -100,8 +100,7 @@ if __name__ == '__main__':
         print(f'(zita_link) ERROR getting configured remote sources')
         sys.exit()
 
-    # The zita UDP port is derived from the last octet of my IP
-    MY_IP    = get_my_ip()
+    # The initial zita UDP port
     UDP_PORT = 65000
 
     # Reading command line: start | stop
