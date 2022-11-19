@@ -191,12 +191,12 @@ source_monitors:
 
     # - external_monitor
 
-# ================ SCRIPTS YOU WANT TO RUN (players, etc...)  ==================
-# The scripts files are located under the share/scripts folder.
+# ================ PLUGINS YOU WANT TO RUN (players, etc...)  ==================
+# The scripts files are located under the share/plugins folder.
 # Files must be executable, also must accept 'start' and 'stop' as
 # command line argument in order to be launched and stopped at system startup.
 
-scripts:
+plugins:
 
     ## IR remote receiver
     #- ir.py
@@ -281,7 +281,7 @@ web_config:
 
 
 # The scope ('input', 'album' or 'track') to trigger to reset the measured LU
-# from the optional loudness_monitor.py script. Can be modified in runtime.
+# from the optional loudness_monitor.py plugin. Can be modified in runtime.
 LU_reset_scope: album
 
 # Powersave: stops/starts Brutefir as per the monitored signal level.
