@@ -2,7 +2,7 @@
 
 pe.audio.sys integrates an automatic point-to-point LAN audio connection based on zita-njbridge by Fons Adriaensen.
 
-You can listen to a ***remote*** pe.audio.sys
+You can listen to **one or more remote*** pe.audio.sys
 
 
 ### (Needed) Configuration inside the **RECEIVER** `config.yml`:
