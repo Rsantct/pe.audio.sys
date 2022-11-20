@@ -60,12 +60,12 @@ def set_as_pattern(param, pattern):
 
 def main():
 
-    # Prepare to use the proper share/scripts/xxxx.py and preamp input
+    # Prepare to use the proper share/plugins/xxxx.py and preamp input
     if mplayer_profile == 'dvb':
-        script   = 'DVB-T.py'
+        plugin   = 'DVB-T.py'
         preinput = 'tdt'
     elif mplayer_profile == 'istreams':
-        script   = 'istreams.py'
+        plugin   = 'istreams.py'
         preinput = 'istreams'
     else:
         print( f'{Fmt.RED}(macros) Bad Mplayer profile \'{mplayer_profile}\'{Fmt.END}' )
@@ -79,7 +79,7 @@ def main():
     send_cmd( f'aux warning set tuning takes a while ...' )
 
     # Tune the radio station (Mplayer jack ports will dissapear for a while)
-    Popen( f'{UHOME}/pe.audio.sys/share/scripts/{script} preset {str(preset)}'
+    Popen( f'{UHOME}/pe.audio.sys/share/plugins/{plugin} preset {str(preset)}'
             .split() )
     # Wait a bit for current ports to disappear
     sleep(3)
