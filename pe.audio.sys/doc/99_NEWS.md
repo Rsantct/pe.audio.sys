@@ -82,6 +82,6 @@ See the `doc/` folder for detailed information about this.
 - Web control page updated: new TONE DEFEAT, new STEREO MODE BUTTONS.
 - LCD now displays temporary messages.
 - Spotify Connect for headless (librespot) updated.
-- `scripts` becomes `plugins`
+- `scripts` becomes `plugins` **PLEASE** UPDATE your config.yml with `plugins:` section.
 - Several fixes and updates.
 
