@@ -256,9 +256,6 @@ def get_remote_sources():
             addr, port = get_remote_source_addr_port(source)
             remotes.append( (source, addr, port) )
 
-    if not remotes:
-        print(f'(miscel.py) Cannot get remote sources')
-
     return remotes
 
 
