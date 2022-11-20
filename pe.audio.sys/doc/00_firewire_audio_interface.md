@@ -17,8 +17,8 @@ If you plan to use a JACK with a firewire audio interface, please install the Fi
 
 Some interfaces (e.g Focusrite Saffire PRO) uses the DICE II chipset, so the O.S. will automatically load the kernel module `snd-dice` (you can check it with `lsmod`). If so, the firewire JACK backend will fail to load. To fix this, you need to blacklist the module:
 
-    /etc/modprobe.d/blacklist.conf 
-    
+    /etc/modprobe.d/blacklist.conf
+
         blacklist snd-dice
 
 Anyway, for kernel >=4.2, you can leave the module `snd-dice` to be loaded, then use `jackd -d alsa` instead of `-d firewire`. Be aware to properly setup in advance the internal routing and mixer, by running the genuine Saffire PRO Mixer software under Win/Mac.
@@ -47,7 +47,7 @@ The Jack ports for your system card will have a new naming, but don't worry beca
 
 For ALSA cards, we use `alsactl` to save our sound card settings to a file `pe.audio.sys/config/asound.MYCARD`, as prepared in advance with `alsamixer`.
 
-So these cards settings will be restored when running `pe.audio.sys/scripts/sound_cards_prepare.py` at system restart.
+So these cards settings will be restored when running `pe.audio.sys/plugins/sound_cards_prepare.py` at system restart.
 
 For FFADO cards, this needs more manual work :-/
 

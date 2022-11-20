@@ -33,13 +33,13 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |   |
     |   |-- xxxx.yml        Other configuration files
     |   |
-    |   |-- asound.XXX      ALSA sound cards restore settings, see scripts/sound_cards_prepare.py
+    |   |-- asound.XXX      ALSA sound cards restore settings, see plugins/sound_cards_prepare.py
     |
     |-- macros/             End user general purpose macro scripts (e.g. web interface buttons)
     |
     |-- doc/                Support documents
     |
-    |-- loudspeakers/       
+    |-- loudspeakers/
     |   |
     |   |-- lspk1/          Loudspeaker files: brutefir_config, xo & drc pcm FIRs
     |   |-- lspk2/
@@ -53,7 +53,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
         |
         |-- services/       Services to manage the whole system
         |
-        |-- plugins/        Additional scripts to launch at start up when issued at config.yml,
+        |-- plugins/        Additional script plugins to launch at start up when issued at config.yml,
         |                   (i) Advanced users can hold their own plugins here.
         |
         |-- miscel/         Common usage system files
@@ -105,7 +105,7 @@ Here you are an uncommented bare example of `config.yml`:
         xo:                 mp
         drc:                mp_multipV1
         target:             B&K
-        level:              
+        level:
         max_level:          -20
         muted:              false
         bass:               0
@@ -129,7 +129,7 @@ Here you are an uncommented bare example of `config.yml`:
         solo:              'off'
 
     sources:
-    
+
         spotify:
             jack_pname:    alsa_loop
             gain:           0.0
@@ -172,7 +172,7 @@ Here you are an uncommented bare example of `config.yml`:
         hide_LU: false
         show_graphs: true
         main_selector: 'inputs'
-        
+
     LU_reset_scope: album
 
     cdrom_device:  /dev/cdrom
@@ -182,7 +182,7 @@ Here you are an uncommented bare example of `config.yml`:
     powersave_minutes:        10  # Time in minutes before shutting down Brutefir
 
     spotify_playlists_file: spotify_plists.yml
-    
+
     auto_update: true
 
 
@@ -211,7 +211,7 @@ The file of the frequencies where to apply the smooth eq:
 
 The files of the eq curves itself, `..._mag.dat` for magnitude and `..._pha.dat` for phase:
 
-- `bass_mag.dat`, `bass_pha.dat`, `treble_mag.dat`, `treble_pha.dat` 
+- `bass_mag.dat`, `bass_pha.dat`, `treble_mag.dat`, `treble_pha.dat`
 - `ref_XX_loudness_mag.dat`, `ref_XX_loudness_pha.dat` (as many as reference SPL you want to manage)
 - `xxxxxtarget_mag.dat xxxxxxtarget_pha.dat` (as many sets as you consider)
 
@@ -225,7 +225,7 @@ Files for bass, treble and loudness contains an array of curves in order to be a
 From the `FIRtro` and `pre.di.c` projects by the pioneer @rripio.
 
 - Bass, treble and target curves have a 2nd order slope
-- Loudness contour curves span from 70 to 90 phon 
+- Loudness contour curves span from 70 to 90 phon
 
 
 ### Default curves `share/eq.sample.R20_audiotools`
@@ -262,7 +262,7 @@ You can add another audio processor, e.g. an Ecasound parametric EQ plugin. We p
 
 You are free to insert any other sound processor, Jack is your friend. To automate it on start up, you can prepare an appropriate plugin.
 
-Brutefir is the last element and the only one that interfaces with the sound card Jack ports. The loudspeakers are a two way set, connected at the last sound card ports. 
+Brutefir is the last element and the only one that interfaces with the sound card Jack ports. The loudspeakers are a two way set, connected at the last sound card ports.
 
 ![jack_wiring](./images/jack_routing_sample.png)
 
@@ -292,7 +292,7 @@ XO pcm files must be named:
     xo.XX[.C].XOSETNAME.pcm   where XX must be:  fr | lo | mi | hi | sw
                               and channel C is OPTIONAL, can be: L | R
 
-    Using C allows to have DEDICATED DRIVER FIR FILTERING if desired.  
+    Using C allows to have DEDICATED DRIVER FIR FILTERING if desired.
 
     (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
@@ -325,7 +325,7 @@ If you want not to use any xo filter at all, you simply do:
             coeff:        -1;
         };
 
-- Leave blank `xo:` inside `on_init` section from `config.yml` 
+- Leave blank `xo:` inside `on_init` section from `config.yml`
 
 - Set  `"xo_set":""` inside the `.state` file
 

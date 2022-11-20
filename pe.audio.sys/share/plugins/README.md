@@ -1,6 +1,6 @@
 # Startup add-ons: `plugins`
 
-This folder holds optionals scripts that **can be loaded** on startup when calling `pe.audio.sys/start.py all`
+This folder holds optionals plugin scripts that **can be loaded** on startup when calling `pe.audio.sys/start.py all`
 
 Please see the provided **`config.yml.sample`** file for more info on plugins features.
 

@@ -8,7 +8,7 @@ You can listen to **one or more remote** _pe.audio.sys_
 ### (Needed) Configuration inside the **RECEIVER** `config.yml`:
 
 Define the remote system as a local source.
-    
+
 - The source name must include the **`remote`** keyword
 - Put the remote **`IP:CTRLPORT`** (default control port is 9990) in the `jack_pname:` field
 
@@ -22,7 +22,7 @@ Example:
             gain:       0
             jack_pname: 192.168.1.XXX
     ```
-    
+
 _pe.audio.sys_ will do automagically:
 
 - Autospawn a new local **jack port** named **`zita_n2j_XXX`**
@@ -32,10 +32,10 @@ _pe.audio.sys_ will do automagically:
 
 ### (Optional) Configuration inside the **SENDER** `config.yml`:
 
-- Include `remote_volume_daemon.py` under their `scripts:` section:
+- Include `remote_volume_daemon.py` under their `plugins:` section:
 
     ```
-    scripts:
+    plugins:
         ...
         ...
         ## A volume forwarder to remote listeners
@@ -53,5 +53,5 @@ Then customize the macro with the needed delays and filtering alternatives for t
 TIP: you can use any name for the macro file so that it will be meaningfully displayed in the web control page macro buttons, for instance:
 
     macros/04_Living_Room
-    
-    
+
+
