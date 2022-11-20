@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # command line
     for opc in sys.argv[1:]:
         if opc == 'stop':
-            Popen( 'pkill -f -KILL wolserver.py'.split() )
+            Popen( ['pkill', '-f', '-KILL', 'wolserver.py start'] )
             sys.exit()
 
     # Loading configured machines
