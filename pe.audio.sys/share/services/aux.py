@@ -44,7 +44,7 @@ def get_web_config():
 
     # Adding LU_monitor_enabled
     wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
-                                              in CONFIG['scripts'] else False
+                                              in CONFIG['plugins'] else False
 
     return wconfig
 
@@ -92,47 +92,50 @@ def run_macro(mname):
         return 'macro not found'
 
 
-def zita_client(argvs):
-    """ Sends audio to a zita-njbridge (issued from a multiroom receiver)
+def zita_j2n(args):
+    """ This internal function is always issued from a multiroom receiver.
+
+        Feeds the preamp audio to a zita-j2n port pointing to the receiver.
+
+        args: a json tuple string "(dest, udpport, do_stop)"
     """
-    addr = ''
-    stop = False
 
-    # Reading arguments
-    for argv in argvs.split(' '):
-        if is_IP(argv):
-            addr = argv
-        elif argv == 'stop':
-            stop = True
+    dest, udpport, do_stop = json_loads(args)
 
-    # Bad address
-    if not addr:
+    # BAD ADDRESS
+    if not is_IP(dest):
         return 'bad address'
 
-    jcli        = jack.Client(name='zitatmp', no_start_server=True)
-    udpport     = addr.split('.')[-1]
-    zitajname   = f'zita-{udpport}'
+    zitajname = f'zita_j2n_{ dest.split(".")[-1] }'
 
-    # if stop
-    if stop:
-        Popen( f'pkill -KILL -f {zitajname}'.split() )
-        return f'{zitajname} killed'
+    # STOP mode
+    if do_stop == 'stop':
+        zitapattern  = f'zita-j2n --jname {zitajname}'
+        Popen( ['pkill', '-KILL', '-f',  zitapattern] )
+        sleep(.2)
+        return f'killing {zitajname}'
 
+    # NORMAL mode
+    jcli = jack.Client(name='zitatmp', no_start_server=True)
     jports = jcli.get_ports()
+    result = ''
     if not [x for x in jports if zitajname in x.name]:
-        zitacmd     = f'zita-j2n --jname {zitajname} {addr} 65{udpport}'
-        Popen( zitacmd.split() )
-        sleep(1)
+        zitacmd     = f'zita-j2n --jname {zitajname} {dest} {udpport}'
+        with open('/dev/null', 'w') as fnull:
+            Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+
+    wait4ports(zitajname, timeout=3)
 
     try:
-        jcli.connect( 'pre_in_loop:output_1', f'zita-{udpport}:in_1' )
-        jcli.connect( 'pre_in_loop:output_2', f'zita-{udpport}:in_2' )
-    except:
-        pass
+        jcli.connect( 'pre_in_loop:output_1', f'{zitajname}:in_1' )
+        jcli.connect( 'pre_in_loop:output_2', f'{zitajname}:in_2' )
+        result = 'done'
+    except Exception as e:
+        result = str(e)
 
     jcli.close()
 
-    return 'done'
+    return result
 
 
 def play_url(arg):
@@ -142,12 +145,12 @@ def play_url(arg):
     # to hold it here instead of inside the players module
 
     def istreams_query(url):
-        """ Order the istreams daemon script to playback an internet stream url
+        """ Order the istreams daemon plugin to playback an internet stream url
         """
         error = False
 
         # Tune the radio station (Mplayer jack ports will dissapear for a while)
-        Popen( f'{UHOME}/pe.audio.sys/share/scripts/istreams.py url {url}'
+        Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'
                 .split() )
         # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
         sleep(2)
@@ -352,8 +355,8 @@ def do( cmd, arg=None ):
     elif cmd == 'info':
         result = AUX_INFO
 
-    elif cmd == 'zita_client':
-        result = zita_client(arg)
+    elif cmd == 'zita_j2n':
+        result = zita_j2n(arg)
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)

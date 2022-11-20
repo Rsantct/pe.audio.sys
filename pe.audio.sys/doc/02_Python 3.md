@@ -43,11 +43,11 @@ Update python setuptools:
     # Automatic detection of inserted disc
     sudo apt install python3-pyudev
 
-### Optionaly recommended if you wan to run `scripts/loudness_monitor.py`:
+### Optionaly recommended if you wan to run `plugins/loudness_monitor.py`:
 
     sudo pip3 install sounddevice watchdog
     sudo apt install libportaudio2
-    
+
 ### Optional the serial port extensions to run the IR receiver:
 
     sudo apt install python3-serial

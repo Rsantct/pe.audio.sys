@@ -30,6 +30,6 @@ if sys.argv[1:]:
                     'stop'  : stop
                   }[ sys.argv[1] ]()
     except:
-        print( '(scripts/shairport-sync) bad option' )
+        print( '(plugins/shairport-sync) bad option' )
 else:
     print(__doc__)

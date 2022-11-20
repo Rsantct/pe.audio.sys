@@ -34,7 +34,7 @@ last_warning = ''
 
 # Reading the LCD SETTINGS:
 try:
-    with open( f'{UHOME}/pe.audio.sys/share/scripts/lcd/lcd.yml', 'r' ) as f:
+    with open( f'{MAINFOLDER}/share/plugins/lcd/lcd.yml', 'r' ) as f:
         LCD_CONFIG = yaml.safe_load( f.read() )
 except:
     print( '(lcd_daemon) ERROR reading lcd.yml' )

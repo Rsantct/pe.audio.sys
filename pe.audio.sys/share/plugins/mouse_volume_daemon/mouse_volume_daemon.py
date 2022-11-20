@@ -6,7 +6,7 @@
 
 """
     v0.5beta
-    Script to manage pe.audio.sys volume through by a mouse.
+    Plugin to manage pe.audio.sys volume through by a mouse.
 
     Use:
             mouse_volume_daemon.py [-sNN -bHH] &

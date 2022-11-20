@@ -56,12 +56,12 @@ There is available a pre-compiled package called **`Raspotify`** for arm Raspber
 
 Please, after installing it, disable the default raspotify service
 
-    sudo systemctl stop raspotify.service 
-    sudo systemctl disable raspotify.service 
+    sudo systemctl stop raspotify.service
+    sudo systemctl disable raspotify.service
 
 
 ## Configure pe.audio.sys `config.yml`
-    
+
     sources:
         ...
         ...
@@ -70,8 +70,8 @@ Please, after installing it, disable the default raspotify service
             gain:           0.0
         ...
         ...
-    
-    scripts:
+
+    plugins:
         ...
         ...
         # librespot (a headless Spotify Connect player daemon)

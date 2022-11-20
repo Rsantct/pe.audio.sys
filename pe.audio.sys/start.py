@@ -11,7 +11,6 @@
         'all'      :    restart all
         'stop'     :    stop all
         'server'   :    restart tcp server
-        'scripts'  :    restart user scripts
 
     --log   messages redirected to 'pe.audio.sys/log/start.log'
 
@@ -28,8 +27,12 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from config import  CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+
 from miscel import  read_bf_config_fs, server_is_running, process_is_running, \
-                    kill_bill, read_state_from_disk, force_to_flush_file, Fmt
+                    kill_bill, read_state_from_disk, force_to_flush_file, Fmt, \
+                    get_remote_sources, remote_zita_restart, local_zita_restart, \
+                    send_cmd, get_my_ip
+
 from sound_cards import *
 
 
@@ -218,6 +221,82 @@ def start_jack_stuff():
         return 'done'
 
 
+def start_zita_link():
+    """ A LAN audio connection based on zita-njbridge from Fons Adriaensen.
+
+            "similar to having analog audio connections between the
+            sound cards of the systems using it"
+
+        Further info at doc/80_Multiroom_pe.audio.sys.md
+    """
+
+    try:
+        tmp = CONFIG["zita_udp_base"]
+        if type(tmp) == int:
+            UDP_PORT = tmp
+        else:
+            raise Exception("BAD VALUE 'zita_udp_base'")
+    except Exception as e:
+        UDP_PORT = 65000
+        print(f'{Fmt.RED}(start) ERROR in config.yml: {str(e)}, using {UDP_PORT} {Fmt.END}')
+
+    try:
+        tmp = CONFIG["zita_buffer_ms"]
+        if type(tmp) == int:
+            ZITA_BUFFER_MS = tmp
+        else:
+            raise Exception("BAD VALUE 'zita_buffer_ms'")
+    except Exception as e:
+        ZITA_BUFFER_MS = 20
+        print(f'{Fmt.RED}(start) ERROR in config.yml: {str(e)}, using {ZITA_BUFFER_MS} {Fmt.END}')
+
+
+    zita_link_ports = {}
+
+
+    for item in REMOTES:
+
+        source_name, raddr, rport = item
+        print( f'(start) Running zita-njbridge for: {source_name}' )
+
+        # Trying to RUN THE REMOTE SENDER zita-j2n (*)
+        remote_zita_restart(raddr, rport, UDP_PORT)
+
+        # Append the UPD_PORT to zita_link_ports
+        zita_link_ports[source_name] = {'addr': raddr, 'udpport': UDP_PORT}
+
+        # RUN LOCAL RECEIVER:
+        local_zita_restart(raddr, UDP_PORT, ZITA_BUFFER_MS)
+
+        # (i) zita will use 2 consecutive ports, so let's space by 10
+        UDP_PORT += 10
+
+    # (*) Saving the zita's UDP PORTS for future use because
+    #     the remote sender could not be online at the moment ...
+    with open(f'{MAINFOLDER}/.zita_link_ports', 'w') as f:
+        d = json_dumps( zita_link_ports )
+        f.write(d)
+
+
+def stop_zita_link():
+
+    for item in REMOTES:
+
+        _, raddr, rport = item
+
+        # REMOTE
+        zargs = json_dumps( (get_my_ip(), None, 'stop') )
+        remotecmd = f'aux zita_j2n {zargs}'
+        send_cmd(remotecmd, host=raddr, port=rport)
+
+        # LOCAL
+        zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
+        zitapattern  = f'zita-n2j --jname {zitajname}'
+        sp.Popen( ['pkill', '-KILL', '-f',  zitapattern] )
+        sleep(.2)
+
+
+
 def start_brutefir():
     """ runs Brutefir, connects to pream_in_loop and resets
         .state file with extra_delay = 0 ms
@@ -291,9 +370,9 @@ def stop_processes(mode):
     # Killing any previous instance of start.py
     kill_bill( os.getpid() )
 
-    # Stop scripts
-    if mode in ('all', 'stop', 'scripts'):
-        run_scripts(mode='stop')
+    # Stop plugins
+    if mode in ('all', 'stop'):
+        run_plugins(mode='stop')
 
     if mode in ('all', 'stop'):
         # Stop Jack Loops Daemon
@@ -302,25 +381,29 @@ def stop_processes(mode):
         # Stop Brutefir
         print(f'(start) STOPPING BRUTEFIR')
         sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
+        # Stop Zita_Link
+        if REMOTES:
+            print(f'(start) STOPPING ZITA_LINK')
+            stop_zita_link()
         # Stop Jack
         print(f'(start) STOPPING JACKD')
         sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
 
-    # this optimizes instead of a fixed sleep
+    # This optimizes instead of a fixed sleep
     wait4jackdkilled()
 
 
-def run_scripts(mode='start'):
+def run_plugins(mode='start'):
     """ (void)
     """
-    for script in CONFIG['scripts']:
-        # (i) Some elements on the scripts list from config.yml can be a dict,
-        #     e.g the ecasound_peq, so we need to extract the script name.
-        if type(script) == dict:
-            script = list(script.keys())[0]
-        print(f'(start) will {mode} the script \'{script}\' ...')
-        # (i) Notice that we are open to run scripts writen in python, bash, etc...
-        cmd = f'{MAINFOLDER}/share/scripts/{script} {mode}'
+    for plugin in CONFIG['plugins']:
+        # (i) Some elements on the plugins list from config.yml can be a dict,
+        #     e.g the ecasound_peq, so we need to extract the plugin name.
+        if type(plugin) == dict:
+            plugin = list(plugin.keys())[0]
+        print(f'(start) will {mode} the plugin \'{plugin}\' ...')
+        # (i) Notice that we are open to run plugins writen in python, bash, etc...
+        cmd = f'{MAINFOLDER}/share/plugins/{plugin} {mode}'
         sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     if mode == 'stop':
@@ -433,7 +516,7 @@ if __name__ == "__main__":
     if sys.argv[2:] and '-l' in sys.argv[2]:
         logFlag = True
 
-    if mode not in ['all', 'stop', 'server', 'scripts']:
+    if mode not in ['all', 'stop', 'server']:
         print(__doc__)
         sys.exit()
 
@@ -451,6 +534,9 @@ if __name__ == "__main__":
 
     # CHECKING STATE FILE
     check_state_file()
+
+    # Optional REMOTE SOURCES
+    REMOTES = get_remote_sources()
 
     # STOPPING:
     stop_processes(mode)
@@ -474,9 +560,10 @@ if __name__ == "__main__":
             print(f'{Fmt.BOLD}(start) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
 
-    # USER SCRIPTS
-    if mode in ('all', 'scripts'):
-        run_scripts()
+
+    # PLUGINS
+    if mode in ('all'):
+        run_plugins()
 
     if mode in ('all'):
 
@@ -491,6 +578,10 @@ if __name__ == "__main__":
         else:
             print(f'({Fmt.BOLD}start) Problems starting BRUTEFIR: {bfstart}')
             sys.exit()
+
+        # Optional REMOTE SOURCES
+        if REMOTES:
+            start_zita_link()
 
         # - RESTORE ON_INIT AUDIO settings
         core.init_audio_settings()
