@@ -5,7 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    This script manages 'librespot',
+    This plugin manages 'librespot',
     a headless Spotify Connect player daemon
 
     https://github.com/librespot-org/librespot
@@ -46,7 +46,7 @@ def start():
     moreopt_str = ' '.join(MOREOPT)
 
     cmd = f'{BINARY} --name {gethostname()} ' + \
-          f'--onevent {UHOME}/pe.audio.sys/share/scripts/librespot/bind_ports.sh ' + \
+          f'--onevent {UHOME}/pe.audio.sys/share/plugins/librespot/bind_ports.sh ' + \
           f'--bitrate 320 {BACKEND_OPTS} {moreopt_str}'
 
     eventsPath = f'{UHOME}/pe.audio.sys/.librespot_events'

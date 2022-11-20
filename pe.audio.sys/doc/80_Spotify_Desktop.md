@@ -23,8 +23,8 @@ Later, you can consider a 'headless' Desktop system, by auto login on your deskt
 
 Settings inside **`config.yml`**:
 
-- configure the `spotify`source 
-- enable `pulseaudio-jack-sink.py` and `spotify_monitor.py` scripts
+- configure the `spotify`source
+- enable `pulseaudio-jack-sink.py` and `spotify_monitor.py` plugins
 
 ```
 sources:
@@ -35,7 +35,7 @@ sources:
         jack_pname:     pulse_sink
 
 
-scripts:
+plugins:
     ...
     ...
     - pulseaudio-jack-sink.py
@@ -46,7 +46,7 @@ scripts:
 
 Prepare a desktop autostart file:
 
-    /home/paudio/.config/autostart/spotify.desktop 
+    /home/paudio/.config/autostart/spotify.desktop
 
                 [Desktop Entry]
                 Type=Application
@@ -65,7 +65,7 @@ Prepare a desktop autostart file:
 (i) If you want this, **please consider remove `paudio` from the `sudo` group**
 
 
-    /etc/gdm3/daemon.conf 
+    /etc/gdm3/daemon.conf
 
             [daemon]
                 AutomaticLoginEnable = true

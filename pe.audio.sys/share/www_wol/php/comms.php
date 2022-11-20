@@ -7,6 +7,8 @@
     */
 
     $UHOME = get_home();
+    $CFGPATH = $UHOME."/pe.audio.sys/share/plugins/wolservice/wolservice.cfg";
+
     // echo "UHOME: ".$UHOME."\n"; // cmdline debugging
 
     // Gets the base folder where php code and pe.audio.sys are located
@@ -19,11 +21,12 @@
 
     // Gets single line configured items from the 'wolservice.cfg' YAML file
     function get_config($item) {
-        // to have access to variables from outside
-        global $UHOME;
+
+        // Needed to have access to variables from outside
+        global $CFGPATH;
 
         $tmp = "";
-        $cfile = fopen( $UHOME."/pe.audio.sys/share/scripts/wolservice/wolservice.cfg", "r" )
+        $cfile = fopen( $CFGPATH, "r" )
                   or die("Unable to open file!");
         while( !feof($cfile) ) {
             $line = fgets($cfile);

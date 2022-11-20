@@ -105,7 +105,7 @@ def check_for_CDDA(d):
             save_disc_metadata()
 
     except:
-        print( f'(autoplay_cdda) This script needs \'cdtool\' (command line cdrom tool)' )
+        print( f'(autoplay_cdda) This plugin needs \'cdtool\' (command line cdrom tool)' )
 
 
 def stop():

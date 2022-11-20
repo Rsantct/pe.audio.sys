@@ -5,7 +5,7 @@ You need **Python>=3.6** and all python stuff as indicated in **[02_Python 3.md]
 
 ## First install:
 
-1) If you comes from the old version of this distro, please remove any stuff under `~/tmp` 
+1) If you comes from the old version of this distro, please remove any stuff under `~/tmp`
 
     `rm -r ~/tmp/pe.audio.sys-*`
 
@@ -33,13 +33,13 @@ Run this only on the first install:
 
     sh ~/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh --force
 
-(i) You can disable `auto_update` inside the config file (default enabled). 
+(i) You can disable `auto_update` inside the config file (default enabled).
 
 
 ## Manual updates:
 
 Manual updates can be done whenever you want, by following the two steps below:
- 
+
 **(1)** Download the last repo from github:
 
     `sh tmp/download_peaudiosys.sh my_brach`
@@ -62,7 +62,7 @@ You can access to the control web from some LAN computer or smartphone.
 
 ### Node.js (user space service)
 
-You need to install the Node.js package, 
+You need to install the Node.js package,
 
     sudo apt install nodejs node-js-yaml
 
@@ -80,7 +80,7 @@ then browse http://yourIP:8080
 
 #### Running the Node.js server at start up:
 
-Please add this under your `scripts:` section inside `config.yml`
+Please add this under your `plugins:` section inside `config.yml`
 
     # Launchs the pe.audio.sys web page Node.js server
     - node_web_server.py
@@ -99,7 +99,7 @@ Prior to enable the module you need to know its version, for instance:
     $ ls /etc/apache2/mods-available/php*
     /etc/apache2/mods-available/php7.4.conf  /etc/apache2/mods-available/php7.4.load
 
- 
+
 So to enable apache-php run:
 
     sudo a2enmod php7.4

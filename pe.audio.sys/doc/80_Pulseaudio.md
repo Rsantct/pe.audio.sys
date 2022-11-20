@@ -31,7 +31,7 @@ A desktop machine already have Pulseaudio installed, you'll need just some modul
 
 
 - Disable the system wide service if necessary
-    
+
         systemctl  stop    pulseaudio
         systemctl  disable pulseaudio
 
@@ -41,7 +41,7 @@ A desktop machine already have Pulseaudio installed, you'll need just some modul
 
 - Enable the Pulseaudio to Jack bridge under `config.yml`
 
-        scripts:
+        plugins:
             ...
             ...
             ## Set Pulseaudio apps to sound through by JACK:

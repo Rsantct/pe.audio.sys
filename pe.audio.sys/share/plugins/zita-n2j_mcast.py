@@ -20,8 +20,10 @@
 
     *** Multicast UDP must be used in a dedicated wired Ethernet LAN ***
 
-    If your LAN uses WiFi, please do not use this script, you can use
-    the new script 'zita_link.py' instead.
+    (!) UPDATE:
+    
+    Currently pe.audio.sys integrates a point to point zita-njbridge system.
+    Please see doc/Multiroom
 
 """
 import sys

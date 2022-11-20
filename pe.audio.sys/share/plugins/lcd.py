@@ -16,7 +16,7 @@ from subprocess import Popen, check_output
 from time import sleep
 
 UHOME = os.path.expanduser("~")
-LCDFOLDER = f'{UHOME}/pe.audio.sys/share/scripts/lcd'
+LCDFOLDER = f'{UHOME}/pe.audio.sys/share/plugins/lcd'
 
 
 def start():
@@ -29,7 +29,7 @@ def start():
         n -= 1
         sleep(1)
     if n:
-        print('(scripts/lcd) launching lcd daemon...')
+        print('(plugins/lcd) launching lcd daemon...')
         sleep(1)
         # The server that manages the LCD display Linux driver.
         Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
@@ -37,7 +37,7 @@ def start():
         # The daemon to display pe.audio.sys info on the LCD
         Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
     else:
-        print('(scripts/lcd) TIMEOUT: pe.audio.sys server not detected')
+        print('(plugins/lcd) TIMEOUT: pe.audio.sys server not detected')
 
 
 def stop():
@@ -53,7 +53,7 @@ if sys.argv[1:]:
                     'stop'  : stop
                   }[ sys.argv[1] ]()
     except:
-        print( '(scripts/lcd.py) internal error :-/' )
+        print( '(plugins/lcd.py) internal error :-/' )
 
 else:
     print(__doc__)

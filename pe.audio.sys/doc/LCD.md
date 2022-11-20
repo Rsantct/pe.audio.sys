@@ -42,18 +42,18 @@ And include your user into the `dialout` group:
 
 (i) Please edit and uncomment the appropiate driver line for your machine arch:
 
-    $ nano pe.audio.sys/share/scripts/lcd/LCDd.conf
+    $ nano pe.audio.sys/share/plugins/lcd/LCDd.conf
 
 Try to start the server:
 
-    $ LCDd -c pe.audio.sys/share/scripts/lcd/LCDd.conf
+    $ LCDd -c pe.audio.sys/share/plugins/lcd/LCDd.conf
 
 Test the standard packaged client:
 
     $ lcdproc -f  &
-    
+
     $ killall lcdproc      # to stop the show
 
 ## Enabling pe.audio.sys info to be displayed on the LDC
 
-Enable a `- lcd.py` under the `scripts` section at `config.yml`.
+Enable a `- lcd.py` under the `plugins` section at `config.yml`.

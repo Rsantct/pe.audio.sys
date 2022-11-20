@@ -13,9 +13,9 @@
     Options:  start | stop
 
     Notes:  You need to define the xxxxxx.ecs to load at the belonging
-            script line under config.yml, e.g:
+            plugin line under config.yml, e.g:
 
-            -scripts
+            -plugins
                 - ecasound_peq.py: xxxxxx.ecs
                 ...
                 ...
@@ -66,11 +66,11 @@ if __name__ == '__main__':
     try:
         with open( f'{UHOME}/pe.audio.sys/config/config.yml', 'r') as f:
             config = yaml.safe_load(f)
-            scripts_lists = config['scripts']
-            for script in scripts_lists:
-                if type(script) == dict:
-                    if 'ecasound_peq.py' in script.keys():
-                        ECSFILE = script['ecasound_peq.py']
+            plugins_list = config['plugins']
+            for plugin in plugins_list:
+                if type(plugin) == dict:
+                    if 'ecasound_peq.py' in plugin.keys():
+                        ECSFILE = plugin['ecasound_peq.py']
                         break
     except:
         print(  f'(ecasound_peq) unable to read your .ecs file from config.yml' )

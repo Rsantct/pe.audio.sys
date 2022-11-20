@@ -8,18 +8,18 @@ Although we prefer to avoid using BT audio sources, you can enable pe.audio.sys 
 
 - Install BT standard software:
 
-    ```sudo apt install bluez bluetooth pi-bluetooth # pi-bluetooth if you use a Raspberry Pi machine```   
+    ```sudo apt install bluez bluetooth pi-bluetooth # pi-bluetooth if you use a Raspberry Pi machine```
 
 
 ### Adding your user to the `bluetooth` group
 
     sudo adduser YOURUSERNAME bluetooth
-    
+
     (relogin is needed)
 
 
 ### Enable bluetooth audio sink profile (receiver):
-    
+
     sudo nano /lib/systemd/system/bluealsa.service
           ExecStart=/usr/bin/bluealsa --profile=a2dp-sink
 
@@ -28,7 +28,7 @@ Although we prefer to avoid using BT audio sources, you can enable pe.audio.sys 
 
 ### Pairing and trusting a BT device
 
-Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone) 
+Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
     ~ $ bluetoothctl
     Agent registered
@@ -54,7 +54,7 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
 
         *** now confirm pairing on your device ***
         *** then say 'yes' below
-        
+
     [agent] Confirm passkey 090582 (yes/no): yes
     [CHG] Device 80:82:23:AA:BB:CC Modalias: bluetooth:v004Cp710000000
     [CHG] Device 80:82:23:AA:BB:CC UUIDs: 00000000-deca-fade-deca-deaf00000000
@@ -79,13 +79,13 @@ Commands that you need to pair a BT device (e.g: 80:82:23:AA:BB:CC my_iphone)
     [CHG] Device 80:82:23:AA:BB:CC Trusted: yes
     Changing 80:82:23:AA:BB:CC trust succeeded
     [bluetooth]# exit
-    ~ $ 
+    ~ $
 
 
 ### Testing
 
-    arecord  -D bluealsa:DEV=80:82:23:AA:BB:CC,PROFILE=a2dp  --vumeter=stereo  -f cd  /dev/null 
-    
+    arecord  -D bluealsa:DEV=80:82:23:AA:BB:CC,PROFILE=a2dp  --vumeter=stereo  -f cd  /dev/null
+
 (if it doesn't seem to detect any levels, check your mobile device volume)
 
 
@@ -97,8 +97,8 @@ Please refer to **`doc/80_Pulseaudio`**
 
 #### `config.yml`
 
-    # ============================= SCRIPTS =======================================
-    scripts:
+    # ============================= PLUGINS =======================================
+    plugins:
         ...
         ...
         ## Set Pulseaudio apps to sound through by JACK:

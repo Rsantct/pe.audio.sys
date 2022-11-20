@@ -3,7 +3,7 @@
     Toggles preamp to listen to BT_devices configured inside config.yml
 
     This needs Pulseaudio (see doc/80_Pulseaudio.md), alongside
-    the 'scripts/pulseaudio-BT.py' to be called from config.yml
+    the 'plugins/pulseaudio-BT.py' to be called from config.yml
 
 """
 import os

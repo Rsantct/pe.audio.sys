@@ -42,7 +42,12 @@ The binary will be usually dropped under your cargo folder at `~/.cargo/bin/`
 
 ## Install
 
-Simply copy or symlink the binary under `/usr/bin/`
+Simply copy or symlink the binary under `/usr/bin/`, for instance:
+
+    ln -s  ~/.cargo/binlibrespot  /usr/bin/librespot
+
+
+**Warning**: If you install the below referred librespot based package **`Raspotify`**, your `/usr/bin/librespot` will be overwritten.
 
 
 ## Pre-compiled package for Raspberry Pi
@@ -51,12 +56,12 @@ There is available a pre-compiled package called **`Raspotify`** for arm Raspber
 
 Please, after installing it, disable the default raspotify service
 
-    sudo systemctl stop raspotify.service 
-    sudo systemctl disable raspotify.service 
+    sudo systemctl stop raspotify.service
+    sudo systemctl disable raspotify.service
 
 
 ## Configure pe.audio.sys `config.yml`
-    
+
     sources:
         ...
         ...
@@ -65,8 +70,8 @@ Please, after installing it, disable the default raspotify service
             gain:           0.0
         ...
         ...
-    
-    scripts:
+
+    plugins:
         ...
         ...
         # librespot (a headless Spotify Connect player daemon)

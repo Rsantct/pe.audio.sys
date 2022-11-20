@@ -13,9 +13,10 @@ from    os.path             import expanduser
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config              import CONFIG
-from    preamp_mod.core     import Preamp, Convolver
-
+from    config              import  CONFIG
+from    preamp_mod.core     import  Preamp, Convolver
+from    miscel              import  get_remote_zita_params, \
+                                    remote_zita_restart
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -93,6 +94,20 @@ def do( cmd, argstring ):
         return result
 
 
+    def select_source(x, *dummy):
+        """ A wrapper to ensure the remote zita-j2n audio sender process
+            for remoteXXXX kind of sources
+        """
+        result = preamp.select_source(x)
+
+        if result == 'done' and 'remote' in x:
+            raddr, rport, zport = get_remote_zita_params(x)
+            if raddr:
+                remote_zita_restart(raddr, rport, zport)
+
+        return result
+
+
     def print_help(*dummy):
         return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
 
@@ -113,8 +128,8 @@ def do( cmd, argstring ):
             'get_drc_sets':     convolver.get_drc_sets,
             'get_xo_sets':      convolver.get_xo_sets,
 
-            'input':            preamp.select_source,
-            'source':           preamp.select_source,
+            'input':            select_source,
+            'source':           select_source,
             'solo':             preamp.set_solo,
             'mono':             set_mono,
             'midside':          preamp.set_midside,

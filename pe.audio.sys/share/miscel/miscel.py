@@ -14,6 +14,7 @@ from    time import sleep
 import  subprocess as sp
 import  configparser
 import  os
+import  threading
 
 from    config      import *
 from    fmt         import Fmt
@@ -92,6 +93,21 @@ def manage_amp_switch(mode):
         return get_amp_state()
 
 
+    def wait4_convolver_on():
+        cmax = 30
+        while True:
+            conv_on = read_state_from_disk()["convolver_runs"]
+            if conv_on == True:
+                sleep(3)
+                send_cmd('aux warning clear', timeout=1)
+                break
+            cmax -= 1
+            if not cmax:
+                send_cmd('aux warning clear', timeout=1)
+                break
+            sleep(1)
+
+
     cur_state = get_amp_state()
     new_state  = '';
 
@@ -110,6 +126,14 @@ def manage_amp_switch(mode):
 
     if new_state:
         result = set_amp_state( new_state )
+
+    # Wake up the convolver if sleeping:
+    if new_state == 'on':
+        send_cmd('aux warning set ( waking up ... )', timeout=1)
+        sleep(1)
+        send_cmd('preamp convolver on', timeout=1)
+        job = threading.Thread(target=wait4_convolver_on)
+        job.start()
 
     # Optionally will stop the current player as per CONFIG
     if new_state == 'off':
@@ -162,7 +186,7 @@ def read_bf_config_fs():
 
     if 'brutefir_defaults' in fname:
         print(f'{Fmt.RED}{Fmt.BOLD}'
-              f'(miscel) *** USING .brutefir_defaults SAMPLE RATE ***'
+              f'(miscel.py) *** USING .brutefir_defaults SAMPLE RATE ***'
               f'{Fmt.END}')
 
     return FS
@@ -170,10 +194,10 @@ def read_bf_config_fs():
 
 def get_peq_in_use():
     """ Finds out the PEQ (parametic eq) filename used by an inserted
-        Ecasound sound processor, if included inside config.yml scripts.
+        Ecasound sound processor, if included inside config.yml plugins section.
         (filepath: string)
     """
-    for item in CONFIG["scripts"]:
+    for item in CONFIG["plugins"]:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
             return item["ecasound_peq.py"].replace('.ecs', '')
     return 'none'
@@ -192,11 +216,33 @@ def get_remote_selected_source(addr, port=9990):
     return remote_source
 
 
-def get_remote_sources_info():
+def get_remote_source_addr_port(sname):
+    """ Gets the IP:CTRLPORT as configured under 'jack_pname' in a
+        remoteXXXXX kind of configured source.
+    """
+    addr = ''
+    port = 9990
+    try:
+        jpname = CONFIG["sources"][sname]["jack_pname"]
+        tmp_addr = jpname.split(':')[0]
+        tmp_port = jpname.split(':')[-1]
+        if is_IP(tmp_addr):
+            addr = tmp_addr
+        else:
+            print(f'(miscel.py) source: \'{source}\' address: \'{tmp_addr}\' is NOT valid')
+        if tmp_port.isdigit():
+            port = int(tmp_port)
+    except Exception as e:
+        print(f'(miscel.py) ERROR reading source: {str(e)}')
+
+    return addr, port
+
+
+def get_remote_sources():
     ''' Retrieves the remoteXXXXXX sources found under the 'sources:' section
         inside config.yml.
 
-        (list of tuples <srcName,srcIp,srcPort>)
+        Returns a list of tuples (srcName,srcIp,srcPort)
     '''
     # Retrieving the remote sender address from 'config.yml'.
     # For a 'remote.....' named source, it is expected to have
@@ -207,24 +253,65 @@ def get_remote_sources_info():
     remotes = []
     for source in CONFIG["sources"]:
         if 'remote' in source:
-            addr = ''
-            port = 9990
-            tmp = CONFIG["sources"][source]["jack_pname"]
-            tmp_addr = tmp.split(':')[0]
-            tmp_port = tmp.split(':')[-1]
-            if is_IP(tmp_addr):
-                addr = tmp_addr
-            else:
-                print(f'(miscel) source: \'{source}\' address: \'{tmp_addr}\' not valid')
-                continue
-                if tmp_port.isdigit():
-                    port = int(tmp_port)
-            remotes.append( (source, addr, port ) )
+            addr, port = get_remote_source_addr_port(source)
+            remotes.append( (source, addr, port) )
 
     if not remotes:
-        print(f'(miscel) Cannot get remote sources')
+        print(f'(miscel.py) Cannot get remote sources')
 
     return remotes
+
+
+def get_remote_zita_params(rem_src_name):
+    """ Getting remote source zita parameters (IP, ctrlport, zitaUDP)
+    """
+    raddr, cport, zport = '', 9900, 65000
+
+    # IP, CTRL_PORT
+    raddr, cport = get_remote_source_addr_port(rem_src_name)
+
+    # The ZITA's UDP PORT was assigned at the start.
+    try:
+        with open(f'{MAINFOLDER}/.zita_link_ports', 'r') as f:
+            zports = json_loads( f.read() )
+            zport  = zports[rem_src_name]['udpport']
+    except Exception as e:
+        print( f'(miscel.py) ERROR with .zita_link_ports: {str(e)}' )
+
+    return raddr, cport, zport
+
+
+def remote_zita_restart(raddr, ctrl_port, zita_port):
+    """ Restarting zita-j2n on the multiroom sender's end,
+        pointing to our ip.
+        (i) The sender will do only if needed
+    """
+    zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
+    remotecmd = f'aux zita_j2n {zargs}'
+    result = send_cmd(remotecmd, host=raddr, port=ctrl_port)
+    print(f'(miscel.py) SENDING TO REMOTE: {remotecmd}')
+    return result
+
+
+def local_zita_restart(raddr, udp_port, buff_size):
+    """ Running zita-n2j listen ports on the multiroom receiver's end.
+    """
+
+    zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
+    zitacmd = f'zita-n2j --jname {zitajname} --buff {buff_size} {get_my_ip()} {udp_port}'
+
+    # Assign ALIAS to ports to be able to switch by using
+    # the IP port name of a remoteXXXX input in config.yml
+    with open('/dev/null', 'w') as fnull:
+        # Ignore if zita-njbridge is not available
+        try:
+            sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+            wait4ports(zitajname, 3)
+            sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
+            sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
+            print(f'(miscel.py) RUNNING LOCAL: {zitacmd}')
+        except Exception as e:
+            print(f'(miscel.py) ERROR: {e}, you may want run it for a remote source?')
 
 
 def wait4ports( pattern, timeout=10 ):
@@ -315,8 +402,8 @@ def detect_spotify_client(timeout=10):
     """
     result = ''
 
-    # early return if no Spotify script is used:
-    if not any( 'spo' in x.lower() for x in CONFIG['scripts'] ):
+    # Early return if no Spotify plugin is used:
+    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] ):
         return result
 
     tries = timeout
@@ -389,7 +476,7 @@ def kill_bill(pid=0):
     """
 
     if not pid:
-        print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() needs <pid> '
+        print( f'{Fmt.BOLD}(miscel.py) ERROR kill_bill() needs <pid> '
                f'(process own pid) as argument{Fmt.END}' )
         return
 
@@ -399,7 +486,7 @@ def kill_bill(pid=0):
         tmp = sp.check_output( f'ps -p {pid} -o command='.split() ).decode()
         # e.g. "python3 pe.audio.sys/start.py all"
     except:
-        print( f'{Fmt.BOLD}(miscel) ERROR kill_bill() cannot found pid: {pid} ' )
+        print( f'{Fmt.BOLD}(miscel.py) ERROR kill_bill() cannot found pid: {pid} ' )
         return
 
     # As per this is always used from python3 programs, will remove python3
@@ -426,7 +513,7 @@ def kill_bill(pid=0):
             rawpids.remove(rawpid)
 
     # Just display the processes to be killed, if any.
-    print('-' * 21 + f' (miscel) killing \'{processString}\' running before me ' \
+    print('-' * 21 + f' (miscel.py) killing \'{processString}\' running before me ' \
            + '-' * 21)
     for rawpid in rawpids:
         print(rawpid)
@@ -440,7 +527,7 @@ def kill_bill(pid=0):
 
     # Killing the remaining pids, if any:
     for pid in pids:
-        print(f'(miscel) killing old \'{processString}\' processes:', pid)
+        print(f'(miscel.py) killing old \'{processString}\' processes:', pid)
         sp.Popen(f'kill -KILL {pid}'.split())
         sleep(.1)
     sleep(.5)
@@ -546,11 +633,14 @@ def is_IP(s):
     """ Validate if a given string is a valid IP address
         (bool)
     """
-    try:
-        ipaddress.ip_address(s)
-        return True
-    except:
-        return False
+    if type(s) == str:
+         try:
+             ipaddress.ip_address(s)
+             return True
+         except:
+             return False
+    else:
+         return False
 
 
 def get_my_ip():
@@ -583,5 +673,4 @@ def timesec2string(x):
     m = int( x / 60 )           # minutes from the new x
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
-
 

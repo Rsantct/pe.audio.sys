@@ -24,9 +24,9 @@ But this is still a Timidity issue even if `pulseaudio` is indicated by `fuser`.
 
 Timidity is a sound synthesizer, we don't need it at all, so let's disable it:
 
-    $ sudo systemctl stop timidity.service 
-    $ sudo systemctl disable timidity.service 
-    
+    $ sudo systemctl stop timidity.service
+    $ sudo systemctl disable timidity.service
+
 
 ## Web page does not work.
 
@@ -79,7 +79,7 @@ The installed new files will be shown as:
 So now you can symlink it to run the new version:
 
     ln -s /usr/local/bin/brutefir $HOME/bin/brutefir
-    
+
 
 
 ## About zita-j2n (JACK-NETWORK BRIDGE) network usage
@@ -88,18 +88,18 @@ https://kokkinizita.linuxaudio.org/linuxaudio/
 
 For a typical setting of 2 ch 44100 Hz 16 bit, the used BW is about 1.7 Mb/s over your LAN.
 
-If you use **`scripts/zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously to ALL hosts in your LAN.
+If you use **`plugins/zita-n2j_mcast.py`**, then UDP multicast packets will be sent continously to ALL hosts in your LAN.
 
-So, you can use MULTICAST only in a dedicated wired Ethernet LAN.
+Please USE MULTICAST ONLY in a dedicated wired Ethernet LAN.
 
-If you have a **WiFied LAN, do not use multicast**. It is preferred to use the new client side **`scripts/zita_link.py`**. This script automagically triggers the sender pe.audio.sys system to run a one-to-one `zita-j2n` process.
+If you have a **WiFied LAN, do not use multicast**. Maybe you can use the integrated one-to-one zita-njbridge. See **`doc/Multiroom`**
 
 
 ## How to tune DVB-T channels
 
     sudo apt-get install dvb-apps w-scan
     w_scan -ft -cES -M > ~/.mplayer/channels.conf # see notes below
-    
+
 w_scan notes:
 
     X = czap/tzap/xine channels.conf
@@ -140,7 +140,7 @@ You can use a commercial `sispmctl` compatible USB controlled power strip.
 
 Also, you can home made your own USB controlled power socket, for instance by using some cheap `usbrelay` compatible relay board, more info inside the provided `bin/ampli.sh_usbrelay.example`.
 
-You need to prepare a script to manage the power socket:
+You need to prepare a custom script to manage the power socket:
 
 - The script must accept `on|off` as argument
 - The script must keep a file `~/.amplifier` containing `on` `1` `off` `0` as per the power socket status.
@@ -157,7 +157,7 @@ This way `pe.audio.sys` will control the amp power outlet, as well will notice t
 If you need to migrate your old system, you can run the following:
 
     $ nano bin/state2json.py
-    
+
         #!/usr/bin/env python3
         import json
         import yaml
@@ -167,7 +167,7 @@ If you need to migrate your old system, you can run the following:
             f.write( json.dumps(state) )
 
     $ python3 bin/state2json
-    
+
 Once updated your pe.audio.sys, you can safely delete old `.yml` files:
 
     $ rm pe.audio.sys/.state.yml*
