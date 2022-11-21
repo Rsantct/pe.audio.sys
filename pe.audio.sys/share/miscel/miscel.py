@@ -242,12 +242,11 @@ def get_remote_sources():
     ''' Retrieves the remoteXXXXXX sources found under the 'sources:' section
         inside config.yml.
 
-        Returns a list of tuples (srcName,srcIp,srcPort)
+        Returns a list of tuples (srcName,srcIP,srcCtrlPort)
     '''
-    # Retrieving the remote sender address from 'config.yml'.
-    # For a 'remote.....' named source, it is expected to have
+    # On a 'remote.....' named source, it is expected to have
     # an IP address kind of in its jack_pname field:
-    #   jack_pname:  X.X.X.X
+    #   jack_pname:  IP:CTRLPORT
     # so this way we can query the remote sender to run 'zita-j2n'
 
     remotes = []
@@ -255,6 +254,9 @@ def get_remote_sources():
         if 'remote' in source:
             addr, port = get_remote_source_addr_port(source)
             remotes.append( (source, addr, port) )
+
+    if remotes:
+        print(f'(miscel.py) (i) found remote sources: {[x[0] for x in remotes]}')
 
     return remotes
 
