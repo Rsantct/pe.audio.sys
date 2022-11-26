@@ -7,17 +7,20 @@
 """
     Control module of a parametric ecualizer based on ecasound
 
-    Usage: peq_control.py "command1 param1" "command2 param2" ...
+    Usage: peq_control.py cmd arg1 arg2 ....
 
-    commandN can be:
+    Avalible commands and arguments:
 
-    - native ecasound-iam command (man ecasound-iam)
+    - ECAcmd cmd1 ... cmdN     native ecasound-iam command (man ecasound-iam)
 
-    - one of this:
-      PEQdump                  prints running parametric filters
-      PEQdump2ecs              prints running .ecs structure
-      PEQbypass on|off|toggle  EQ bypass
-      PEQgain XX               sets EQ gain
+    - PEQdump                  prints running parametric filters
+
+    - PEQdump2ecs              prints running .ecs structure
+
+    - PEQbypass on|off|toggle  bypass the EQ
+
+    - PEQgain XX               sets EQ gain
+
 """
 
 import  sys
@@ -26,7 +29,7 @@ from    time    import sleep
 import  socket
 import  yaml
 
-from    miscel  import UHOME, LSPK_FOLDER
+from    miscel  import UHOME, LSPK_FOLDER, get_peq_in_use
 
 # The file where init settings will be loaded from
 PEQPATH  = ''
@@ -55,18 +58,18 @@ def ecanet(command):
     return data.decode()
 
 
-def PEQgain(level):
+def eca_gain(level):
     """ set gain in first plugin stage
     """
 
     for chain in ("left", "right"):
         ecanet("c-select " + chain) # select channel
-        ecanet("cop-select 1")      # select second filter stage
+        ecanet("cop-select 1")      # select first filter stage
         ecanet("copp-select 2")     # select global gain
-        ecanet("copp-set " + level) # set
+        ecanet("copp-set " + level) # set level
 
 
-def PEQbypass(mode):
+def eca_bypass(mode):
     """ mode: on | off | toggle
     """
 
@@ -82,7 +85,7 @@ def PEQbypass(mode):
         print((" ".join(chain.split()[:2]) + " " + tmp))
 
 
-def PEQdump(fpath='', verbose=False):
+def eca_dump2peq(fpath=DUMPPATH, verbose=False):
 
     def PEQdic2dump(d):
         """ Makes a human readable multiline string
@@ -235,7 +238,7 @@ def PEQdump(fpath='', verbose=False):
     return d
 
 
-def PEQdump2ecs():
+def eca_dump2ecs():
     """ (i) This is a BUILT-IN Ecasound feature
     """
     ecanet( f"cs-save-as {UHOME}/tmp.ecs" )
@@ -244,8 +247,8 @@ def PEQdump2ecs():
     os.remove( f"{UHOME}/tmp.ecs" )
 
 
-def PEQload(fpath=DUMPPATH):
-    """ Loads a PEQ filter set from a given human readable file
+def peq_read(fpath=DUMPPATH):
+    """ Reads a PEQ filter set from a given human readable file
     """
     d = {}
 
@@ -268,36 +271,30 @@ if __name__ == '__main__':
         sys.exit()
 
     # we can pass more than one command from command line to ecasound
-    if len(sys.argv) > 1:
-        commands = sys.argv[1:]
-        for command in commands: # parse command list
-            if not("PEQ" in command):
-                print((ecanet(command)))
-            else:
+    if sys.argv[1:]:
 
-                if command == "PEQdump":
-                    PEQdump(DUMPPATH, verbose=True)
+        cmd  = sys.argv[1]
+        args = sys.argv[2:]
 
-                elif command == "PEQdump2ecs":
-                    PEQdump2ecs()
+        if   cmd == "ECAcmd":
+            for ecaCmd in args:
+                print( ecanet(ecaCmd) )
 
-                elif "PEQbypass" in command:
-                    try:
-                        PEQbypass(command.split()[1])
-                    except:
-                        print("lacking on | off | toggle parameter")
+        elif cmd == "PEQdump":
+            eca_dump2peq(verbose=True)
 
-                elif "PEQgain" in command:
-                    try:
-                        gain = command.split()[1]
-                        PEQgain(gain)
-                        # PEQdump()
-                    except:
-                        print("lacking gain in dB")
+        elif cmd == "PEQdump2ecs":
+            eca_dump2ecs()
 
-                else:
-                    print(("(!) error en command " + command))
-                    print(__doc__)
+        elif cmd == "PEQbypass" and args:
+            eca_bypass(args[0])
+
+        elif camd == "PEQgain":
+            eca_gain(arg)
+
+        else:
+            print(("(!) Bad command: " + command))
+            print(__doc__)
 
     else:
         print(__doc__)
