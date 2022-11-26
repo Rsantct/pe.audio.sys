@@ -20,7 +20,7 @@
                 ...
                 ...
 
-            The xxxxxx.ecs file must be available under the 'share/eq' folder.
+            The xxxxxx.ecs file must be available in the loudspeaker folder.
 """
 import  subprocess as sp
 import  os
