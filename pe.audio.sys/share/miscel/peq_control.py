@@ -5,21 +5,26 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Control module of a parametric ecualizer based on ecasound
+    Control module of a parametric ecualizer based on Ecasound
 
-    Usage: peq_control.py cmd arg1 arg2 ....
+    Command line usage:             peq_control.py  cmd  arg1  arg2 ....
 
     Avalible commands and arguments:
 
-    - ECAcmd cmd1 ... cmdN     native ecasound-iam command (man ecasound-iam)
+    - PEQ_dump2peq                  Prints running parametric filters,
+                                    also dumps them to YOURLSPK/eca_dump.peq
 
-    - PEQdump                  prints running parametric filters
+    - PEQ_dump2ecs                  Prints running .ecs structure
+                                    also dumps it to YOURLSPK/eca_dump.ecs
 
-    - PEQdump2ecs              prints running .ecs structure
+    - PEQ_load_peq  file            Loads a .peq file of parameters in Ecasound
 
-    - PEQbypass on|off|toggle  bypass the EQ
+    - PEQ_bypass  on|off|toggle     Bypass the EQ
 
-    - PEQgain XX               sets EQ gain
+    - PEQ_gain  XX                  Sets EQ gain
+
+    - ECA_cmd  cmd1 ... cmdN        Native ecasound-iam commands.
+                                    (See man ecasound-iam)
 
 """
 
@@ -29,13 +34,11 @@ from    time    import sleep
 import  socket
 import  yaml
 
-from    miscel  import UHOME, LSPK_FOLDER, get_peq_in_use
+from    miscel  import UHOME, LSPK_FOLDER, get_peq_in_use, read_bf_config_fs
 
-# The file where init settings will be loaded from
-PEQPATH  = ''
 
-# The file where current settins will be dumped
-DUMPPATH =  f'{LSPK_FOLDER}/peqdump.peq'
+# The file where running settins will be dumped
+DUMPPATH =  f'{LSPK_FOLDER}/eca_dump.peq'
 
 def ecanet(command):
     """ Sends commands to ecasound and accept results
@@ -128,7 +131,7 @@ def eca_dump2peq(fpath=DUMPPATH, verbose=False):
         spc8 = ' ' * 8
 
         res =   '# Legend:\n'
-        res += f'#       global: [OnOff, Gain]\n'
+        res += f'#       global: [OnOff,            Gain]\n'
         res += f'#       pN:     [OnOff, Frec, BW,  Gain]\n'
         res +=  '#\n'
 
@@ -149,7 +152,6 @@ def eca_dump2peq(fpath=DUMPPATH, verbose=False):
         try:
             with open(fpath, 'w') as f:
                 f.write(res)
-            print(f'saved: {fpath}')
 
         except Exception as e:
             print(f'{Fmt.BOLD}{str(e)}{Fmt.END}')
@@ -234,17 +236,20 @@ def eca_dump2peq(fpath=DUMPPATH, verbose=False):
 
     if verbose:
         print(dumped)
+        print(f'\n(saved to: {fpath})')
 
     return d
 
 
-def eca_dump2ecs():
+def eca_dump2ecs(fpath=DUMPPATH.replace('.peq', '.ecs'), verbose=False):
     """ (i) This is a BUILT-IN Ecasound feature
     """
-    ecanet( f"cs-save-as {UHOME}/tmp.ecs" )
-    with open( f"{UHOME}/tmp.ecs", "r" ) as f:
-        print((f.read()))
-    os.remove( f"{UHOME}/tmp.ecs" )
+    ecanet( f'cs-save-as {fpath}')
+
+    if verbose:
+        with open(fpath, 'r') as f:
+            print( f.read() )
+        print(f'\n(saved to: {fpath})')
 
 
 def peq_read(fpath=DUMPPATH):
@@ -263,11 +268,88 @@ def peq_read(fpath=DUMPPATH):
     return d
 
 
+def eca_make_chainsetup(d):
+    """ d:       Dictionary with fil plugin parameters
+
+        returns: Text chainsetup to be saved to a file
+                 for ecasound cs-load usage
+    """
+
+    def make_header():
+        res =  '# ecasound chainsetup file'
+        res += '\n\n'
+        return res
+
+
+    def make_general(nBands=8):
+        res =   '# general\n'
+        res += f'-b:2048 -r:50 -z:intbuf -z:db,100000 -n:"fil_{nBands}_band_dualMono" -X -z:noxruns -z:nopsr -z:mixmode,avg'
+        res += '\n\n'
+        return res
+
+
+    def make_audio_io(fs=441000):
+        res  = f'# audio inputs\n'
+        res += f'-a:left -f:f32_le,1,{fs} -i:jack,,\n'
+        res += f'-a:right -f:f32_le,1,{fs} -i:jack,,\n'
+        res += f'\n'
+        res += f'# audio outputs\n'
+        res += f'-a:left -f:f32_le,1,{fs} -o:jack,,\n'
+        res += f'-a:right -f:f32_le,1,{fs} -o:jack,,\n'
+        res += '\n'
+        return res
+
+
+    def make_chain(cname):
+        res = f'-a:{cname}'
+        for fil in d[cname]:
+            res += f' -eli:1970'
+            for k in d[cname][fil]:
+                for x in d[cname][fil][k]:
+                    res += f',{x}'
+        return res
+
+
+    res =  make_header()
+
+    res += make_general( nBands='N' )
+
+    res += make_audio_io( fs=read_bf_config_fs() )
+
+    res += '# chain operators and controllers\n'
+    for cname in d:
+        res += f'{make_chain(cname)}\n'
+
+    return res
+
+
+def eca_load_peq(peqpath=DUMPPATH):
+    """ Loads a .peq file of parameters in ecasound
+    """
+    d = peq_read(peqpath)
+
+    chainsetup = eca_make_chainsetup(d)
+
+    # Ecasound needs a file to load a chainsetup from,
+    # so let's make a temporary one
+
+    tmppath = peqpath.replace('.peq', '.tmp')
+
+    with open(tmppath, 'w') as f:
+        f.write( chainsetup)
+
+    sleep(1)
+
+    res = ecanet( f'cs-load {tmppath}' )
+
+    return res
+
+
 if __name__ == '__main__':
 
     # is ecasound listening?
     if not ecanet(''):
-        print("(!) no answer from ecasound server")
+        print("(!) no answer from Ecasound server")
         sys.exit()
 
     # we can pass more than one command from command line to ecasound
@@ -276,24 +358,27 @@ if __name__ == '__main__':
         cmd  = sys.argv[1]
         args = sys.argv[2:]
 
-        if   cmd == "ECAcmd":
+        if   cmd == "ECA_cmd":
             for ecaCmd in args:
                 print( ecanet(ecaCmd) )
 
-        elif cmd == "PEQdump":
+        elif cmd == "PEQ_dump2peq":
             eca_dump2peq(verbose=True)
 
-        elif cmd == "PEQdump2ecs":
-            eca_dump2ecs()
+        elif cmd == "PEQ_dump2ecs":
+            eca_dump2ecs(verbose=True)
 
-        elif cmd == "PEQbypass" and args:
+        elif cmd == "PEQ_load_peq" and args:
+            eca_load_peq(args[0])
+
+        elif cmd == "PEQ_bypass" and args:
             eca_bypass(args[0])
 
-        elif camd == "PEQgain":
+        elif cmd == "PEQ_gain":
             eca_gain(arg)
 
         else:
-            print(("(!) Bad command: " + command))
+            print(f'(!) Bad command')
             print(__doc__)
 
     else:
