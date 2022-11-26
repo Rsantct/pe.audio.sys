@@ -193,13 +193,13 @@ def read_bf_config_fs():
 
 
 def get_peq_in_use():
-    """ Finds out the PEQ (parametic eq) filename used by an inserted
+    """ Finds out the PEQ (parametic eq) filename (w/o extension) used by an inserted
         Ecasound sound processor, if included inside config.yml plugins section.
         (filepath: string)
     """
     for item in CONFIG["plugins"]:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
-            return item["ecasound_peq.py"].replace('.ecs', '')
+            return item["ecasound_peq.py"].replace('.peq', '')
     return 'none'
 
 
@@ -402,7 +402,8 @@ def detect_spotify_client(timeout=10):
     result = ''
 
     # Early return if no Spotify plugin is used:
-    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] ):
+    # (filtering not string items, e.g. ecasound plugin is a dictionary)
+    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] if type(x)==str ):
         return result
 
     tries = timeout
