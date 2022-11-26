@@ -202,8 +202,8 @@ plugins:
     #- ir.py
 
     ## Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
-    ## This option needs the share/eq/xxxxx.ecs file to be indicated.
-    #- ecasound_peq.py: quarter_space.ecs
+    ## This option needs the loudspeakers/YOURLSPK/xxxxxx.peq file to be indicated.
+    #- ecasound_peq.py: xxxxxx.peq
 
     ## Restore sound cards mixer settings:
     - sound_cards_prepare.py
