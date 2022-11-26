@@ -22,64 +22,95 @@
 
             The xxxxxx.ecs file must be available under the 'share/eq' folder.
 """
-import subprocess as sp
-import os
-import sys
-from time import sleep
-import yaml
+import  subprocess as sp
+import  os
+import  sys
+from    time import sleep
 
 UHOME       = os.path.expanduser("~")
-EQFOLDER    = f'{UHOME}/pe.audio.sys/share/eq'
+MAINFOLDER  = f'{UHOME}/pe.audio.sys'
+sys.path.append(f'{MAINFOLDER}/share/miscel')
 
+from miscel import *
+
+######## CUSTOM CONFIG ############
+# choose 4, 6, 8 or 12 bands engine
+PEQBANDS = 8
+###################################
+
+VERBOSE = False
 
 def init_ecasound():
 
     # Info
-    print( f'(ecasound_peq) Loading: \'{ECSFILE}\'' )
+    print( f'(ecasound_peq) Loading: \'{ECS}\'' )
 
     # Launching ecasound
-    ecsCmd = f'-q --server -s:{EQFOLDER}/{ECSFILE}'
-    sp.Popen( f'ecasound {ecsCmd}'.split() )
-    sleep(3)
+    ecsCmd = f'-q --server -s:{ECSPATH}'
+    if VERBOSE:
+            sp.Popen( f'ecasound {ecsCmd}'.split() )
+    else:
+        with open('/dev/null', 'w') as f:
+            sp.Popen( f'ecasound {ecsCmd}'.split(), stdout=f, stderr=f )
 
     # Inserting:
+    wait4ports('ecasound', timeout=5)
+    wait4ports('brutefir', timeout=60)
     print( f'(ecasound_peq) inserting pre_in --> ecasound --> brutefir' )
-    sp.Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split() )
-    sp.Popen( 'jack_disconnect pre_in_loop:output_2 brutefir:in.R'.split() )
-    sp.Popen( 'jack_connect    pre_in_loop:output_1 ecasound:in_1'.split() )
-    sp.Popen( 'jack_connect    pre_in_loop:output_2 ecasound:in_2'.split() )
-    sp.Popen( 'jack_connect    ecasound:out_1       brutefir:in.L'.split() )
-    sp.Popen( 'jack_connect    ecasound:out_2       brutefir:in.R'.split() )
+    with open('/dev/null', 'w') as f:
+        sp.Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split(), stdout=f, stderr=f )
+        sp.Popen( 'jack_disconnect pre_in_loop:output_2 brutefir:in.R'.split(), stdout=f, stderr=f )
+        sp.Popen( 'jack_connect    pre_in_loop:output_1 ecasound:in_1'.split(), stdout=f, stderr=f )
+        sp.Popen( 'jack_connect    pre_in_loop:output_2 ecasound:in_2'.split(), stdout=f, stderr=f )
+        sp.Popen( 'jack_connect    ecasound:out_1       brutefir:in.L'.split(), stdout=f, stderr=f )
+        sp.Popen( 'jack_connect    ecasound:out_2       brutefir:in.R'.split(), stdout=f, stderr=f )
+
+
+def load_PEQ_file(PEQname=''):
+
+    fpath = f'{LSPK_FOLDER}/{PEQname}.peq'
+    if not os.path.isfile(fpath):
+        print(  f'(ecasound_peq) NOT FOUND: {fpath}' )
+        stop()
+        sys.exit()
+
+    print(f'(ecasound_peq) Loading \'{fpath}\'')
+    print('*** WIP ***')
+
+
 
 
 def stop():
-    sp.Popen( f'pkill -f {ECSFILE}'.split() )
-    sleep(1)
+    sp.Popen( ['pkill', '-f', f's:{ECSPATH}'] )
     # Restoring:
     print( f'(ecasound_peq) removing pre_in -x-> ecasound -x-> brutefir' )
-    sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split() )
-    sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split() )
+    with open('/dev/null', 'w') as f:
+        sp.Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split(), stdout=f, stderr=f )
+        sp.Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split(), stdout=f, stderr=f )
 
 
 if __name__ == '__main__':
 
-    try:
-        with open( f'{UHOME}/pe.audio.sys/config/config.yml', 'r') as f:
-            config = yaml.safe_load(f)
-            plugins_list = config['plugins']
-            for plugin in plugins_list:
-                if type(plugin) == dict:
-                    if 'ecasound_peq.py' in plugin.keys():
-                        ECSFILE = plugin['ecasound_peq.py']
-                        break
-    except:
-        print(  f'(ecasound_peq) unable to read your .ecs file from config.yml' )
+    FS      = read_bf_config_fs()
+    THISDIR = os.path.dirname(__file__)
+
+    ECS     = f'ecasound_peq/{FS}/{PEQBANDS}-band_flat.ecs'
+    ECSPATH = f'{THISDIR}/{ECS}'
+
+    if not os.path.isfile(ECSPATH):
+        print(  f'(ecasound_peq) NOT FOUND: {ECS}' )
         sys.exit()
+
+
+    if '-v' in sys.argv[1:]:
+        VERBOSE = True
+
 
     if sys.argv[1:]:
         option = sys.argv[1]
         if option == 'start':
             init_ecasound()
+            load_PEQ_file( get_peq_in_use() )
         elif option == 'stop':
             stop()
         else:
