@@ -245,14 +245,19 @@ def PEQdump2ecs():
 
 
 def PEQload(fpath=DUMPPATH):
+    """ Loads a PEQ filter set from a given human readable file
+    """
+    d = {}
+
     with open(fpath, 'r') as f:
         c = f.read()
+
     try:
-        res = yaml.safe_load(c)
+        d = yaml.safe_load(c)
     except Exception as e:
         print(str(e))
-        res = {}
-    return res
+
+    return d
 
 
 if __name__ == '__main__':
