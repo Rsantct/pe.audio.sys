@@ -25,10 +25,11 @@
                     ...
                     ...
 
-            myPEQ.peq file must be available in the loudspeaker folder.
+            myPEQ.peq file must be hosted in the loudspeaker folder.
+            
+            Some 'template.peq' files are provided in the underlying folder.
 
-            A .peq file can have any 4-band 'fil-plugin' blocks as needed
-
+            A .peq file can have any 4-band 'fil-plugin' blocks as needed.
 """
 from    subprocess import Popen
 import  os
