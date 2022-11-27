@@ -49,8 +49,6 @@ import  yaml
 from    miscel  import  LSPK_FOLDER, get_peq_in_use, \
                         read_bf_config_fs, wait4ports
 
-import  jack_mod as jc
-
 
 # The default file where running settins will be dumped
 DUMPPATH =  f'{LSPK_FOLDER}/eca_dump.peq'
@@ -388,19 +386,6 @@ def eca_load_peq(peqpath=DUMPPATH):
     res += ecanet(  'engine-status' )
 
     return res
-
-
-def insert_ecasound(verbose=False):
-
-    wait4ports('ecasound', timeout=5)
-    wait4ports('brutefir', timeout=60)
-
-    jc.connect_bypattern('pre_in_loop', 'brutefir', 'disconnect')
-    jc.connect_bypattern('pre_in_loop', 'ecasound')
-    jc.connect_bypattern('ecasound',    'brutefir')
-
-    if verbose:
-        print( f'(peq_control) inserting pre_in --> ecasound --> brutefir' )
 
 
 if __name__ == '__main__':
