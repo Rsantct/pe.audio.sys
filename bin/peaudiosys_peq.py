@@ -17,7 +17,8 @@
     - PEQ_dump2ecs                  Prints running .ecs structure
                                     also dumps it to LSPK_FOLDER/eca_dump.ecs
 
-    - PEQ_load_peq  file            Loads a .peq file of parameters in Ecasound
+    - PEQ_load_peq  peqID           Loads a LSPK_FOLDER/peqID.peq file
+                                    of parameters in Ecasound
 
     - PEQ_bypass  on|off|toggle     Bypass the EQ
 
