@@ -44,6 +44,23 @@ import  peq_control as pc
 VERBOSE = False
 
 
+def insert_ecasound():
+
+    pc.wait4ports('ecasound', timeout=5)
+    pc.wait4ports('brutefir', timeout=60)
+
+    with open('/dev/null', 'w') as f:
+        Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split(), stdout=f, stderr=f )
+        Popen( 'jack_disconnect pre_in_loop:output_2 brutefir:in.R'.split(), stdout=f, stderr=f )
+        Popen( 'jack_connect    pre_in_loop:output_1 ecasound:in_1'.split(), stdout=f, stderr=f )
+        Popen( 'jack_connect    pre_in_loop:output_2 ecasound:in_2'.split(), stdout=f, stderr=f )
+        Popen( 'jack_connect    ecasound:out_1       brutefir:in.L'.split(), stdout=f, stderr=f )
+        Popen( 'jack_connect    ecasound:out_2       brutefir:in.R'.split(), stdout=f, stderr=f )
+
+    if VERBOSE:
+        print( f'(peq_control) inserting pre_in --> ecasound --> brutefir' )
+
+
 def start():
     """ Runs Ecasound with a HUMAN READABLE USER PEQ filters setup
     """
@@ -68,7 +85,7 @@ def start():
             Popen( ecsCmd.split(), stdout=f, stderr=f )
 
     # Inserting Ecasound in jack audio path chain
-    pc.insert_ecasound(verbose=VERBOSE)
+    insert_ecasound()
 
 
 def stop():
@@ -79,7 +96,9 @@ def stop():
         print( f'(ecasound_peq) killing Ecasound ...' )
 
     # Restoring ports connections
-    pc.jc.connect_bypattern('pre_in_loop', 'brutefir')
+    with open('/dev/null', 'w') as f:
+        Popen( 'jack_connect pre_in_loop:output_1 brutefir:in.L'.split(), stdout=f, stderr=f )
+        Popen( 'jack_connect pre_in_loop:output_2 brutefir:in.R'.split(), stdout=f, stderr=f )
     if VERBOSE:
         print( f'(ecasound_peq) restoring  pre_in ---> brutefir' )
 
