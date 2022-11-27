@@ -2,6 +2,8 @@ These are sample files.
 
 You could use the **`template.peq`** file for your custom PEQ settings placed in your LOUDSPEAKER folder.
 
+This is a 8-band example. You can use as many **`fil_N:`** 4-band sections as you need.
+
 
     # Legend:
     #       global: [OnOff,            Gain]
