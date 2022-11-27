@@ -5,17 +5,22 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound.
+    Inserts a parametric EQ
+
+    The parametric EQ is based on the 'fil' plugin (LADSPA) hosted under Ecasound.
+
     'fil' plugin is an excellent 4-band parametric eq from Fons Adriaensen,
     for more info see:
         http://kokkinizita.linuxaudio.org/
 
+
     Usage:  ecasound_peq.py  start | stop
+
 
     NOTES:  You need to prepare a HUMAN READABLE .peq file and
             configure your config.yml accordingly, for example:
 
-                -plugins
+                -plugins:
                     - ecasound_peq.py: myPEQ.peq
                     ...
                     ...
