@@ -47,7 +47,7 @@ VERBOSE = False
 def insert_ecasound():
 
     pc.wait4ports('ecasound', timeout=5)
-    pc.wait4ports('brutefir', timeout=60)
+    pc.wait4ports('brutefir', timeout=5)
 
     with open('/dev/null', 'w') as f:
         Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split(), stdout=f, stderr=f )
@@ -68,6 +68,10 @@ def start():
     # Get user's XXXXXX.peq as Ecasound ChainSetup
     csname = pc.get_peq_in_use()
     myPEQpath = f'{pc.LSPK_FOLDER}/{csname}.peq'
+
+    if not os.path.isfile(myPEQpath):
+        print( f'(ecasound_peq) Cannot find config.py PEQ file: {myPEQpath}' )
+        return
 
     # Parse to a filter plugins setup dictionary
     peq_dict = pc.peq_read( myPEQpath )
