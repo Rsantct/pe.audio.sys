@@ -30,8 +30,10 @@ from    miscel  import  LSPK_FOLDER, get_peq_in_use, \
                         read_bf_config_fs, wait4ports
 
 
-# The default file where running settins will be dumped
-DUMPPATH =  f'{LSPK_FOLDER}/eca_dump.peq'
+# The default dump files where running settins will be dumped
+PEQDUMPPATH = f'{LSPK_FOLDER}/eca_dump.peq'
+ECSDUMPPATH = f'{LSPK_FOLDER}/eca_dump.ecs'
+
 
 def ecanet(command):
     """ Sends commands to ecasound
@@ -85,7 +87,7 @@ def eca_bypass(mode):
         print((" ".join(chain.split()[:2]) + " " + tmp))
 
 
-def eca_dump2peq(fpath=DUMPPATH, verbose=False):
+def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
     """ Dumps the RUNNIG chainsetup to a HUMAN READABLE FILE <fpath>
 
         returns: the HUMAN READABLE PEQ dictionary for later use.
@@ -242,7 +244,7 @@ def eca_dump2peq(fpath=DUMPPATH, verbose=False):
     return d
 
 
-def eca_dump2ecs(fpath=DUMPPATH.replace('.peq', '.ecs'), verbose=False):
+def eca_dump2ecs(fpath=ECSDUMPPATH, verbose=False):
     """ Dumps the RUNNING chainsetup to a file ECASOUND CHAINSTUP FILE <fpath>
 
         (i) This is a BUILT-IN Ecasound feature
@@ -267,7 +269,7 @@ def peq_dump2ecs(d, csname):
     return ecspath
 
 
-def peq_read(fpath=DUMPPATH):
+def peq_read(fpath):
     """ Reads a PEQ filter set from a given human readable file
 
         returns: a dictionary with filters setup
@@ -344,7 +346,7 @@ def eca_make_chainsetup(d, csname):
     return res
 
 
-def eca_load_peq(peqpath=DUMPPATH):
+def eca_load_peq(peqpath):
     """ Loads a .peq file of parameters in ecasound
 
         returns: the Ecasound responses after loading, connecting
