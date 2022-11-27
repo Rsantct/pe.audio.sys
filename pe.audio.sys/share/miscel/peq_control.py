@@ -78,13 +78,21 @@ def eca_bypass(mode):
     for chain in ("left", "right"):
         ecanet("c-select " + chain)
         ecanet("c-bypass " + mode)
-        sleep(.2)
 
-    for chain in ecanet("c-status").replace("[selected] ", "").split("\n")[2:4]:
-        tmp = ""
-        if "bypass" in chain.split()[2]:
-            tmp = chain.split()[2]
-        print((" ".join(chain.split()[:2]) + " " + tmp))
+    sta = ecanet("c-status").split('\n')
+    Lch = [x.strip() for x in sta if '"left"' in x]
+    Rch = [x.strip() for x in sta if '"right"' in x]
+
+    for ch in Lch, Rch:
+        if ch:
+            ch = ch[0]
+            cname = ch.split()[1]
+            if '[bypassed]' in ch:
+                print(f'{cname}: BYPASS ON')
+            else:
+                print(f'{cname}: bypass OFF')
+        else:
+            print(f'chain not found')
 
 
 def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
