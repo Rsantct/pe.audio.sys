@@ -247,8 +247,9 @@ def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
 def eca_dump2ecs(fpath=ECSDUMPPATH, verbose=False):
     """ Dumps the RUNNING chainsetup to a file ECASOUND CHAINSTUP FILE <fpath>
 
-        (i) This is a BUILT-IN Ecasound feature
+        (void)
     """
+    # Dumping a chainsetop is a BUILT-IN Ecasound feature
     ecanet( f'cs-save-as {fpath}')
 
     if verbose:
@@ -260,7 +261,7 @@ def eca_dump2ecs(fpath=ECSDUMPPATH, verbose=False):
 def peq_dump2ecs(d, csname):
     """ Dumps the GIVEN PEQ DICT to a chainsetup file '<csname>.ecs'
 
-        Returns the string '<csname>.ecs' for later use.
+        Returns: the string '<csname>.ecs' for later use.
     """
     chainsetup  = eca_make_chainsetup(d, csname=csname)
     ecspath     = f'{LSPK_FOLDER}/{csname}.ecs'
