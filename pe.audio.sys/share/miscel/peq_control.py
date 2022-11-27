@@ -7,7 +7,7 @@
 """
     Control module of a parametric equalizer.
 
-    The parametric EQ is based on the 'fil' plugin (LADSPA) hosted under Ecasound.
+    The parametric EQ is based on the 'fil' plugin (LADSPA) hosted within Ecasound.
 
     'fil' plugin is an excellent 4-band parametric eq from Fons Adriaensen,
     for more info see:
@@ -17,7 +17,7 @@
     NOTE: .peq files are HUMAN READABLE PEQ settings,
           .ecs files are standard Ecasound chainsetup files.
 
-    ( A command line tool in provided at ~/bin/peaudiosys_peq.py )
+    ( A command line tool is provided at ~/bin/peaudiosys_peq.py )
 """
 
 import  sys
