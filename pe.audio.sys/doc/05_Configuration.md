@@ -130,18 +130,9 @@ When things seems to be ok, you can try to use the actual alsa sound card, but *
 
 ## [ ] Autorun on power on
 
-On Debian systems, you can simply add a line inside your `/etc/rc.local` before `exit 0`
+On Debian systems, you can simply add a line inside your `/etc/rc.local` before `exit 0`, please see `rc.local.example` under the `doc/` folder.
 
-    #!/bin/sh -e
-    ...
-    ...
-    sleep 5 && su -l YOUR_USER -c "peaudiosys_restart.sh &"
-    exit 0
-
-NOTES:
-
-- **`pe.audio.sys/log/start.log`** will help you to debug the startup process.
-- `sleep 5` helps for the user environment to be ready after the power on and before starting pe.audio.sys
+NOTE: Startup log files can be found under **`pe.audio.sys/log/`**
 
 ## [ ] Restarting script
 

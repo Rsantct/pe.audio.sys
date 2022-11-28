@@ -193,13 +193,13 @@ def read_bf_config_fs():
 
 
 def get_peq_in_use():
-    """ Finds out the PEQ (parametic eq) filename used by an inserted
+    """ Finds out the PEQ (parametic eq) filename (w/o extension) used by an inserted
         Ecasound sound processor, if included inside config.yml plugins section.
         (filepath: string)
     """
     for item in CONFIG["plugins"]:
         if type(item) == dict and 'ecasound_peq.py' in item.keys():
-            return item["ecasound_peq.py"].replace('.ecs', '')
+            return item["ecasound_peq.py"].replace('.peq', '')
     return 'none'
 
 
@@ -242,12 +242,11 @@ def get_remote_sources():
     ''' Retrieves the remoteXXXXXX sources found under the 'sources:' section
         inside config.yml.
 
-        Returns a list of tuples (srcName,srcIp,srcPort)
+        Returns a list of tuples (srcName,srcIP,srcCtrlPort)
     '''
-    # Retrieving the remote sender address from 'config.yml'.
-    # For a 'remote.....' named source, it is expected to have
+    # On a 'remote.....' named source, it is expected to have
     # an IP address kind of in its jack_pname field:
-    #   jack_pname:  X.X.X.X
+    #   jack_pname:  IP:CTRLPORT
     # so this way we can query the remote sender to run 'zita-j2n'
 
     remotes = []
@@ -256,8 +255,8 @@ def get_remote_sources():
             addr, port = get_remote_source_addr_port(source)
             remotes.append( (source, addr, port) )
 
-    if not remotes:
-        print(f'(miscel.py) Cannot get remote sources')
+    if remotes:
+        print(f'(miscel.py) (i) found remote sources: {[x[0] for x in remotes]}')
 
     return remotes
 
@@ -403,7 +402,8 @@ def detect_spotify_client(timeout=10):
     result = ''
 
     # Early return if no Spotify plugin is used:
-    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] ):
+    # (filtering not string items, e.g. ecasound plugin is a dictionary)
+    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] if type(x)==str ):
         return result
 
     tries = timeout

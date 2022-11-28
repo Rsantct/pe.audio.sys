@@ -1,4 +1,4 @@
-We provide two loudspeaker folders as examples.
+We provide some loudspeaker folders as examples.
 
 
 ### full_range

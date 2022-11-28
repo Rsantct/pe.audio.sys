@@ -264,7 +264,6 @@ class Preamp(object):
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
-        self.state["peq_set"] = get_peq_in_use()
         self.state["fs"] = jack.get_samplerate()
         # tone_memo keeps tone values even when tone_defeat is activated
         self.state["tone_defeat"] = False

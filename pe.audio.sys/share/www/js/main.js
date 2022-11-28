@@ -31,10 +31,10 @@ var aux_info            = { 'amp': 'n/a',
 };
 
 var web_config          = { 'main_selector':      'inputs',
-                    'hide_LU':            false,
-                    'LU_monitor_enabled': false,
-                    'show_graphs':        false,
-                    'user_macros':        []
+                            'hide_LU':            false,
+                            'LU_monitor_enabled': false,
+                            'show_graphs':        false,
+                            'user_macros':        []
 };
 
 var main_sel_mode       = web_config.main_selector;
@@ -203,16 +203,6 @@ function fill_in_page_statics(){
         }
     }
 
-    function show_peq_info() {
-        if ( state.peq_set != 'none'){
-            document.getElementById("peq").style.color = "white";
-            document.getElementById("peq").innerHTML = "PEQ: " + state.peq_set;
-        }
-        else {
-            document.getElementById("peq").style.color = "grey";
-            document.getElementById("peq").innerHTML = "(no peq)";
-        }
-    }
 
     main_cside_msg = ':: pe.audio.sys :: ' + state.loudspeaker;
 
@@ -231,7 +221,6 @@ function fill_in_page_statics(){
 
     fill_in_LUscope_selector();
 
-    show_peq_info();
 }
 
 
@@ -727,6 +716,25 @@ function page_update() {
     }
 
 
+    function show_peq_info() {
+
+        if ( aux_info.peq_set != 'none'){
+
+            document.getElementById("buttonPEQ").innerHTML = "PEQ: " + aux_info.peq_set;
+
+            if (aux_info.peq_bypassed == true){
+                document.getElementById("buttonPEQ").style.color = "grey";
+            }else{
+                document.getElementById("buttonPEQ").style.color = "white";
+            }
+
+        }else {
+            document.getElementById("buttonPEQ").style.color = "grey";
+            document.getElementById("buttonPEQ").innerHTML = "(no peq)";
+        }
+    }
+
+
     // PREAMP STUFF
     state_get();
 
@@ -762,6 +770,8 @@ function page_update() {
     graphs_update();
 
     manage_main_cside();
+
+    show_peq_info();
 
 }
 
