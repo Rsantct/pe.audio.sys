@@ -72,8 +72,11 @@ def eca_gain(level):
 
 def eca_bypass(mode):
     """ mode: on | off | toggle
-        (void)
+
+        returns: the new bypass mode
     """
+
+    newmode= ''
 
     for chain in ("left", "right"):
         ecanet("c-select " + chain)
@@ -88,11 +91,15 @@ def eca_bypass(mode):
             ch = ch[0]
             cname = ch.split()[1]
             if '[bypassed]' in ch:
+                newmode = 'on'
                 print(f'{cname}: BYPASS ON')
             else:
+                newmode = 'off'
                 print(f'{cname}: bypass OFF')
         else:
             print(f'chain not found')
+
+    return newmode
 
 
 def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
