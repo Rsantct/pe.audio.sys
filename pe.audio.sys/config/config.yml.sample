@@ -201,8 +201,8 @@ plugins:
     ## IR remote receiver
     #- ir.py
 
-    ## Ecasound PEQ. Needs the loudspeakers/YOURLSPK/xxxxxx.peq file to be indicated.
-    #- ecasound_peq.py: xxxxxx.peq
+    ## Ecasound PEQ. '____.peq' file should be located in your loudspeaker folder
+    #- ecasound_peq.py: ____.peq
 
     ## Restore sound cards mixer settings:
     - sound_cards_prepare.py
