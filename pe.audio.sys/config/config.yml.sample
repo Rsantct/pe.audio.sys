@@ -201,8 +201,7 @@ plugins:
     ## IR remote receiver
     #- ir.py
 
-    ## Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
-    ## This option needs the loudspeakers/YOURLSPK/xxxxxx.peq file to be indicated.
+    ## Ecasound PEQ. Needs the loudspeakers/YOURLSPK/xxxxxx.peq file to be indicated.
     #- ecasound_peq.py: xxxxxx.peq
 
     ## Restore sound cards mixer settings:
