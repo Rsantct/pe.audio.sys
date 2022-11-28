@@ -26,7 +26,7 @@
                     ...
 
             myPEQ.peq file must be hosted in the loudspeaker folder.
-            
+
             Some 'template.peq' files are provided in the underlying folder.
 
             A .peq file can have any 4-band 'fil-plugin' blocks as needed.
@@ -68,11 +68,15 @@ def start():
 
     # Get user's XXXXXX.peq as Ecasound ChainSetup
     csname = pc.get_peq_in_use()
-    myPEQpath = f'{pc.LSPK_FOLDER}/{csname}.peq'
 
-    if not os.path.isfile(myPEQpath):
-        print( f'(ecasound_peq) Cannot find config.py PEQ file: {myPEQpath}' )
-        return
+    if csname != 'none':
+        myPEQpath = f'{pc.LSPK_FOLDER}/{csname}.peq'
+        if not os.path.isfile(myPEQpath):
+            print( f'(ecasound_peq) Cannot find config.py PEQ file: {myPEQpath}' )
+            return
+    else:
+            print( f'(ecasound_peq) No PEQ file defined in config.py plugins' )
+            return
 
     # Parse to a filter plugins setup dictionary
     peq_dict = pc.peq_read( myPEQpath )
