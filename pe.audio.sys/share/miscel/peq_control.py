@@ -279,10 +279,65 @@ def peq_dump2ecs(d, csname):
 
 
 def peq_read(fpath):
-    """ Reads a PEQ filter set from a given human readable file
+    """ Reads a PEQ filter set from a given human readable file  xxxx.peq
 
-        returns: a dictionary with filters setup
+        returns: a dictionary with parametric filtering setup
     """
+
+    def custom_parse(d):
+        """ YAML needs list square brackets in each parametric settings
+            line inside the xxxx.peq file.
+
+            If no brackets, peq settings will be loaded as a bare string.
+
+            But we want to avoid writting brackets for clarity, i.e.:
+
+                # Legend:
+                #       pN:     OnOff, Freq,  BW,  Gain
+
+                left:
+                    fil_0:
+                        global: 1,                  0.0
+                        p0:     1,     100,   0.1, -6.5
+
+
+            So lets convert peq parameters string to a list of numeric values.
+
+            We'll also limit decimal places for some fields
+
+            """
+
+        for chId in d:
+            for fil in d[chId]:
+                for params in d[chId][fil]:
+                    p_old = d[chId][fil][params]
+
+                    # string to list
+                    if type(p_old) == str:
+                        p_old = [float(x) for x in p_old.split(',')]
+                        d[chId][fil][params] = p_old
+
+                    # OnOff as integer 1~0
+                    OnOff = d[chId][fil][params][0]
+                    d[chId][fil][params][0]  = int(OnOff)
+
+                    # Gain one decimal place
+                    Gain  = d[chId][fil][params][-1]
+                    d[chId][fil][params][-1] = round(Gain, 1)
+
+                    if params != 'global':
+
+                        # Freq as integer
+                        Freq = d[chId][fil][params][1]
+                        d[chId][fil][params][1]  = int(round(Freq))
+
+                        # BW three decimal places
+                        BW = d[chId][fil][params][2]
+                        d[chId][fil][params][2]  = round(BW, 3)
+
+        return d
+
+
     d = {}
 
     if not os.path.isfile(fpath):
@@ -296,6 +351,8 @@ def peq_read(fpath):
         d = yaml.safe_load(c)
     except Exception as e:
         print(f'(peq_Control) {str(e)}')
+
+    d = custom_parse(d)
 
     return d
 
