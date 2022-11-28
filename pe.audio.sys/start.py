@@ -548,8 +548,10 @@ if __name__ == "__main__":
         print(f'(start) Bye!')
         sys.exit()
 
+
     # STARTING:
     if mode in ('all'):
+
         # If necessary will prepare DRC GRAPHS for use of the web page
         if CONFIG["web_config"]["show_graphs"]:
             prepare_drc_graphs()
@@ -559,13 +561,6 @@ if __name__ == "__main__":
         if  jack_stuff != 'done':
             print(f'{Fmt.BOLD}(start) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
-
-
-    # PLUGINS
-    if mode in ('all'):
-        run_plugins()
-
-    if mode in ('all'):
 
         # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
         import share.services.preamp_mod.core as core
@@ -591,6 +586,11 @@ if __name__ == "__main__":
 
         del core
         print(f'{Fmt.MAGENTA}(start) Closing the temporary \'core\' instance.{Fmt.END}')
+
+
+    # PLUGINS
+    if mode in ('all'):
+        run_plugins()
 
 
     # RUN THE SERVERS

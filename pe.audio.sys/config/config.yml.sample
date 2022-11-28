@@ -201,9 +201,8 @@ plugins:
     ## IR remote receiver
     #- ir.py
 
-    ## Inserts a parametric EQ based on 'fil' plugin (LADSPA) hosted under Ecasound
-    ## This option needs the share/eq/xxxxx.ecs file to be indicated.
-    #- ecasound_peq.py: quarter_space.ecs
+    ## Ecasound PEQ. '____.peq' file should be located in your loudspeaker folder
+    #- ecasound_peq.py: ____.peq
 
     ## Restore sound cards mixer settings:
     - sound_cards_prepare.py

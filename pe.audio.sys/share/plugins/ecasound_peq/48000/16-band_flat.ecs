@@ -1,0 +1,46 @@
+# Ecasound chainsetup file based on:
+#    Fons Adriaensen's 'fil' plugin 4-band parametric eq
+
+
+# General:
+
+-n:"fil_16_band_dualMono" -B:rtlowlatency -X -z:intbuf -z:noxruns -z:nopsr -z:mixmode,avg
+
+# Audio inputs:
+
+-a:left     -f:f32_le,1,48000 -i:jack,,
+-a:right    -f:f32_le,1,48000 -i:jack,,
+
+# Audio outputs:
+
+-a:left     -f:f32_le,1,48000 -o:jack,,
+-a:right    -f:f32_le,1,48000 -o:jack,,
+
+# Chain operators and controllers
+#
+# Each LADSPA plujin is defined like this:
+#  -el:plugin_unique_name,param-1,...,param-N
+# or
+#  -eli:plugin_unique_number,param-1,...,param-N
+#
+# where the parameters are given as COMMA SEPARATED VALUES WITH NO SPACES
+#
+# zita fil plugin is a 4 bands parametric eq, the fil plugin number is 1970
+# The parameters chain for fil plugin are as follow:
+#   onoffGlobal,gainGlobal,onoff1,freq1,bw1,gain1,onoff2,freq2,bw2,gain2,onoff3,freq3,bw3,gain3,onoff4,freq4,bw4,gain4
+#
+# If more 4-band stages are needed, just add more '-eli:1970,....' lines ;-)
+
+
+#             ON   GAIN 1:on freq  bw   gain 2:on freq  bw   gain 3:on freq  bw   gain 4:on freq  bw   gain
+-a:left
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+
+-a:right
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
+    -eli:1970,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00,0.00,10.00,1.00,0.00
