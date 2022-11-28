@@ -720,17 +720,17 @@ function page_update() {
 
         if ( aux_info.peq_set != 'none'){
 
-            document.getElementById("peq").innerHTML = "PEQ: " + aux_info.peq_set;
+            document.getElementById("buttonPEQ").innerHTML = "PEQ: " + aux_info.peq_set;
 
             if (aux_info.peq_bypassed == true){
-                document.getElementById("peq").style.color = "grey";
+                document.getElementById("buttonPEQ").style.color = "grey";
             }else{
-                document.getElementById("peq").style.color = "white";
+                document.getElementById("buttonPEQ").style.color = "white";
             }
 
         }else {
-            document.getElementById("peq").style.color = "grey";
-            document.getElementById("peq").innerHTML = "(no peq)";
+            document.getElementById("buttonPEQ").style.color = "grey";
+            document.getElementById("buttonPEQ").innerHTML = "(no peq)";
         }
     }
 
