@@ -20,10 +20,12 @@ import  threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config  import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
-                        AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH
+from    config      import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
+                            AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH
 
-from    miscel  import  *
+from    miscel      import  *
+
+from    peq_control import eca_bypass
 
 
 def get_web_config():
@@ -136,6 +138,21 @@ def zita_j2n(args):
     jcli.close()
 
     return result
+
+
+def peq_bypass_toggle():
+
+    newmode = eca_bypass('toggle')
+
+    if newmode == 'on':
+        AUX_INFO['peq_bypassed'] = True
+
+    elif newmode == 'off':
+        AUX_INFO['peq_bypassed'] = False
+
+    dump_aux_info(AUX_INFO)
+
+    return 'ordered'
 
 
 def play_url(arg):
@@ -294,7 +311,9 @@ def init():
     AUX_INFO = {    'amp':                  'off',
                     'loudness_monitor':     0.0,
                     'last_macro':           '',
-                    'warning':              ''
+                    'warning':              '',
+                    'peq_set':              get_peq_in_use(),
+                    'peq_bypassed':         False
                 }
 
     # First update
@@ -357,6 +376,9 @@ def do( cmd, arg=None ):
 
     elif cmd == 'zita_j2n':
         result = zita_j2n(arg)
+
+    elif cmd == 'peq_bypass_toggle':
+        result = peq_bypass_toggle()
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)
