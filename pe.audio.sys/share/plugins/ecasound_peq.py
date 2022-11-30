@@ -66,32 +66,28 @@ def start():
     """ Runs Ecasound with a HUMAN READABLE USER PEQ filters setup
     """
 
-    # Get user's XXXXXX.peq as Ecasound ChainSetup
+    # Get user's xxxx.peq as Ecasound ChainSetup
     csname = pc.get_peq_in_use()
+    myPEQpath = f'{pc.LSPK_FOLDER}/{csname}.peq'
 
-    if csname != 'none':
-        myPEQpath = f'{pc.LSPK_FOLDER}/{csname}.peq'
-        if not os.path.isfile(myPEQpath):
-            print( f'(ecasound_peq) Cannot find config.py PEQ file: {myPEQpath}' )
-            return
-    else:
-            print( f'(ecasound_peq) No PEQ file defined in config.py plugins' )
-            return
+    if not os.path.isfile(myPEQpath):
+        print( f'(ecasound_peq) Cannot find config.py PEQ file: {myPEQpath}' )
+        return
 
     # Parse to a filter plugins setup dictionary
     peq_dict = pc.peq_read( myPEQpath )
 
     # Dumps the dict to a file for Ecasound to boot with
-    myECSpath = pc.peq_dump2ecs(peq_dict, csname)
+    myECSpath = pc.peq_dump2ecs(peq_dict)
 
     # Runs Ecasound with the dumped ECS file
-    ecsCmd = f'ecasound -q --server -s:{myECSpath}'
+    cmdList = ['ecasound', '-q', '--server', f'-s:"{myECSpath}"']
     if VERBOSE:
-        Popen( ecsCmd.split() )
+        Popen( cmdList )
         print( f'(ecasound_peq) Running Ecasound ...' )
     else:
         with open('/dev/null', 'w') as f:
-            Popen( ecsCmd.split(), stdout=f, stderr=f )
+            Popen( cmdList, stdout=f, stderr=f )
 
     # Inserting Ecasound in jack audio path chain
     insert_ecasound()
