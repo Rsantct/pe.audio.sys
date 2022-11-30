@@ -185,8 +185,8 @@ def read_bf_config_fs():
         raise ValueError('unable to find Brutefir sample_rate')
 
     if 'brutefir_defaults' in fname:
-        print(f'{Fmt.RED}{Fmt.BOLD}'
-              f'(miscel.py) *** USING .brutefir_defaults SAMPLE RATE ***'
+        print(f'{Fmt.RED}'
+              f'(miscel.py) (i) USING .brutefir_defaults SAMPLE RATE'
               f'{Fmt.END}')
 
     return FS
