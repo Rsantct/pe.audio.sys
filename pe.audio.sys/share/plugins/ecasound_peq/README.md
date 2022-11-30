@@ -5,6 +5,9 @@ You could use the **`template.peq`** file for your custom PEQ settings placed in
 This is a 8-band example. You can use as many **`fil_N:`** 4-band sections as you need.
 
 
+        # Chainsetup name
+        cs-name: flat
+        
         #       global:  OnOff,            Gain
         #       pN:      OnOff, Freq, BW,  Gain
 
