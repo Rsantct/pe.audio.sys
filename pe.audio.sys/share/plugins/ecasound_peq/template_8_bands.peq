@@ -2,7 +2,10 @@
 # (i)   This is YAML syntax, but you can omit square brackets
 #       for clarity in parametric settings lines.
 #
-# Legend:
+
+# Chainsetup name
+cs-name: flat
+
 #       global:  OnOff,            Gain
 #       pN:      OnOff, Freq, BW,  Gain
 #
