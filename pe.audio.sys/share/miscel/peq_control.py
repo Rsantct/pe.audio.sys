@@ -44,6 +44,7 @@ def ecanet(command):
     # Note:   - ecasound needs CRLF
     #         - socket send and receive bytes (not strings),
     #           hence .encode() and .decode()
+    #         - filename or chain-setup-name spaces needs to be escaped
 
     data = b''
     try:
@@ -151,9 +152,12 @@ def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
         res =   '# Legend:\n'
         res += f'#       global: [OnOff,            Gain]\n'
         res += f'#       pN:     [OnOff, Frec, BW,  Gain]\n'
-        res +=  '#\n'
+        res +=  '#\n\n'
 
-        for c in d:
+        res += f'cs-name: {d["cs-name"]}\n'
+
+        channels = ('left', 'right')
+        for c in channels:
             res += '\n'
             res += f'{c}:\n'
 
@@ -179,7 +183,10 @@ def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
 
     def chainsetup_parse(ecaString):
         """
-        Example from 'fil-plugin' 8-band dual mono Ecasound chainsetup:
+        Parses an Ecasound "chainsetup status" printout string, to
+        a dictionary.
+
+        Example from 'fil-plugin' 8-band dual mono Ecasound chainsetup
 
         256 827 s
         ### Chainsetup status ###
@@ -193,7 +200,9 @@ def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
 
         Will return:
 
-        {'left':
+        { 'cs-name': 'fil_8_band_dualMono',
+
+          'left':
             {'fil_0': [ '1.00', '0.00',
                         '0.00', '10.00', '1.00', '0.00',
                         '0.00', '10.00', '1.00', '0.00',
@@ -215,9 +224,19 @@ def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
 
         ecaList = ecaString.split("\n")
 
-        for chId in 'left', 'right':
+        # Chainsetup name
+        csname = ''
+        for line in ecaList:
+            if 'Chainsetup' in line and '"' in line:
+                csname = line.split('"')[1].strip()
+                break
+        d['cs-name'] = csname
 
-            tmp = [x for x in ecaList if f'Chain "{chId}"'  in x]
+
+        # Chains
+        for ch in 'left', 'right':
+
+            tmp = [x for x in ecaList if f'Chain "{ch}"'  in x]
 
             if tmp:
                 tmp = tmp[0]
@@ -228,12 +247,12 @@ def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
             if tmp:
                 tmp = [x.replace('-eli:1970,','') for x in tmp]
 
-            d[chId] = {}
+            d[ch] = {}
             for i in range(len(tmp)):
-                d[chId][f'fil_{i}'] = tmp[i].split(',')
+                d[ch][f'fil_{i}'] = tmp[i].split(',')
 
         # Let's parse the detailed global and 4-bands for each fil
-        for ch in d:
+        for ch in 'left', 'right':
 
             for fil in d[ch]:
                 tmp = d[ch][fil]
@@ -273,19 +292,81 @@ def eca_dump2ecs(fpath=ECSDUMPPATH, verbose=False):
         print(f'\n(saved to: {fpath})')
 
 
-def peq_dump2ecs(d, csname):
-    """ Dumps the GIVEN PEQ DICT to a chainsetup file '<csname>.ecs'
+def eca_make_chainsetup(d):
+    """ d:       Dictionary with fil plugin parameters
+
+        returns: Text chainsetup to be saved to a file
+                 for ecasound cs-load usage
+    """
+
+    def make_header():
+        res =  '# ecasound chainsetup file'
+        res += '\n\n'
+        return res
+
+
+    def make_general():
+        if 'cs-name' in d:
+            csname = d["cs-name"]
+        else:
+            csname = 'noname'
+        res =   '# general\n'
+        res += f'-b:2048 -r:50 -z:intbuf -z:db,100000 -n:"{csname}" -X -z:noxruns -z:nopsr -z:mixmode,avg'
+        res += '\n\n'
+        return res
+
+
+    def make_audio_io(fs=441000):
+        res  = f'# audio inputs\n'
+        res += f'-a:left -f:f32_le,1,{fs} -i:jack,,\n'
+        res += f'-a:right -f:f32_le,1,{fs} -i:jack,,\n'
+        res += f'\n'
+        res += f'# audio outputs\n'
+        res += f'-a:left -f:f32_le,1,{fs} -o:jack,,\n'
+        res += f'-a:right -f:f32_le,1,{fs} -o:jack,,\n'
+        res += '\n'
+        return res
+
+
+    def make_chain(cname):
+        res = f'-a:{cname}'
+        for fil in d[cname]:
+            res += f' -eli:1970'
+            for k in d[cname][fil]:
+                for x in d[cname][fil][k]:
+                    res += f',{x}'
+        return res
+
+    res =  make_header()
+
+    res += make_general()
+
+    res += make_audio_io( fs=read_bf_config_fs() )
+
+    res += '# chain operators and controllers\n'
+    cnames = ('left', 'right')
+    for cname in cnames:
+        res += f'{make_chain(cname)}\n'
+
+    return res
+
+
+def peq_dump2ecs(d):
+    """ Dumps the GIVEN PEQ DICT to a chainsetup file 'd[csname].ecs'
 
         Returns: the string '<csname>.ecs' for later use.
     """
-    chainsetup  = eca_make_chainsetup(d, csname=csname)
-    ecspath     = f'{LSPK_FOLDER}/{csname}.ecs'
+    chainsetup  = eca_make_chainsetup(d)
+
+    ecspath     = f'{LSPK_FOLDER}/{d["cs-name"]}.ecs'
+
     with open(ecspath, 'w') as f:
         f.write( chainsetup)
+
     return ecspath
 
 
-def peq_read(fpath):
+def peq_read(peqpath):
     """ Reads a PEQ filter set from a given human readable file  xxxx.peq
 
         returns: a dictionary with parametric filtering setup
@@ -314,8 +395,15 @@ def peq_read(fpath):
 
             """
 
-        for chId in d:
+        if not 'cs-name' in d:
+            d['cs-name'] = os.path.basename(peqpath).replace('.peq', '')
+
+        channels = ('left', 'right')
+
+        for chId in channels:
+
             for fil in d[chId]:
+
                 for params in d[chId][fil]:
                     p_old = d[chId][fil][params]
 
@@ -347,100 +435,65 @@ def peq_read(fpath):
 
     d = {}
 
-    if not os.path.isfile(fpath):
-        print( f'(peq_Control) Cannot find config.py PEQ file: {fpath}' )
+    if not os.path.isfile(peqpath):
+        print( f'(peq_control) Cannot find config.py PEQ file: {peqpath}' )
         return d
 
-    with open(fpath, 'r') as f:
+    with open(peqpath, 'r') as f:
         c = f.read()
 
     try:
         d = yaml.safe_load(c)
     except Exception as e:
-        print(f'(peq_Control) {str(e)}')
+        print(f'(peq_control) YAML ERROR reading {os.path.basename(peqpath)}')
 
-    d = custom_parse(d)
+    if d:
+        d = custom_parse(d)
 
     return d
-
-
-def eca_make_chainsetup(d, csname):
-    """ d:       Dictionary with fil plugin parameters
-
-        returns: Text chainsetup to be saved to a file
-                 for ecasound cs-load usage
-    """
-
-    def make_header():
-        res =  '# ecasound chainsetup file'
-        res += '\n\n'
-        return res
-
-
-    def make_general():
-        res =   '# general\n'
-        res += f'-b:2048 -r:50 -z:intbuf -z:db,100000 -n:"{csname}" -X -z:noxruns -z:nopsr -z:mixmode,avg'
-        res += '\n\n'
-        return res
-
-
-    def make_audio_io(fs=441000):
-        res  = f'# audio inputs\n'
-        res += f'-a:left -f:f32_le,1,{fs} -i:jack,,\n'
-        res += f'-a:right -f:f32_le,1,{fs} -i:jack,,\n'
-        res += f'\n'
-        res += f'# audio outputs\n'
-        res += f'-a:left -f:f32_le,1,{fs} -o:jack,,\n'
-        res += f'-a:right -f:f32_le,1,{fs} -o:jack,,\n'
-        res += '\n'
-        return res
-
-
-    def make_chain(cname):
-        res = f'-a:{cname}'
-        for fil in d[cname]:
-            res += f' -eli:1970'
-            for k in d[cname][fil]:
-                for x in d[cname][fil][k]:
-                    res += f',{x}'
-        return res
-
-
-    res =  make_header()
-
-    res += make_general()
-
-    res += make_audio_io( fs=read_bf_config_fs() )
-
-    res += '# chain operators and controllers\n'
-    for cname in d:
-        res += f'{make_chain(cname)}\n'
-
-    return res
 
 
 def eca_load_peq(peqpath):
     """ Loads a .peq file of parameters in ecasound
 
         returns: the Ecasound responses after loading, connecting
-                 and restarting the engine
+                 and restarting the engine, and reconnecting jack ports
 
-        (WARNING)   Ecasound will stop engine and will release all I/O
-                    when loading a chainsetup
+        (i) Ecasound will stop engine and will release all I/O
+            when loading a chainsetup
     """
 
     d = peq_read(peqpath)
 
-    csname = os.path.basename(peqpath)
+    if not d:
+        return f'ERROR loading file \'{peqpath}\''
 
     # Ecasound needs a file to load a chainsetup from,
     # so let's make a temporary one
-    tmppath = peq_dump2ecs(d, csname)
+    tmppath = peq_dump2ecs(d)
 
+    # (i) filename or chain-setup-name spaces needs to be escaped
+    #     F-strings cannot have "\"
+    tmppath = tmppath.replace(' ', '\\ ')
     res =  ecanet( f'cs-load {tmppath}' )
+
+    csname = d["cs-name"].replace(' ', '\\ ')
     res += ecanet( f'cs-select {csname}' )
+
     res += ecanet(  'cs-connect' )
+
+    # After connecting, the engine remains stopped
     res += ecanet(  'start' )
+
+    # When connecting a chainsetup all audio I/O was released
+    try:
+        import jack_mod as jack
+        jack.connect_bypattern('pre_in_loop', 'ecasound')
+        jack.connect_bypattern('ecasound', 'brutefir')
+    except Exception as e:
+        res += str(e)
+
+    # Engine takes a while to be runnig
     sleep(.5)
     res += ecanet(  'engine-status' )
 
