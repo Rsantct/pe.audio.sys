@@ -722,7 +722,7 @@ function page_update() {
 
             document.getElementById("buttonPEQ").innerHTML = "PEQ: " + aux_info.peq_set;
 
-            if (aux_info.peq_bypassed == true){
+            if (allAreTrue(aux_info.peq_bypassed)){
                 document.getElementById("buttonPEQ").style.color = "grey";
             }else{
                 document.getElementById("buttonPEQ").style.color = "white";
@@ -1233,6 +1233,11 @@ function clear_macro_buttons_highlight(){
     for (let i = 0; i < macro_button_list.length; i++) {
         document.getElementById(macro_button_list[i]).className = 'macro_button';
     }
+}
+
+
+function allAreTrue(arr) {
+  return arr.every(element => element === true);
 }
 
 
