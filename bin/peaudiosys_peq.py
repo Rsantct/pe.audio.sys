@@ -40,12 +40,13 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-import  peq_control as pc
+import  peq_mod as pm
+from    miscel  import send_cmd
 
 if __name__ == '__main__':
 
     # is ecasound listening?
-    if not pc.ecanet(''):
+    if not pm.ecanet(''):
         print("(!) no answer from Ecasound server")
         sys.exit()
 
@@ -57,22 +58,28 @@ if __name__ == '__main__':
 
         if   cmd == "ECA_cmd":
             for ecaCmd in args:
-                print( pc.ecanet(ecaCmd) )
+                print( pm.ecanet(ecaCmd) )
 
         elif cmd == "PEQ_dump2peq":
-            pc.eca_dump2peq(verbose=True)
+            pm.eca_dump2peq(verbose=True)
 
         elif cmd == "PEQ_dump2ecs":
-            pc.eca_dump2ecs(verbose=True)
+            pm.eca_dump2ecs(verbose=True)
 
         elif cmd == "PEQ_load_peq" and args:
-            pc.eca_load_peq(args[0])
+            peqfname = args[0]
+            if not peqfname.endswith('.peq'):
+                peqfname += '.peq'
+            peqpath = f'{pm.LSPK_FOLDER}/{peqfname}'
+            # will use aux command to update .aux_info status file
+            res = send_cmd( f'aux peq_load {peqpath}' )
+            print(res)
 
         elif cmd == "PEQ_bypass" and args:
-            pc.eca_bypass(args[0])
+            pm.eca_bypass(args[0])
 
         elif cmd == "PEQ_gain" and args:
-            pc.eca_gain(args[0])
+            pm.eca_gain(args[0])
 
         else:
             print(f'(!) Bad command')
