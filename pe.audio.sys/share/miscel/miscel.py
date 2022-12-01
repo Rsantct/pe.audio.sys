@@ -21,18 +21,6 @@ from    fmt         import Fmt
 
 # --- pe.audio.sys common usage functions:
 
-def dump_aux_info(AUX_INFO):
-    """ A helper to write AUX_INFO dict to a file to be accesible
-        by third party processes
-    """
-    # Dynamic updates
-    AUX_INFO['amp'] =               manage_amp_switch( 'state' )
-    AUX_INFO['loudness_monitor'] =  get_loudness_monitor()
-    # Dumping to disk
-    with open(AUX_INFO_PATH, 'w') as f:
-        f.write( json_dumps(AUX_INFO) )
-
-
 def process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
@@ -185,8 +173,8 @@ def read_bf_config_fs():
         raise ValueError('unable to find Brutefir sample_rate')
 
     if 'brutefir_defaults' in fname:
-        print(f'{Fmt.RED}{Fmt.BOLD}'
-              f'(miscel.py) *** USING .brutefir_defaults SAMPLE RATE ***'
+        print(f'{Fmt.RED}'
+              f'(miscel.py) (i) USING .brutefir_defaults SAMPLE RATE'
               f'{Fmt.END}')
 
     return FS

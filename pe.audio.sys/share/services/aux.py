@@ -20,12 +20,24 @@ import  threading
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config      import  CONFIG, MAINFOLDER, MACROS_FOLDER,      \
+from    config      import  CONFIG, MAINFOLDER, MACROS_FOLDER, \
                             AMP_STATE_PATH, LDMON_PATH, LDCTRL_PATH
 
 from    miscel      import  *
 
-from    peq_control import eca_bypass
+from    peq_mod     import eca_bypass, eca_load_peq
+
+
+def dump_aux_info():
+    """ A helper to write AUX_INFO dict to a file to be accesible
+        by third party processes
+    """
+    # Dynamic updates
+    AUX_INFO['amp'] =               manage_amp_switch( 'state' )
+    AUX_INFO['loudness_monitor'] =  get_loudness_monitor()
+    # Dumping to disk
+    with open(AUX_INFO_PATH, 'w') as f:
+        f.write( json_dumps(AUX_INFO) )
 
 
 def get_web_config():
@@ -88,7 +100,7 @@ def run_macro(mname):
         Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
         AUX_INFO["last_macro"] = mname
         # for others to have fresh 'last_macro'
-        dump_aux_info(AUX_INFO)
+        dump_aux_info()
         return 'ordered'
     else:
         return 'macro not found'
@@ -140,19 +152,34 @@ def zita_j2n(args):
     return result
 
 
-def peq_bypass_toggle():
+def peq_load(peqpath):
+    """ a wrapper to load a PEQ file and updating .aux_info
 
-    newmode = eca_bypass('toggle')
+        returns: 'done' or some error string
+    """
+    res = eca_load_peq(peqpath)
 
-    if newmode == 'on':
-        AUX_INFO['peq_bypassed'] = True
+    # updatting .aux_info
+    if res == 'done':
+        AUX_INFO["peq_set"] = os.path.basename(peqpath).replace('.peq','')
+        AUX_INFO['peq_bypassed'] = eca_bypass('get')
+        dump_aux_info()
 
-    elif newmode == 'off':
-        AUX_INFO['peq_bypassed'] = False
+    return res
 
-    dump_aux_info(AUX_INFO)
 
-    return 'ordered'
+def peq_bypass(mode):
+    """ a wrapper to manage Ecasound chains bypass
+        mode:       on | off | toggle | get
+        return:     [L_mode, R_mode]
+    """
+
+    newmode = eca_bypass(mode)
+
+    AUX_INFO['peq_bypassed'] = newmode
+    dump_aux_info()
+
+    return f'{newmode}'
 
 
 def play_url(arg):
@@ -217,7 +244,7 @@ def warning_expire(timeout=5):
     def mytimer(timeout):
         sleep(timeout)
         AUX_INFO['warning'] = ''
-        dump_aux_info(AUX_INFO)
+        dump_aux_info()
     job = threading.Thread(target=mytimer, args=(timeout,))
     job.start()
 
@@ -234,13 +261,13 @@ def manage_warning_msg(arg):
             result = 'warning message in use'
         else:
             AUX_INFO['warning'] = ' '.join(args[1:])
-            dump_aux_info(AUX_INFO)
+            dump_aux_info()
             warning_expire(timeout=60)
             result = 'done'
 
     elif args[0] == 'clear':
         AUX_INFO['warning'] = ''
-        dump_aux_info(AUX_INFO)
+        dump_aux_info()
         result = 'done'
 
     elif args[0] == 'get':
@@ -301,7 +328,7 @@ class files_event_handler(FileSystemEventHandler):
         # DEBUG
         #print( f'(aux) event type: {event.event_type}, file: {event.src_path}' )
         if event.src_path == self.wanted_path:
-            dump_aux_info(AUX_INFO)
+            dump_aux_info()
 
 
 # auto-started when loading this module
@@ -313,11 +340,11 @@ def init():
                     'last_macro':           '',
                     'warning':              '',
                     'peq_set':              get_peq_in_use(),
-                    'peq_bypassed':         False
+                    'peq_bypassed':         eca_bypass('get')
                 }
 
     # First update
-    dump_aux_info(AUX_INFO)
+    dump_aux_info()
 
     # Starts a WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
@@ -377,8 +404,11 @@ def do( cmd, arg=None ):
     elif cmd == 'zita_j2n':
         result = zita_j2n(arg)
 
-    elif cmd == 'peq_bypass_toggle':
-        result = peq_bypass_toggle()
+    elif cmd == 'peq_bypass':
+        result = peq_bypass(arg)
+
+    elif cmd == 'peq_load':
+        result = peq_load(arg)
 
     elif cmd == 'warning':
         result = manage_warning_msg(arg)
