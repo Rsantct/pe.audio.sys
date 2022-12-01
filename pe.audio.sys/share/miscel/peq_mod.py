@@ -5,9 +5,9 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Control module of a parametric equalizer.
+    Module to manage a parametric equalizer hosted in Ecasound.
 
-    The parametric EQ is based on the 'fil' plugin (LADSPA) hosted within Ecasound.
+    The parametric EQ is based on the 'fil' plugin (LADSPA).
 
     'fil' plugin is an excellent 4-band parametric eq from Fons Adriaensen,
     for more info see:
@@ -56,49 +56,52 @@ def ecanet(command):
     except Exception as e:
         pass
 
-    return data.decode()
+    return data.decode().strip()
 
 
 def eca_gain(level):
-    """ set gain in first plugin stage
+    """ set gain in last 'fil' stage
         (void)
     """
+    def get_last_fil_index():
+        tmp = ecanet("cop-list").split('\r\n')
+        cops = tmp[1].split(',')
+        i = -1
+        for cop in cops:
+            if '4-band parametric filter' in cop:
+                i += 1
+        return i
 
-    for chain in ("left", "right"):
-        ecanet("c-select " + chain) # select channel
-        ecanet("cop-select 1")      # select first filter stage
-        ecanet("copp-select 2")     # select global gain
-        ecanet("copp-set " + level) # set level
+    for chain in ('left', 'right'):
+        ecanet('c-select ' + chain)     # select channel chain
+        last = get_last_fil_index()
+        ecanet(f'cop-select {last}')    # select last fil stage
+        ecanet('copp-select 2')         # select global gain
+        ecanet(f'copp-set {level}')     # set level
 
 
-def eca_bypass(mode):
-    """ mode: on | off | toggle
+def eca_bypass(mode='get'):
+    """ mode: on | off | toggle | get
 
-        returns: the new bypass mode
+        returns: the new bypass mode [L, R]
     """
 
-    newmode= ''
+    newmode= [False, False]
 
-    for chain in ("left", "right"):
-        ecanet("c-select " + chain)
-        ecanet("c-bypass " + mode)
+    # making changes
+    if mode in ('on','off','toggle'):
+        for chain in ("left", "right"):
+            ecanet("c-select " + chain)
+            ecanet("c-bypass " + mode)
 
-    sta = ecanet("c-status").split('\n')
-    Lch = [x.strip() for x in sta if '"left"' in x]
-    Rch = [x.strip() for x in sta if '"right"' in x]
-
-    for ch in Lch, Rch:
-        if ch:
-            ch = ch[0]
-            cname = ch.split()[1]
-            if '[bypassed]' in ch:
-                newmode = 'on'
-                print(f'{cname}: BYPASS ON')
-            else:
-                newmode = 'off'
-                print(f'{cname}: bypass OFF')
-        else:
-            print(f'chain not found')
+    # getting state
+    lines = ecanet("c-status").split('\n')
+    for line in lines:
+        if '[bypassed]' in line:
+            if 'Chain "left"' in line:
+                newmode[0] = True
+            if 'Chain "right"' in line:
+                newmode[1] = True
 
     return newmode
 
@@ -436,7 +439,7 @@ def peq_read(peqpath):
     d = {}
 
     if not os.path.isfile(peqpath):
-        print( f'(peq_control) Cannot find config.py PEQ file: {peqpath}' )
+        print( f'(peq_mod) Cannot find PEQ file: {peqpath}' )
         return d
 
     with open(peqpath, 'r') as f:
@@ -445,7 +448,7 @@ def peq_read(peqpath):
     try:
         d = yaml.safe_load(c)
     except Exception as e:
-        print(f'(peq_control) YAML ERROR reading {os.path.basename(peqpath)}')
+        print(f'(peq_mod) YAML ERROR reading {os.path.basename(peqpath)}')
 
     if d:
         d = custom_parse(d)
@@ -459,11 +462,14 @@ def eca_load_peq(peqpath):
         returns: the Ecasound responses after loading, connecting
                  and restarting the engine, and reconnecting jack ports
 
+        returns: 'done' or some error string
+
         (i) Ecasound will stop engine and will release all I/O
             when loading a chainsetup
     """
 
-    d = peq_read(peqpath)
+    d   = peq_read(peqpath)
+    res = ''
 
     if not d:
         return f'ERROR loading file \'{peqpath}\''
@@ -475,27 +481,38 @@ def eca_load_peq(peqpath):
     # (i) filename or chain-setup-name spaces needs to be escaped
     #     F-strings cannot have "\"
     tmppath = tmppath.replace(' ', '\\ ')
-    res =  ecanet( f'cs-load {tmppath}' )
+    res = ecanet(f'cs-load {tmppath}').strip()
+    if not '0 -' in res:
+        return res
 
     csname = d["cs-name"].replace(' ', '\\ ')
-    res += ecanet( f'cs-select {csname}' )
+    res = ecanet(f'cs-select {csname}').strip()
+    if not '0 -' in res:
+        return res
 
-    res += ecanet(  'cs-connect' )
+    res = ecanet('cs-connect').strip()
+    if not '0 -' in res:
+        return res
 
     # After connecting, the engine remains stopped
-    res += ecanet(  'start' )
+    res = ecanet('start').strip()
+    if not '0 -' in res:
+        return res
 
     # When connecting a chainsetup all audio I/O was released
     try:
         import jack_mod as jack
         jack.connect_bypattern('pre_in_loop', 'ecasound')
         jack.connect_bypattern('ecasound', 'brutefir')
-    except Exception as e:
-        res += str(e)
+    except:
+        pass
 
     # Engine takes a while to be runnig
     sleep(.5)
-    res += ecanet(  'engine-status' )
+    res = ecanet('engine-status').strip()
 
-    return res
+    if 'running' in res:
+        return 'done'
+    else:
+        return 'failed'
 
