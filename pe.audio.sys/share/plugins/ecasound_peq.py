@@ -39,7 +39,7 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-import  peq_control as pc
+import  peq_mod as pm
 
 
 VERBOSE = False
@@ -47,8 +47,8 @@ VERBOSE = False
 
 def insert_ecasound():
 
-    pc.wait4ports('ecasound', timeout=5)
-    pc.wait4ports('brutefir', timeout=5)
+    pm.wait4ports('ecasound', timeout=5)
+    pm.wait4ports('brutefir', timeout=5)
 
     with open('/dev/null', 'w') as f:
         Popen( 'jack_disconnect pre_in_loop:output_1 brutefir:in.L'.split(), stdout=f, stderr=f )
@@ -67,18 +67,18 @@ def start():
     """
 
     # Get user's xxxx.peq as Ecasound ChainSetup
-    csname = pc.get_peq_in_use()
-    myPEQpath = f'{pc.LSPK_FOLDER}/{csname}.peq'
+    csname = pm.get_peq_in_use()
+    myPEQpath = f'{pm.LSPK_FOLDER}/{csname}.peq'
 
     if not os.path.isfile(myPEQpath):
         print( f'(ecasound_peq) Cannot find config.py PEQ file: {myPEQpath}' )
         return
 
     # Parse to a filter plugins setup dictionary
-    peq_dict = pc.peq_read( myPEQpath )
+    peq_dict = pm.peq_read( myPEQpath )
 
     # Dumps the dict to a file for Ecasound to boot with
-    myECSpath = pc.peq_dump2ecs(peq_dict)
+    myECSpath = pm.peq_dump2ecs(peq_dict)
 
     # Runs Ecasound with the dumped ECS file
     cmdList = ['ecasound', '-q', '--server', f'-s:"{myECSpath}"']
