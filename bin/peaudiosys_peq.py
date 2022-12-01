@@ -71,12 +71,14 @@ if __name__ == '__main__':
             if not peqfname.endswith('.peq'):
                 peqfname += '.peq'
             peqpath = f'{pm.LSPK_FOLDER}/{peqfname}'
-            # will use aux command to update .aux_info status file
+            # aux will update .aux_info status file
             res = send_cmd( f'aux peq_load {peqpath}' )
             print(res)
 
         elif cmd == "PEQ_bypass" and args:
-            pm.eca_bypass(args[0])
+            # aux will update .aux_info status file
+            res = send_cmd( f'aux peq_bypass {args[0]}' )
+            print(res)
 
         elif cmd == "PEQ_gain" and args:
             pm.eca_gain(args[0])
