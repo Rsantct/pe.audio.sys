@@ -234,20 +234,28 @@ def read_eq():
     """ Returns the current freqs, magnitude and phase
         as rendered into the Brutefir eq coeff.
     """
-    ans = cli('lmc eq "c.eq" info;')
 
-    # In case of brutefir not running
-    if not ans:
+    def bare_flat():
         freq = read_brutefir_config_bands()
         return freq, np.zeros(freq.size), np.zeros(freq.size)
 
-    for line in ans.split('\n'):
-        if line.strip()[:5] == 'band:':
-            freq = line.split()[1:]
-        if line.strip()[:4] == 'mag:':
-            mag  = line.split()[1:]
-        if line.strip()[:6] == 'phase:':
-            pha  = line.split()[1:]
+    freq = mag = pha = []
+
+    ans  = cli('lmc eq "c.eq" info;')
+
+    # Parsing BF answer
+    if ans:
+        for line in ans.split('\n'):
+            if line.strip()[:5] == 'band:':
+                freq = line.split()[1:]
+            if line.strip()[:4] == 'mag:':
+                mag  = line.split()[1:]
+            if line.strip()[:6] == 'phase:':
+                pha  = line.split()[1:]
+
+    # Fail safe return
+    if not freq:
+        return bare_flat()
 
     return  np.array(freq).astype(np.float), \
             np.array(mag).astype(np.float),  \
