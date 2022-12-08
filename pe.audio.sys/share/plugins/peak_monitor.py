@@ -7,7 +7,20 @@
 """
     A Brutefir peak monitor plugin
 
+    Brutefir peaks should NEVER occur if your setup is fine.
+
+    This plugin is mainly for testing purposes,
+    during setting up your convolver stages.
+    
+    However, CPU consumption is minimal and can be left
+    permanently activated in config.yml 'plugins' section.
+
+    Warning messages will be displayed in the control web page,
+    as well console printouts if --verbose.
+
+
     Usage:   peak_monitor.py    start | stop  [--verbose]
+    
 """
 
 import  sys
