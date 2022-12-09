@@ -41,7 +41,10 @@ VERBOSE = False
 
 
 class MyFileEventHandler(FileSystemEventHandler):
-    """ will do something when some file has changed
+    """ Subclass that will do something when a file
+        has been modified.
+
+        'fpath' parameter is expected.
     """
 
     def __init__(self, fpath=''):
@@ -79,7 +82,7 @@ def check_bf_log(reset_bf_peaks=True):
     def get_bf_peak_and_reset(reset=reset_bf_peaks):
         """ read brutefir.log to find the last peak line,
 
-            returns: a peak info string 'PEAK OutID: xx dB'
+            returns: a peak info string 'PEAK OutID: XX dB'
         """
 
         peaks    = []
@@ -98,11 +101,14 @@ def check_bf_log(reset_bf_peaks=True):
                     pass
 
         if peaks:
-            peaks    = [float(x) for x in peaks]
-            pmaxIdx  = max(range(len(peaks)), key=peaks.__getitem__)
-            pmaxdB   = peaks[pmaxIdx]
-            pmaxOut  = BFOUTMAP[ str(pmaxIdx) ]['name']
-            peakInfo = f'PEAK {pmaxOut}: {pmaxdB} dB'
+            try:
+                peaks    = [round(float(x), 1) for x in peaks]
+                pmaxIdx  = max(range(len(peaks)), key=peaks.__getitem__)
+                pmaxdB   = peaks[pmaxIdx]
+                pmaxOut  = BFOUTMAP[ str(pmaxIdx) ]['name']
+                peakInfo = f'PEAK {pmaxOut}: {pmaxdB} dB'
+            except:
+                pass
 
         return peakInfo
 
@@ -115,7 +121,7 @@ def check_bf_log(reset_bf_peaks=True):
 
 def start():
     observer = Observer()
-    observer.schedule(event_handler=MyFileEventHandler(BFLOGPATH),
+    observer.schedule(event_handler=MyFileEventHandler(fpath=BFLOGPATH),
                       path=BFLOGPATH,
                       recursive=False)
     observer.start()
