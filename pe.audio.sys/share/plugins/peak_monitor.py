@@ -101,7 +101,7 @@ def check_bf_log(reset_bf_peaks=True):
             peaks    = [float(x) for x in peaks]
             pmaxIdx  = max(range(len(peaks)), key=peaks.__getitem__)
             pmaxdB   = peaks[pmaxIdx]
-            pmaxOut  = OUTMAP[ str(pmaxIdx) ]['name']
+            pmaxOut  = BFOUTMAP[ str(pmaxIdx) ]['name']
             peakInfo = f'PEAK {pmaxOut}: {pmaxdB} dB'
 
         return peakInfo
@@ -129,8 +129,11 @@ def stop():
 
 if __name__ == "__main__":
 
+
+    # Outputs map example:
+    #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
     try:
-        OUTMAP = get_config_outputs()
+        BFOUTMAP = get_config_outputs()
     except Exception as e:
         print(str(e))
         sys.exit()
