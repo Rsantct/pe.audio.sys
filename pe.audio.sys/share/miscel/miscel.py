@@ -191,6 +191,37 @@ def get_peq_in_use():
     return 'none'
 
 
+def get_macros(only_web_macros=True):
+    """ Returns the list of executable files under the macros folder.
+        By default the list is restricted to web macros kinf of files: "NN_xxxxxx"
+    """
+    macro_files = []
+
+    with os.scandir( f'{MACROS_FOLDER}' ) as entries:
+
+        for entrie in entries:
+            fname = entrie.name
+
+            # Only executables files
+            if os.path.isfile(f'{MACROS_FOLDER}/{fname}') and \
+               os.access(f'{MACROS_FOLDER}/{fname}', os.X_OK):
+
+                # Web macros are the ones named NN_xxxxxx
+                if only_web_macros:
+                    if fname.split('_')[0].isdigit():
+                        macro_files.append(fname)
+                else:
+                    macro_files.append(fname)
+
+    macro_files.sort()
+
+    # (i) The web page needs a sorted list (numeric sorting only if NN_xxxxxx items)
+    if only_web_macros:
+        macro_files.sort( key=lambda x: int(x.split('_')[0]) )
+
+    return macro_files
+
+
 def get_remote_selected_source(addr, port=9990):
     """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
         (string)

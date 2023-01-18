@@ -29,13 +29,12 @@ import  sys
 from    time import sleep
 import  pyudev
 from    subprocess import check_output, Popen
-from    json import loads as json_loads
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 sys.path.append(f'{UHOME}/pe.audio.sys/share/services')
 
-from    miscel              import send_cmd
+from    miscel              import send_cmd, get_macros
 from    players_mod.cdda    import save_disc_metadata
 
 ME = 'autoplay_cdda'
@@ -49,7 +48,7 @@ def find_cd_macro():
         then returns a fake macro name.
     """
     result = '-'    # a fake macro name
-    mNames = json_loads( send_cmd( 'aux get_macros' ) )
+    mNames = get_macros()
     for mName in mNames:
         if '_cd' in mName.lower():
             result = mName
