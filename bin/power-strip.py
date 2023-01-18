@@ -7,13 +7,13 @@
 
     Usage:
 
-    power-strip.py                                          show state
+    power-strip.py                                          shows state
     power-strip.py  toggle|on|off  (out# out# ....)|all     changes state
     power-strip.py  --help                                  this help
 
 
     NOTICE: The YAML file 'power-strip.yml' associated with this script
-            labels the strip's outlets.
+            labels the strip's plugs.
 
 """
 import sys
@@ -24,8 +24,8 @@ import yaml
 
 OUTLETS = {1:'', 2:'', 3:'', 4:''}
 try:
-    thispath = os.path.dirname(os.path.abspath(__file__))
-    with open(thispath + '/regleta.yml', 'r') as f:
+    ME = __file__
+    with open(ME.replace('.py','.yml'), 'r') as f:
         OUTLETS = yaml.safe_load(f)
 except Exception as e:
     print(str(e))
