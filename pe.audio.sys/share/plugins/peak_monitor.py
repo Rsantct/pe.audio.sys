@@ -16,7 +16,7 @@
     permanently activated in config.yml 'plugins' section.
 
     Warning messages will be displayed in the control web page,
-    as well console printouts if --verbose.
+    as well you can see console printouts if --verbose.
 
 
     Usage:   peak_monitor.py    start | stop  [--verbose]
@@ -33,8 +33,12 @@ from    watchdog.events     import FileSystemEventHandler
 UHOME       = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    brutefir_mod        import cli as bf_cli, get_config_outputs, BFLOGPATH
-from    miscel              import send_cmd, read_last_line
+from    miscel              import send_cmd
+
+try:
+    from brutefir_mod       import cli as bf_cli, get_config_outputs, BFLOGPATH
+except:
+    print(f'(peak_monitor) Brutefir not available')
 
 
 VERBOSE = False
@@ -51,7 +55,7 @@ class MyFileEventHandler(FileSystemEventHandler):
         self.fpath = fpath
 
     def on_modified(self, event):
-        #print( f'DEBUG: {event.event_type} {event.src_path}' )
+        #print( f'DEBUG: {event.event_type} {event.src_path}' ) # DEBUG
         if event.src_path == self.fpath:
             check_bf_log()
 
@@ -63,8 +67,9 @@ def check_bf_log(reset_bf_peaks=True):
     def send_warning(w):
         if VERBOSE:
             print(f'PEAK MONITOR: {w}')
+        send_cmd(f'aux warning clear')
         send_cmd(f'aux warning set {w}')
-        #send_cmd(f'aux warning expire 3')
+        send_cmd(f'aux warning expire 3')
 
 
     def bf_peak_parse(pkline):
@@ -147,6 +152,7 @@ if __name__ == "__main__":
 
     if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
         VERBOSE = True
+
 
     if sys.argv[1:]:
         option = sys.argv[1]
