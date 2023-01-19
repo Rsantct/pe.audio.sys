@@ -11,7 +11,7 @@
 
     This plugin is mainly for testing purposes,
     during setting up your convolver stages.
-    
+
     However, CPU consumption is minimal and can be left
     permanently activated in config.yml 'plugins' section.
 
@@ -20,40 +20,39 @@
 
 
     Usage:   peak_monitor.py    start | stop  [--verbose]
-    
+
 """
 
 import  sys
 import  os
 from    subprocess          import Popen
 import  threading
-from    collections         import deque
 from    watchdog.observers  import Observer
 from    watchdog.events     import FileSystemEventHandler
 
 UHOME       = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    brutefir_mod        import cli as bf_cli
-from    miscel              import send_cmd
+from    brutefir_mod        import cli as bf_cli, get_config_outputs, BFLOGPATH
+from    miscel              import send_cmd, read_last_line
 
-
-LOGFOLDER   = f'{UHOME}/pe.audio.sys/log'
-BFLOGPATH   = f'{LOGFOLDER}/brutefir.log'
 
 VERBOSE = False
 
 
-class Changed_files_handler(FileSystemEventHandler):
-    """ will do something when some file has changed
+class MyFileEventHandler(FileSystemEventHandler):
+    """ Subclass that will do something when a file
+        has been modified.
+
+        'fpath' parameter is expected.
     """
 
-    def __init__(self, wanted_path=''):
-        self.wanted_path = wanted_path
+    def __init__(self, fpath=''):
+        self.fpath = fpath
 
     def on_modified(self, event):
         #print( f'DEBUG: {event.event_type} {event.src_path}' )
-        if event.src_path == self.wanted_path:
+        if event.src_path == self.fpath:
             check_bf_log()
 
 
@@ -61,20 +60,11 @@ def check_bf_log(reset_bf_peaks=True):
     """ try to read peak printouts from brutefir.log
     """
 
-    def send_warning(peaks):
+    def send_warning(w):
         if VERBOSE:
-            print(f'PEAK MONITOR: {peaks}')
-        send_cmd(f'aux warning set PEAK: {" ".join(peaks)}')
-        send_cmd(f'aux warning expire 3')
-
-
-    def read_last_line(fpath):
-        res = ''
-        try:
-            res = deque(open(fpath), maxlen=1)[0].strip()
-        except:
-            pass
-        return res
+            print(f'PEAK MONITOR: {w}')
+        send_cmd(f'aux warning set {w}')
+        #send_cmd(f'aux warning expire 3')
 
 
     def bf_peak_parse(pkline):
@@ -89,9 +79,14 @@ def check_bf_log(reset_bf_peaks=True):
         return pks
 
 
-    def get_peak_and_reset():
+    def get_bf_peak_and_reset(reset=reset_bf_peaks):
+        """ read brutefir.log to find the last peak line,
 
-        peaks = []
+            returns: a peak info string 'PEAK OutID: XX dB'
+        """
+
+        peaks    = []
+        peakInfo = ''
 
         bf_log_tail = read_last_line(BFLOGPATH)
 
@@ -99,24 +94,34 @@ def check_bf_log(reset_bf_peaks=True):
 
             peaks = bf_peak_parse( bf_log_tail )
 
-            if reset_bf_peaks:
+            if reset:
                 try:
                     bf_cli('rpk')
                 except:
                     pass
 
-        return peaks
+        if peaks:
+            try:
+                peaks    = [round(float(x), 1) for x in peaks]
+                pmaxIdx  = max(range(len(peaks)), key=peaks.__getitem__)
+                pmaxdB   = peaks[pmaxIdx]
+                pmaxOut  = BFOUTMAP[ str(pmaxIdx) ]['name']
+                peakInfo = f'PEAK {pmaxOut}: {pmaxdB} dB'
+            except:
+                pass
+
+        return peakInfo
 
 
-    peaks = get_peak_and_reset()
+    peakInfo = get_bf_peak_and_reset()
 
-    if peaks:
-        send_warning(peaks)
+    if peakInfo:
+        send_warning(peakInfo)
 
 
 def start():
     observer = Observer()
-    observer.schedule(event_handler=Changed_files_handler(BFLOGPATH),
+    observer.schedule(event_handler=MyFileEventHandler(fpath=BFLOGPATH),
                       path=BFLOGPATH,
                       recursive=False)
     observer.start()
@@ -129,6 +134,16 @@ def stop():
 
 
 if __name__ == "__main__":
+
+
+    # Outputs map example:
+    #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
+    try:
+        BFOUTMAP = get_config_outputs()
+    except Exception as e:
+        print(str(e))
+        sys.exit()
+
 
     if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
         VERBOSE = True

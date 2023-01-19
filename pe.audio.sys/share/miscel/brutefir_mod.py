@@ -26,6 +26,8 @@ if CONFIG["web_config"]["show_graphs"]:
     import threading
 
 
+BFLOGPATH = f'{LOG_FOLDER}/brutefir.log'
+
 # Global to avoid dumping EQ magnitude graph to a PNG file if not changed
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
@@ -552,7 +554,8 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
 
     # Restarts Brutefir (external process)
     os.chdir(LSPK_FOLDER)
-    Popen(f'brutefir brutefir_config 1>{LOG_FOLDER}/brutefir.log 2>&1', shell=True)
+    with open(BFLOGPATH, 'w') as f:
+        Popen(['brutefir', 'brutefir_config'], stdout=f, stderr=f)
     os.chdir(UHOME)
     sleep(1)  # wait a bit for Brutefir to be running
 
