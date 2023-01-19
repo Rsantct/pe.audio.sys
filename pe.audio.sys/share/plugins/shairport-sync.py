@@ -5,8 +5,7 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    shairport-sync  Plays audio streamed from iTunes,
-                    iOS devices and third-party AirPlay sources
+    shairport-sync  Plays audio streamed from AirPlay sources.
 
     use:    shairport-sync.py   start | stop
 """
@@ -16,12 +15,13 @@ from subprocess import Popen
 
 
 def start():
-    cmd = 'shairport-sync -a $(hostname) -o alsa -- -d aloop'
+    # Former versions used alsa but recent debian package alows jack :-)
+    cmd = 'shairport-sync -a $(hostname) -o jack'
     Popen( cmd, shell=True )
 
 
 def stop():
-    Popen( ['pkill', '-KILL', '-f', 'shairport-sync -a'] )
+    Popen( ['pkill', '-KILL', '-f', 'shairport-sync'] )
 
 
 if sys.argv[1:]:
