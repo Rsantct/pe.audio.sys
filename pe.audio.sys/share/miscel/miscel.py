@@ -123,12 +123,21 @@ def manage_amp_switch(mode):
         job = threading.Thread(target=wait4_convolver_on)
         job.start()
 
-    # Optionally will stop the current player as per CONFIG
+    # Optional: as per <config.yml>
     if new_state == 'off':
+
+        # STOP the current PLAYER:
         if 'amp_off_stops_player' in CONFIG and CONFIG['amp_off_stops_player']:
             curr_input = read_state_from_disk()['input']
             if not curr_input.startswith('remote'):
                 send_cmd('player pause', timeout=1)
+
+        # SHUTDOWN the COMPUTER:
+        if 'amp_off_shutdown' in CONFIG and CONFIG['amp_off_shutdown']:
+            sp.Popen('eject /dev/sr0', shell=True)
+            sp.Popen('eject /dev/sr1', shell=True)
+            sleep(3)
+            sp.Popen('sudo poweroff',  shell=True)
 
     return result
 
