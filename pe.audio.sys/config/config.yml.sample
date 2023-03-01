@@ -272,6 +272,9 @@ amp_manager:                       # for instance: /home/pi/bin/ampli.sh
 # Amplifier switch off will stop the current player:
 amp_off_stops_player: true
 
+# Amplifier switch off will turn off the computer:
+amp_off_shutdown: false
+
 # Control web page behavior
 web_config:
     # hide the LU offset slider and the LU monitor bar
