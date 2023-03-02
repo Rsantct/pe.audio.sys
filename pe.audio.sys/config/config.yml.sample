@@ -249,6 +249,9 @@ plugins:
     ## The LCDd server and lcd_daemon.py
     #- lcd.py
 
+    ## Power amp control
+    - power_amp_control.py
+
 
 # ========================= MISCEL CONFIGURATIONS ==============================
 
