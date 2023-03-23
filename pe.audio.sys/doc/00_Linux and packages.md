@@ -56,19 +56,24 @@ Update your `~/.profile`:
 
 Enable your user to access the sound card under the dbus system enviroment:
 
-    sudo nano /etc/dbus-1/system-local.conf
+```
+sudo nano /etc/dbus-1/system-local.conf
+```
+
+```
+<busconfig>
+    <policy user="YourUserHere">
+        <allow own="org.freedesktop.ReserveDevice1.Audio0"/>
+        <allow own="org.freedesktop.ReserveDevice1.Audio1"/>
+        <allow own="org.freedesktop.ReserveDevice1.Audio2"/>
+        <allow own="org.freedesktop.ReserveDevice1.Audio3"/>
+    </policy>
+</busconfig>
+```
     
-        <busconfig>
-          <!-- pe.audio.sys -->
-            <policy user="YourUserHere">
-              <allow own="org.freedesktop.ReserveDevice1.Audio0"/>
-              <allow own="org.freedesktop.ReserveDevice1.Audio1"/>
-              <allow own="org.freedesktop.ReserveDevice1.Audio2"/>
-              <allow own="org.freedesktop.ReserveDevice1.Audio3"/>
-            </policy>
-        </busconfig>
-    
-    sudo service dbus restart
+```
+sudo service dbus restart
+```
     
 
 ## Main packages
