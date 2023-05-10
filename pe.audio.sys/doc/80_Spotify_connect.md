@@ -18,7 +18,7 @@ More info here: https://www.rust-lang.org/tools/install
 
 Library dependencies:
 
-    sudo apt install build-essential libasound2-dev libavahi-compat-libdnssd-dev pkg-config
+    sudo apt install build-essential libasound2-dev libavahi-compat-libdnssd-dev pkg-config libjack-jackd2-dev
 
 ### Low RAM systems
 
