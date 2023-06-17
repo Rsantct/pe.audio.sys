@@ -234,6 +234,15 @@ def manage_warning_msg(arg):
             warning_expire(timeout=60)
             result = 'done'
 
+    if args[0] == 'perm':
+
+        if AUX_INFO['warning']:
+            result = 'warning message in use'
+        else:
+            AUX_INFO['warning'] = ' '.join(args[1:])
+            dump_aux_info()
+            result = 'done'
+
     elif args[0] == 'clear':
         AUX_INFO['warning'] = ''
         dump_aux_info()
