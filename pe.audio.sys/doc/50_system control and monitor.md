@@ -1,4 +1,4 @@
-# Controling the system
+# Controlling the system
 
 - A web page front end is provided so you can easily control the system as well your integrated music players.
 
