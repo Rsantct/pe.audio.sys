@@ -33,7 +33,7 @@ from    watchdog.events     import FileSystemEventHandler
 UHOME       = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel              import send_cmd
+from    miscel              import send_cmd, read_last_line
 
 try:
     from brutefir_mod       import cli as bf_cli, get_config_outputs, BFLOGPATH
@@ -69,7 +69,8 @@ def check_bf_log(reset_bf_peaks=True):
             print(f'PEAK MONITOR: {w}')
         send_cmd(f'aux warning clear')
         send_cmd(f'aux warning set {w}')
-        send_cmd(f'aux warning expire 3')
+        # Do not reset peak warning
+        # send_cmd(f'aux warning expire 3')
 
 
     def bf_peak_parse(pkline):
