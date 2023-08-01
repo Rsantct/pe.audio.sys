@@ -132,11 +132,14 @@ It is planned to provide a servo feature for tracking the monitored LU then auto
 
 ## Monitoring Brutefir convolver clipping
 
-Peaks should never occur.
+Brutefir peaks should never occur.
 
 If peaks occurs, you can see them inside the brutefir log file:
 
     ~/pe.audio.sys/log/brutefir.log
+
+A **`peak_monitor.py`** plugin is provided for WARNING when detecting peaks. 
+
     
 # Tools
 
