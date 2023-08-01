@@ -16,24 +16,27 @@ import  os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER
+from config import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER
+from miscel import read_bf_config_fs
+from brutefir_mod import get_config as bf_get_config
 
-from    miscel import read_bf_config_fs
+IMGFOLDER   = f'{MAINFOLDER}/share/www/images/{LOUDSPEAKER}'
 
 
+# ----------------------    Plot config      -----------------------------------
 # Same color as index.html background-color: rgb(38, 38, 38)
 WEBCOLOR    = (.15, .15, .15)
 # https://matplotlib.org/2.0.2/examples/color/named_colors.html
 LINERED     = 'indianred'
 LINEBLUE    = 'steelblue'
-IMGFOLDER   = f'{MAINFOLDER}/share/www/images/{LOUDSPEAKER}'
-
-
-def readPCM32(fname):
-    """ reads impulse from a pcm float32 file
-    """
-    #return np.fromfile(fname, dtype='float32')
-    return np.memmap(fname, dtype='float32', mode='r')
+plt.style.use('dark_background')
+plt.rcParams.update({'font.size': 6})
+FREQ_LIMITS = [20, 20000]
+FREQ_TICKS  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
+FREQ_LABELS = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
+DB_LIMITS   = [-20, +9]
+DB_TICKS    = [-18, -12, -6, 0, 6]
+DB_LABELS   = ['-18', '-12', '-6', '0', '6']
 
 
 def get_spectrum(imp, fs):
@@ -48,6 +51,14 @@ def get_spectrum(imp, fs):
 
 
 def read_pcms(drc_set):
+
+    def readPCM32(fname):
+        """ reads impulse from a pcm float32 file
+        """
+        #return np.fromfile(fname, dtype='float32')
+        return np.memmap(fname, dtype='float32', mode='r')
+
+
     fnames = []
     for ch in ('L', 'R'):
         fnames.append(f'{LSPK_FOLDER}/drc.{ch}.{drc_set}.pcm')
@@ -89,6 +100,26 @@ def get_drc_sets():
     return drc_sets
 
 
+def get_coeff_atten(drc_set, ch):
+
+    def get_atten():
+        atten = 0.0
+        for c in BF_DRC_COEFFS:
+            ch_name, set_name = c["name"].split('.')[1:]
+            if drc_set ==  set_name and ch == ch_name:
+                atten = float(c["atten"])
+                break
+        return atten
+
+
+    if drc_set == 'none':
+        atten = 0.0
+    else:
+        atten = get_atten()
+
+    return atten
+
+
 def png_is_outdated(drc_set):
     """ check datetime of drcXXX.png file versus drcXXX.pcm file """
 
@@ -128,6 +159,10 @@ def prepare_IMGFOLDER():
 
 if __name__ == '__main__':
 
+    # Reading drc coeffs inside brutefir_config in order to get coeff attenuation
+    bf_coeffs = bf_get_config()["coeffs"]
+    BF_DRC_COEFFS = [x for x in bf_coeffs if x["name"].startswith('drc')]
+
     # Read command line (quiet mode or help)
     verbose = True
     if sys.argv[1:]:
@@ -140,12 +175,6 @@ if __name__ == '__main__':
     # Prepare loudspeaker image folder
     prepare_IMGFOLDER()
 
-    # Prepare plot
-    plt.style.use('dark_background')
-    plt.rcParams.update({'font.size': 6})
-    freq_ticks  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
-    freq_labels = ['20', '50', '100', '200', '500', '1K', '2K',
-                   '5K', '10K', '20K']
 
     # Get sample rate
     FS = read_bf_config_fs()
@@ -173,12 +202,16 @@ if __name__ == '__main__':
         fig.set_figheight( 1.5 )
         fig.set_facecolor( WEBCOLOR )
         ax.set_facecolor( WEBCOLOR )
+
         ax.set_xscale('log')
-        ax.set_xlim( 20, 20000 )
-        ax.set_ylim( -15, 5 )
-        ax.set_xticks( [] )
-        ax.set_xticks( freq_ticks )
-        ax.set_xticklabels( freq_labels )
+        ax.set_xlim( FREQ_LIMITS )
+        ax.set_xticks( FREQ_TICKS )
+        ax.set_xticklabels( FREQ_LABELS )
+
+        ax.set_ylim( DB_LIMITS )
+        ax.set_yticks( DB_TICKS )
+        ax.set_yticklabels( DB_LABELS )
+
         #ax.set_title( f'DRC: {drc_set}' )
 
         if drc_set != 'none':
@@ -186,8 +219,11 @@ if __name__ == '__main__':
         else:
             IRs = diracs()
 
+        # Each IR has the following fields: fs, imp, drc_set, channel
         for IR in IRs:
             freqs, magdB = get_spectrum( IR["imp"], FS )
+            atten = get_coeff_atten( IR["drc_set"], IR["channel"] )
+            magdB -= atten
             ax.plot(freqs, magdB,
                     label=f'{IR["channel"]}',
                     color={'L': LINEBLUE, 'R': LINERED}

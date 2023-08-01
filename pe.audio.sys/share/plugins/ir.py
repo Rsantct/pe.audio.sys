@@ -4,26 +4,41 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
-""" 
+"""
     Start or stop the IR receiver
 
     Usage:  ir.py   start|stop
 
 """
-import sys
-import os
-import subprocess as sp
+import  sys
+import  os
+from    subprocess import Popen
+from    time import sleep
 
 UHOME    = os.path.expanduser("~")
 THISPATH = os.path.dirname(os.path.abspath(__file__))
 
+
+def stop():
+    Popen( ['pkill', '-f', CMDLINE] )
+
+def start():
+    Popen( CMDLINE.split() )
+
 if __name__ == '__main__':
 
+    CMDLINE = f'python3 {THISPATH}/ir/ir.py'
+
     if sys.argv[1:]:
+
         if sys.argv[1] in ['stop', 'off']:
-            sp.Popen( 'pkill -f "ir.py"', shell=True )
+            stop()
+
         elif sys.argv[1] in ['start', 'on']:
-            sp.Popen( f'python3 {THISPATH}/ir/ir.py'.split() )
+            stop()
+            sleep(1)
+            start()
+
         else:
             print(__doc__)
     else:

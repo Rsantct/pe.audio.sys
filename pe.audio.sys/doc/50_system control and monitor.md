@@ -1,4 +1,4 @@
-# Controling the system
+# Controlling the system
 
 - A web page front end is provided so you can easily control the system as well your integrated music players.
 
@@ -91,7 +91,7 @@ All commands prefixed with `aux`:
     add_delay   xx                          Delays xx ms the sound card outputs, e.g for multiroom listening
 
 
-## Monitoring the system
+# Monitoring the system
 
 The provided web page will show the system status as well music player's information.
 
@@ -130,7 +130,15 @@ It is planned to provide a servo feature for tracking the monitored LU then auto
 
 <a href="url"><img src="./images/LU_monitor.png" align="center" width="400" ></a>
 
-## Tools
+## Monitoring Brutefir convolver clipping
+
+Peaks should never occur.
+
+If peaks occurs, you can see them inside the brutefir log file:
+
+    ~/pe.audio.sys/log/brutefir.log
+    
+# Tools
 
 Some nice tools are provided under your `~/bin` folder, below a brief description.
 

@@ -63,37 +63,6 @@ def get_web_config():
     return wconfig
 
 
-def get_macros(only_web_macros=False):
-    """ Return the list of executable files under macros folder. The list
-        can be restricted to web macros NN_xxxxxx, then numeric sorted.
-    """
-    macro_files = []
-
-    with os.scandir( f'{MACROS_FOLDER}' ) as entries:
-
-        for entrie in entries:
-            fname = entrie.name
-
-            # Only executables files
-            if os.path.isfile(f'{MACROS_FOLDER}/{fname}') and \
-               os.access(f'{MACROS_FOLDER}/{fname}', os.X_OK):
-
-                # Web macros are the ones named NN_xxxxxx
-                if only_web_macros:
-                    if fname.split('_')[0].isdigit():
-                        macro_files.append(fname)
-                else:
-                    macro_files.append(fname)
-
-    macro_files.sort()
-
-    # (i) The web page needs a sorted list (numeric sorting only if NN_xxxxxx items)
-    if only_web_macros:
-        macro_files.sort( key=lambda x: int(x.split('_')[0]) )
-
-    return macro_files
-
-
 def run_macro(mname):
     if mname in get_macros():
         print( f'(aux) running macro: {mname}' )
@@ -263,6 +232,15 @@ def manage_warning_msg(arg):
             AUX_INFO['warning'] = ' '.join(args[1:])
             dump_aux_info()
             warning_expire(timeout=60)
+            result = 'done'
+
+    if args[0] == 'perm':
+
+        if AUX_INFO['warning']:
+            result = 'warning message in use'
+        else:
+            AUX_INFO['warning'] = ' '.join(args[1:])
+            dump_aux_info()
             result = 'done'
 
     elif args[0] == 'clear':
