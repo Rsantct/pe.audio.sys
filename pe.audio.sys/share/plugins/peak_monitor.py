@@ -18,6 +18,8 @@
     Warning messages will be displayed in the control web page,
     as well you can see console printouts if --verbose.
 
+    A BEEP sound at -10 dB will be played when detecting peaks.
+    (Needs a brutefir ALSA device, see .asoundrc.sample)
 
     Usage:   peak_monitor.py    start | stop  [--verbose]
 
@@ -25,15 +27,16 @@
 
 import  sys
 import  os
-from    subprocess          import Popen
+from    subprocess          import Popen, DEVNULL
 import  threading
 from    watchdog.observers  import Observer
 from    watchdog.events     import FileSystemEventHandler
 
-UHOME       = os.path.expanduser("~")
+UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+THISDIR = os.path.dirname( os.path.realpath(__file__) )
 
-from    miscel              import send_cmd
+from    miscel              import send_cmd, read_last_line
 
 try:
     from brutefir_mod       import cli as bf_cli, get_config_outputs, BFLOGPATH
@@ -64,12 +67,19 @@ def check_bf_log(reset_bf_peaks=True):
     """ try to read peak printouts from brutefir.log
     """
 
+    def do_beep():
+        beepPath    = f'{THISDIR}/peak_monitor/3beeps_-10dBFS.wav'
+        Popen( ['aplay', '-Dbrutefir', beepPath],
+                stdout=DEVNULL, stderr=DEVNULL )
+
+
     def send_warning(w):
         if VERBOSE:
             print(f'PEAK MONITOR: {w}')
         send_cmd(f'aux warning clear')
         send_cmd(f'aux warning set {w}')
-        send_cmd(f'aux warning expire 3')
+        # Do not reset peak warning
+        # send_cmd(f'aux warning expire 3')
 
 
     def bf_peak_parse(pkline):
@@ -121,6 +131,7 @@ def check_bf_log(reset_bf_peaks=True):
     peakInfo = get_bf_peak_and_reset()
 
     if peakInfo:
+        do_beep()
         send_warning(peakInfo)
 
 
