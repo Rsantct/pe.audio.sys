@@ -15,11 +15,11 @@
     However, CPU consumption is minimal and can be left
     permanently activated in config.yml 'plugins' section.
 
-    Warning messages will be displayed in the control web page,
+    WARNING MESSAGES will be displayed in the control web page,
     as well you can see console printouts if --verbose.
 
     A BEEP sound at -10 dB will be played when detecting peaks.
-    (Needs a brutefir ALSA device, see .asoundrc.sample)
+    (Needs a 'brutefir' ALSA device, see .asoundrc.sample)
 
     Usage:   peak_monitor.py    start | stop  [--verbose]
 
