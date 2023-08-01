@@ -30,20 +30,20 @@ import  matplotlib.pyplot as plt
 UHOME    = os.path.expanduser("~")
 PNG_PATH = f'{UHOME}/pe.audio.sys/share/www/images/brutefir_eq.png'
 
-
-RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
-lineColor   = 'grey'
 verbose     = False
-
 
 # Prepare pyplot
 plt.style.use('dark_background')
 plt.rcParams.update({'font.size': 6})
-freq_ticks  = [ 20,   50,   100,   200,   500,   1e3,  2e3,  5e3,  1e4,   2e4]
-freq_labels = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
+RGBweb      = (.15, .15, .15)   # same as index.html background-color: rgb(38, 38, 38);
+lineColor   = 'grey'
 figHeight   = 1.5   # min 1.5 if font.size = 6
-ypos_step   = 0     # try 15 dB, or 0 to disable
-yneg_step   = 0     # try 10 dB, or 0 to disable
+freq_limits = [20, 20000]
+freq_ticks  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
+freq_labels = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
+dB_limits   = [-9, +21]
+dB_ticks    = [-6, 0, 6, 12, 18]
+dB_labels   = ['-6', '0', '6', '12', '18']
 
 
 def get_bf_eq():
@@ -86,21 +86,19 @@ def do_graph(freqs, magdB, is_lin_phase=False):
     fig.set_figheight( figHeight )
     fig.set_facecolor( RGBweb )
     ax.set_facecolor( RGBweb )
+
     if is_lin_phase:
         ax.annotate('lin-pha EQ', xy=(.46,.1), xycoords='axes fraction')
+
     ax.set_xscale('log')
-    ax.set_xlim( 20, 20000 )
-    if yneg_step:
-        ymin = -yneg_step - yneg_step * (np.min(magdB) // -yneg_step)
-    else:
-        ymin = -10
-    if ypos_step:
-        ymax =  ypos_step + ypos_step * (np.max(magdB) //  ypos_step)
-    else:
-        ymax = +15
-    ax.set_ylim( ymin, ymax)
+    ax.set_xlim( freq_limits )
     ax.set_xticks( freq_ticks )
     ax.set_xticklabels( freq_labels )
+
+    ax.set_ylim( dB_limits )
+    ax.set_yticks( dB_ticks )
+    ax.set_yticklabels( dB_labels )
+
     # ax.set_title( 'Brutefir EQ' )
     # Plot the EQ curve
     ax.plot(freqs, magdB,
