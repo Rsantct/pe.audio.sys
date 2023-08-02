@@ -5,6 +5,10 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """ usage:      drc2png.py [--quiet]
+
+    NOTICE: Even if short lenght IR are used for DRC, thus low resolution
+            in low freq correction, the correction curve will be
+            oversampled in order to show a smoothed low freq region.
 """
 
 import  numpy as np
@@ -40,13 +44,25 @@ DB_LABELS   = ['-18', '-12', '-6', '0', '6']
 
 
 def get_spectrum(imp, fs):
+
     fNyq = fs / 2.0
+
+    # Oversampling short taps IRs to display "hires" low freq region.
+    # Zeropadding up to Fs / 4 Hz
+    Ntaps = int(fs / 4)
+    if len(imp) < Ntaps:
+        imp= np.pad(imp, (0, Ntaps - len(imp)), 'linear_ramp')
+        print('(drc2png) Smoothing low freq curve because low resolution correction impulse')
+
     # Semispectrum (whole=False -->  w to Nyquist)
     w, h = signal.freqz(imp, worN=int(len(imp) / 2), whole=False)
+
     # Actual freq from normalized freq
     freqs = w / np.pi * fNyq
+
     # Magnitude to dB:
     magdB = 20 * np.log10(abs(h))
+
     return freqs, magdB
 
 
