@@ -51,7 +51,10 @@ def get_spectrum(imp, fs):
     N = int( len(imp) / 2 ) * 8
     # limit to N <= fs / 5 (a resolution of 5 Hz is enough for this graph)
     N = int(min(N, fs / 5))
-    N = fft.next_fast_len(N)
+    try:
+        N = fft.next_fast_len(N)
+    except:
+        print(f'(drc2png) fft.next_fast_len not availble on this scipy version')
 
     # Semispectrum (whole=False -->  w to Nyquist)
     w, h = signal.freqz(imp, worN=N, whole=False)
