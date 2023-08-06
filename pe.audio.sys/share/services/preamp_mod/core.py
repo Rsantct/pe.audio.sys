@@ -831,7 +831,7 @@ class Preamp(object):
                 elif drc:
                     if w:
                         w += '; '
-                    w += f'\'drc:{xo}\' in \'{source}\' is not valid'
+                    w += f'\'drc:{drc}\' in \'{source}\' is not valid'
             except:
                 pass
             del(c)
