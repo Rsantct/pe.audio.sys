@@ -14,9 +14,9 @@ An example:
 
 ```
 $ ls -1 pe.audio.sys/macros/
-1_RNE
-2_R.Clasica
-6_flat sound
+01_RNE
+02_R.Clasica
+06_flat sound
 README.md
 ```
 
