@@ -9,6 +9,10 @@
 
     (i) Needs silent:false under config.yml
 
+    Xruns should never occur during normal playback,
+    but can occur when emerging or vanishing a jack client.
+    This is normal mainly in moderate CPU systems (Raspberri Pi ...)
+
     This plugin is mainly for testing purposes,
     during setting up your system.
 
