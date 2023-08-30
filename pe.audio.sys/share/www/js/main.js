@@ -235,7 +235,7 @@ function manage_main_cside(){
         if (hold_cside_msg > 0){
             hold_cside_msg -= 1;
         }else{
-            main_cside_msg = '::pe.audio.sys:: ' + state.loudspeaker;
+            main_cside_msg = 'pe.audio.sys|' + state.loudspeaker + '|' + state.drc_set;
         }
     }
     document.getElementById("main_cside").innerText = main_cside_msg;
