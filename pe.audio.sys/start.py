@@ -143,7 +143,8 @@ def start_jack_stuff():
 
     jc = CONFIG['jack']
 
-    if logFlag:
+    # silent (no Xrun messages)
+    if ('silent' in jc) and (jc["silent"] == True):
         jOpts = f'-R --silent -d {jc["backend"]}'
     else:
         jOpts = f'-R -d {jc["backend"]}'
@@ -159,11 +160,15 @@ def start_jack_stuff():
     else:
         jBkndOpts  = f'-p {jc["period"]}'
 
+    # set FS
     jBkndOpts += f' -r {read_bf_config_fs()}'
 
+    # other backend options (config.yml)
     if ('miscel' in jc) and (jc["miscel"]):
         jBkndOpts += f' {jc["miscel"]}'
 
+    # Use 'softmode' for ALSA backend even if not configured under 'miscel:'
+    # (i) This does not disable Xrun printouts if any occurs (see man page)
     if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
         jBkndOpts += ' --softmode'
 
