@@ -34,9 +34,9 @@ from    watchdog.events     import FileSystemEventHandler
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
-THISDIR = os.path.dirname( os.path.realpath(__file__) )
 
 from    miscel              import send_cmd, read_last_line
+from    share.miscel        import do_3_beep
 
 try:
     from brutefir_mod       import cli as bf_cli, get_config_outputs, BFLOGPATH
@@ -66,12 +66,6 @@ class MyFileEventHandler(FileSystemEventHandler):
 def check_bf_log(reset_bf_peaks=True):
     """ try to read peak printouts from brutefir.log
     """
-
-    def do_beep():
-        beepPath    = f'{THISDIR}/peak_monitor/3beeps_-10dBFS.wav'
-        Popen( ['aplay', '-Dbrutefir', beepPath],
-                stdout=DEVNULL, stderr=DEVNULL )
-
 
     def send_warning(w):
         if VERBOSE:
@@ -131,7 +125,7 @@ def check_bf_log(reset_bf_peaks=True):
     peakInfo = get_bf_peak_and_reset()
 
     if peakInfo:
-        do_beep()
+        do_3_beep()
         send_warning(peakInfo)
 
 
