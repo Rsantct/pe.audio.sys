@@ -235,7 +235,11 @@ function manage_main_cside(){
         if (hold_cside_msg > 0){
             hold_cside_msg -= 1;
         }else{
-            main_cside_msg = state.loudspeaker + ' (' + state.drc_set + ')';
+            if (state.drc_set == 'none'){
+                main_cside_msg = state.loudspeaker;
+            }else{
+                main_cside_msg = state.loudspeaker + ' (' + state.drc_set + ')';
+            }
         }
     }
     document.getElementById("main_cside").innerText = main_cside_msg;
