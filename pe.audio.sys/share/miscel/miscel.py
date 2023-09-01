@@ -47,10 +47,10 @@ def server_is_running(who_asks='miscel'):
         sleep(.5)
         tries -= 1
     if tries:
-        print(f'{Fmt.BLUE}({who_asks}) server.py is RUNNIG{Fmt.END}')
+        print(f'{Fmt.BLUE}({who_asks}) server.py is RUNNING{Fmt.END}')
         return True
     else:
-        print(f'{Fmt.BOLD}({who_asks}) server.py NOT RUNNIG{Fmt.END}')
+        print(f'{Fmt.BOLD}({who_asks}) server.py NOT RUNNING{Fmt.END}')
         return False
 
 
