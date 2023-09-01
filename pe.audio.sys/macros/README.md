@@ -4,7 +4,7 @@ to go to listen to radio presets, etc...
 
 **(i) The control web page will find here macro files:**
 
-Any file here named like **`NN_some_nice_name`** ( `NN` >= 1) will be consider as an user macro by the control web page, then a web button will be used to trigger the macro.
+Any file here named like **`NN_some_nice_name`** ( `NN` >= 01) will be consider as an user macro by the control web page, then a web button will be used to trigger the macro.
 
 Files not named this way, will be ignored from the control web page.
 
@@ -14,9 +14,9 @@ An example:
 
 ```
 $ ls -1 pe.audio.sys/macros/
-1_RNE
-2_R.Clasica
-6_flat sound
+01_RNE
+02_R.Clasica
+06_flat sound
 README.md
 ```
 

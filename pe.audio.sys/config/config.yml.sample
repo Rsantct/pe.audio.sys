@@ -252,6 +252,9 @@ plugins:
     ## The LCDd server and lcd_daemon.py
     #- lcd.py
 
+    ## Power amp control
+    - power_amp_control.py
+
 
 # ========================= MISCEL CONFIGURATIONS ==============================
 
@@ -274,6 +277,9 @@ amp_manager:                       # for instance: /home/pi/bin/ampli.sh
 
 # Amplifier switch off will stop the current player:
 amp_off_stops_player: true
+
+# Amplifier switch off will turn off the computer:
+amp_off_shutdown: false
 
 # Control web page behavior
 web_config:
