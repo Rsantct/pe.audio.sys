@@ -5,6 +5,25 @@
 # 'pe.audio.sys', a PC based personal audio system.
 """
     A simple tool to monitor pe.audio.sys LEVEL filter stages in Brutefir
+
+    'mono' is implemented by cross-mixing the inputs:
+
+                              f.lev.L
+                in.L  --------  LL
+                       \  ____  LR
+                        \/
+                        /\____
+                       /        RL
+                in.R  --------  RR
+                              f.lev.R
+
+
+    A printout example when -3 dB Left balanced and Right in reversed polarity:
+    
+                      in L:      in R:
+          out L:     30.0 (+)    inf (+)
+          out R:      inf (+)   33.0 (-)
+
 """
 
 from socket import socket
@@ -82,11 +101,6 @@ def main():
     RL_att =  niveles[1][0][0];    RR_att =  niveles[1][1][0]
     LL_pol =  niveles[0][0][1];    LR_pol =  niveles[0][1][1]
     RL_pol =  niveles[1][0][1];    RR_pol =  niveles[1][1][1]
-
-    # A printout example when -3 dB Left balanced and Right in reversed polarity
-    #                  in L:      in R:
-    #      out L:     30.0 (+)    inf (+)
-    #      out R:      inf (+)   33.0 (-)
 
     print('      ',  '  in L:      in R:')
     print('out L:', f'{LL_att.rjust(5)} ({LL_pol})  {LR_att.rjust(5)} ({LR_pol})')
