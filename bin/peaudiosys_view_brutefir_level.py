@@ -57,7 +57,7 @@ def cli(cmd):
 
 
 def main():
-    # Excqmple of filters printout from Brutefir CLI (left ch inverted)
+    # Excample of filters printout from Brutefir CLI (left ch inverted)
     #  0: "f.lev.L"
     #      coeff set: -1 (no filter)
     #      delay blocks: 0 (0 samples)
@@ -66,8 +66,11 @@ def main():
     #      from filters:
     #      to filters:   2
     #  1: "f.lev.R"
-    #  ...
-    #  ...
+    #      coeff set: -1 (no filter)
+    #      delay blocks: 0 (0 samples)
+    #      from inputs:  0/inf 1/37.5
+    #      ...
+    #      ...
 
     tmp = cli('lf').split('Filters:\n')[-1].split('\n')
     tmp = [x for x in tmp if x]
