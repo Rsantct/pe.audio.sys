@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
     A module to manage an USB controlled power outlet, if compatible
-    with 'Gembird SIS-PM', as the model 'EnerGenie EG-PMS2'.
+    with 'Gembird SIS-PM', like the model 'EnerGenie EG-PMS2'.
 
     More info:   apt show sispmctl
 

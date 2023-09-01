@@ -34,14 +34,9 @@ from    watchdog.events     import FileSystemEventHandler
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
-THISDIR = os.path.dirname( os.path.realpath(__file__) )
 
 from    miscel              import send_cmd, read_last_line
-
-try:
-    from brutefir_mod       import cli as bf_cli, get_config_outputs, BFLOGPATH
-except:
-    print(f'(peak_monitor) Brutefir not available')
+from    share.miscel        import do_3_beep
 
 
 VERBOSE = False
@@ -66,12 +61,6 @@ class MyFileEventHandler(FileSystemEventHandler):
 def check_bf_log(reset_bf_peaks=True):
     """ try to read peak printouts from brutefir.log
     """
-
-    def do_beep():
-        beepPath    = f'{THISDIR}/peak_monitor/3beeps_-10dBFS.wav'
-        Popen( ['aplay', '-Dbrutefir', beepPath],
-                stdout=DEVNULL, stderr=DEVNULL )
-
 
     def send_warning(w):
         if VERBOSE:
@@ -131,7 +120,7 @@ def check_bf_log(reset_bf_peaks=True):
     peakInfo = get_bf_peak_and_reset()
 
     if peakInfo:
-        do_beep()
+        do_3_beep()
         send_warning(peakInfo)
 
 
@@ -146,24 +135,24 @@ def start():
 
 
 def stop():
-    Popen( ['pkill', '-f', 'peak_monitor.py'] )
+    Popen( ['pkill', '-f', 'peak_monitor.py start'] )
 
 
 if __name__ == "__main__":
 
-
-    # Outputs map example:
-    #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
     try:
+        from brutefir_mod  import cli as bf_cli, get_config_outputs, BFLOGPATH
+        # Outputs map example:
+        #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
         BFOUTMAP = get_config_outputs()
-    except Exception as e:
-        print(str(e))
+    except:
+        print(f'(peak_monitor) Brutefir not available')
+        stop()
         sys.exit()
 
 
     if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
         VERBOSE = True
-
 
     if sys.argv[1:]:
         option = sys.argv[1]

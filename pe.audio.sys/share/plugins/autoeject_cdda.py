@@ -76,8 +76,7 @@ def main_loop():
 
 
 def stop():
-    Popen( f'pkill -KILL -f autoeject_cdda'.split() )
-    sleep(.5)
+    Popen( ['pkill', '-KILL', '-f', 'autoeject_cdda.py start'] )
 
 
 if __name__ == '__main__':

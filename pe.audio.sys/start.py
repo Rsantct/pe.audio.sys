@@ -143,7 +143,8 @@ def start_jack_stuff():
 
     jc = CONFIG['jack']
 
-    if logFlag:
+    # silent (no Xrun messages)
+    if ('silent' in jc) and (jc["silent"] == True):
         jOpts = f'-R --silent -d {jc["backend"]}'
     else:
         jOpts = f'-R -d {jc["backend"]}'
@@ -159,11 +160,15 @@ def start_jack_stuff():
     else:
         jBkndOpts  = f'-p {jc["period"]}'
 
+    # set FS
     jBkndOpts += f' -r {read_bf_config_fs()}'
 
+    # other backend options (config.yml)
     if ('miscel' in jc) and (jc["miscel"]):
         jBkndOpts += f' {jc["miscel"]}'
 
+    # Use 'softmode' for ALSA backend even if not configured under 'miscel:'
+    # (i) This does not disable Xrun printouts if any occurs (see man page)
     if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
         jBkndOpts += ' --softmode'
 
@@ -397,17 +402,25 @@ def run_plugins(mode='start'):
     """ (void)
     """
     for plugin in CONFIG['plugins']:
+
         # (i) Some elements on the plugins list from config.yml can be a dict,
         #     e.g the ecasound_peq, so we need to extract the plugin name.
         if type(plugin) == dict:
             plugin = list(plugin.keys())[0]
-        print(f'(start) will {mode} the plugin \'{plugin}\' ...')
-        # (i) Notice that we are open to run plugins writen in python, bash, etc...
-        cmd = f'{MAINFOLDER}/share/plugins/{plugin} {mode}'
-        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
-    if mode == 'stop':
-        sleep(.5)  # this is necessary because of asyncronous stopping
+        cmd = f'{MAINFOLDER}/share/plugins/{plugin} {mode}'
+
+        if mode == 'start':
+            print(f'(start) starting plugin: {plugin} ...')
+            # (i) Notice that we are open to run plugins writen in python, bash, etc...
+            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+        elif mode == 'stop':
+            print(f'(start.py) stopping plugin: {plugin}', sp.check_output(cmd, shell=True).decode() )
+            sleep(.25)  # this is necessary because of asyncronous stopping
+
+        else:
+            pass
 
 
 def check_state_file():
