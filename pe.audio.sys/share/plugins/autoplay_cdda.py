@@ -108,8 +108,7 @@ def check_for_CDDA(d):
 
 
 def stop():
-    Popen( f'pkill -KILL -f autoplay_cdda'.split() )
-    sleep(.5)
+    Popen( ['pkill', '-KILL', '-f', 'autoplay_cdda.py start'] )
 
 
 def main():
