@@ -38,11 +38,6 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from    miscel              import send_cmd, read_last_line
 from    share.miscel        import do_3_beep
 
-try:
-    from brutefir_mod       import cli as bf_cli, get_config_outputs, BFLOGPATH
-except:
-    print(f'(peak_monitor) Brutefir not available')
-
 
 VERBOSE = False
 
@@ -140,24 +135,24 @@ def start():
 
 
 def stop():
-    Popen( ['pkill', '-f', 'peak_monitor.py'] )
+    Popen( ['pkill', '-f', 'peak_monitor.py start'] )
 
 
 if __name__ == "__main__":
 
-
-    # Outputs map example:
-    #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
     try:
+        from brutefir_mod  import cli as bf_cli, get_config_outputs, BFLOGPATH
+        # Outputs map example:
+        #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
         BFOUTMAP = get_config_outputs()
-    except Exception as e:
-        print(str(e))
+    except:
+        print(f'(peak_monitor) Brutefir not available')
+        stop()
         sys.exit()
 
 
     if '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]:
         VERBOSE = True
-
 
     if sys.argv[1:]:
         option = sys.argv[1]
