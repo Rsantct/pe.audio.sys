@@ -107,7 +107,7 @@ def eca_bypass(mode='get'):
 
 
 def eca_dump2peq(fpath=PEQDUMPPATH, verbose=False):
-    """ Dumps the RUNNIG chainsetup to a HUMAN READABLE FILE <fpath>
+    """ Dumps the RUNNING chainsetup to a HUMAN READABLE FILE <fpath>
 
         returns: the HUMAN READABLE PEQ dictionary for later use.
     """
