@@ -101,20 +101,20 @@ def set_gains( state ):
         (i) Midside (formerly mono) is implemented by routing and mixing
             from the inputs to the first filter stages (f.lev.Ch):
 
-                      f.lev.L
-        in.L  --------  LL
-               \  ____  LR
-                \/
-                /\____
-               /        RL
-        in.R  --------  RR
-                      f.lev.R
+                              f.lev.L
+                in.L  --------  LL
+                       \  ____  LR
+                        \/
+                        /\____
+                       /        RL
+                in.R  --------  RR
+                              f.lev.R
     """
 
     dB_gain    = calc_gain( state )
     dB_balance = state["balance"]
-    dB_gain_L  = dB_gain - dB_balance / 2.0
-    dB_gain_R  = dB_gain + dB_balance / 2.0
+    dB_gain_L  = dB_gain
+    dB_gain_R  = dB_gain
 
     # Normalize the polarity string
     if state["polarity"] == '+':
@@ -151,6 +151,13 @@ def set_gains( state ):
     elif state["midside"] == 'off':
         LL = m_gain_L * 1.0; LR = m_gain_R *  0.0
         RL = m_gain_L * 0.0; RR = m_gain_R *  1.0
+
+    # Apply balance after cross-mixing
+    if dB_balance:
+        LL = LL * (10 ** (-dB_balance * 0.5 / 20) )
+        LR = LR * (10 ** (-dB_balance * 0.5 / 20) )
+        RL = RL * (10 ** (+dB_balance * 0.5 / 20) )
+        RR = RR * (10 ** (+dB_balance * 0.5 / 20) )
 
     Lcmd = f'cfia "f.lev.L" "in.L" m{LL} ; cfia "f.lev.L" "in.R" m{LR}'
     Rcmd = f'cfia "f.lev.R" "in.L" m{RL} ; cfia "f.lev.R" "in.R" m{RR}'
