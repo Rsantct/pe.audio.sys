@@ -163,19 +163,23 @@ def play_url(arg):
         error = False
 
         # Tune the radio station (Mplayer jack ports will dissapear for a while)
-        Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'
-                .split() )
+        Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'.split() )
+
         # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
         sleep(2)
+
         # Waiting for mplayer ports to re-emerge
         if not wait4ports( f'mplayer_istreams' ):
             print(f'(aux) ERROR jack ports \'mplayer_istreams\''
                    ' not found' )
             error = True
+
         if not error:
             # Switching the preamp input
-            send_cmd('preamp input istreams')
+            # PATCH: using timeout is needed unless send_cmd was modified
+            send_cmd('preamp input istreams', 'aux play_url ...', True, 1)
             return True
+
         else:
             return False
 
