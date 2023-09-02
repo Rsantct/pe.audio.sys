@@ -282,6 +282,12 @@ class Preamp(object):
         # Initiate brutefir input connected ports (used from switch_convolver)
         self.bf_sources = bf.get_in_connections()
 
+        # INTERNAL
+
+        # The drc impulse max gain response and its coeff attenuation are
+        # taken into account when Preamp validates the digital headroom
+        self.drc_headroom = 0.0
+
         # Powersave
         #   State file info
         self.state["powersave"] = False
@@ -328,6 +334,10 @@ class Preamp(object):
     # (i) Remember to return some result from any method below.
     #     Also notice that we use *dummy to accommodate the preamp.py parser
     #     mechanism wich always will include two arguments for any Preamp call.
+
+    def update_drc_headroom(self, x):
+        self.drc_headroom = x
+
 
     def _find_target_sets(self):
         """ Retrieves the sets of available target curves under the share/eq folder.
@@ -555,7 +565,10 @@ class Preamp(object):
 
         bal             = candidate["balance"]
 
-        headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0)
+        headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0) + self.drc_headroom
+        # DEBUG
+        #print('gmax', 'gain', 'max_eq', 'bal/2', 'drc_hr', '=', 'headroom')
+        #print(gmax,  -gain, -np.max(eq_mag), - np.abs(bal / 2.0), + self.drc_headroom, '=', headroom)
 
         # (i)
         # 'config.yml' SOURCE's GAIN are set arbitrarily at the USER's OWN RISK,
@@ -578,6 +591,7 @@ class Preamp(object):
             bf.set_gains( candidate )
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
+            self.state["headroom"] = headroom
             self.save_tone_memo()
             return 'done'
         else:
@@ -957,6 +971,10 @@ class Convolver(object):
 
     # Bellow we use *dummy to accommodate the preamp.py parser mechanism
     # wich always will include two arguments for any function call.
+
+
+    def get_drc_headroom(self, drc_set):
+        return bf.get_drc_headroom(drc_set)
 
 
     def set_drc(self, drc, *dummy):
