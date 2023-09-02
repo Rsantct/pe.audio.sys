@@ -19,7 +19,7 @@
 
 
     A printout example when -3 dB Left balanced and Right in reversed polarity:
-    
+
                       in L:      in R:
           out L:     30.0 (+)    inf (+)
           out R:      inf (+)   33.0 (-)
@@ -29,10 +29,6 @@
 from socket import socket
 from time import sleep
 from subprocess import call
-import sys
-import os
-UHOME = os.path.expanduser('~')
-sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 
 def cli(cmd):
