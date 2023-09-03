@@ -4,11 +4,12 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
+import  numpy as np
+from    scipy import signal
 import  os
 import  sys
 from    subprocess  import Popen
 from    time        import sleep
-import  numpy as np
 from    socket      import socket
 
 from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, \
@@ -30,6 +31,13 @@ BFLOGPATH = f'{LOG_FOLDER}/brutefir.log'
 
 # Global to avoid dumping EQ magnitude graph to a PNG file if not changed
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
+
+
+def readPCM(fname, dtype='float32'):
+    """ lee un archivo pcm float32
+    """
+    #return np.fromfile(fname, dtype='float32')
+    return np.memmap(fname, dtype=dtype, mode='r')
 
 
 def cli(cmd):
@@ -269,6 +277,52 @@ def read_eq():
     return  np.array(freq).astype(np.float), \
             np.array(mag).astype(np.float),  \
             np.array(pha).astype(np.float)
+
+
+def get_drc_headroom(drcID):
+    """ Finds out the pcm impulse max gain and its coeff attenuation.
+        This need some computing time but it is called only when applying a drc_set.
+    """
+
+    # Early return if drc 'none'
+    if drcID == 'none':
+        return 0.0
+
+    # A real drc pcm impulse
+    coeffs = get_config()["coeffs"]
+    drcs = [ x for x in coeffs if ( x["name"][:4]=='drc.' and x["name"][6:]==drcID ) ]
+
+    headrooms = []
+
+    for drc in drcs:
+
+        # coeff atten
+        try:
+            atten = float( drc["atten"] )
+        except Exception as e:
+            atten = 0.0
+            print(f'(bf.get_drc_headroom) ERROR: {str(e)}')
+
+        # Reading pcm impulse file max gain
+        try:
+            imp = readPCM( f'{LSPK_FOLDER}/{drc["pcm"]}')
+            _, h = signal.freqz(imp, worN=512, whole=False)
+            magdB = 20 * np.log10(abs(h))
+            magdB_max = round(np.max(magdB), 1)
+        except Exception as e:
+            magdB_max = 0.0
+            print(f'(bf.get_drc_headroom) ERROR: {str(e)}')
+
+        # DEBUG
+        #print( drc["name"], f'atten: {atten}', f'dbMax: {magdB_max}' )
+
+        headrooms.append( atten - magdB_max )
+
+    headroom = min(headrooms)
+    # DEBUG
+    print(f'(brutefir_mod) DRC {drcID} headroom:',  headroom)
+
+    return headroom
 
 
 def set_drc( drcID ):
