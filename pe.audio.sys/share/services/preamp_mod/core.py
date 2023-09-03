@@ -337,6 +337,8 @@ class Preamp(object):
 
     def update_drc_headroom(self, x):
         self.drc_headroom = x
+        # This updates the digital gain_headroom in the .state file:
+        self._validate( self.state )
 
 
     def _find_target_sets(self):
