@@ -281,8 +281,14 @@ def read_eq():
 
 def get_drc_headroom(drcID):
     """ Finds out the pcm impulse max gain and its coeff attenuation.
-        This is called only when applying a drc_set.
+        This need some computing time but it is called only when applying a drc_set.
     """
+
+    # Early return if drc 'none'
+    if drcID == 'none':
+        return 0.0
+
+    # A real drc pcm impulse
     coeffs = get_config()["coeffs"]
     drcs = [ x for x in coeffs if ( x["name"][:4]=='drc.' and x["name"][6:]==drcID ) ]
 
@@ -292,31 +298,29 @@ def get_drc_headroom(drcID):
 
         # coeff atten
         try:
-            atten = float(drc["atten"])
+            atten = float( drc["atten"] )
         except Exception as e:
+            atten = 0.0
             print(f'(bf.get_drc_headroom) ERROR: {str(e)}')
 
-        if not atten:   # this should not occur
-            atten = 0.0
-
-        # impulse max gain
-        magdB_max = 0.0
+        # Reading pcm impulse file max gain
         try:
             imp = readPCM( f'{LSPK_FOLDER}/{drc["pcm"]}')
             _, h = signal.freqz(imp, worN=512, whole=False)
             magdB = 20 * np.log10(abs(h))
             magdB_max = round(np.max(magdB), 1)
         except Exception as e:
+            magdB_max = 0.0
             print(f'(bf.get_drc_headroom) ERROR: {str(e)}')
 
         # DEBUG
-        # print( drc["name"], f'atten: {atten}', f'dbMax: {magdB_max}' )
+        #print( drc["name"], f'atten: {atten}', f'dbMax: {magdB_max}' )
 
         headrooms.append( atten - magdB_max )
 
     headroom = min(headrooms)
     # DEBUG
-    # print(f'(bf_mod) drc headroom:',  headroom)
+    print(f'(brutefir_mod) DRC {drcID} headroom:',  headroom)
 
     return headroom
 
