@@ -591,7 +591,7 @@ class Preamp(object):
             bf.set_gains( candidate )
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
-            self.state["headroom"] = round(headroom, 1)
+            self.state["gain_headroom"] = round(headroom, 1)
             self.save_tone_memo()
             return 'done'
         else:
