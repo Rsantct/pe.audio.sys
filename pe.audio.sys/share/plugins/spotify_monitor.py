@@ -18,7 +18,7 @@
 
 import sys
 import os
-from subprocess import Popen, check_output
+from subprocess import Popen, check_output, call
 from time import sleep
 
 UHOME = os.path.expanduser("~")
@@ -63,8 +63,7 @@ def start():
 
 
 def stop():
-    Popen( 'pkill -f spotify_monitor_daemon'.split() )
-    sleep(.5)
+    call( 'pkill -f spotify_monitor_daemon'.split() )
 
 
 if sys.argv[1:]:
