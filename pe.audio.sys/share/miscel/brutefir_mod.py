@@ -100,7 +100,7 @@ def calc_gain( state ):
     return gain
 
 
-def set_gains( state ):
+def set_gains( state, nolevel=False ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
         - Routes channels to listening modes 'mid' (mono) or 'side' (L-R).
@@ -119,8 +119,13 @@ def set_gains( state ):
                               f.lev.R
     """
 
-    dB_gain    = calc_gain( state )
     dB_balance = state["balance"]
+
+    if nolevel:
+        dB_gain = 0.0
+    else:
+        dB_gain = calc_gain( state )
+
     dB_gain_L  = dB_gain
     dB_gain_R  = dB_gain
 
