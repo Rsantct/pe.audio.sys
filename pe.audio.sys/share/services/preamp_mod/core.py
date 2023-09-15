@@ -16,7 +16,9 @@ import jack_mod     as jack
 import brutefir_mod as bf
 
 UHOME = os.path.expanduser("~")
+THISDIR = os.path.dirname( os.path.realpath(__file__) )
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+sys.path.append( THISDIR )
 
 from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
                     LSPK_FOLDER, LDMON_PATH, MAINFOLDER
@@ -24,6 +26,13 @@ from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
                     sec2min, Fmt
 
+USE_AMIXER = False
+try:
+    USE_AMIXER = CONFIG["alsamixer"]["use_alsamixer"]
+    if USE_AMIXER:
+        import alsa
+except Exception as e:
+    print(f'(core.py) {str(e)}')
 
 ZEROS = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
@@ -590,7 +599,11 @@ class Preamp(object):
 
         if headroom >= 0:
             # APPROVED
-            bf.set_gains( candidate )
+            if not USE_AMIXER:
+                bf.set_gains( candidate )
+            else:
+                bf.set_gains( candidate, nolevel=True )
+                alsa.set_amixer_gain(gain)
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
             self.state["gain_headroom"] = round(headroom, 1)
@@ -733,7 +746,10 @@ class Preamp(object):
             if value.lower() == 'right':
                 value = 'r'
             self.state["solo"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
             return 'done'
         else:
             return 'bad option'
@@ -742,7 +758,10 @@ class Preamp(object):
     def set_polarity(self, value, *dummy):
         if value in ('+', '-', '++', '--', '+-', '-+'):
             self.state["polarity"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
             return 'done'
         else:
             return 'bad option'
@@ -759,7 +778,10 @@ class Preamp(object):
                                                  [ self.state["muted"] ]
                         } [ value.lower() ]
                 self.state["muted"] = value
-                bf.set_gains( self.state )
+                if not USE_AMIXER:
+                    bf.set_gains( self.state )
+                else:
+                    bf.set_gains( self.state, nolevel=True )
                 return 'done'
         except:
             return 'bad option'
@@ -768,7 +790,10 @@ class Preamp(object):
     def set_midside(self, value, *dummy):
         if value.lower() in ( 'mid', 'side', 'off' ):
             self.state["midside"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
         else:
             return 'bad option'
         return 'done'
