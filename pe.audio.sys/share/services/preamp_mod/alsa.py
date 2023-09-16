@@ -61,7 +61,6 @@ def set_amixer_gain(dB):
     """ OLD versions of Python-alsaaudio doest not manage dB values,
         just percent values over the 'amixer' limit values of a Mixer element.
     """
-
     # Find the proper value to send to 'amixer',
     # as per the zero and step_dB settings
     value = (ZERO + dB / STEP_dB)
