@@ -5,7 +5,7 @@ alsamixer:
     device:         hw:USB,0
     # Below values are just an example, YOU NEED to retrieve your mixer values
     # by using alsamixer and amixer command line tools
-    control:        Main
+    control:        Master
     limits:         [0, 191]
     zero:           128         # 0 dB == 128 == 67%
     step_dB:        0.5
