@@ -7,7 +7,7 @@
 Check if packages are available by using the '--simulate' flag:
 
     sudo apt install --simulate python3-pip python3-yaml python3-jack-client python3-mpd \
-             python3-pydbus python3-numpy python3-scipy python3-matplotlib
+             pyyhon3-alsaaudio python3-pydbus python3-numpy python3-scipy python3-matplotlib
 
 If so, simply repeat the above command **without the `--simulate`** flag.
 
@@ -23,6 +23,7 @@ Update python setuptools:
     sudo python3 -m pip install --upgrade setuptools
     python3 -m pip install pyaml
     python3 -m pip install python-mpd2
+    python3 -m pip install python-alsaaudio
     python3 -m pip install pydbus
     python3 -m pip install numpy
     python3 -m pip install scipy
