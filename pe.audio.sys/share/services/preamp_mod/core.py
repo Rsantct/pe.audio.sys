@@ -24,7 +24,7 @@ from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
                     LSPK_FOLDER, LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
-                    sec2min, Fmt
+                    sec2min, Fmt, calc_gain
 
 USE_AMIXER = False
 try:
@@ -560,9 +560,15 @@ class Preamp(object):
     def _validate( self, candidate ):
         """ Validates that the given 'candidate' (new state dictionary)
             does not exceed gain limits
+
+            (i) USE_AMIXER (ALSA Mixer)
+
+                Brutefir will not compute the level value,
+                it will be applied at the sound card output mixer.
+
         """
         gmax            = self.gain_max
-        gain            = bf.calc_gain( candidate )
+        gain            = calc_gain( candidate )
 
         # (!) candidate2 leaves candidate tone values untouched
         #     in case of tone defeat control activated
@@ -597,20 +603,23 @@ class Preamp(object):
 
         headroom += input_gain
 
+        # APPROVED
         if headroom >= 0:
-            # APPROVED
+
             if not USE_AMIXER:
                 bf.set_gains( candidate )
             else:
                 bf.set_gains( candidate, nolevel=True )
-                alsa.set_amixer_gain(gain)
+                alsa.set_amixer_gain( candidate["level"] )
+
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
             self.state["gain_headroom"] = round(headroom, 1)
             self.save_tone_memo()
             return 'done'
+
+        # REFUSED
         else:
-            # REFUSED
             return 'not enough headroom'
 
 
