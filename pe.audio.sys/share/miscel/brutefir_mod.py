@@ -16,7 +16,7 @@ from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, \
                             BFCFG_PATH, LOG_FOLDER
 
 from    miscel      import  read_bf_config_fs, process_is_running, Fmt, \
-                            send_cmd
+                            send_cmd, calc_gain
 
 import  jack_mod as jack
 
@@ -83,23 +83,6 @@ def set_subsonic(mode):
         return 'done'
 
 
-def calc_gain( state ):
-    """ Calculates the gain from:   level,
-                                    ref_level_gain
-                                    source gain offset
-        (float)
-    """
-
-    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
-                             - state["lu_offset"]
-
-    # Adding here the specific source gain:
-    if state["input"] != 'none':
-        gain += float( CONFIG["sources"][state["input"]]["gain"] )
-
-    return gain
-
-
 def set_gains( state, nolevel=False ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
@@ -117,14 +100,18 @@ def set_gains( state, nolevel=False ):
                        /        RL
                 in.R  --------  RR
                               f.lev.R
+
+        (i) 'nolevel' is intended to be used when using alsamixer
+
     """
 
     dB_balance = state["balance"]
 
+    state2 = state.copy()
     if nolevel:
-        dB_gain = 0.0
-    else:
-        dB_gain = calc_gain( state )
+        state2["level"] = 0
+
+    dB_gain = calc_gain( state2 )
 
     dB_gain_L  = dB_gain
     dB_gain_R  = dB_gain
