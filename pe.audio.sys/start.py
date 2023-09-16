@@ -301,7 +301,6 @@ def stop_zita_link():
         sleep(.2)
 
 
-
 def start_brutefir():
     """ runs Brutefir, connects to pream_in_loop and resets
         .state file with extra_delay = 0 ms
@@ -359,10 +358,10 @@ def stop_processes(mode):
             try:
                 sp.check_output('pgrep -f jackd'.split())
                 tries -= 1
-                sleep(1)
+                sleep(.5)
             except:
                 print('(start) jackd was killed')
-                sleep(1)
+                sleep(.5)
                 return
         # This should never happen
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
@@ -417,7 +416,6 @@ def run_plugins(mode='start'):
 
         elif mode == 'stop':
             print(f'(start.py) stopping plugin: {plugin}', sp.check_output(cmd, shell=True).decode() )
-            sleep(.25)  # this is necessary because of asyncronous stopping
 
         else:
             pass

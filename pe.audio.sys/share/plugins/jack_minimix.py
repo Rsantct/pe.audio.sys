@@ -34,7 +34,7 @@ import argparse
 import sys
 from os.path import expanduser
 from os import chdir
-from subprocess import Popen, check_output
+from subprocess import Popen, check_output, call
 from time import sleep
 from socket import gethostname
 import yaml
@@ -98,7 +98,7 @@ def start_mixer():
 
 def stop_mixer():
     # Kills the mixer
-    Popen( 'pkill -f "jackminimix -p"', shell=True )
+    call( 'pkill -f "jackminimix -p"', shell=True )
     # Restarts Brutefir
     # (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
     start_brutefir()

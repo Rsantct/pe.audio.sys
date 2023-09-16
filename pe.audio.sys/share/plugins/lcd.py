@@ -12,7 +12,7 @@
 
 import sys
 import os
-from subprocess import Popen, check_output
+from subprocess import Popen, check_output, call
 from time import sleep
 
 UHOME = os.path.expanduser("~")
@@ -41,9 +41,8 @@ def start():
 
 
 def stop():
-    Popen( ['pkill', '-f', 'lcd/LCDd.conf'] )
-    Popen( ['pkill', '-f', 'lcd_daemon.py'] )
-    sleep(1)
+    call( ['pkill', '-f', 'lcd/LCDd.conf'] )
+    call( ['pkill', '-f', 'lcd_daemon.py'] )
 
 
 if sys.argv[1:]:

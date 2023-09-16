@@ -6,27 +6,48 @@
 
 """
     usage:  mpd.py  start|stop
+
+    Notice:
+
+        Some Desktop autostarts MPD when user logins, because of the packaged file:
+            /etc/xdg/autostart/mpd.desktop
+        If so, please set "X-GNOME-Autostart-enabled=false" inside this file.
+
 """
 import sys
 import os
-from subprocess import Popen
+from subprocess import Popen, call, check_output
 from time import sleep
 
 UHOME = os.path.expanduser("~")
 
 
+def check_systemd_service():
+    """ Some mpd packages enables MPD user systemd units, when upgraded
+    """
+    try:
+        # Any --value xxxx, even if non existent, will return "inactive"
+        tmp = check_output("systemctl --user show -p ActiveState --value mpd.service",
+                            shell=True).decode().strip()
+    except Exception as e:
+        tmp = ''
+        print('(mpd.py)', e)
+
+    if tmp == 'active':
+        print('(mpd.py)', 'disabling systemd MPD service')
+        tmp =  "systemctl --user stop mpd.socket &&"
+        tmp += "systemctl --user stop mpd.service &&"
+        tmp += "systemctl --user disable mpd.socket &&"
+        tmp += "systemctl --user disable mpd.service"
+        call( tmp, shell=True )
+
+
 def stop():
-    # Some mpd packages enables MPD user systemd units, when upgraded:
-    tmp =  "systemctl --user stop mpd.socket &&"
-    tmp += "systemctl --user stop mpd.service &&"
-    tmp += "systemctl --user disable mpd.socket &&"
-    tmp += "systemctl --user disable mpd.service"
-    Popen( tmp, shell=True )
-    Popen( ['pkill', '-KILL', 'mpd'] )
-    sleep(.25)
+    call( ['pkill', '-KILL', 'mpd'] )
 
 
 def start():
+    check_systemd_service()
     Popen( f'mpd {UHOME}/.mpdconf'.split() )
 
 
@@ -37,9 +58,6 @@ if __name__ == '__main__':
         if sys.argv[1] == 'stop':
             stop()
         elif sys.argv[1] == 'start':
-            # Some Desktop autostarts MPD when user logins, because of the packaged file:
-            #   /etc/xdg/autostart/mpd.desktop
-            # If so, please set "X-GNOME-Autostart-enabled=false" inside this file.
             stop()
             start()
         else:

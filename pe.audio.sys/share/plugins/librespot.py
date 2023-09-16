@@ -14,9 +14,8 @@
 """
 import sys
 import os
-from subprocess import Popen
+from subprocess import Popen, call
 from socket import gethostname
-from time import sleep
 
 UHOME = os.path.expanduser("~")
 
@@ -56,8 +55,7 @@ def start():
 
 
 def stop():
-    Popen( 'pkill -KILL -f bin/librespot'.split() )
-    sleep(.5)
+    call( 'pkill -KILL -f bin/librespot'.split() )
 
 
 if sys.argv[1:]:
