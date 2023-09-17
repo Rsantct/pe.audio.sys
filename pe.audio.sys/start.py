@@ -301,7 +301,6 @@ def stop_zita_link():
         sleep(.2)
 
 
-
 def start_brutefir():
     """ runs Brutefir, connects to pream_in_loop and resets
         .state file with extra_delay = 0 ms
@@ -398,10 +397,21 @@ def stop_processes(mode):
     wait4jackdkilled()
 
 
+def run_sound_cards_prepare():
+    """ Special plugin that zeroes alsamixer"""
+    if 'sound_cards_prepare.py' in CONFIG['plugins']:
+        cmd = f'{MAINFOLDER}/share/plugins/sound_cards_prepare.py start'
+        print(f'(start) starting plugin: sound_cards_prepare.py ...')
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+
 def run_plugins(mode='start'):
     """ (void)
     """
     for plugin in CONFIG['plugins']:
+
+        if plugin == 'sound_cards_prepare.py':
+            continue
 
         # (i) Some elements on the plugins list from config.yml can be a dict,
         #     e.g the ecasound_peq, so we need to extract the plugin name.
@@ -561,6 +571,9 @@ if __name__ == "__main__":
         print(f'(start) Bye!')
         sys.exit()
 
+    # SPECIAL PLUGIN. Zeroing alsa mixer must be done before restoring
+    # the saved level if alsa mixer is used for volume management.
+    run_sound_cards_prepare()
 
     # STARTING:
     if mode in ('all'):
