@@ -83,7 +83,7 @@ def set_subsonic(mode):
         return 'done'
 
 
-def set_gains( state, nolevel=False ):
+def set_gains( state, nolevel=False, dBextra=0 ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
         - Routes channels to listening modes 'mid' (mono) or 'side' (L-R).
@@ -102,16 +102,16 @@ def set_gains( state, nolevel=False ):
                               f.lev.R
 
         (i) 'nolevel' is intended to be used when using alsamixer
+            'dBextra' is reported by alsa.py when alsa mixer gain limit is reached.
 
     """
-
     dB_balance = state["balance"]
 
     state2 = state.copy()
     if nolevel:
         state2["level"] = 0
 
-    dB_gain = calc_gain( state2 )
+    dB_gain = calc_gain( state2 ) + dBextra
 
     dB_gain_L  = dB_gain
     dB_gain_R  = dB_gain
