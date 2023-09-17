@@ -53,10 +53,6 @@ STEP_dB = float(CONFIG["alsamixer"]["step_dB"])
 m = alsaaudio.Mixer(control=CONTROL, device=DEVICE)
 
 
-def clamp(n, minn, maxn):
-    return max(min(maxn, n), minn)
-
-
 def set_amixer_gain(dB):
     """ OLD versions of Python-alsaaudio doest not manage dB values,
         just percent values over the 'amixer' limit values of a Mixer element.
@@ -66,24 +62,35 @@ def set_amixer_gain(dB):
     value = (ZERO + dB / STEP_dB)
     #print('value', value)
 
-    clamped_info = ''
-    if value < VMIN or value > VMAX:
-        value = clamp(value, VMIN, VMAX)
-        clamped_info = f"amixer '{CONTROL}' was clamped to {value}"
+    if value < VMIN:
+        dBpending = (value - VMIN) * STEP_dB
+        clamped = True
+        value = VMIN
+
+    elif value > VMAX:
+        dBpending = (value - VMAX) * STEP_dB
+        clamped = True
+        value = VMAX
+
+    else:
+        dBpending = 0
+        clamped = False
 
     # Mixer.setvolume() manages percents, instead of raw 'amixer' values
-    percent = int(round(value / (VMAX - VMIN) * 100))
+    percent = int(round((value - VMIN) / (VMAX - VMIN) * 100))
     #print('percent', percent)
 
     try:
         m.setvolume(percent)
-        if not clamped_info:
-            result = 'done'
+        if clamped:
+            result = f'clamped, dB pending: {dBpending}'
+            print(f'(alsa.py) INFO: clamped, dB pending: {dBpending}')
         else:
-            result = clamped_info
+            result = 'done'
+
     except Exception as e:
-        error = f'(alsa.py) ERROR {str(e)} | Maybe wrong config.py alsamixer settings?'
-        print(error)
+        error = f'ERROR with alsamixer'
+        print(f'(alsa.py) ERROR: {error}')
         result = error
 
     return result
