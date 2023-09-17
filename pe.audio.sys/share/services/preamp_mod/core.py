@@ -608,9 +608,21 @@ class Preamp(object):
 
             if not USE_AMIXER:
                 bf.set_gains( candidate )
+
             else:
-                bf.set_gains( candidate, nolevel=True )
-                alsa.set_amixer_gain( candidate["level"] )
+
+                amixer_result = alsa.set_amixer_gain( candidate["level"] )
+
+                if amixer_result == 'done':
+                    bf.set_gains( candidate, nolevel=True )
+
+                elif 'clamped' in amixer_result:
+                    # example: "clamped, dB pending: 3.0"
+                    dBpending = round( float(amixer_result.split()[-1]), 1)
+                    bf.set_gains( candidate, nolevel=True, dBextra=dBpending )
+
+                else:
+                    return amixer_result
 
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
