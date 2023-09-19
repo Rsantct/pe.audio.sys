@@ -6,6 +6,8 @@
 
 """
     jacktrip: audio over network
+
+    usage: jacktrip_server.py  start|stop
 """
 
 import sys
@@ -14,8 +16,7 @@ from subprocess import Popen
 
 def start():
     cmd = 'jacktrip --jacktripserver --nojackportsconnect'
-    cmd += ' --receivechannels 2 --queue 8 --redundancy 2 --bitres 16'
-
+    cmd += ' --receivechannels 2 --queue 8 --redundancy 2 --bitres 24'
     Popen( cmd, shell=True )
 
 
@@ -24,11 +25,18 @@ def stop():
 
 
 if sys.argv[1:]:
-    try:
-        option = {  'start' : start,
-                    'stop'  : stop
-                  }[ sys.argv[1] ]()
-    except:
-        print( '(plugins/jacktrip_server) bad option' )
+
+    opt = sys.argv[1]
+
+    if opt == 'start':
+        #stop()
+        start()
+
+    elif opt == 'stop':
+        stop()
+
+    else:
+        print(__doc__)
+
 else:
     print(__doc__)
