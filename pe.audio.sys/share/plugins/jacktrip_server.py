@@ -16,7 +16,7 @@ from subprocess import Popen
 
 def start():
     cmd = 'jacktrip --jacktripserver --nojackportsconnect'
-    cmd += ' --receivechannels 2 --queue 8 --redundancy 2 --bitres 24'
+    cmd += ' --numchannels 2 --queue 8 --redundancy 2 --bitres 24'
     Popen( cmd, shell=True )
 
 
