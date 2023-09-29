@@ -285,7 +285,7 @@ cdrom_device:  /dev/cdrom
 # (i) It is expected that the script will store the amplifier state
 #         'on'|'1'    or    'off'|'0'
 #     into the file '~/.amplifier' so that others processes could know about.
-amp_manager:                       # for instance: /home/pi/bin/ampli.sh
+amp_manager:                       # for instance: /home/pi/bin/amp_on_off.py
 
 # Amplifier switch off will stop the current player:
 amp_off_stops_player: true
