@@ -407,11 +407,11 @@ def run_special_plugins():
           the saved level if alsa mixer is used for volume management.
     """
 
+    # Using 'call' to wait for the script to finish
     if 'power_amp_control.py' in CONFIG['plugins']:
         cmd = f'{MAINFOLDER}/share/plugins/power_amp_control.py start'
         print(f'(start) starting plugin: power_amp_control.py ...')
-        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
-        sleep(3)
+        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     if 'sound_cards_prepare.py' in CONFIG['plugins']:
         cmd = f'{MAINFOLDER}/share/plugins/sound_cards_prepare.py start'
