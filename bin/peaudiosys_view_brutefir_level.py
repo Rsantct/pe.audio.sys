@@ -69,6 +69,11 @@ def main():
     #      ...
 
     tmp = cli('lf').split('Filters:\n')[-1].split('\n')
+
+    if not tmp[0]:
+        print('Cannot connect to Brutefir CLI')
+        return False
+
     tmp = [x for x in tmp if x]
 
     niveles = []
@@ -104,6 +109,7 @@ def main():
     print('      ',  '  in L:      in R:')
     print('out L:', f'{LL_att.rjust(5)} ({LL_pol})  {LR_att.rjust(5)} ({LR_pol})')
     print('out R:', f'{RL_att.rjust(5)} ({RL_pol})  {RR_att.rjust(5)} ({RR_pol})')
+    return True
 
 
 if __name__ == "__main__":
