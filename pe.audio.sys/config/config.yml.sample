@@ -213,6 +213,9 @@ source_monitors:
 
 plugins:
 
+    ## A watchdog for USB external DAC with standby mode
+    - usb_dac_watchdog.py
+
     ## Brutefir peak monitor (this should never occur, see plugin details)
     - peak_monitor.py
 
