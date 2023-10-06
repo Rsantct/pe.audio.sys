@@ -66,7 +66,7 @@ def jackd_runs(cname=''):
         if check_jack_lsp():
             result = True
         else:
-            print('WARNING jackd process NOT RESPONDING')
+            print('(usb_dac_watchdog.py) WARNING jackd process NOT RESPONDING')
 
     return result
 
@@ -75,7 +75,7 @@ def peaudiosys_restart():
     """ Restarts pe.audio.sys
         (The script peaudiosys_restart.sh will waits for it to be running)
     """
-    print('Restarting pe.audio.sys ... .. .')
+    print('(usb_dac_watchdog.py) RESTARTING pe.audio.sys ... .. .')
     sp.call(f'{UHOME}/bin/peaudiosys_restart.sh', shell=True)
 
 
@@ -89,13 +89,13 @@ def start():
         if detect_USB_DAC(card_name):
 
             if jackd_runs(card_name):
-                print(f'JACK is running with the card \'{card_name}\'')
+                print(f'(usb_dac_watchdog.py) JACK is running with the card \'{card_name}\'')
 
             else:
                 peaudiosys_restart()
 
         else:
-            print(f'USB DAC \'{card_name}\' NOT detected')
+            print(f'(usb_dac_watchdog.py) USB DAC \'{card_name}\' NOT detected')
 
         sleep(3)
 
