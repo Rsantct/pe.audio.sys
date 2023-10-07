@@ -85,3 +85,9 @@ See the `doc/` folder for detailed information about this.
 - `scripts` becomes `plugins` **PLEASE** update your **`config.yml`** with `plugins:` section.
 - Several fixes and updates.
 
+## Oct 2023, version 1.0h
+- Optional volume control over ALSA mixer.
+- Jacktrip server (host mode) pluging: receive audio by wired network from any Jacktrip (client).
+- USB DAC watchdog plugin: restarts pe.audio.sys after the USB DAC changes from standby to power on mode.
+
+  
