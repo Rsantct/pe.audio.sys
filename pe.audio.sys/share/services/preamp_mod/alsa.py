@@ -80,11 +80,6 @@ def init_globals():
     ZEROS       = get_zeros(MIXER, VMIN, VMAX)
     STEP_dB     = get_step_dB()
 
-    # DEBUG
-    #print('limits:', VMIN, VMAX)
-    #print('zeros:', ZEROS)
-    #print('step_dB:', STEP_dB)
-
 
 def amixerValue2percent(value):
     """ Mixer.setvolume() manages percents,
@@ -184,3 +179,9 @@ def set_amixer_gain(dB):
 
 
 init_globals()
+
+print(f'(alsa.py) INFO:')
+print(f'    vmin:       {VMIN}')
+print(f'    vmax:       {VMAX}')
+print(f'    zeros:      {ZEROS}')
+print(f'    step_dB:    {STEP_dB}')
