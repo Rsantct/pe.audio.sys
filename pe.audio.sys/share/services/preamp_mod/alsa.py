@@ -16,51 +16,74 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from config import  CONFIG
 
-DEVICE = CONFIG["alsamixer"]["device"].split(',')[0]
 
-try:
-    CONTROL =   CONFIG["alsamixer"]["control"]
-except:
-    CONTROL = 'Master'
+def init_globals():
 
-######
-# (i) limits, zero and steps_dB are mandatory for ALSA mixer to work properly
-######
+    def get_zeros(mixer=None, vmin=0, vmax=255):
+        """ get configured zero values
+        """
+        zeros = CONFIG["alsamixer"]["zeros"]
 
-limits  =   CONFIG["alsamixer"]["limits"]
+        try:
+            if type(zeros) == int:
+                zeros = [zeros]
+            if type(zeros) != list:
+                zeros = [int(x) for x in zeros.split(',')]
+        except:
+            raise Exception('(alsa.py) config.py alsamixer:zero must be a list')
 
-if type(limits) == str:
-    limits = [int(x) for x in limits.split(',')]
+        if len(zeros) != len( mixer.getvolume() ):
+            raise Exception('(alsa.py) config.py alsamixer:zeros list must match control channels')
 
-if type(limits) != list or len(limits) != 2:
-    raise Exception('(alsa.py) config.py alsamixer:limits must be a LIST')
+        if any( [ x for x in zeros if (x<vmin or x>vmax)] ):
+            raise Exception('(alsa.py) config.py alsamixer:zeros out of limits')
 
-VMIN, VMAX = limits
+        return zeros
 
-if VMIN < 0 or VMAX > 255:
-    raise Exception('(alsa.py) WRONG config.py alsamixer:limits values')
 
-ZEROS    =   CONFIG["alsamixer"]["zero"]
+    def get_step_dB():
+        return float(CONFIG["alsamixer"]["step_dB"])
 
-try:
-    if type(ZEROS) == int:
-        ZEROS = [ZEROS]
-    if type(ZEROS) != list:
-        ZEROS = [int(x) for x in ZEROS.split(',')]
-except:
-    raise Exception('(alsa.py) config.py alsamixer:zero must be a list')
 
-STEP_dB = float(CONFIG["alsamixer"]["step_dB"])
+    def get_limits():
 
-# DEBUG
-#print('limits', VMIN, VMAX)
-#print('zero', ZEROS)
-#print('step_dB', STEP_dB)
+        limits  =   CONFIG["alsamixer"]["limits"]
 
-####
-# The mixer object to deal with
-####
-m = alsaaudio.Mixer(control=CONTROL, device=DEVICE)
+        if type(limits) == str:
+            limits = [int(x) for x in limits.split(',')]
+
+        if type(limits) != list or len(limits) != 2:
+            raise Exception('(alsa.py) config.py alsamixer:limits must be a LIST')
+
+        (vmin, vmax) = limits
+
+        if vmin < 0 or vmin > 255 or vmax < 0 or vmax > 255 or vmin > vmax:
+            raise Exception('(alsa.py) WRONG config.py alsamixer:limits values')
+
+        return (vmin, vmax)
+
+
+    def get_mixer():
+        device = CONFIG["jack"]["device"].split(',')[0]
+        try:
+            control =   CONFIG["alsamixer"]["control"]
+        except:
+            control = 'Master'
+        mixer = alsaaudio.Mixer(control=control, device=device)
+        return mixer
+
+
+    global MIXER, VMIN, VMAX, ZEROS, STEP_dB
+
+    MIXER       = get_mixer()
+    VMIN, VMAX  = get_limits()
+    ZEROS       = get_zeros(MIXER, VMIN, VMAX)
+    STEP_dB     = get_step_dB()
+
+    # DEBUG
+    #print('limits:', VMIN, VMAX)
+    #print('zeros:', ZEROS)
+    #print('step_dB:', STEP_dB)
 
 
 def amixerValue2percent(value):
@@ -143,7 +166,7 @@ def set_amixer_gain(dB):
     # Finally apply to amixer:
     for i, percent in enumerate(percents):
         try:
-            m.setvolume(percent, i) # (percent, channel)
+            MIXER.setvolume(percent, i) # (percent, channel)
         except Exception as e:
             error = str(e)
             break
@@ -158,3 +181,6 @@ def set_amixer_gain(dB):
         result = 'done'
 
     return result
+
+
+init_globals()
