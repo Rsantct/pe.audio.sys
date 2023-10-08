@@ -1,15 +1,16 @@
 # ===================== ALSAMIXER VOLUME CONTROL (OPTIONAL) ====================
 
+# You need to investigate 'alsamixer' and 'amixer' command line tools
+#     'control':   the simple mixer control identifier that you want to use 
+#     'limits':    the limit values as per shown by the 'amixer' tool (min, max)
+#     'zeros':     the values that defines your 0 dB settintg FOR EACH CHANNEL (list of values)
+#     'step_dB':   the fraction of dB corresponding to each value change
+
 alsamixer:
     use_alsamixer:  false
-    device:         hw:USB,0
-    # Below values are just an example, YOU NEED to retrieve your mixer values
-    # by using the 'alsamixer' and 'amixer' command line tools
-    control:        Master
-    limits:         [0, 191]
-    # If the control Mixer has several channels and differents zero settings,
-    # the 'zero:' field must be a list for all Mixer channels
-    zero:           128         # Here the 0 dB == 128 == 67%
+    control:        PCM
+    limits:         0, 191
+    zeros:          128, 128         # Here the 0 dB == 128 == 67%
     step_dB:        0.5
 
 # ===========================  JACK CONFIGURATION ==============================
