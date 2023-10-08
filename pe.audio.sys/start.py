@@ -292,7 +292,7 @@ def stop_zita_link():
         # REMOTE
         zargs = json_dumps( (get_my_ip(), None, 'stop') )
         remotecmd = f'aux zita_j2n {zargs}'
-        send_cmd(remotecmd, host=raddr, port=rport)
+        send_cmd(remotecmd, host=raddr, port=rport, timeout=1)
 
         # LOCAL
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
