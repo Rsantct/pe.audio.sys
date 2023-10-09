@@ -165,7 +165,7 @@ Here you are an uncommented bare example of `config.yml`:
     peaudiosys_address:     localhost
     peaudiosys_port:        9990
 
-    amp_manager:            /home/predic/bin/ampli.sh
+    amp_manager:            /home/paudio/bin/amp_on_off.py
     amp_off_stops_player:   true
 
     web_config:

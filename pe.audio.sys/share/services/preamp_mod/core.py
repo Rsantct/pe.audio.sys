@@ -16,14 +16,23 @@ import jack_mod     as jack
 import brutefir_mod as bf
 
 UHOME = os.path.expanduser("~")
+THISDIR = os.path.dirname( os.path.realpath(__file__) )
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+sys.path.append( THISDIR )
 
 from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
                     LSPK_FOLDER, LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
-                    sec2min, Fmt
+                    sec2min, Fmt, calc_gain
 
+USE_AMIXER = False
+try:
+    USE_AMIXER = CONFIG["alsamixer"]["use_alsamixer"]
+    if USE_AMIXER:
+        import alsa
+except Exception as e:
+    print(f'(core.py) {str(e)}')
 
 ZEROS = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
@@ -551,9 +560,15 @@ class Preamp(object):
     def _validate( self, candidate ):
         """ Validates that the given 'candidate' (new state dictionary)
             does not exceed gain limits
+
+            (i) USE_AMIXER (ALSA Mixer)
+
+                Brutefir will not compute the level value,
+                it will be applied at the sound card output mixer.
+
         """
         gmax            = self.gain_max
-        gain            = bf.calc_gain( candidate )
+        gain            = calc_gain( candidate )
 
         # (!) candidate2 leaves candidate tone values untouched
         #     in case of tone defeat control activated
@@ -588,16 +603,35 @@ class Preamp(object):
 
         headroom += input_gain
 
+        # APPROVED
         if headroom >= 0:
-            # APPROVED
-            bf.set_gains( candidate )
+
+            if not USE_AMIXER:
+                bf.set_gains( candidate )
+
+            else:
+
+                amixer_result = alsa.set_amixer_gain( candidate["level"] )
+
+                if amixer_result == 'done':
+                    bf.set_gains( candidate, nolevel=True )
+
+                else:
+                    # If for some reason alsa mixer has not adjusted the wanted dB,
+                    # it will return some info ended by the amount of pending dB
+                    # to be applied. Example:
+                    #   "clamped, dB pending: 3.0"
+                    dBpending = round( float(amixer_result.split()[-1]), 1)
+                    bf.set_gains( candidate, nolevel=True, dBextra=dBpending )
+
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
             self.state["gain_headroom"] = round(headroom, 1)
             self.save_tone_memo()
             return 'done'
+
+        # REFUSED
         else:
-            # REFUSED
             return 'not enough headroom'
 
 
@@ -733,7 +767,10 @@ class Preamp(object):
             if value.lower() == 'right':
                 value = 'r'
             self.state["solo"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
             return 'done'
         else:
             return 'bad option'
@@ -742,7 +779,10 @@ class Preamp(object):
     def set_polarity(self, value, *dummy):
         if value in ('+', '-', '++', '--', '+-', '-+'):
             self.state["polarity"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
             return 'done'
         else:
             return 'bad option'
@@ -759,7 +799,10 @@ class Preamp(object):
                                                  [ self.state["muted"] ]
                         } [ value.lower() ]
                 self.state["muted"] = value
-                bf.set_gains( self.state )
+                if not USE_AMIXER:
+                    bf.set_gains( self.state )
+                else:
+                    bf.set_gains( self.state, nolevel=True )
                 return 'done'
         except:
             return 'bad option'
@@ -768,7 +811,10 @@ class Preamp(object):
     def set_midside(self, value, *dummy):
         if value.lower() in ( 'mid', 'side', 'off' ):
             self.state["midside"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
         else:
             return 'bad option'
         return 'done'

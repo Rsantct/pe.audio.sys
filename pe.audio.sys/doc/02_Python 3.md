@@ -7,7 +7,7 @@
 Check if packages are available by using the '--simulate' flag:
 
     sudo apt install --simulate python3-pip python3-yaml python3-jack-client python3-mpd \
-             python3-pydbus python3-numpy python3-scipy python3-matplotlib
+         python3-pydbus python3-numpy python3-scipy python3-matplotlib
 
 If so, simply repeat the above command **without the `--simulate`** flag.
 
@@ -52,4 +52,13 @@ Update python setuptools:
 
     sudo apt install python3-serial
     (or python3 -m pip install pyserial)
+
+### Optional to manage volume through by the sound card ALSA mixer:
+
+More info at: `config.yml.sample`
+
+The distribution (APT) `pyalsaaudio` package is likely to be outdated, so we use **pip**:
+
+    sudo apt-get install python3-dev
+    sudo pip3 install pyalsaaudio
 

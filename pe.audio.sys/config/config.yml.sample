@@ -1,3 +1,18 @@
+# ===================== ALSAMIXER VOLUME CONTROL (OPTIONAL) ====================
+
+# You need to investigate 'alsamixer' and 'amixer' command line tools
+#     'control':   the simple mixer control identifier that you want to use 
+#     'limits':    the limit values as per shown by the 'amixer' tool (min, max)
+#     'zeros':     the values that defines your 0 dB settintg FOR EACH CHANNEL (list of values)
+#     'step_dB':   the fraction of dB corresponding to each value change
+
+alsamixer:
+    use_alsamixer:  false
+    control:        PCM
+    limits:         0, 191
+    zeros:          128, 128         # Here the 0 dB == 128 == 67%
+    step_dB:        0.5
+
 # ===========================  JACK CONFIGURATION ==============================
 
 jack:
@@ -201,6 +216,9 @@ source_monitors:
 
 plugins:
 
+    ## A watchdog for USB external DAC with standby mode
+    - usb_dac_watchdog.py
+
     ## Brutefir peak monitor (this should never occur, see plugin details)
     - peak_monitor.py
 
@@ -273,7 +291,7 @@ cdrom_device:  /dev/cdrom
 # (i) It is expected that the script will store the amplifier state
 #         'on'|'1'    or    'off'|'0'
 #     into the file '~/.amplifier' so that others processes could know about.
-amp_manager:                       # for instance: /home/pi/bin/ampli.sh
+amp_manager:                       # for instance: /home/pi/bin/amp_on_off.py
 
 # Amplifier switch off will stop the current player:
 amp_off_stops_player: true

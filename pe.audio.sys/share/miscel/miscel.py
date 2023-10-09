@@ -142,6 +142,25 @@ def manage_amp_switch(mode):
     return result
 
 
+def calc_gain( state ):
+    """ Calculates the gain from:   level,
+                                    ref_level_gain
+                                    source gain offset
+        (float)
+    """
+
+    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
+                             - state["lu_offset"]
+    # Adding here the specific source gain:
+    if state["input"] != 'none':
+        try:
+            gain += float( CONFIG["sources"][state["input"]]["gain"] )
+        except:
+            pass
+
+    return gain
+
+
 def get_loudness_monitor():
 
         result = read_json_from_file(LDMON_PATH)

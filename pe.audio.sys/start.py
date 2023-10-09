@@ -292,7 +292,7 @@ def stop_zita_link():
         # REMOTE
         zargs = json_dumps( (get_my_ip(), None, 'stop') )
         remotecmd = f'aux zita_j2n {zargs}'
-        send_cmd(remotecmd, host=raddr, port=rport)
+        send_cmd(remotecmd, host=raddr, port=rport, timeout=1)
 
         # LOCAL
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
@@ -397,10 +397,35 @@ def stop_processes(mode):
     wait4jackdkilled()
 
 
+def run_special_plugins():
+    """ Special plugins
+
+        - Amplifier switch needs to power on the external DAC in order to
+          by accesible from the alsa module
+
+        - Zeroing alsa mixer must be done before restoring
+          the saved level if alsa mixer is used for volume management.
+    """
+
+    # Using 'call' to wait for the script to finish
+    if 'power_amp_control.py' in CONFIG['plugins']:
+        cmd = f'{MAINFOLDER}/share/plugins/power_amp_control.py start'
+        print(f'(start) starting plugin: power_amp_control.py ...')
+        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+    if 'sound_cards_prepare.py' in CONFIG['plugins']:
+        cmd = f'{MAINFOLDER}/share/plugins/sound_cards_prepare.py start'
+        print(f'(start) starting plugin: sound_cards_prepare.py ...')
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+
 def run_plugins(mode='start'):
     """ (void)
     """
     for plugin in CONFIG['plugins']:
+
+        if plugin == 'sound_cards_prepare.py' or plugin == 'power_amp_control.py':
+            continue
 
         # (i) Some elements on the plugins list from config.yml can be a dict,
         #     e.g the ecasound_peq, so we need to extract the plugin name.
@@ -559,6 +584,8 @@ if __name__ == "__main__":
         print(f'(start) Bye!')
         sys.exit()
 
+    # SPECIAL PLUGINS.
+    run_special_plugins()
 
     # STARTING:
     if mode in ('all'):

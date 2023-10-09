@@ -138,7 +138,7 @@ Only recommended if you want to run an Spotify desktop client at startup. To ena
 
 You can use a commercial `sispmctl` compatible USB controlled power strip.
 
-Also, you can home made your own USB controlled power socket, for instance by using some cheap `usbrelay` compatible relay board, more info inside the provided `bin/ampli.sh_usbrelay.example`.
+Also, you can home made your own USB controlled power socket, for instance by using some cheap `usbrelay` compatible relay board, more info inside the provided `bin/amp_on_off.py_usbrelay.example`.
 
 You need to prepare a custom script to manage the power socket:
 
@@ -147,7 +147,7 @@ You need to prepare a custom script to manage the power socket:
 
 Then declare it inside `config.yml`, for instance:
 
-    amp_manager:   ~/bin/ampli.sh
+    amp_manager:   ~/bin/amp_on_off.py
 
 This way `pe.audio.sys` will control the amp power outlet, as well will notice the power outlet state changes.
 

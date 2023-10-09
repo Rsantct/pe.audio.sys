@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-    A module to load a new loudspeaker.
-
     ACHTUNG: this is a purely geek template  :-P
+
+    A module to load a new loudspeaker always attached to the same
+    sound card audio interface, so JACK process will keep untouch.
+
+    Just will load a new config.yml and restarting Brutefir accordingly
+    as per loudspeakers/XXXXX/brutefir_config
 
     You need to define MY_LSPK before calling main(), for example:
 
