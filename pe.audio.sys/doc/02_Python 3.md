@@ -54,3 +54,12 @@ Update python setuptools:
     sudo apt install python3-serial
     (or python3 -m pip install pyserial)
 
+### Optional to manage volume through by the sound card ALSA mixer:
+
+More info at: `config.yml.sample`
+
+The distribution (APT) `pyalsaaudio` package is likely to be outdated, so we use **pip**:
+
+    sudo apt-get install python3-dev
+    sudo pip3 install pyalsaaudio
+
