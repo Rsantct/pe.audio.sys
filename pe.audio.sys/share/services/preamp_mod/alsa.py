@@ -7,10 +7,11 @@
     Manages an alsa mixer element for volume control purposes
 """
 
-import sys
-import os
-import alsaaudio
-from   subprocess import check_output
+import  sys
+import  os
+import  alsaaudio
+from    subprocess import check_output
+from    pkg_resources import get_distribution
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
@@ -34,13 +35,9 @@ def init_globals():
 
     def get_version():
         try:
-            tmp = check_output('pip3 show pyalsaaudio | grep -i version', shell=True).decode().strip()
-        except:
-            tmp = ''
-        if tmp:
-            v = tmp.split()[-1].strip()
+            v = get_distribution('pyalsaaudio').version
             return v
-        else:
+        except:
             return '0.0.0'
 
 
