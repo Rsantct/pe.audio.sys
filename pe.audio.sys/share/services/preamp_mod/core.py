@@ -616,13 +616,13 @@ class Preamp(object):
                 if amixer_result == 'done':
                     bf.set_gains( candidate, nolevel=True )
 
-                elif 'clamped' in amixer_result:
-                    # example: "clamped, dB pending: 3.0"
+                else:
+                    # If for some reason alsa mixer has not adjusted the wanted dB,
+                    # it will return some info ended by the amount of pending dB
+                    # to be applied. Example:
+                    #   "clamped, dB pending: 3.0"
                     dBpending = round( float(amixer_result.split()[-1]), 1)
                     bf.set_gains( candidate, nolevel=True, dBextra=dBpending )
-
-                else:
-                    return amixer_result
 
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
