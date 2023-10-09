@@ -23,7 +23,6 @@ Update python setuptools:
     sudo python3 -m pip install --upgrade setuptools
     python3 -m pip install pyaml
     python3 -m pip install python-mpd2
-    python3 -m pip install python-alsaaudio
     python3 -m pip install pydbus
     python3 -m pip install numpy
     python3 -m pip install scipy
