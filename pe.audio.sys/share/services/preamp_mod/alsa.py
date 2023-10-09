@@ -119,7 +119,7 @@ def percent2raw(percent):
 
 
 def dB2raw(dB, zero):
-    """ Find the proper raw value to send to 'amixer',
+    """ Calculates the proper raw value to send to 'amixer',
         as per the zero and step_dB settings
     """
     raw = int(round((zero + dB / STEP_dB)))
@@ -128,7 +128,7 @@ def dB2raw(dB, zero):
 
 def dB2values(dB, mode='raw'):
     """ Main routine to adjust the soundcard channels
-        as per de desired dB level
+        as per the desired dB level
     """
 
     values = []
@@ -163,6 +163,9 @@ def dB2values(dB, mode='raw'):
 
 def _set_amixer_gain(dB, mode='percentage'):
     """ This manages VOLUME_UNITS_RAW or VOLUME_UNITS_PERCENTAGE
+
+        RETURNS: 'done' OR 'some_info XX.X'
+                 Where XX.X are the dB to be managed by core.py
     """
     error = ''
 
@@ -176,7 +179,7 @@ def _set_amixer_gain(dB, mode='percentage'):
 
     # If there are different dBs pending along the sound card channels,
     # we must regress and limit the volume applied in alsamixer, since
-    # the volume control of the convolver is executed on all the channels
+    # the volume control of the convolver is executed on all the audio channels
     # at the same time
 
     if len( set(dBs_pending) ) > 1:
@@ -191,18 +194,21 @@ def _set_amixer_gain(dB, mode='percentage'):
             if mode=='raw':
                 MIXER.setvolume(value, i, units=alsaaudio.VOLUME_UNITS_RAW)
             else:
-                # ols versions does not manage 'units' argument
+                # old versions does not manage 'units' argument, defaults to percentage
                 MIXER.setvolume(value, i)
         except Exception as e:
             error = str(e)
+            print(f'(alsa.py) ERROR: {error}')
             break
 
-    if error:
-        print(f'(alsa.py) ERROR: {error}')
+    if error :
+        print(f'(alsa.py) ERROR with MIXER, dB pending: {dB}')
+        result = f'ALSA ERROR, dB pending: {dB}'
 
-    if pending or error:
-        result = f'clamped, dB pending: {pending}'
-        print(f'(alsa.py) INFO: clamped, dB pending: {pending}')
+    elif pending :
+        print(f'(alsa.py) CLAMPED: dB pending: {pending}')
+        result = f'ALSA clamped, dB pending: {pending}'
+
     else:
         result = 'done'
 
