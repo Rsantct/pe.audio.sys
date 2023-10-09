@@ -34,7 +34,7 @@ def init_globals():
 
     def get_version():
         try:
-            tmp = check_output('pip3 list | grep alsaaudio', shell=True).decode().strip()
+            tmp = check_output('pip3 show pyalsaaudio | grep -i version', shell=True).decode().strip()
         except:
             tmp = ''
         if tmp:
