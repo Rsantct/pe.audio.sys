@@ -358,10 +358,10 @@ def stop_processes(mode):
             try:
                 sp.check_output('pgrep -f jackd'.split())
                 tries -= 1
-                sleep(.5)
+                sleep(1)
             except:
                 print('(start) jackd was killed')
-                sleep(.5)
+                sleep(1)
                 return
         # This should never happen
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
@@ -441,6 +441,7 @@ def run_plugins(mode='start'):
 
         elif mode == 'stop':
             print(f'(start.py) stopping plugin: {plugin}', sp.check_output(cmd, shell=True).decode() )
+            sleep(.25)  # this is necessary because of asyncronous stopping
 
         else:
             pass
@@ -538,6 +539,19 @@ def prepare_log_header():
         f.write(f'{Fmt.END}')
 
 
+def usb_dac_watchdog(mode='stop'):
+
+    if mode == 'stop':
+        sp.Popen(f'pkill -KILL -f "usb_dac_watchdog.py"', shell=True)
+
+    elif mode=='start':
+
+        if 'usb_dac_watchdog' in CONFIG and CONFIG["usb_dac_watchdog"]==True:
+            if not process_is_running('usb_dac_watchdog.py'):
+                sp.Popen(f'{MAINFOLDER}/share/plugins/usb_dac_watchdog.py start', shell=True)
+
+
+
 if __name__ == "__main__":
 
     # READING OPTIONS FROM COMMAND LINE
@@ -574,13 +588,17 @@ if __name__ == "__main__":
     # Optional REMOTE SOURCES
     REMOTES = get_remote_sources()
 
-    # STOPPING:
-    stop_processes(mode)
+    # USB_DAC_WATCHDOG
+    usb_dac_watchdog('stop')
 
+    # STOPPING ALL THE STAFF
+    stop_processes(mode)
     if mode in ('stop', 'shutdown'):
         # keeping the restart service always on
         if not process_is_running('server.py restart'):
             manage_server(mode='start', service='restart')
+        # RESTORING USB_DAC_WATCHDOG
+        usb_dac_watchdog('start')
         print(f'(start) Bye!')
         sys.exit()
 
@@ -631,9 +649,11 @@ if __name__ == "__main__":
         run_plugins()
 
 
-    # RUN THE SERVERS
+    # RUN THE 'restart' SERVER
     if not process_is_running('server.py restart'):
         manage_server(mode='start', service='restart')
+
+    # RUN THE 'peaudiosys' SERVER
     manage_server(mode='start', service='peaudiosys')
     if not server_is_running(who_asks='start'):
         print(f'{Fmt.BOLD}(start) PANIC: \'peaudiosys\' service is down. Bye.{Fmt.END}')
@@ -647,6 +667,11 @@ if __name__ == "__main__":
                 print( f'{Fmt.BLUE}(start) triyng macro \'{mname}\'{Fmt.END}' )
                 sp.Popen( f'{MAINFOLDER}/macros/{mname}', shell=True )
 
+    # RESTORING USB_DAC_WATCHDOG
+    usb_dac_watchdog('start')
+
     # END
     print(f'{Fmt.BOLD}{Fmt.BLUE}(start) END.{Fmt.END}')
+
     sys.exit()
+
