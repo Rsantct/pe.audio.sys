@@ -296,7 +296,7 @@ amp_off_stops_player: true
 # Amplifier switch off will turn off the computer:
 amp_off_shutdown: false
 
-# USB DAC watchdog (stop/start pe.audio.sys as per the USB DAC availability)
+# A watchdog for an external USB DAC with standby mode to start/stop pe.audio.sys
 usb_dac_watchdog: false
 
 # Control web page behavior
