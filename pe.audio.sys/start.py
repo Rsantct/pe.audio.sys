@@ -440,8 +440,11 @@ def run_plugins(mode='start'):
             sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
         elif mode == 'stop':
-            print(f'(start.py) stopping plugin: {plugin}', sp.check_output(cmd, shell=True).decode() )
-            sleep(.25)  # this is necessary because of asyncronous stopping
+            try:
+                ans = sp.check_output(cmd, shell=True).decode()
+            except Exception as e:
+                ans = str(e)
+            print(f'(start.py) stopping plugin: {plugin}', ans )
 
         else:
             pass
