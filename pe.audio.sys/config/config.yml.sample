@@ -1,7 +1,7 @@
 # ===================== ALSAMIXER VOLUME CONTROL (OPTIONAL) ====================
 
 # You need to investigate 'alsamixer' and 'amixer' command line tools
-#     'control':   the simple mixer control identifier that you want to use 
+#     'control':   the simple mixer control identifier that you want to use
 #     'limits':    the limit values as per shown by the 'amixer' tool (min, max)
 #     'zeros':     the values that defines your 0 dB settintg FOR EACH CHANNEL (list of values)
 #     'step_dB':   the fraction of dB corresponding to each value change
@@ -36,14 +36,14 @@ jack:
     # device:     guid:0x00130e01000406d2
     # period:     1024
     # nperiods:   3
-    # miscel:     
+    # miscel:
 
     # The most common "ALSA" backend (see your device name running aplay -l)
     backend:    alsa
     device:     hw:USB,0
     period:     1024
     nperiods:   2
-    miscel:     
+    miscel:
 
     # Additional cards to be used in jack by resampling,
     # either as capture or as playback devices.
@@ -216,9 +216,6 @@ source_monitors:
 
 plugins:
 
-    ## A watchdog for USB external DAC with standby mode
-    - usb_dac_watchdog.py
-
     ## Brutefir peak monitor (this should never occur, see plugin details)
     - peak_monitor.py
 
@@ -298,6 +295,9 @@ amp_off_stops_player: true
 
 # Amplifier switch off will turn off the computer:
 amp_off_shutdown: false
+
+# USB DAC watchdog (stop/start pe.audio.sys as per the USB DAC availability)
+usb_dac_watchdog: false
 
 # Control web page behavior
 web_config:
