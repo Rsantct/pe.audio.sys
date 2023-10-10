@@ -1019,7 +1019,11 @@ function ck_peaudiosys_restart() {
 
 
 function omd_ampli_set(mode) {
-    control_cmd( 'aux amp_switch ' + mode );
+    const ans = control_cmd( 'aux amp_switch ' + mode );
+    if ( ! ans ) {
+        // Force to switch on the ampifier stuff (can include an USB DAC)
+        control_cmd( 'amplifier_restart' );
+    }
 }
 
 

@@ -21,6 +21,52 @@ from    fmt         import Fmt
 
 # --- pe.audio.sys common usage functions:
 
+def detect_USB_DAC(cname):
+    """ Check if the provided card name is available,
+        and if it is USB type.
+    """
+    result = False
+    tmp = sp.check_output('aplay -l'.split()).decode().strip().split('\n')
+    for line in tmp:
+        if cname in line and 'USB' in line.upper():
+            result = True
+    return result
+
+
+def jackd_process(cname):
+    """ Check the if the jackd process is running
+    """
+    try:
+        tmp = sp.check_output('pgrep -fla jackd'.split()).decode().strip()
+    except:
+        tmp = ''
+    if cname in tmp:
+        return True
+    else:
+        return False
+
+
+def jackd_response(cname=''):
+    """ Check the jackd process responds properly
+        (!) A false jackd process may occur after the USB DAC
+            was disconnected
+    """
+    def check_jack_lsp():
+        try:
+            sp.check_output('jack_lsp')
+            return True
+        except:
+            return False
+
+    result = False
+
+    if jackd_process(cname):
+        if check_jack_lsp():
+            result = True
+
+    return result
+
+
 def process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
