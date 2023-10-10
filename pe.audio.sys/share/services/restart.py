@@ -15,7 +15,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config      import  LOG_FOLDER
+from    miscel      import  LOG_FOLDER, manage_amp_switch
 from    fmt         import  Fmt
 
 
@@ -38,6 +38,13 @@ def _peaudiosys_restart():
     return '(restart) restarting peaudiosys'
 
 
+def _amplifier_restart():
+    # This is an alternative when 'peaudiosys' service is down
+    print('restarting amplifier ... .. .')
+    manage_amp_switch('on')
+    return '(restart) restarting amplifier'
+
+
 # Interface function for this module
 def do( cmd ):
 
@@ -46,7 +53,9 @@ def do( cmd ):
     result = f'(restart) bad command \'{cmd}\''
 
     cmdmap = {  'server_restart':       _server_restart,
-                'peaudiosys_restart':   _peaudiosys_restart }
+                'peaudiosys_restart':   _peaudiosys_restart,
+                'amplifier_restart':   _amplifier_restart
+             }
 
 
     if cmd in cmdmap:
