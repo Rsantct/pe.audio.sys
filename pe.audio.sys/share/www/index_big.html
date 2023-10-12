@@ -53,7 +53,8 @@
                         onclick="ck_peaudiosys_restart()"> &#128585;
                 </button>
             </td>
-            <td id="main_cside"></td>
+            <td id="main_cside">
+            </td>
             <td id="main_rside">
                 <button id="advanced_switch" title="advanced controls" style="font-size:0.7em" onclick="ck_display_advanced('toggle')">&#9881;</button>
             </td>
@@ -68,7 +69,7 @@
             <!-- AMPLI switch -->
             <td id="OnOff"     rowspan="2">
                 <button type="button" id="OnOffButton"
-                        title="Amplifier ON/OFF" onmousedown="omd_ampli_set('toggle')">-</button>
+                        title="Amplifier ON/OFF" onmousedown="omd_ampli_switch('toggle')">-</button>
             </td>
 
             <!-- LEVEL display -->
@@ -144,7 +145,7 @@
             <td id="level_buttons12">
                 <button type="button" onmousedown="omd_audio_change('level', -1)" >
                         &nbsp;-1&nbsp;</button>
-                <button type="button" onmousedown="mute_toggle()" id="buttonMute" >
+                <button type="button" onmousedown="omd_mute_toggle()" id="buttonMute" >
                         &#128263;</button>
                 <button type="button" onmousedown="omd_audio_change('level', +1)" >
                         &nbsp;+1&nbsp;</button>
