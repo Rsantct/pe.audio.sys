@@ -35,9 +35,9 @@
     $command = $_REQUEST["command"];
 
     // PHP ---> App server side
-    if ( strpos($command, "_restart") ) {
+    if ( strpos($command, "restart_")===0 or strpos($command, "amp_")===0 ) {
 
-        echo send_cmd($command, 'restart');
+        echo send_cmd($command, 'peaudiosys_ctrl');
 
     } else {
 
