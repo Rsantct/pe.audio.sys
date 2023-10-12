@@ -330,13 +330,15 @@ def manage_server( mode='', service='peaudiosys'):
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}(start) stopping \'server.py {service}\'{Fmt.END}')
-        sp.Popen( f'pkill -KILL -f "server.py {service}" \
+        # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
+        #              to avoid confusion with 'peaudiosys_ctrl'
+        sp.Popen( f'pkill -KILL -f "server.py {service} " \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
     elif mode == 'start':
         # Start
-        if service == 'restart':
+        if service == 'peaudiosys_ctrl':
             SRV_PORT += 1
         print(f'{Fmt.BLUE}(start) starting \'server.py ' \
               f'{service} {SRV_ADDR}:{SRV_PORT}\'{Fmt.END}')
@@ -554,6 +556,10 @@ def usb_dac_watchdog(mode='stop'):
                 sp.Popen(f'{MAINFOLDER}/share/plugins/usb_dac_watchdog.py start', shell=True)
 
 
+def peaudiosys_ctrl_on():
+    if not process_is_running('server.py peaudiosys_ctrl'):
+        manage_server(mode='start', service='peaudiosys_ctrl')
+
 
 if __name__ == "__main__":
 
@@ -591,15 +597,15 @@ if __name__ == "__main__":
     # Optional REMOTE SOURCES
     REMOTES = get_remote_sources()
 
-    # USB_DAC_WATCHDOG
+    # USB_DAC_WATCHDOG (must not interfere with this)
     usb_dac_watchdog('stop')
+
+    # THE 'peaudiosys_ctrl' SERVER must be always ON
+    peaudiosys_ctrl_on()
 
     # STOPPING ALL THE STAFF
     stop_processes(mode)
     if mode in ('stop', 'shutdown'):
-        # keeping the restart service always on
-        if not process_is_running('server.py restart'):
-            manage_server(mode='start', service='restart')
         # RESTORING USB_DAC_WATCHDOG
         usb_dac_watchdog('start')
         print(f'(start) Bye!')
@@ -650,11 +656,6 @@ if __name__ == "__main__":
     # PLUGINS
     if mode in ('all'):
         run_plugins()
-
-
-    # RUN THE 'restart' SERVER
-    if not process_is_running('server.py restart'):
-        manage_server(mode='start', service='restart')
 
     # RUN THE 'peaudiosys' SERVER
     manage_server(mode='start', service='peaudiosys')
