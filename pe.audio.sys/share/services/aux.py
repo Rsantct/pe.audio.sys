@@ -359,7 +359,10 @@ def do( cmd, arg=None ):
 
     cmd = cmd.lower()
 
-    if   cmd == 'get_macros':
+    if   cmd == 'amp_switch':
+        result = manage_amp_switch(arg)
+
+    elif cmd == 'get_macros':
         result = get_macros()
 
     elif cmd == 'run_macro':
