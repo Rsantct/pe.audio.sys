@@ -1012,18 +1012,14 @@ function ck_play_url() {
 //////// HANDLERS: AUX 'onmousedown' 'onclick' 'oninput' ////////
 
 function ck_peaudiosys_restart() {
-    control_cmd('peaudiosys_restart');
+    control_cmd('restart_peaudiosys');
     ck_display_advanced('off');
     page_update();
 }
 
 
-function omd_ampli_set(mode) {
-    const ans = control_cmd( 'aux amp_switch ' + mode );
-    if ( ! ans ) {
-        // Force to switch on the ampifier stuff (can include an USB DAC)
-        control_cmd( 'amplifier_restart' );
-    }
+function omd_ampli_switch(mode) {
+    const ans = control_cmd( 'amp_switch ' + mode );
 }
 
 
