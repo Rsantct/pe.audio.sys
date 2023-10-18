@@ -50,7 +50,6 @@ def do( cmdphrase):
         arg = cmdphrase.split()[-1]
     except:
         cmd = arg = ''
-        return result
 
 
     if   cmd == 'restart_server':
