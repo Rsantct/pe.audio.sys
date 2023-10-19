@@ -277,7 +277,7 @@ function init(){
                 document.getElementById( "button_toggleEQgraphs").style.display = "none";
             }
         }catch(e){
-            console.log('problems with \'aux get_web_config\' command', e.name, e.message);
+            console.log('response error to \'aux get_web_config\'', e.message);
         }
     }
 
@@ -396,7 +396,7 @@ function page_update() {
                 return;
             }
         }catch(e){
-            console.log( 'error getting player info', e.name, e.message );
+            console.log( 'response error to player get_all_info', e.message );
             return;
         }
     }
@@ -563,9 +563,11 @@ function page_update() {
 
     function aux_info_get(){
         try{
-            aux_info  = JSON.parse( control_cmd('aux info') );
+            aux_info = JSON.parse( control_cmd('aux info') );
         }catch(e){
-            console.log('problems with \'aux info\' command', e.name, e.message);
+            console.log('response error to \'aux info\'', e.message);
+            // Backup method to retrieve the amplifier state:
+            aux_info.amp = control_cmd('amp_switch state');
         }
     }
 
@@ -576,6 +578,14 @@ function page_update() {
             document.getElementById("OnOffButton").style.display = 'block';
         }else{
             document.getElementById("OnOffButton").style.display = 'none';
+        }
+        if ( ! aux_info.last_macro ){
+            clear_macro_buttons_highlight();
+        }else{
+            const x = aux_info.last_macro;
+            const mName = x.slice(x.indexOf('_') + 1, x.length);
+            clear_macro_buttons_highlight();
+            highlight_macro_button(mName)
         }
     }
 
@@ -738,6 +748,9 @@ function page_update() {
         }
     }
 
+    // AUX STUFF
+    aux_info_get();
+    aux_info_refresh();
 
     // PREAMP STUFF
     state_get();
@@ -763,11 +776,6 @@ function page_update() {
     // PLAYER STUFF
     player_get();
     player_refresh();
-
-
-    // AUX STUFF
-    aux_info_get();
-    aux_info_refresh();
 
     LU_refresh();
 
@@ -1012,18 +1020,14 @@ function ck_play_url() {
 //////// HANDLERS: AUX 'onmousedown' 'onclick' 'oninput' ////////
 
 function ck_peaudiosys_restart() {
-    control_cmd('peaudiosys_restart');
+    control_cmd('restart_peaudiosys');
     ck_display_advanced('off');
     page_update();
 }
 
 
-function omd_ampli_set(mode) {
-    const ans = control_cmd( 'aux amp_switch ' + mode );
-    if ( ! ans ) {
-        // Force to switch on the ampifier stuff (can include an USB DAC)
-        control_cmd( 'amplifier_restart' );
-    }
+function omd_ampli_switch(mode) {
+    const ans = control_cmd( 'amp_switch ' + mode );
 }
 
 
@@ -1032,16 +1036,16 @@ function oi_LU_slider_action(slider_value){
 }
 
 
+function highlight_macro_button(id){
+    document.getElementById(id).className = 'macro_button_highlighted';
+}
+
 function oc_run_macro(mFname){
-
-    function highlight_macro_button(id){
-        document.getElementById(id).className = 'macro_button_highlighted';
-    }
-
 
     control_cmd( 'aux run_macro ' + mFname );
 
-    var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+    const mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+
     clear_macro_buttons_highlight();
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
@@ -1194,7 +1198,7 @@ function fill_in_playlists_selector() {
     try{
         plists = JSON.parse( control_cmd( 'player get_playlists' ) );
     }catch(e){
-        console.log( e.name, e.message );
+        console.log( 'response error to \'get_playlists\'', e.message );
         return plists;
     }
 

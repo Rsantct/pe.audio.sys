@@ -48,7 +48,7 @@
         $address =         get_config( "peaudiosys_address" );
         $port    = intval( get_config( "peaudiosys_port"    ) );
 
-        if ($service === 'restart'){
+        if ($service === 'peaudiosys_ctrl'){
             $port = $port + 1;
         }
 
