@@ -579,6 +579,14 @@ function page_update() {
         }else{
             document.getElementById("OnOffButton").style.display = 'none';
         }
+        if ( ! aux_info.last_macro ){
+            clear_macro_buttons_highlight();
+        }else{
+            const x = aux_info.last_macro;
+            const mName = x.slice(x.indexOf('_') + 1, x.length);
+            clear_macro_buttons_highlight();
+            highlight_macro_button(mName)
+        }
     }
 
 
@@ -1028,16 +1036,16 @@ function oi_LU_slider_action(slider_value){
 }
 
 
+function highlight_macro_button(id){
+    document.getElementById(id).className = 'macro_button_highlighted';
+}
+
 function oc_run_macro(mFname){
-
-    function highlight_macro_button(id){
-        document.getElementById(id).className = 'macro_button_highlighted';
-    }
-
 
     control_cmd( 'aux run_macro ' + mFname );
 
-    var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+    const mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+
     clear_macro_buttons_highlight();
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
