@@ -277,7 +277,7 @@ function init(){
                 document.getElementById( "button_toggleEQgraphs").style.display = "none";
             }
         }catch(e){
-            console.log('problems with \'aux get_web_config\' command', e.name, e.message);
+            console.log('response error to \'aux get_web_config\'', e.message);
         }
     }
 
@@ -396,7 +396,7 @@ function page_update() {
                 return;
             }
         }catch(e){
-            console.log( 'error getting player info', e.name, e.message );
+            console.log( 'response error to player get_all_info', e.message );
             return;
         }
     }
@@ -563,9 +563,11 @@ function page_update() {
 
     function aux_info_get(){
         try{
-            aux_info  = JSON.parse( control_cmd('aux info') );
+            aux_info = JSON.parse( control_cmd('aux info') );
         }catch(e){
-            console.log('problems with \'aux info\' command', e.name, e.message);
+            console.log('response error to \'aux info\'', e.message);
+            // Backup method to retrieve the amplifier state:
+            aux_info.amp = control_cmd('amp_switch state');
         }
     }
 
@@ -738,6 +740,9 @@ function page_update() {
         }
     }
 
+    // AUX STUFF
+    aux_info_get();
+    aux_info_refresh();
 
     // PREAMP STUFF
     state_get();
@@ -763,11 +768,6 @@ function page_update() {
     // PLAYER STUFF
     player_get();
     player_refresh();
-
-
-    // AUX STUFF
-    aux_info_get();
-    aux_info_refresh();
 
     LU_refresh();
 
@@ -1190,7 +1190,7 @@ function fill_in_playlists_selector() {
     try{
         plists = JSON.parse( control_cmd( 'player get_playlists' ) );
     }catch(e){
-        console.log( e.name, e.message );
+        console.log( 'response error to \'get_playlists\'', e.message );
         return plists;
     }
 
