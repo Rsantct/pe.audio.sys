@@ -56,8 +56,8 @@ def load_extra_cards(channels=2):
         else:
             quality = ''
 
-        if ('misc' in params) and (params['misc']):
-            misc = params['misc']
+        if ('misc_params' in params) and (params['misc_params']):
+            misc = params['misc_params']
         else:
             misc = ''
 
