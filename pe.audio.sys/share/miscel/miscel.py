@@ -142,13 +142,13 @@ def manage_amp_switch(mode):
             sleep(1)
 
 
-    cur_state = get_amp_state()
     new_state  = '';
 
     if mode == 'state':
-        result = cur_state
+        result = get_amp_state()
 
     elif mode == 'toggle':
+        cur_state = get_amp_state()
         # if unknown state, this switch defaults to 'on'
         new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
 
