@@ -492,34 +492,25 @@ def check_Mplayer_config_file(profile='istreams'):
         return f'ERROR bad Mplayer profile \'{profile}\''
 
 
-def detect_spotify_client(timeout=10):
-    """ Detects the Spotify Client in use: desktop or librespot
+def detect_spotify_client():
+    """ Detects the Spotify Client in use: 'desktop' or 'librespot'
         (string)
     """
     result = ''
 
-    # Early return if no Spotify plugin is used:
-    # (filtering not string items, e.g. ecasound plugin is a dictionary)
-    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] if type(x)==str ):
-        return result
+    # If using librespot
+    try:
+        sp.check_output( 'pgrep -f librespot'.split() )
+        result = 'librespot'
+    except:
+        pass
 
-    tries = timeout
-    while tries:
-        try:
-            sp.check_output( 'pgrep -f Spotify'.split() )
-            result = 'desktop'
-        except:
-            pass
-        try:
-            sp.check_output( 'pgrep -f librespot'.split() )
-            result = 'librespot'
-        except:
-            pass
-        if result:
-            return result
-        else:
-            tries -= 1
-            sleep(1)
+    # If using plugins/spotify_monitor.py while running a Spotify Desktop client
+    try:
+        sp.check_output( 'pgrep -f spotify_monitor'.split() )
+        result = 'desktop'
+    except:
+        pass
 
     return result
 
