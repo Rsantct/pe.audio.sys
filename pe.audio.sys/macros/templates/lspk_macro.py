@@ -152,7 +152,8 @@ def main(verbose=False):
 
 
     # 8- Restart the server
-    call( f'pkill -KILL -f "server.py\ peaudiosys"', shell=True)  # call is blocking
+    # Using `call` because it is blocking, also notice the ending blank in `pkill` argument:
+    call( f'pkill -KILL -f "server.py\ peaudiosys\ "', shell=True)
     SRV_HOST = CONFIG['peaudiosys_address']
     SRV_PORT = CONFIG['peaudiosys_port']
     Popen( f'python3 {SERVERPATH} peaudiosys {SRV_HOST} {SRV_PORT} >/dev/null 2>&1',
