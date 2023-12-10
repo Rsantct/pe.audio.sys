@@ -1040,6 +1040,7 @@ function highlight_macro_button(id){
     document.getElementById(id).className = 'macro_button_highlighted';
 }
 
+
 function oc_run_macro(mFname){
 
     control_cmd( 'aux run_macro ' + mFname );
