@@ -826,16 +826,15 @@ class Preamp(object):
         """
         try:
             pre_ins = jack.get_ports('pre_in_loop', is_input=True)
-
             cables = []
             for p in pre_ins:
                 s = jack.get_all_connections(p)[0]
                 cables.append( (s, p) )
                 jack.connect(s, p, 'disconnect')
-
             jack.connect(cables[0][0], cables[1][1])
             jack.connect(cables[1][0], cables[0][1])
             return 'done'
+
         except Exception as e:
             return str(e)
 
