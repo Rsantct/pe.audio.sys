@@ -140,6 +140,8 @@ def do( cmd, argstring ):
             'polarity':         preamp.set_polarity,
             'mute':             preamp.set_mute,
             'subsonic':         preamp.set_subsonic,
+            'swap_lr':          preamp.swap_lr,
+            'lr_swap':          preamp.swap_lr,
 
             'level':            preamp.set_level,
             'volume':           preamp.set_level,

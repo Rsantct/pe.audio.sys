@@ -251,6 +251,7 @@ class Preamp(object):
             set_solo
             set_mute
             set_midside
+            swap_lr
 
             get_state
             get_inputs
@@ -290,6 +291,10 @@ class Preamp(object):
         self.balance_max = float(CONFIG["balance_max"])
         # Initiate brutefir input connected ports (used from switch_convolver)
         self.bf_sources = bf.get_in_connections()
+        # get swap LR
+        self.state["lr_swapped"] = self._check_pre_in_swapped()
+        self.save_state()
+
 
         # INTERNAL
 
@@ -343,6 +348,31 @@ class Preamp(object):
     # (i) Remember to return some result from any method below.
     #     Also notice that we use *dummy to accommodate the preamp.py parser
     #     mechanism wich always will include two arguments for any Preamp call.
+
+    def _get_pre_in_cables(self):
+        """ Get preamp source wiring
+        """
+        pre_ins = jack.get_ports('pre_in_loop', is_input=True)
+        cables = []
+        for p in pre_ins:
+            try:
+                s = jack.get_all_connections(p)[0]
+            except:
+                s = None
+            cables.append( (s, p) )
+        return cables
+
+
+    def _check_pre_in_swapped(self):
+        """ Check for crossed channels in preamp source wiring
+        """
+        cables = self._get_pre_in_cables()
+        try:
+            res = cables[0][0].name > cables[1][0].name
+        except:
+            res = False
+        return res
+
 
     def update_drc_headroom(self, x):
         self.drc_headroom = x
@@ -818,6 +848,27 @@ class Preamp(object):
         else:
             return 'bad option'
         return 'done'
+
+
+    def swap_lr(self, *dummy):
+        """ Swap L <> R channels at preamp input
+            Useful for some cases as swapped film channels when downmixed
+        """
+
+        def swap(cables):
+            jack.connect(cables[0][0], cables[1][1])
+            jack.connect(cables[1][0], cables[0][1])
+
+
+        try:
+            cables = self._get_pre_in_cables()
+            jack.clear_preamp()
+            swap( cables )
+            self.state["lr_swapped"] = self._check_pre_in_swapped()
+            return 'done'
+
+        except Exception as e:
+            return f'cannot swap preamp inputs'
 
 
     def set_subsonic(self, value, *dummy):

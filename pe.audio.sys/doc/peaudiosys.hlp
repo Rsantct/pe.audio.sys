@@ -27,6 +27,8 @@ All commands prefixed with 'preamp':
     midside         off | mid | side
     polarity        ++  | +-  | -+  | --    LR polarity
     mute            off | on  | toggle
+    lr_swap                                 Toggles L/R channel wiring at preamp input
+                                            (Useful for some cases as swapped film channels when downmixed)
 
 
   - Gain and Eq stage:

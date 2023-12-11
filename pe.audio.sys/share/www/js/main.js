@@ -274,7 +274,7 @@ function init(){
             main_sel_mode   = web_config.main_selector;
             mFnames         = web_config.user_macros;
             if (web_config.show_graphs==false){
-                document.getElementById( "button_toggleEQgraphs").style.display = "none";
+                document.getElementById( "bt_toggle_eq_graphs").style.display = "none";
             }
         }catch(e){
             console.log('response error to \'aux get_web_config\'', e.message);
@@ -305,7 +305,7 @@ function init(){
         }
 
         // If any macro found, lets show the corresponding button
-        document.getElementById( "macros_toggle_button").style.display = 'inline';
+        document.getElementById( "bt_macros_toggle").style.display = 'inline';
 
 
         // Expands number of buttons to a multiple of 3 (arrange of Nx3 buttons)
@@ -419,26 +419,26 @@ function page_update() {
         function player_controls_update(playerState) {
 
             if        ( playerState == 'stop' ) {
-                document.getElementById("buttonStop").style.background  = "rgb(185, 185, 185)";
-                document.getElementById("buttonStop").style.color       = "white";
-                document.getElementById("buttonPause").style.background = "rgb(100, 100, 100)";
-                document.getElementById("buttonPause").style.color      = "lightgray";
-                document.getElementById("buttonPlay").style.background  = "rgb(100, 100, 100)";
-                document.getElementById("buttonPlay").style.color       = "lightgray";
+                document.getElementById("bt_stop").style.background  = "rgb(185, 185, 185)";
+                document.getElementById("bt_stop").style.color       = "white";
+                document.getElementById("bt_pause").style.background = "rgb(100, 100, 100)";
+                document.getElementById("bt_pause").style.color      = "lightgray";
+                document.getElementById("bt_play").style.background  = "rgb(100, 100, 100)";
+                document.getElementById("bt_play").style.color       = "lightgray";
             } else if ( playerState == 'pause' ){
-                document.getElementById("buttonStop").style.background  = "rgb(100, 100, 100)";
-                document.getElementById("buttonStop").style.color       = "lightgray";
-                document.getElementById("buttonPause").style.background = "rgb(185, 185, 185)";
-                document.getElementById("buttonPause").style.color      = "white";
-                document.getElementById("buttonPlay").style.background  = "rgb(100, 100, 100)";
-                document.getElementById("buttonPlay").style.color       = "lightgray";
+                document.getElementById("bt_stop").style.background  = "rgb(100, 100, 100)";
+                document.getElementById("bt_stop").style.color       = "lightgray";
+                document.getElementById("bt_pause").style.background = "rgb(185, 185, 185)";
+                document.getElementById("bt_pause").style.color      = "white";
+                document.getElementById("bt_play").style.background  = "rgb(100, 100, 100)";
+                document.getElementById("bt_play").style.color       = "lightgray";
             } else if ( playerState == 'play' ) {
-                document.getElementById("buttonStop").style.background  = "rgb(100, 100, 100)";
-                document.getElementById("buttonStop").style.color       = "lightgray";
-                document.getElementById("buttonPause").style.background = "rgb(100, 100, 100)";
-                document.getElementById("buttonPause").style.color      = "lightgray";
-                document.getElementById("buttonPlay").style.background  = "rgb(185, 185, 185)";
-                document.getElementById("buttonPlay").style.color       = "white";
+                document.getElementById("bt_stop").style.background  = "rgb(100, 100, 100)";
+                document.getElementById("bt_stop").style.color       = "lightgray";
+                document.getElementById("bt_pause").style.background = "rgb(100, 100, 100)";
+                document.getElementById("bt_pause").style.color      = "lightgray";
+                document.getElementById("bt_play").style.background  = "rgb(185, 185, 185)";
+                document.getElementById("bt_play").style.color       = "white";
             }
         }
 
@@ -553,10 +553,10 @@ function page_update() {
         // Displays the [url] button if input == 'iradio' or 'istreams'
         if (state.input == "iradio" ||
             state.input == "istreams") {
-            document.getElementById( "url_button").style.display = "inline";
+            document.getElementById( "bt_url").style.display = "inline";
         }
         else {
-            document.getElementById( "url_button").style.display = "none";
+            document.getElementById( "bt_url").style.display = "none";
         }
     }
 
@@ -574,10 +574,10 @@ function page_update() {
 
     function aux_info_refresh(){
         if ( aux_info.amp == 'off' || aux_info.amp == 'on' ) {
-            document.getElementById("OnOffButton").innerText = aux_info.amp.toUpperCase();
-            document.getElementById("OnOffButton").style.display = 'block';
+            document.getElementById("bt_onoff").innerText = aux_info.amp.toUpperCase();
+            document.getElementById("bt_onoff").style.display = 'block';
         }else{
-            document.getElementById("OnOffButton").style.display = 'none';
+            document.getElementById("bt_onoff").style.display = 'none';
         }
         if ( ! aux_info.last_macro ){
             clear_macro_buttons_highlight();
@@ -671,7 +671,7 @@ function page_update() {
         document.getElementById("balInfo").innerHTML    = 'BAL: '  + state.balance;
         document.getElementById("bassInfo").innerText   = 'BASS: ' + state.bass;
         document.getElementById("trebleInfo").innerText = 'TREB: ' + state.treble;
-        document.getElementById("buttAOD").innerText = state.extra_delay + ' ms';
+        document.getElementById("bt_aod").innerText = state.extra_delay + ' ms';
 
         // Delete level info if convolver off
         if (state.convolver_runs == false){
@@ -691,15 +691,16 @@ function page_update() {
         document.getElementById("targetSelector").value = state.target;
 
         // Highlights activated buttons and related indicators accordingly
-        buttonMuteHighlight()
-        buttonMonoHighlight()
-        buttonSoloHighlight()
-        buttonPolarityHighlight()
-        buttonLoudHighlight()
+        bt_muteHighlight()
+        bt_monoHighlight()
+        bt_soloHighlight()
+        bt_polarityHighlight()
+        bt_loudHighlight()
         buttonsToneBalanceHighlight()
         toneDefeatHighlight()
         buttonSubsonicHighlight()
         buttonAODHighlight()
+        buttonSwapLRHighlight()
         levelInfoHighlight()
 
         // Used by the delay toggle button
@@ -710,12 +711,12 @@ function page_update() {
 
 
     function player_controls_clear() {
-        document.getElementById("buttonStop").style.background  = "rgb(100, 100, 100)";
-        document.getElementById("buttonStop").style.color       = "lightgray";
-        document.getElementById("buttonPause").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonPause").style.color      = "lightgray";
-        document.getElementById("buttonPlay").style.background  = "rgb(100, 100, 100)";
-        document.getElementById("buttonPlay").style.color       = "lightgray";
+        document.getElementById("bt_stop").style.background  = "rgb(100, 100, 100)";
+        document.getElementById("bt_stop").style.color       = "lightgray";
+        document.getElementById("bt_pause").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_pause").style.color      = "lightgray";
+        document.getElementById("bt_play").style.background  = "rgb(100, 100, 100)";
+        document.getElementById("bt_play").style.color       = "lightgray";
     }
 
 
@@ -734,17 +735,17 @@ function page_update() {
 
         if ( aux_info.peq_set != 'none'){
 
-            document.getElementById("buttonPEQ").innerHTML = "PEQ: " + aux_info.peq_set;
+            document.getElementById("bt_peq").innerHTML = "PEQ: " + aux_info.peq_set;
 
             if (allAreTrue(aux_info.peq_bypassed)){
-                document.getElementById("buttonPEQ").style.color = "grey";
+                document.getElementById("bt_peq").style.color = "grey";
             }else{
-                document.getElementById("buttonPEQ").style.color = "white";
+                document.getElementById("bt_peq").style.color = "white";
             }
 
         }else {
-            document.getElementById("buttonPEQ").style.color = "grey";
-            document.getElementById("buttonPEQ").innerHTML = "(no peq)";
+            document.getElementById("bt_peq").style.color = "grey";
+            document.getElementById("bt_peq").innerHTML = "(no peq)";
         }
     }
 
@@ -888,14 +889,14 @@ function omd_audio_change(param, value) {
 function omd_mute_toggle() {
     control_cmd( 'mute toggle' );
     state.muted = ! state.muted;
-    buttonMuteHighlight();
+    bt_muteHighlight();
 }
 
 
 function omd_equal_loudness_toggle() {
     control_cmd( 'equal_loudness toggle' );
     state.equal_loudness = ! state.equal_loudness;
-    buttonLoudHighlight();
+    bt_loudHighlight();
 }
 
 
@@ -927,7 +928,7 @@ function omd_mono_toggle() {
         }
     }
 
-    buttonMonoHighlight();
+    bt_monoHighlight();
 }
 
 
@@ -961,7 +962,7 @@ function omd_polarity_rotate() {
 
     }
 
-    buttonPolarityHighlight();
+    bt_polarityHighlight();
 }
 
 
@@ -971,6 +972,11 @@ function omd_delay_toggle() {
     }else{
         control_cmd('preamp add_delay ' + last_delay.toString());
     }
+}
+
+
+function omd_swap_lr() {
+    control_cmd('preamp swap_lr');
 }
 
 
@@ -1040,6 +1046,7 @@ function highlight_macro_button(id){
     document.getElementById(id).className = 'macro_button_highlighted';
 }
 
+
 function oc_run_macro(mFname){
 
     control_cmd( 'aux run_macro ' + mFname );
@@ -1093,26 +1100,31 @@ function ck_display_advanced(mode) {
     }
 
     if ( show_advanced == true ) {
-        document.getElementById( "div_advanced_controls").style.display = "block";
-        document.getElementById( "level_buttons13").style.display = "table-cell";
-        document.getElementById( "main_lside").style.display = "table-cell";
-        document.getElementById( "SoloInfo").style.display = "table-cell";
-        document.getElementById( "PolarityInfo").style.display = "table-cell";
-        document.getElementById( "buttAOD").style.display = "inline-block";
-        document.getElementById( "subsonic").style.display = "inline-block";
-        document.getElementById( "tone_defeat").style.display = "inline-block";
+        document.getElementById("div_advanced_controls").style.display = "block";
+        document.getElementById("main_lside").style.display = "table-cell";
+        document.getElementById("SoloInfo").style.display = "table-cell";
+        document.getElementById("PolarityInfo").style.display = "table-cell";
+        document.getElementById("bt_aod").style.display = "inline-block";
+        document.getElementById("bt_swap_lr").style.display = "inline-block";
+        document.getElementById("bt_subsonic").style.display = "inline-block";
+        document.getElementById("bt_tone_defeat").style.display = "inline-block";
     }
     else {
-        document.getElementById( "div_advanced_controls").style.display = "none";
-        document.getElementById( "level_buttons13").style.display = "none";
-        document.getElementById( "main_lside").style.display = "none";
-        document.getElementById( "SoloInfo").style.display = "none";
-        document.getElementById( "PolarityInfo").style.display = "none";
+        document.getElementById("div_advanced_controls").style.display = "none";
+        document.getElementById("main_lside").style.display = "none";
+        document.getElementById("SoloInfo").style.display = "none";
+        document.getElementById("PolarityInfo").style.display = "none";
         if ( state.extra_delay === 0 ) {
-            document.getElementById( "buttAOD").style.display = "none";
+            document.getElementById( "bt_aod").style.display = "none";
         }
-        document.getElementById( "subsonic").style.display = "none";
-        document.getElementById( "tone_defeat").style.display = "none";
+        if ( ! state.lr_swapped ) {
+            document.getElementById("bt_swap_lr").style.display = "none";
+
+        }else{
+            document.getElementById("bt_swap_lr").style.display = "inline-block";
+        }
+        document.getElementById("bt_subsonic").style.display = "none";
+        document.getElementById("bt_tone_defeat").style.display = "none";
     }
 }
 
@@ -1257,15 +1269,15 @@ function allAreTrue(arr) {
 
 function toneDefeatHighlight(){
     if (state.tone_defeat){
-        document.getElementById("tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("tone_defeat").style.background = "rgb(100, 0, 0)";
-        document.getElementById("tone_defeat").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_tone_defeat").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_tone_defeat").style.color = "rgb(255, 200, 200)";
         document.getElementById("bassInfo").style.color = "grey";
         document.getElementById("trebleInfo").style.color = "grey";
     }else{
-        document.getElementById("tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("tone_defeat").style.background = "rgb(100, 100, 100)";
-        document.getElementById("tone_defeat").style.color = "rgb(180, 180, 180)";
+        document.getElementById("bt_tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_tone_defeat").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_tone_defeat").style.color = "rgb(180, 180, 180)";
         document.getElementById("bassInfo").style.color = "white";
         document.getElementById("trebleInfo").style.color = "white";
     }
@@ -1274,158 +1286,174 @@ function toneDefeatHighlight(){
 
 function buttonsToneBalanceHighlight(){
     if ( state.bass < 0 ){
-        document.getElementById("bass-").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bass+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bass-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_bass+").style.border = "2px solid rgb(100, 100, 100)";
     }else if ( state.bass > 0 ){
-        document.getElementById("bass-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bass+").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_bass-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bass+").style.border = "3px solid rgb(160, 160, 160)";
     }else{
-        document.getElementById("bass-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bass+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bass-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bass+").style.border = "2px solid rgb(100, 100, 100)";
     }
     if ( state.treble < 0 ){
-        document.getElementById("treb-").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("treb+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_treb-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_treb+").style.border = "2px solid rgb(100, 100, 100)";
     }else if ( state.treble > 0 ){
-        document.getElementById("treb-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("treb+").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_treb-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_treb+").style.border = "3px solid rgb(160, 160, 160)";
     }else{
-        document.getElementById("treb-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("treb+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_treb-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_treb+").style.border = "2px solid rgb(100, 100, 100)";
     }
     if ( state.balance < 0 ){
-        document.getElementById("bal-").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bal-").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_bal+").style.border = "2px solid rgb(100, 100, 100)";
     }else if ( state.balance > 0 ){
-        document.getElementById("bal-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bal+").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_bal-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bal+").style.border = "3px solid rgb(160, 160, 160)";
     }else{
-        document.getElementById("bal-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bal+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bal-").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bal+").style.border = "2px solid rgb(100, 100, 100)";
     }
 }
 
 
-function buttonMuteHighlight(){
+function bt_muteHighlight(){
     if ( state.muted == true ) {
-        document.getElementById("buttonMute").style.background = "rgb(185, 185, 185)";
-        document.getElementById("buttonMute").style.color = "white";
-        document.getElementById("buttonMute").style.fontWeight = "bolder";
+        document.getElementById("bt_mute").style.background = "rgb(185, 185, 185)";
+        document.getElementById("bt_mute").style.color = "white";
+        document.getElementById("bt_mute").style.fontWeight = "bolder";
         document.getElementById("levelInfo").style.color = "rgb(150, 90, 90)";
     } else {
-        document.getElementById("buttonMute").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonMute").style.color = "lightgray";
-        document.getElementById("buttonMute").style.fontWeight = "normal";
+        document.getElementById("bt_mute").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_mute").style.color = "lightgray";
+        document.getElementById("bt_mute").style.fontWeight = "normal";
         document.getElementById("levelInfo").style.color = "white";
     }
 }
 
 
-function buttonMonoHighlight(){
+function bt_monoHighlight(){
     if ( state.midside == 'mid' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = 'MO';
+        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_mono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_mono").innerText = 'MO';
     } else if ( state.midside == 'side' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttonMono").innerText = 'L-R';
+        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_mono").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_mono").innerText = 'L-R';
     } else {
-        document.getElementById("buttonMono").style = "button";
-        document.getElementById("buttonMono").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonMono").innerText = 'ST';
+        document.getElementById("bt_mono").style = "button";
+        document.getElementById("bt_mono").style.background = "rgb(0, 90, 0)";
+        document.getElementById("bt_mono").innerText = 'ST';
     }
 
     // 'solo' setting will override displaying mono stereo
     if ( state.solo == 'l' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").innerText = 'L_';
+        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_mono").innerText = 'L_';
     } else if ( state.solo == 'r' ) {
-        document.getElementById("buttonMono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonMono").innerText = '_R';
+        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_mono").innerText = '_R';
     }
 
     // 'polarity' setting will modify the button border
     if ( state.polarity != '++' ) {
-        document.getElementById("buttonMono").style.border = "3px solid rgb(200, 10, 10)";
+        document.getElementById("bt_mono").style.border = "3px solid rgb(200, 10, 10)";
     } else {
-        document.getElementById("buttonMono").style.border = "2px solid rgb(120, 120, 120)";
+        document.getElementById("bt_mono").style.border = "2px solid rgb(120, 120, 120)";
     }
 }
 
 
-function buttonSoloHighlight(){
+function bt_soloHighlight(){
 
     if ( state.solo == 'off' ) {
-        document.getElementById("buttonSolo").style = "button";
-        document.getElementById("buttonSolo").innerText = 'L|R';
+        document.getElementById("bt_solo").style = "button";
+        document.getElementById("bt_solo").innerText = 'L|R';
 
     } else if ( state.solo == 'l' ) {
-        document.getElementById("buttonSolo").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonSolo").innerText = 'L_';
+        document.getElementById("bt_solo").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_solo").innerText = 'L_';
 
     } else if ( state.solo == 'r' ) {
-        document.getElementById("buttonSolo").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttonSolo").innerText = '_R';
+        document.getElementById("bt_solo").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_solo").innerText = '_R';
     }
 
 }
 
 
-function buttonPolarityHighlight(){
+function bt_polarityHighlight(){
 
     if ( state.polarity != '++' ) {
-        document.getElementById("buttonPolarity").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_polarity").style.background = "rgb(100, 0, 0)";
 
     } else {
-        document.getElementById("buttonPolarity").style = "button";
+        document.getElementById("bt_polarity").style = "button";
     }
 
-    document.getElementById("buttonPolarity").innerText = state.polarity;
+    document.getElementById("bt_polarity").innerText = state.polarity;
 }
 
 
-function buttonLoudHighlight(){
+function bt_loudHighlight(){
     if ( state.equal_loudness == true ) {
-        document.getElementById("buttonLoud").style.background = "rgb(0, 90, 0)";
-        document.getElementById("buttonLoud").style.color = "white";
+        document.getElementById("bt_loud").style.background = "rgb(0, 90, 0)";
+        document.getElementById("bt_loud").style.color = "white";
     } else {
-        document.getElementById("buttonLoud").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttonLoud").style.color = "rgb(150, 150, 150)";
+        document.getElementById("bt_loud").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_loud").style.color = "rgb(150, 150, 150)";
     }
 }
 
 
 function buttonAODHighlight(){
     if ( state.extra_delay === 0 ) {
-        document.getElementById("buttAOD").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("buttAOD").style.background = "rgb(100, 100, 100)";
-        document.getElementById("buttAOD").style.color = "rgb(180, 180, 180)";
+        document.getElementById("bt_aod").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_aod").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_aod").style.color = "rgb(180, 180, 180)";
     } else {
-        document.getElementById("buttAOD").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("buttAOD").style.background = "rgb(100, 0, 0)";
-        document.getElementById("buttAOD").style.color = "rgb(255, 200, 200)";
-        document.getElementById("buttAOD").style.display = 'inline-table';
+        document.getElementById("bt_aod").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_aod").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_aod").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_aod").style.display = 'inline-block';
+    }
+}
+
+
+function buttonSwapLRHighlight(){
+    if ( state.lr_swapped === false ) {
+        document.getElementById("bt_swap_lr").innerHTML = "L R";
+        document.getElementById("bt_swap_lr").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_swap_lr").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_swap_lr").style.color = "rgb(180, 180, 180)";
+    } else {
+        document.getElementById("bt_swap_lr").innerHTML = "R L";
+        document.getElementById("bt_swap_lr").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_swap_lr").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_swap_lr").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_swap_lr").style.display = 'inline-block';
     }
 }
 
 
 function buttonSubsonicHighlight(){
     if ( state.subsonic == 'off' ) {
-        document.getElementById("subsonic").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("subsonic").style.background = "rgb(100, 100, 100)";
-        document.getElementById("subsonic").style.color = "rgb(180, 180, 180)";
-        document.getElementById("subsonic").innerText = 'SUBS\n-';
+        document.getElementById("bt_subsonic").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_subsonic").style.background = "rgb(100, 100, 100)";
+        document.getElementById("bt_subsonic").style.color = "rgb(180, 180, 180)";
+        document.getElementById("bt_subsonic").innerText = 'SUBS\n-';
     } else if ( state.subsonic == 'mp' ) {
-        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("subsonic").style.background = "rgb(100, 0, 0)";
-        document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
-        document.getElementById("subsonic").innerText = 'SUBS\nmp';
+        document.getElementById("bt_subsonic").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_subsonic").style.background = "rgb(100, 0, 0)";
+        document.getElementById("bt_subsonic").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_subsonic").innerText = 'SUBS\nmp';
     } else if ( state.subsonic == 'lp' ) {
-        document.getElementById("subsonic").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("subsonic").style.background = "rgb(150, 0, 0)";
-        document.getElementById("subsonic").style.color = "rgb(255, 200, 200)";
-        document.getElementById("subsonic").innerText = 'SUBS\nlp';
+        document.getElementById("bt_subsonic").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_subsonic").style.background = "rgb(150, 0, 0)";
+        document.getElementById("bt_subsonic").style.color = "rgb(255, 200, 200)";
+        document.getElementById("bt_subsonic").innerText = 'SUBS\nlp';
     }
 }
 
