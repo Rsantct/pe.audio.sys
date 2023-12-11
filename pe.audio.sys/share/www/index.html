@@ -67,8 +67,8 @@
         <tr>
             <!-- AMPLI switch -->
             <td id="OnOff"     rowspan="2">
-                <button type="button" id="OnOffButton"
-                        title="Amplifier ON/OFF" onmousedown="omd_ampli_set('toggle')">-</button>
+                <button type="button" id="bt_onoff"
+                        title="Amplifier ON/OFF" onmousedown="omd_ampli_switch('toggle')">-</button>
             </td>
 
             <!-- LEVEL display -->
@@ -77,24 +77,24 @@
 
             <!-- LOUDNESS control -->
             <td id="LoudnessInfo">
-                <button type="button" id="buttonLoud"
+                <button type="button" id="bt_loud"
                         title="Loudness Contour compensation" onmousedown="omd_equal_loudness_toggle()">LC</button>
             </td>
 
             <!-- SOLO control -->
             <td id="SoloInfo" style="display:none">
-                <button type="button" id="buttonSolo"
+                <button type="button" id="bt_solo"
                         title="L|R solo control" onmousedown="omd_solo_rotate()">L|R</button>
             </td>
 
             <!-- INPUTS selector, will be filled by javascript -->
             <td id="input"     rowspan="2">
-                <button id="url_button"
+                <button id="bt_url"
                         title = "enter an URL to be played"
                         style="text-align:center;font-size:0.7em;display:none"
                         onclick="ck_play_url()">&#9901;
                 </button>
-                <button type="button"   id="track_number_button"
+                <button type="button"   id="bt_track_num"
                                         title="Enter a track number"
                                         style="display:none; width:150px"
                                         onmousedown="omd_select_track_number_dialog()" >#
@@ -117,13 +117,13 @@
         <tr>
             <!-- MONO / STEREO control -->
             <td id="MonoInfo">
-                <button type="button" id="buttonMono"
+                <button type="button" id="bt_mono"
                         title="Mono/Stereo" onmousedown="omd_mono_toggle()">M</button>
             </td>
 
             <!-- POLARITY control -->
             <td id="PolarityInfo" style="display:none">
-                <button type="button" id="buttonPolarity"
+                <button type="button" id="bt_polarity"
                         title="LR polarity control" onmousedown="omd_polarity_rotate()">++</button>
             </td>
         </tr>
@@ -135,7 +135,7 @@
         <table id="level_buttons_table">
           <tr>
             <td id="level_buttons11">
-                <button type="button" id="subsonic" style="display:none;font-size:0.7em"
+                <button type="button" id="bt_subsonic" style="display:none;font-size:0.7em"
                         title="Subsonic Filter"
                         onmousedown="control_cmd('preamp subsonic rotate')">
                         SUBS.
@@ -144,17 +144,22 @@
             <td id="level_buttons12">
                 <button type="button" onmousedown="omd_audio_change('level', -1)" >
                         &nbsp;-1&nbsp;</button>
-                <button type="button" onmousedown="omd_mute_toggle()" id="buttonMute" >
+                <button type="button" onmousedown="omd_mute_toggle()" id="bt_mute" >
                         &#128263;</button>
                 <button type="button" onmousedown="omd_audio_change('level', +1)" >
                         &nbsp;+1&nbsp;</button>
             </td>
             <td id="level_buttons13">
+                <button type="button" id="bt_swap_lr" style="display:none;font-size:0.7em"
+                        title="Swap L/R"
+                        onmousedown="omd_swap_lr()">
+                        L&nbsp;R
+                </button>
             </td>
           </tr>
           <tr>
             <td id="level_buttons21">
-                <button type="button" id="tone_defeat" style="display:none;font-size:0.7em"
+                <button type="button" id="bt_tone_defeat" style="display:none;font-size:0.7em"
                         title="Tone Defeat Toggle"
                         onmousedown="control_cmd('preamp tone_defeat toggle')">
                         TONE DEF
@@ -167,7 +172,7 @@
                         &nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
             </td>
             <td id="level_buttons23">
-                <button type="button" id="buttAOD" style="display:none;font-size:0.7em"
+                <button type="button" id="bt_aod" style="display:none;font-size:0.7em"
                         title="Toggle Output Delay"
                         onmousedown="omd_delay_toggle()">
                         0 ms
@@ -204,7 +209,7 @@
     <table>
       <tr>
         <td id="LU_meter_reset">
-            <button type="button" id="buttonLoudMonReset" title="restart LU monitor measurement"
+            <button type="button" id="bt_loudMonReset" title="restart LU monitor measurement"
                     onmousedown="control_cmd('aux reset_loudness_monitor')">
                     reset
             </button>
@@ -228,21 +233,21 @@
       <table>
         <tr>
             <td id="bass">
-                <button type="button"   id='bass-'    onmousedown="omd_audio_change('bass', -1)"  >-</button>
+                <button type="button"   id='bt_bass-'    onmousedown="omd_audio_change('bass', -1)"  >-</button>
                 <span id="bassInfo">bass</span>
-                <button type="button"   id='bass+'    onmousedown="omd_audio_change('bass', +1)"  >+</button>
+                <button type="button"   id='bt_bass+'    onmousedown="omd_audio_change('bass', +1)"  >+</button>
             </td>
             <td id="balance">
-                <button type="button"   id='bal-'     onmousedown="omd_audio_change('balance', -1)"  >-</button>
+                <button type="button"   id='bt_bal-'     onmousedown="omd_audio_change('balance', -1)"  >-</button>
                 <span id="balInfo">BAL</span>
-                <button type="button"   id='bal+'     onmousedown="omd_audio_change('balance', +1)"  >+</button>
+                <button type="button"   id='bt_bal+'     onmousedown="omd_audio_change('balance', +1)"  >+</button>
             </td>
         </tr>
         <tr>
             <td id="treble">
-                <button type="button"   id='treb-'    onmousedown="omd_audio_change('treble', -1)"  >-</button>
+                <button type="button"   id='bt_treb-'    onmousedown="omd_audio_change('treble', -1)"  >-</button>
                 <span id="trebleInfo">treble</span>
-                <button type="button"   id='treb+'    onmousedown="omd_audio_change('treble', +1)"  >+</button>
+                <button type="button"   id='bt_treb+'    onmousedown="omd_audio_change('treble', +1)"  >+</button>
             </td>
             <td id="target">
                 <span>
@@ -264,13 +269,13 @@
                 </span>
             </td>
             <td id="peq">
-                <button type="button" id="buttonPEQ" title="PEQ BYPASS"
+                <button type="button" id="bt_peq" title="PEQ BYPASS"
                         onmousedown="control_cmd('aux peq_bypass toggle')">
                         PEQ
                 </button>
             </td>
             <td id="graphs_toggle">
-                <button type="button"            id ="button_toggleEQgraphs"
+                <button type="button"            id ="bt_toggle_eq_graphs"
                         title="toggle EQ graphs" onmousedown="omd_graphs_toggle()">G</button>
             </td>
         </tr>
@@ -310,10 +315,10 @@
             <td id="playback_control_11">
             </td>
             <td id="playback_control_12" >
-                <button type="button" id="buttonPrevious" onmousedown="omd_playerCtrl('previous')" >&lt;|           </button>
-                <button type="button" id="buttonRew"      onmousedown="omd_playerCtrl('rew')"      >&lt;&lt;        </button>
-                <button type="button" id="buttonFF"       onmousedown="omd_playerCtrl('ff')"       >&gt;&gt;        </button>
-                <button type="button" id="buttonNext"     onmousedown="omd_playerCtrl('next')"     >|&gt;           </button>
+                <button type="button" id="bt_prev" onmousedown="omd_playerCtrl('previous')" >&lt;|           </button>
+                <button type="button" id="bt_rew"      onmousedown="omd_playerCtrl('rew')"      >&lt;&lt;        </button>
+                <button type="button" id="bt_ff"       onmousedown="omd_playerCtrl('ff')"       >&gt;&gt;        </button>
+                <button type="button" id="bt_next"     onmousedown="omd_playerCtrl('next')"     >|&gt;           </button>
             </td>
             <td id="playback_control_13" >
                 <!-- random playback button -->
@@ -327,14 +332,14 @@
             <td id="playback_control_21" >
             </td>
             <td id="playback_control_22" >
-                <button type="button" id="buttonEject"    onmousedown="omd_playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
-                <button type="button" id="buttonStop"     onmousedown="omd_playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
-                <button type="button" id="buttonPause"    onmousedown="omd_playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
-                <button type="button" id="buttonPlay"     onmousedown="omd_playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
+                <button type="button" id="bt_eject"    onmousedown="omd_playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
+                <button type="button" id="bt_stop"     onmousedown="omd_playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
+                <button type="button" id="bt_pause"    onmousedown="omd_playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
+                <button type="button" id="bt_play"     onmousedown="omd_playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
             </td>
             <td id="playback_control_23" >
                 <!-- MACROS button toggle-->
-                <button type="button" id="macros_toggle_button"  onmousedown="omd_macro_buttons_display_toggle()"
+                <button type="button" id="bt_macros_toggle"  onmousedown="omd_macro_buttons_display_toggle()"
                         title="Toggle macro buttons"             style="display:none">
                     ::
                 </button>

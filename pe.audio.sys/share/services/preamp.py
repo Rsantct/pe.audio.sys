@@ -75,6 +75,10 @@ def do( cmd, argstring ):
         result = convolver.set_drc(x)
         if result == 'done':
             preamp.state['drc_set'] = x
+            # The drc impulse max gain response and its coeff attenuation are
+            # taken into account when preamp computes the digital headroom
+            drc_headroom = convolver.get_drc_headroom( x )
+            preamp.update_drc_headroom( drc_headroom )
         return result
 
 
@@ -136,6 +140,8 @@ def do( cmd, argstring ):
             'polarity':         preamp.set_polarity,
             'mute':             preamp.set_mute,
             'subsonic':         preamp.set_subsonic,
+            'swap_lr':          preamp.swap_lr,
+            'lr_swap':          preamp.swap_lr,
 
             'level':            preamp.set_level,
             'volume':           preamp.set_level,

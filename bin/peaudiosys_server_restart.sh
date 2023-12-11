@@ -33,7 +33,9 @@ server_is_runnnig=$(pgrep -fla "server.py peaudiosys")
 if [[ ! $server_is_runnnig ]]; then
     echo "(i) pe.audio.sys server was not running."
 fi
-pkill -KILL -f "server.py peaudiosys"
+# ***NOTICE*** the -f "srtring " MUST have an ending blank in order
+#              to avoid confusion with 'peaudiosys_ctrl'
+pkill -KILL -f "server.py peaudiosys "
 if [[ $opc == *'stop'* ]]; then
     exit 0
 fi

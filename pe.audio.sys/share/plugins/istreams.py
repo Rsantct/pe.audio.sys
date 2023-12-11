@@ -26,7 +26,7 @@
 """
 from    pathlib import Path
 from    time import sleep
-import  subprocess as sp
+from    subprocess import Popen, call
 import  yaml
 import  sys
 import  os
@@ -51,7 +51,7 @@ options += " -allow-dangerous-playlist-parsing"
 input_fifo = f'{UHOME}/pe.audio.sys/.istreams_fifo'
 f = Path( input_fifo )
 if not f.is_fifo():
-    sp.Popen( f'mkfifo {input_fifo}'.split() )
+    Popen( f'mkfifo {input_fifo}'.split() )
 del(f)
 
 # Mplayer output is redirected to a file, so it can be read what is been playing:
@@ -104,13 +104,12 @@ def start():
     cmd = f'mplayer {options} -profile istreams \
            -input file={input_fifo}'
     with open(redirection_path, 'w') as redirfile:
-        sp.Popen( cmd.split(), shell=False, stdout=redirfile, stderr=redirfile )
+        Popen( cmd.split(), shell=False, stdout=redirfile, stderr=redirfile )
 
 
 def stop():
     # Killing our mplayer instance
-    sp.Popen( ['pkill', '-KILL', '-f', 'profile istreams'] )
-    sleep(.5)
+    call( ['pkill', '-KILL', '-f', 'profile istreams'] )
 
 
 if __name__ == '__main__':

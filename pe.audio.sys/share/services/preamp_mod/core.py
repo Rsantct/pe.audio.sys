@@ -16,14 +16,23 @@ import jack_mod     as jack
 import brutefir_mod as bf
 
 UHOME = os.path.expanduser("~")
+THISDIR = os.path.dirname( os.path.realpath(__file__) )
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+sys.path.append( THISDIR )
 
 from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
                     LSPK_FOLDER, LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
-                    sec2min, Fmt
+                    sec2min, Fmt, calc_gain
 
+USE_AMIXER = False
+try:
+    USE_AMIXER = CONFIG["alsamixer"]["use_alsamixer"]
+    if USE_AMIXER:
+        import alsa
+except Exception as e:
+    print(f'(core.py) {str(e)}')
 
 ZEROS = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
@@ -242,6 +251,7 @@ class Preamp(object):
             set_solo
             set_mute
             set_midside
+            swap_lr
 
             get_state
             get_inputs
@@ -281,6 +291,16 @@ class Preamp(object):
         self.balance_max = float(CONFIG["balance_max"])
         # Initiate brutefir input connected ports (used from switch_convolver)
         self.bf_sources = bf.get_in_connections()
+        # get swap LR
+        self.state["lr_swapped"] = self._check_pre_in_swapped()
+        self.save_state()
+
+
+        # INTERNAL
+
+        # The drc impulse max gain response and its coeff attenuation are
+        # taken into account when Preamp validates the digital headroom
+        self.drc_headroom = 0.0
 
         # Powersave
         #   State file info
@@ -328,6 +348,37 @@ class Preamp(object):
     # (i) Remember to return some result from any method below.
     #     Also notice that we use *dummy to accommodate the preamp.py parser
     #     mechanism wich always will include two arguments for any Preamp call.
+
+    def _get_pre_in_cables(self):
+        """ Get preamp source wiring
+        """
+        pre_ins = jack.get_ports('pre_in_loop', is_input=True)
+        cables = []
+        for p in pre_ins:
+            try:
+                s = jack.get_all_connections(p)[0]
+            except:
+                s = None
+            cables.append( (s, p) )
+        return cables
+
+
+    def _check_pre_in_swapped(self):
+        """ Check for crossed channels in preamp source wiring
+        """
+        cables = self._get_pre_in_cables()
+        try:
+            res = cables[0][0].name > cables[1][0].name
+        except:
+            res = False
+        return res
+
+
+    def update_drc_headroom(self, x):
+        self.drc_headroom = x
+        # This updates the digital gain_headroom in the .state file:
+        self._validate( self.state )
+
 
     def _find_target_sets(self):
         """ Retrieves the sets of available target curves under the share/eq folder.
@@ -539,9 +590,15 @@ class Preamp(object):
     def _validate( self, candidate ):
         """ Validates that the given 'candidate' (new state dictionary)
             does not exceed gain limits
+
+            (i) USE_AMIXER (ALSA Mixer)
+
+                Brutefir will not compute the level value,
+                it will be applied at the sound card output mixer.
+
         """
         gmax            = self.gain_max
-        gain            = bf.calc_gain( candidate )
+        gain            = calc_gain( candidate )
 
         # (!) candidate2 leaves candidate tone values untouched
         #     in case of tone defeat control activated
@@ -555,7 +612,10 @@ class Preamp(object):
 
         bal             = candidate["balance"]
 
-        headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0)
+        headroom = gmax - gain - np.max(eq_mag) - np.abs(bal / 2.0) + self.drc_headroom
+        # DEBUG
+        #print('gmax', 'gain', 'max_eq', 'bal/2', 'drc_hr', '=', 'headroom')
+        #print(gmax,  -gain, -np.max(eq_mag), - np.abs(bal / 2.0), + self.drc_headroom, '=', headroom)
 
         # (i)
         # 'config.yml' SOURCE's GAIN are set arbitrarily at the USER's OWN RISK,
@@ -573,15 +633,35 @@ class Preamp(object):
 
         headroom += input_gain
 
+        # APPROVED
         if headroom >= 0:
-            # APPROVED
-            bf.set_gains( candidate )
+
+            if not USE_AMIXER:
+                bf.set_gains( candidate )
+
+            else:
+
+                amixer_result = alsa.set_amixer_gain( candidate["level"] )
+
+                if amixer_result == 'done':
+                    bf.set_gains( candidate, nolevel=True )
+
+                else:
+                    # If for some reason alsa mixer has not adjusted the wanted dB,
+                    # it will return some info ended by the amount of pending dB
+                    # to be applied. Example:
+                    #   "clamped, dB pending: 3.0"
+                    dBpending = round( float(amixer_result.split()[-1]), 1)
+                    bf.set_gains( candidate, nolevel=True, dBextra=dBpending )
+
             bf.set_eq( eq_mag, eq_pha )
             self.state = candidate
+            self.state["gain_headroom"] = round(headroom, 1)
             self.save_tone_memo()
             return 'done'
+
+        # REFUSED
         else:
-            # REFUSED
             return 'not enough headroom'
 
 
@@ -717,7 +797,10 @@ class Preamp(object):
             if value.lower() == 'right':
                 value = 'r'
             self.state["solo"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
             return 'done'
         else:
             return 'bad option'
@@ -726,7 +809,10 @@ class Preamp(object):
     def set_polarity(self, value, *dummy):
         if value in ('+', '-', '++', '--', '+-', '-+'):
             self.state["polarity"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
             return 'done'
         else:
             return 'bad option'
@@ -743,7 +829,10 @@ class Preamp(object):
                                                  [ self.state["muted"] ]
                         } [ value.lower() ]
                 self.state["muted"] = value
-                bf.set_gains( self.state )
+                if not USE_AMIXER:
+                    bf.set_gains( self.state )
+                else:
+                    bf.set_gains( self.state, nolevel=True )
                 return 'done'
         except:
             return 'bad option'
@@ -752,10 +841,34 @@ class Preamp(object):
     def set_midside(self, value, *dummy):
         if value.lower() in ( 'mid', 'side', 'off' ):
             self.state["midside"] = value.lower()
-            bf.set_gains( self.state )
+            if not USE_AMIXER:
+                bf.set_gains( self.state )
+            else:
+                bf.set_gains( self.state, nolevel=True )
         else:
             return 'bad option'
         return 'done'
+
+
+    def swap_lr(self, *dummy):
+        """ Swap L <> R channels at preamp input
+            Useful for some cases as swapped film channels when downmixed
+        """
+
+        def swap(cables):
+            jack.connect(cables[0][0], cables[1][1])
+            jack.connect(cables[1][0], cables[0][1])
+
+
+        try:
+            cables = self._get_pre_in_cables()
+            jack.clear_preamp()
+            swap( cables )
+            self.state["lr_swapped"] = self._check_pre_in_swapped()
+            return 'done'
+
+        except Exception as e:
+            return f'cannot swap preamp inputs'
 
 
     def set_subsonic(self, value, *dummy):
@@ -957,6 +1070,10 @@ class Convolver(object):
 
     # Bellow we use *dummy to accommodate the preamp.py parser mechanism
     # wich always will include two arguments for any function call.
+
+
+    def get_drc_headroom(self, drc_set):
+        return bf.get_drc_headroom(drc_set)
 
 
     def set_drc(self, drc, *dummy):

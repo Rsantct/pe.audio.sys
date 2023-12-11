@@ -14,7 +14,7 @@ from    os.path import expanduser
 import  sys
 import  threading
 from    time import sleep, ctime
-from    subprocess import Popen
+from    subprocess import Popen, call
 
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
@@ -76,7 +76,7 @@ def main_loop():
 
 
 def stop():
-    Popen( ['pkill', '-KILL', '-f', 'autoeject_cdda.py start'] )
+    call( ['pkill', '-KILL', '-f', 'autoeject_cdda.py start'] )
 
 
 if __name__ == '__main__':

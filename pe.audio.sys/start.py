@@ -56,8 +56,8 @@ def load_extra_cards(channels=2):
         else:
             quality = ''
 
-        if ('misc' in params) and (params['misc']):
-            misc = params['misc']
+        if ('misc_params' in params) and (params['misc_params']):
+            misc = params['misc_params']
         else:
             misc = ''
 
@@ -292,14 +292,13 @@ def stop_zita_link():
         # REMOTE
         zargs = json_dumps( (get_my_ip(), None, 'stop') )
         remotecmd = f'aux zita_j2n {zargs}'
-        send_cmd(remotecmd, host=raddr, port=rport)
+        send_cmd(remotecmd, host=raddr, port=rport, timeout=1)
 
         # LOCAL
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
         zitapattern  = f'zita-n2j --jname {zitajname}'
         sp.Popen( ['pkill', '-KILL', '-f',  zitapattern] )
         sleep(.2)
-
 
 
 def start_brutefir():
@@ -331,13 +330,15 @@ def manage_server( mode='', service='peaudiosys'):
     if mode == 'stop':
         # Stop
         print(f'{Fmt.RED}(start) stopping \'server.py {service}\'{Fmt.END}')
-        sp.Popen( f'pkill -KILL -f "server.py {service}" \
+        # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
+        #              to avoid confusion with 'peaudiosys_ctrl'
+        sp.Popen( f'pkill -KILL -f "server.py {service} " \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
     elif mode == 'start':
         # Start
-        if service == 'restart':
+        if service == 'peaudiosys_ctrl':
             SRV_PORT += 1
         print(f'{Fmt.BLUE}(start) starting \'server.py ' \
               f'{service} {SRV_ADDR}:{SRV_PORT}\'{Fmt.END}')
@@ -398,10 +399,35 @@ def stop_processes(mode):
     wait4jackdkilled()
 
 
+def run_special_plugins():
+    """ Special plugins
+
+        - Amplifier switch needs to power on the external DAC in order to
+          by accesible from the alsa module
+
+        - Zeroing alsa mixer must be done before restoring
+          the saved level if alsa mixer is used for volume management.
+    """
+
+    # Using 'call' to wait for the script to finish
+    if 'power_amp_control.py' in CONFIG['plugins']:
+        cmd = f'{MAINFOLDER}/share/plugins/power_amp_control.py start'
+        print(f'(start) starting plugin: power_amp_control.py ...')
+        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+    if 'sound_cards_prepare.py' in CONFIG['plugins']:
+        cmd = f'{MAINFOLDER}/share/plugins/sound_cards_prepare.py start'
+        print(f'(start) starting plugin: sound_cards_prepare.py ...')
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+
 def run_plugins(mode='start'):
     """ (void)
     """
     for plugin in CONFIG['plugins']:
+
+        if plugin == 'sound_cards_prepare.py' or plugin == 'power_amp_control.py':
+            continue
 
         # (i) Some elements on the plugins list from config.yml can be a dict,
         #     e.g the ecasound_peq, so we need to extract the plugin name.
@@ -416,8 +442,11 @@ def run_plugins(mode='start'):
             sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
         elif mode == 'stop':
-            print(f'(start.py) stopping plugin: {plugin}', sp.check_output(cmd, shell=True).decode() )
-            sleep(.25)  # this is necessary because of asyncronous stopping
+            try:
+                ans = sp.check_output(cmd, shell=True).decode()
+            except Exception as e:
+                ans = str(e)
+            print(f'(start.py) stopping plugin: {plugin}', ans )
 
         else:
             pass
@@ -515,6 +544,23 @@ def prepare_log_header():
         f.write(f'{Fmt.END}')
 
 
+def usb_dac_watchdog(mode='stop'):
+
+    if mode == 'stop':
+        sp.Popen(f'pkill -KILL -f "usb_dac_watchdog.py"', shell=True)
+
+    elif mode=='start':
+
+        if 'usb_dac_watchdog' in CONFIG and CONFIG["usb_dac_watchdog"]==True:
+            if not process_is_running('usb_dac_watchdog.py'):
+                sp.Popen(f'{MAINFOLDER}/share/plugins/usb_dac_watchdog.py start', shell=True)
+
+
+def peaudiosys_ctrl_on():
+    if not process_is_running('server.py peaudiosys_ctrl'):
+        manage_server(mode='start', service='peaudiosys_ctrl')
+
+
 if __name__ == "__main__":
 
     # READING OPTIONS FROM COMMAND LINE
@@ -551,16 +597,22 @@ if __name__ == "__main__":
     # Optional REMOTE SOURCES
     REMOTES = get_remote_sources()
 
-    # STOPPING:
-    stop_processes(mode)
+    # USB_DAC_WATCHDOG (must not interfere with this)
+    usb_dac_watchdog('stop')
 
+    # THE 'peaudiosys_ctrl' SERVER must be always ON
+    peaudiosys_ctrl_on()
+
+    # STOPPING ALL THE STAFF
+    stop_processes(mode)
     if mode in ('stop', 'shutdown'):
-        # keeping the restart service always on
-        if not process_is_running('server.py restart'):
-            manage_server(mode='start', service='restart')
+        # RESTORING USB_DAC_WATCHDOG
+        usb_dac_watchdog('start')
         print(f'(start) Bye!')
         sys.exit()
 
+    # SPECIAL PLUGINS.
+    run_special_plugins()
 
     # STARTING:
     if mode in ('all'):
@@ -605,10 +657,7 @@ if __name__ == "__main__":
     if mode in ('all'):
         run_plugins()
 
-
-    # RUN THE SERVERS
-    if not process_is_running('server.py restart'):
-        manage_server(mode='start', service='restart')
+    # RUN THE 'peaudiosys' SERVER
     manage_server(mode='start', service='peaudiosys')
     if not server_is_running(who_asks='start'):
         print(f'{Fmt.BOLD}(start) PANIC: \'peaudiosys\' service is down. Bye.{Fmt.END}')
@@ -622,6 +671,11 @@ if __name__ == "__main__":
                 print( f'{Fmt.BLUE}(start) triyng macro \'{mname}\'{Fmt.END}' )
                 sp.Popen( f'{MAINFOLDER}/macros/{mname}', shell=True )
 
+    # RESTORING USB_DAC_WATCHDOG
+    usb_dac_watchdog('start')
+
     # END
     print(f'{Fmt.BOLD}{Fmt.BLUE}(start) END.{Fmt.END}')
+
     sys.exit()
+

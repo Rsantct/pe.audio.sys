@@ -12,15 +12,14 @@
 """
 import  sys
 import  os
-from    subprocess import Popen
-from    time import sleep
+from    subprocess import Popen, call
 
 UHOME    = os.path.expanduser("~")
 THISPATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def stop():
-    Popen( ['pkill', '-f', CMDLINE] )
+    call( ['pkill', '-f', CMDLINE] )
 
 def start():
     Popen( CMDLINE.split() )
@@ -36,7 +35,6 @@ if __name__ == '__main__':
 
         elif sys.argv[1] in ['start', 'on']:
             stop()
-            sleep(1)
             start()
 
         else:

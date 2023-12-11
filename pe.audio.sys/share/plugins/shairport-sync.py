@@ -11,17 +11,18 @@
 """
 
 import sys
-from subprocess import Popen
+from subprocess import Popen, call
+from socket import gethostname
 
 
 def start():
     # Former versions used alsa but recent debian package alows jack :-)
-    cmd = 'shairport-sync -a $(hostname) -o jack'
+    cmd = f'shairport-sync -a {gethostname()} -o jack'
     Popen( cmd, shell=True )
 
 
 def stop():
-    Popen( ['pkill', '-KILL', '-f', 'shairport-sync'] )
+    call( ['pkill', '-KILL', '-f', f'shairport-sync -a {gethostname()}'] )
 
 
 if sys.argv[1:]:

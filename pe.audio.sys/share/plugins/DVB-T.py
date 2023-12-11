@@ -28,7 +28,7 @@
 
 from    pathlib import Path
 from    time    import sleep
-import  subprocess as sp
+from    subprocess import Popen, call, check_output
 import  yaml
 import  sys
 import  os
@@ -51,7 +51,7 @@ options = '-quiet -nolirc -slave -idle'
 input_fifo = f'{MAINFOLDER}/.dvb_fifo'
 f = Path( input_fifo )
 if not f.is_fifo():
-    sp.Popen( f'mkfifo {input_fifo}'.split() )
+    Popen( f'mkfifo {input_fifo}'.split() )
 del(f)
 
 # Mplayer output is redirected to a file,
@@ -66,7 +66,7 @@ def select_by_name(channel_name):
 
     try:
         # check_output will fail if no command output
-        sp.check_output( ['grep', channel_name, tuner_file] ).decode()
+        check_output( ['grep', channel_name, tuner_file] ).decode()
     except:
         print( f'(DVB-T.py) Channel NOT found: \'{channel_name}\'' )
         return False
@@ -104,14 +104,13 @@ def start():
     with open(redirection_path, 'w') as redirfile:
         # clearing the file for this session
         redirfile.write('')
-        sp.Popen( cmd.split(), shell=False, stdout=redirfile,
+        Popen( cmd.split(), shell=False, stdout=redirfile,
                                             stderr=redirfile )
 
 
 def stop():
     # Killing our mplayer instance
-    sp.Popen( ['pkill', '-KILL', '-f', 'profile dvb'] )
-    sleep(.5)
+    call( ['pkill', '-KILL', '-f', 'profile dvb'] )
 
 
 if __name__ == '__main__':

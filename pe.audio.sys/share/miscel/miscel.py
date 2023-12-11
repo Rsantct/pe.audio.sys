@@ -21,6 +21,52 @@ from    fmt         import Fmt
 
 # --- pe.audio.sys common usage functions:
 
+def detect_USB_DAC(cname):
+    """ Check if the provided card name is available,
+        and if it is USB type.
+    """
+    result = False
+    tmp = sp.check_output('aplay -l'.split()).decode().strip().split('\n')
+    for line in tmp:
+        if cname in line and 'USB' in line.upper():
+            result = True
+    return result
+
+
+def jackd_process(cname):
+    """ Check the if the jackd process is running
+    """
+    try:
+        tmp = sp.check_output('pgrep -fla jackd'.split()).decode().strip()
+    except:
+        tmp = ''
+    if cname in tmp:
+        return True
+    else:
+        return False
+
+
+def jackd_response(cname=''):
+    """ Check the jackd process responds properly
+        (!) A false jackd process may occur after the USB DAC
+            was disconnected
+    """
+    def check_jack_lsp():
+        try:
+            sp.check_output('jack_lsp')
+            return True
+        except:
+            return False
+
+    result = False
+
+    if jackd_process(cname):
+        if check_jack_lsp():
+            result = True
+
+    return result
+
+
 def process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
@@ -96,13 +142,13 @@ def manage_amp_switch(mode):
             sleep(1)
 
 
-    cur_state = get_amp_state()
     new_state  = '';
 
     if mode == 'state':
-        result = cur_state
+        result = get_amp_state()
 
     elif mode == 'toggle':
+        cur_state = get_amp_state()
         # if unknown state, this switch defaults to 'on'
         new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
 
@@ -140,6 +186,25 @@ def manage_amp_switch(mode):
             sp.Popen('sudo poweroff',  shell=True)
 
     return result
+
+
+def calc_gain( state ):
+    """ Calculates the gain from:   level,
+                                    ref_level_gain
+                                    source gain offset
+        (float)
+    """
+
+    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
+                             - state["lu_offset"]
+    # Adding here the specific source gain:
+    if state["input"] != 'none':
+        try:
+            gain += float( CONFIG["sources"][state["input"]]["gain"] )
+        except:
+            pass
+
+    return gain
 
 
 def get_loudness_monitor():
@@ -427,34 +492,25 @@ def check_Mplayer_config_file(profile='istreams'):
         return f'ERROR bad Mplayer profile \'{profile}\''
 
 
-def detect_spotify_client(timeout=10):
-    """ Detects the Spotify Client in use: desktop or librespot
+def detect_spotify_client():
+    """ Detects the Spotify Client in use: 'desktop' or 'librespot'
         (string)
     """
     result = ''
 
-    # Early return if no Spotify plugin is used:
-    # (filtering not string items, e.g. ecasound plugin is a dictionary)
-    if not any( 'spoti' in x.lower() for x in CONFIG['plugins'] if type(x)==str ):
-        return result
+    # If using librespot
+    try:
+        sp.check_output( 'pgrep -f librespot'.split() )
+        result = 'librespot'
+    except:
+        pass
 
-    tries = timeout
-    while tries:
-        try:
-            sp.check_output( 'pgrep -f Spotify'.split() )
-            result = 'desktop'
-        except:
-            pass
-        try:
-            sp.check_output( 'pgrep -f librespot'.split() )
-            result = 'librespot'
-        except:
-            pass
-        if result:
-            return result
-        else:
-            tries -= 1
-            sleep(1)
+    # If using plugins/spotify_monitor.py while running a Spotify Desktop client
+    try:
+        sp.check_output( 'pgrep -f spotify_monitor'.split() )
+        result = 'desktop'
+    except:
+        pass
 
     return result
 

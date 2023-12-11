@@ -4,18 +4,19 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
+import  numpy as np
+from    scipy import signal
 import  os
 import  sys
 from    subprocess  import Popen
 from    time        import sleep
-import  numpy as np
 from    socket      import socket
 
 from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, \
                             BFCFG_PATH, LOG_FOLDER
 
 from    miscel      import  read_bf_config_fs, process_is_running, Fmt, \
-                            send_cmd
+                            send_cmd, calc_gain
 
 import  jack_mod as jack
 
@@ -30,6 +31,13 @@ BFLOGPATH = f'{LOG_FOLDER}/brutefir.log'
 
 # Global to avoid dumping EQ magnitude graph to a PNG file if not changed
 last_eq_mag = np.zeros( EQ_CURVES["freqs"].shape[0] )
+
+
+def readPCM(fname, dtype='float32'):
+    """ lee un archivo pcm float32
+    """
+    #return np.fromfile(fname, dtype='float32')
+    return np.memmap(fname, dtype=dtype, mode='r')
 
 
 def cli(cmd):
@@ -75,24 +83,7 @@ def set_subsonic(mode):
         return 'done'
 
 
-def calc_gain( state ):
-    """ Calculates the gain from:   level,
-                                    ref_level_gain
-                                    source gain offset
-        (float)
-    """
-
-    gain    = state["level"] + float(CONFIG["ref_level_gain"]) \
-                             - state["lu_offset"]
-
-    # Adding here the specific source gain:
-    if state["input"] != 'none':
-        gain += float( CONFIG["sources"][state["input"]]["gain"] )
-
-    return gain
-
-
-def set_gains( state ):
+def set_gains( state, nolevel=False, dBextra=0 ):
     """ - Adjust Brutefir gain at filtering f.lev.xx stages as per the
           provided state values and configured reference levels.
         - Routes channels to listening modes 'mid' (mono) or 'side' (L-R).
@@ -109,10 +100,19 @@ def set_gains( state ):
                        /        RL
                 in.R  --------  RR
                               f.lev.R
-    """
 
-    dB_gain    = calc_gain( state )
+        (i) 'nolevel' is intended to be used when using alsamixer
+            'dBextra' is reported by alsa.py when alsa mixer gain limit is reached.
+
+    """
     dB_balance = state["balance"]
+
+    state2 = state.copy()
+    if nolevel:
+        state2["level"] = 0
+
+    dB_gain = calc_gain( state2 ) + dBextra
+
     dB_gain_L  = dB_gain
     dB_gain_R  = dB_gain
 
@@ -269,6 +269,52 @@ def read_eq():
     return  np.array(freq).astype(np.float), \
             np.array(mag).astype(np.float),  \
             np.array(pha).astype(np.float)
+
+
+def get_drc_headroom(drcID):
+    """ Finds out the pcm impulse max gain and its coeff attenuation.
+        This need some computing time but it is called only when applying a drc_set.
+    """
+
+    # Early return if drc 'none'
+    if drcID == 'none':
+        return 0.0
+
+    # A real drc pcm impulse
+    coeffs = get_config()["coeffs"]
+    drcs = [ x for x in coeffs if ( x["name"][:4]=='drc.' and x["name"][6:]==drcID ) ]
+
+    headrooms = []
+
+    for drc in drcs:
+
+        # coeff atten
+        try:
+            atten = float( drc["atten"] )
+        except Exception as e:
+            atten = 0.0
+            print(f'(bf.get_drc_headroom) ERROR: {str(e)}')
+
+        # Reading pcm impulse file max gain
+        try:
+            imp = readPCM( f'{LSPK_FOLDER}/{drc["pcm"]}')
+            _, h = signal.freqz(imp, worN=512, whole=False)
+            magdB = 20 * np.log10(abs(h))
+            magdB_max = round(np.max(magdB), 1)
+        except Exception as e:
+            magdB_max = 0.0
+            print(f'(bf.get_drc_headroom) ERROR: {str(e)}')
+
+        # DEBUG
+        #print( drc["name"], f'atten: {atten}', f'dbMax: {magdB_max}' )
+
+        headrooms.append( atten - magdB_max )
+
+    headroom = min(headrooms)
+    # DEBUG
+    print(f'(brutefir_mod) DRC {drcID} headroom:',  headroom)
+
+    return headroom
 
 
 def set_drc( drcID ):
