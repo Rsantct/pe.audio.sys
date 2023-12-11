@@ -291,8 +291,8 @@ class Preamp(object):
         self.balance_max = float(CONFIG["balance_max"])
         # Initiate brutefir input connected ports (used from switch_convolver)
         self.bf_sources = bf.get_in_connections()
-        # reset swap LR
-        self.state["lr_swapped"] = False
+        # get swap LR
+        self.state["lr_swapped"] = self._check_pre_in_swap()
         self.save_state()
 
 
@@ -348,6 +348,21 @@ class Preamp(object):
     # (i) Remember to return some result from any method below.
     #     Also notice that we use *dummy to accommodate the preamp.py parser
     #     mechanism wich always will include two arguments for any Preamp call.
+
+    def _get_pre_in_cables(self):
+        pre_ins = jack.get_ports('pre_in_loop', is_input=True)
+        cables = []
+        for p in pre_ins:
+            s = jack.get_all_connections(p)[0]
+            cables.append( (s, p) )
+        return cables
+
+
+    def _check_pre_in_swap(self):
+        cables = self._get_pre_in_cables()
+        res = cables[0][0].name < cables[1][0].name
+        return not res
+
 
     def update_drc_headroom(self, x):
         self.drc_headroom = x
@@ -829,24 +844,20 @@ class Preamp(object):
         """ Swap L <> R channels at preamp input
             Useful for some cases as swapped film channels after downmixed
         """
-        try:
 
-            pre_ins = jack.get_ports('pre_in_loop', is_input=True)
-            cables = []
-            for p in pre_ins:
-                s = jack.get_all_connections(p)[0]
-                cables.append( (s, p) )
-                jack.connect(s, p, 'disconnect')
+        def swap(cables):
             jack.connect(cables[0][0], cables[1][1])
             jack.connect(cables[1][0], cables[0][1])
 
-            self.state["lr_swapped"] = {True:False,
-                                        False:True}[self.state["lr_swapped"]]
 
+        try:
+            cables = self._get_pre_in_cables()
+            jack.clear_preamp()
+            swap( cables )
+            self.state["lr_swapped"] = self._check_pre_in_swap()
             return 'done'
 
         except Exception as e:
-
             return str(e)
 
 
