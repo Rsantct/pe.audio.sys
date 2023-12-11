@@ -292,7 +292,7 @@ class Preamp(object):
         # Initiate brutefir input connected ports (used from switch_convolver)
         self.bf_sources = bf.get_in_connections()
         # get swap LR
-        self.state["lr_swapped"] = self._check_pre_in_swap()
+        self.state["lr_swapped"] = self._check_pre_in_swapped()
         self.save_state()
 
 
@@ -350,18 +350,28 @@ class Preamp(object):
     #     mechanism wich always will include two arguments for any Preamp call.
 
     def _get_pre_in_cables(self):
+        """ Get preamp source wiring
+        """
         pre_ins = jack.get_ports('pre_in_loop', is_input=True)
         cables = []
         for p in pre_ins:
-            s = jack.get_all_connections(p)[0]
+            try:
+                s = jack.get_all_connections(p)[0]
+            except:
+                s = None
             cables.append( (s, p) )
         return cables
 
 
-    def _check_pre_in_swap(self):
+    def _check_pre_in_swapped(self):
+        """ Check for crossed channels in preamp source wiring
+        """
         cables = self._get_pre_in_cables()
-        res = cables[0][0].name < cables[1][0].name
-        return not res
+        try:
+            res = cables[0][0].name > cables[1][0].name
+        except:
+            res = False
+        return res
 
 
     def update_drc_headroom(self, x):
@@ -842,7 +852,7 @@ class Preamp(object):
 
     def swap_lr(self, *dummy):
         """ Swap L <> R channels at preamp input
-            Useful for some cases as swapped film channels after downmixed
+            Useful for some cases as swapped film channels when downmixed
         """
 
         def swap(cables):
@@ -854,11 +864,11 @@ class Preamp(object):
             cables = self._get_pre_in_cables()
             jack.clear_preamp()
             swap( cables )
-            self.state["lr_swapped"] = self._check_pre_in_swap()
+            self.state["lr_swapped"] = self._check_pre_in_swapped()
             return 'done'
 
         except Exception as e:
-            return str(e)
+            return f'cannot swap preamp inputs'
 
 
     def set_subsonic(self, value, *dummy):
