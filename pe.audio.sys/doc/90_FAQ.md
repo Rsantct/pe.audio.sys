@@ -40,6 +40,22 @@ Be sure the Apache's PHP module is installed and enabled:
     /etc/apache2/mods-available/php7.3.load
     $ sudo a2enmod php7.3
 
+
+    $ ls /etc/apache2/sites-enabled/
+    000-default.conf  pe.audio.sys.conf
+
+If enabled, disable default Apache site:
+    
+    $ sudo a2dissite 000-default.conf
+    Site 000-default disabled.
+    To activate the new configuration, you need to run:
+      systemctl reload apache2
+
+Reload Apache
+
+    $ sudo systemctl reload apache2
+    
+
 ## Which Spotify client to use?
 
 ### Desktop
