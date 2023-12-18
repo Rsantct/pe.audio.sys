@@ -182,8 +182,10 @@ def init_audio_settings():
         warning = ''
         if func( value ) == 'done':
             preamp.state[state_prop] = value
+            print('(on_init)', prop, value)
         else:
             warning = f'{Fmt.RED}bad {prop}:{value}{Fmt.END}'
+            print('(on_init)', warning)
             # Using last state
             value = preamp.state[state_prop]
             if func( value ) != 'done':
