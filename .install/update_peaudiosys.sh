@@ -296,8 +296,8 @@ forig_wol=$ORIG"/.install/apache-site/pe.audio.sys_wol.conf"
 fdest_wol="/etc/apache2/sites-available/pe.audio.sys_wol.conf"
 
 # updating HOME path inside xxx.conf files
-sed -i s/paudio/$(basename $HOME)/g  $forig_www
-sed -i s/paudio/$(basename $HOME)/g  $forig_wol
+sed -i s/paudio/$(basename $HOME)/g  $forig_www 1>/dev/null 2>&1
+sed -i s/paudio/$(basename $HOME)/g  $forig_wol 1>/dev/null 2>&1
 
 
 # Using Apache
