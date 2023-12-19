@@ -14,8 +14,8 @@
 
         -fs=N         Sampling rate, default 44100 Hz
         -flength=N    Filter length, default 16384 taps
-        -dither=X     Output dither true | false (default)
-
+        -dither=X     Output dither false | true (default)
+        -disable_debug_dump
 
 """
 
@@ -35,7 +35,7 @@ logic:
 # The eq module provides a filter coeff to render a run-time EQ.
 # (i) Bands here must match with the ones at your xxxxfreq.dat file.
 "eq" {
-    #debug_dump_filter: "/tmp/brutefir-rendered-%d";
+    debug_dump_filter: "/tmp/brutefir-rendered-%d";
     {
     coeff: "c.eq";
     # using audiotools R20 bands
@@ -75,22 +75,22 @@ IO = \
 
 input "in.L", "in.R" {
     # does not connect inputs in jack:
-    device:   "jack" {  clientname: "brutefir";
-                        ports: ""/"in.L", ""/"in.R"; };
+    device:   "jack" { clientname: "brutefir";
+                       ports: ""/"in.L", ""/"in.R"; };
     sample:   "AUTO";
     channels: 2/0,1;
 };
 
 output OUTPUTS_LIST {
-    # hardwire to jack sound card:
+    # hardwire to Jack sound card:
     device: "jack" { ports:
         PORTS_MAP;
     };
     sample:   "AUTO";
     channels: CHANNELS_LIST;
-    maxdelay: 1000;
+    maxdelay: 10000; # about 200 ms for multiroom compensation
     dither:   DITHER;
-    delay:    DELAY_LIST;  # in samples
+    delay:    DELAY_LIST
 };
 
 '''
@@ -193,7 +193,7 @@ filter "f.drc.R" {
 
 FILTERS_HEADER = \
 '''
-# ------------ CONVOLVER: XOVER filters --------------------
+# ------------ CONVOLVER: XOVER filters -----------------
 # Free full range, multiway, subwoofer filters to outputs
 '''
 
@@ -204,7 +204,6 @@ filter "f.WAY.CH" {
     to_outputs:   "WAY.CH"/0.0/+1;
     coeff:        "xo.WAY.mp";
 };
-
 '''
 
 FILTER_SUB = \
@@ -214,20 +213,28 @@ filter "f.sw" {
     to_outputs:   "sw"/0/+1;
     coeff:        "xo.sw.mp";
 };
-
 '''
 
 
 def get_ways():
     """ get ways from loudspeaker's folder files
     """
+
     ways = []
+
     for fname in lspkFiles:
         if fname.startswith('xo.'):
             way = fname[3:5]
             if way not in ways:
                 ways.append( way )
+
     ways.sort( key=lambda x: ('lo', 'mi', 'hi', 'sw').index(x) )
+
+    if not ways:
+        ways = ['fr']
+        global fr_is_dummy
+        fr_is_dummy = True
+
     return ways
 
 
@@ -240,6 +247,10 @@ def do_GENERAL_SETTINGS():
 
 def do_IO():
 
+    if not dither in ('true', 'false'):
+        print('Bad dither must be true or false')
+        sys.exit()
+
     IO_tmp  = IO.replace('DITHER', dither)
 
     if 'fr' in ways and ('lo' in ways or 'hi' in ways or 'mi' in ways):
@@ -250,7 +261,7 @@ def do_IO():
     ports_map   = ''
     pcounter    = 1
 
-    # the order is important
+    # the order matters
     for wname in 'fr', 'lo', 'mi', 'hi':
         if wname in ways:
             outs_list += f'"{wname}.L", "{wname}.R", '
@@ -266,19 +277,27 @@ def do_IO():
             ports_map += f'"system:playback_{pcounter}"/"{wname}", '
             pcounter += 1
 
-    IO_tmp = IO_tmp.replace('OUTPUTS_LIST', outs_list[:-2])
-    IO_tmp = IO_tmp.replace('PORTS_MAP',    ports_map[:-2])
+    outs_list = outs_list.rstrip()[:-1]
+    ports_map = ports_map.rstrip()[:-1]
 
-    tmp1 = f'{pcounter}/'
-    tmp2 = f''
-    for i in range( pcounter ):
-        tmp1 += f'{i}, '
-        tmp2 += '0, '
+    IO_tmp = IO_tmp.replace('OUTPUTS_LIST', outs_list)
+    IO_tmp = IO_tmp.replace('PORTS_MAP',    ports_map)
+
     global delay_list
-    delay_list = tmp2[:-2]
 
-    IO_tmp = IO_tmp.replace('CHANNELS_LIST', tmp1[:-2])
-    IO_tmp = IO_tmp.replace('DELAY_LIST',    delay_list)
+    delay_list  = f''
+    chann_list  = f'{pcounter - 1}/'
+
+    for i in range( pcounter - 1 ):
+        chann_list += f'{i}, '
+        delay_list += '0, '
+
+    chann_list = chann_list.rstrip()[:-1]
+    delay_list = delay_list.rstrip()[:-1]
+    tmp = delay_list + f'; {notice_delay2ms(delay_list)}'
+
+    IO_tmp = IO_tmp.replace('CHANNELS_LIST', chann_list)
+    IO_tmp = IO_tmp.replace('DELAY_LIST',    tmp)
 
     return IO_tmp
 
@@ -352,18 +371,40 @@ def do_FILTERS():
 
         if not 'sw' in way:
             for ch in 'L', 'R':
-                tmp += FILTER_STEREO.replace('CH', ch) \
-                                    .replace('WAY', way)
+                tmp += FILTER_STEREO.replace('CH', ch).replace('WAY', way)
         else:
             tmp += FILTER_SUB
 
+    if fr_is_dummy:
+        tmp = tmp.replace('"xo.fr.mp"', '-1')
+
     return tmp
+
+
+def notice_delay2ms(delay_list):
+    """ Translates samples to ms
+    """
+    delays = [ int(x) for x in delay_list.split(',') ]
+    notice = '# samples ~ xxx ms'
+
+    tmp = ''
+    for d in delays:
+        ms = round(d / int(fs) * 1000, 1)
+        tmp += f'{ms}, '
+    tmp = tmp.rstrip()[:-1]
+
+    notice = notice.replace('xxx', tmp)
+    return notice
 
 
 def main():
 
     tmp = ''
     tmp += EQ_CLI
+
+    if disable_dump:
+        tmp = tmp.replace('debug_dump_filter', '#debug_dump_filter')
+
     tmp += do_GENERAL_SETTINGS()
     tmp += do_IO()
     tmp += COEFF_EQ
@@ -383,7 +424,7 @@ def main():
     print(f'    Fs:             {fs}')
     print(f'    Filter lenght:  {flength}')
     print(f'    Output dither:  {dither}')
-    print(f'    Outputs delay:  {delay_list}\n')
+    print(f'    Outputs delay:  {delay_list} {notice_delay2ms(delay_list)}\n')
 
     print(f'(!) Check carefully:')
     print(f'    - the sampling rate match the one from your .pcm files')
@@ -394,9 +435,11 @@ def main():
 
 if __name__ == '__main__':
 
-    fs      = '44100'
-    flength = '16384'
-    dither  = 'false'
+    fs              = '44100'
+    flength         = '16384'
+    dither          = 'true'
+    disable_dump    = False
+    fr_is_dummy     = False
 
     if len( sys.argv ) > 1:
         lspkName = sys.argv[1]
@@ -408,10 +451,16 @@ if __name__ == '__main__':
 
         if '-fs=' in opc:
             fs = opc[4:]
+
         elif '-flen' in opc:
             flength = opc.split('=')[-1]
-        elif '-d' in opc:
+
+        elif '-dither' in opc:
             dither = opc.split('=')[-1]
+
+        elif '-disable' in opc:
+            disable_dump = True
+
 
     lspkFolder = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
 
