@@ -13,8 +13,12 @@
      peaudiosys_make_brutefir_config.py <loudspeaker_name> [ options ]
 
         -fs=N         Sampling rate, default 44100 Hz
+
         -flength=N    Filter length, default 16384 taps
+                      (Also as partitioned form: '4096,4')
+
         -dither=X     Output dither  true (default) | false
+
         -nodumpeq     Disables dumping rendering eq logic
 
 
@@ -502,6 +506,10 @@ if __name__ == '__main__':
 
         elif '-nodump' in opc:
             disable_dump = True
+
+        else:
+            print(__doc__)
+            sys.exit()
 
 
     freqs = get_freqs()
