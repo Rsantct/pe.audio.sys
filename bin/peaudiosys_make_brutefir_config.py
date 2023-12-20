@@ -14,8 +14,9 @@
 
         -fs=N         Sampling rate, default 44100 Hz
         -flength=N    Filter length, default 16384 taps
-        -dither=X     Output dither false | true (default)
-        -disable_debug_dump
+        -dither=X     Output dither  true (default) | false
+        -nodumpeq     Disables dumping rendering eq logic
+
 
 """
 
@@ -23,39 +24,45 @@ import sys, os
 import pathlib
 UHOME = os.path.expanduser("~")
 
+FREQPATH = f'{UHOME}/pe.audio.sys/share/eq/freq.dat'
+
 
 EQ_CLI = \
 '''
-# --------- THE EQ & CLI MODULES --------
+# THE EQ & CLI MODULES
 logic:
 
-# The command line interface server, listening on a TCP port.
+# The Command Line Interface server TCP port
 "cli" { port: 3000; },
 
 # The eq module provides a filter coeff to render a run-time EQ.
-# (i) Bands here must match with the ones at your xxxxfreq.dat file.
+# (i) Bands here must match with the ones in your xxxxfreq.dat file.
 "eq" {
     debug_dump_filter: "/tmp/brutefir-rendered-%d";
     {
-    coeff: "c.eq";
-    # using audiotools R20 bands
-    bands:
-    10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25, 28, 31.5,
-    35.5, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112,
-    125, 140, 160, 180, 200, 224, 250, 280, 315, 355,
-    400, 450, 500, 560, 630, 710, 800, 900, 1000,
-    1120, 1250, 1400, 1600, 1800, 2000, 2240, 2500,
-    2800, 3150, 3550, 4000, 4500, 5000, 5600, 6300,
-    7100, 8000, 9000, 10000, 11200, 12500, 14000, 16000,
-    18000, 20000;
+        coeff: "c.eq";
+
+        bands:
+BANDS
     };
 };
 
 '''
 
+R20_BANDS = """
+            10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25, 28, 31.5,
+            35.5, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112,
+            125, 140, 160, 180, 200, 224, 250, 280, 315, 355,
+            400, 450, 500, 560, 630, 710, 800, 900, 1000,
+            1120, 1250, 1400, 1600, 1800, 2000, 2240, 2500,
+            2800, 3150, 3550, 4000, 4500, 5000, 5600, 6300,
+            7100, 8000, 9000, 10000, 11200, 12500, 14000, 16000,
+            18000, 20000;
+"""
+
 GENERAL_SETTINGS = \
 '''
-# --------- GENERAL SETTINGS --------
+# GENERAL SETTINGS
 
 sampling_rate:      FS ;
 filter_length:      FLENGTH ;
@@ -71,7 +78,7 @@ show_progress:      false ;
 
 IO = \
 '''
-# -------------  I/O: -------------
+# I/O
 
 input "in.L", "in.R" {
     # does not connect inputs in jack:
@@ -97,7 +104,7 @@ output OUTPUTS_LIST {
 
 COEFF_EQ = \
 """
-# --------- COEFFs for EQ & LOUDNESS ---------
+# COEFFs for EQ & LOUDNESS
 # 1 block length is enough because smooth eq curves
 
 coeff "c.eq" {
@@ -110,7 +117,7 @@ coeff "c.eq" {
 
 COEFF_DRC_HEADER = \
 '''
-# -------  COEFFs for DRC  --------
+# COEFFs for DRC
 # PCMs found under the loudspeaker folder
 '''
 
@@ -127,7 +134,7 @@ coeff "drc.C.NAME" {
 
 COEFF_XO_HEADER = \
 '''
-# -------  COEFFs for XO  --------
+# COEFFs for XO
 # PCMs found under the loudspeaker folder
 '''
 
@@ -144,9 +151,9 @@ coeff "xo.XONAME" {
 
 FILTERS_LEV_EQ_DRC = \
 '''
-# ------------ CONVOLVER:  level filter  --------------
+# CONVOLVER:  level filter
 # Not a filter just for level and channel routing purposes
-# (i) initial 50 dB atten for a safe startup
+# (i) Initial 50 dB atten for a safe startup
 
 filter "f.lev.L" {
     from_inputs:  "in.L"/50.0/1, "in.R"//0;
@@ -161,7 +168,7 @@ filter "f.lev.R" {
 };
 
 
-# ------------ CONVOLVER:  EQ filters  ----------------
+# CONVOLVER:  EQ filters
 
 filter "f.eq.L" {
     from_filters: "f.lev.L";
@@ -175,7 +182,7 @@ filter "f.eq.R" {
     coeff:        "c.eq";
 };
 
-# ------------ CONVOLVER: DRC filters -------------------
+# CONVOLVER: DRC filters
 
 filter "f.drc.L" {
     from_filters: "f.eq.L";
@@ -193,8 +200,7 @@ filter "f.drc.R" {
 
 FILTERS_HEADER = \
 '''
-# ------------ CONVOLVER: XOVER filters -----------------
-# Free full range, multiway, subwoofer filters to outputs
+# CONVOLVER: XOVER filters
 '''
 
 FILTER_STEREO = \
@@ -214,6 +220,42 @@ filter "f.sw" {
     coeff:        "xo.sw.mp";
 };
 '''
+
+
+def get_freqs():
+    """ get freqs from the share/eq folder
+    """
+
+    try:
+        with open(FREQPATH, 'r') as f:
+            tmp = f.read()
+
+        freqs = [round(float(f),3) for f in tmp.split() if f]
+
+    except Exception as e:
+        freqs = []
+        print(f'ERROR reading: {FREQPATH}')
+
+    return freqs
+
+
+def make_bands_str(freqs):
+
+    maxlen = 9
+
+    lines = '\n'
+    i = 0
+    while True:
+        line = [ x for x in freqs[i: i + maxlen] ]
+        line = ', '.join( [ str(x).replace('.0', '') for x in line ] )
+        if line:
+            line = ' ' * 12 + line  + ',\n'
+            lines += line
+        else:
+            break
+        i += maxlen
+
+    return lines[:-2] + ';\n'
 
 
 def get_ways():
@@ -399,8 +441,7 @@ def notice_delay2ms(delay_list):
 
 def main():
 
-    tmp = ''
-    tmp += EQ_CLI
+    tmp = EQ_CLI.replace('BANDS', R20_BANDS[1:-1]).lstrip()
 
     if disable_dump:
         tmp = tmp.replace('debug_dump_filter', '#debug_dump_filter')
@@ -413,13 +454,13 @@ def main():
     tmp += do_FILTERS_LEV_EQ_DRC()
     tmp += do_FILTERS()
 
-    out_fname = f'{lspkFolder}/brutefir_config_draft'
+    out_fname = f'{LSPKFOLDER}/brutefir_config_draft'
     with open(out_fname, 'w') as f:
         f.write(tmp)
 
     print()
     print(f'(i) \'brutefir_config_draft\' has been saved to:')
-    print(f'    {lspkFolder}/\n' )
+    print(f'    {LSPKFOLDER}/\n' )
 
     print(f'    Fs:             {fs}')
     print(f'    Filter lenght:  {flength}')
@@ -427,9 +468,9 @@ def main():
     print(f'    Outputs delay:  {delay_list} {notice_delay2ms(delay_list)}\n')
 
     print(f'(!) Check carefully:')
-    print(f'    - the sampling rate match the one from your .pcm files')
-    print(f'    - the soundcard channels mapping and delays')
-    print(f'    - attenuation for each coefficent if needed.')
+    print(f'    - The sampling rate match the one from your .pcm files')
+    print(f'    - Soundcard channels mapping and delays')
+    print(f'    - Attenuation for each coefficent if needed.')
     print(f'    - \'to_outputs\': polarity and attenuation for each way.\n')
 
 
@@ -458,14 +499,21 @@ if __name__ == '__main__':
         elif '-dither' in opc:
             dither = opc.split('=')[-1]
 
-        elif '-disable' in opc:
+        elif '-nodump' in opc:
             disable_dump = True
 
 
-    lspkFolder = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
+    freqs = get_freqs()
+    if freqs:
+        R20_BANDS = make_bands_str(freqs)
+        print(f'(i) Using eq bands from: {FREQPATH}')
+    else:
+        print(f'(i) Using eq bands from predefined R20 bands.')
+
+    LSPKFOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
 
     lspkFiles = []
-    entries = pathlib.Path(lspkFolder)
+    entries = pathlib.Path(LSPKFOLDER)
     for entry in entries.iterdir():
         lspkFiles.append(entry.name)
     ways = get_ways()
