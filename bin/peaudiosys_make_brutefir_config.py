@@ -259,25 +259,25 @@ def make_bands_str(freqs):
 
 
 def get_ways():
-    """ get ways from loudspeaker's folder files
+    """ get WAYS from loudspeaker's folder files
     """
 
-    ways = []
+    WAYS = []
 
-    for fname in lspkFiles:
+    for fname in LSPKFILES:
         if fname.startswith('xo.'):
             way = fname[3:5]
-            if way not in ways:
-                ways.append( way )
+            if way not in WAYS:
+                WAYS.append( way )
 
-    ways.sort( key=lambda x: ('lo', 'mi', 'hi', 'sw').index(x) )
+    WAYS.sort( key=lambda x: ('lo', 'mi', 'hi', 'sw').index(x) )
 
-    if not ways:
-        ways = ['fr']
+    if not WAYS:
+        WAYS = ['fr']
         global fr_is_dummy
         fr_is_dummy = True
 
-    return ways
+    return WAYS
 
 
 def do_GENERAL_SETTINGS():
@@ -295,7 +295,7 @@ def do_IO():
 
     IO_tmp  = IO.replace('DITHER', dither)
 
-    if 'fr' in ways and ('lo' in ways or 'hi' in ways or 'mi' in ways):
+    if 'fr' in WAYS and ('lo' in WAYS or 'hi' in WAYS or 'mi' in WAYS):
         print('BAD xo.xx FILES')
         sys.exit()
 
@@ -305,7 +305,7 @@ def do_IO():
 
     # the order matters
     for wname in 'fr', 'lo', 'mi', 'hi':
-        if wname in ways:
+        if wname in WAYS:
             outs_list += f'"{wname}.L", "{wname}.R", '
             ports_map += f'"system:playback_{pcounter}"/"{wname}.L", '
             pcounter += 1
@@ -313,7 +313,7 @@ def do_IO():
             pcounter += 1
             ports_map += '\n        '
 
-    for wname in ways:
+    for wname in WAYS:
         if 'sw' in wname:
             outs_list += f'"{wname}", '
             ports_map += f'"system:playback_{pcounter}"/"{wname}", '
@@ -349,7 +349,7 @@ def do_DRC_COEFFS():
     tmp = COEFF_DRC_HEADER
 
     drcs = []
-    for fname in lspkFiles:
+    for fname in LSPKFILES:
         if fname.startswith('drc.'):
             drc = fname[4:-4]
             if drc not in drcs:
@@ -371,7 +371,7 @@ def do_XO_COEFFS():
     tmp = COEFF_XO_HEADER
 
     xos = []
-    for fname in lspkFiles:
+    for fname in LSPKFILES:
         if fname.startswith('xo.'):
             xo = fname[3:-4]
             if xo not in xos:
@@ -391,7 +391,7 @@ def do_FILTERS_LEV_EQ_DRC():
     lfilters = ''
     rfilters = ''
 
-    for way in ways:
+    for way in WAYS:
         if 'sw' not in way:
             lfilters += f'"f.{way}.L", '
             rfilters += f'"f.{way}.R", '
@@ -409,7 +409,7 @@ def do_FILTERS():
 
     tmp = FILTERS_HEADER
 
-    for way in ways:
+    for way in WAYS:
 
         if not 'sw' in way:
             for ch in 'L', 'R':
@@ -482,6 +482,7 @@ if __name__ == '__main__':
     disable_dump    = False
     fr_is_dummy     = False
 
+
     if len( sys.argv ) > 1:
         lspkName = sys.argv[1]
     else:
@@ -510,12 +511,14 @@ if __name__ == '__main__':
     else:
         print(f'(i) Using eq bands from predefined R20 bands.')
 
+
     LSPKFOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
 
-    lspkFiles = []
+    LSPKFILES = []
     entries = pathlib.Path(LSPKFOLDER)
     for entry in entries.iterdir():
-        lspkFiles.append(entry.name)
-    ways = get_ways()
+        LSPKFILES.append(entry.name)
+
+    WAYS = get_ways()
 
     main()
