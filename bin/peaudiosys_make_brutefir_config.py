@@ -21,14 +21,14 @@
 
         -nodumpeq     Disables dumping rendering eq logic
 
-
+        -subsonic     Includes a subsonic filter
 """
 
 import sys, os
 import pathlib
 UHOME = os.path.expanduser("~")
 
-FREQPATH = f'{UHOME}/pe.audio.sys/share/eq/freq.dat'
+FREQPATH  = f'{UHOME}/pe.audio.sys/share/eq/freq.dat'
 
 
 EQ_CLI = \
@@ -115,6 +115,29 @@ coeff "c.eq" {
     filename: "dirac pulse";
     shared_mem: true;
     blocks: 1;
+};
+
+"""
+
+COEFF_SUBSONIC = \
+"""
+# COEFFs for SUBSONIC
+# (i) If partitioned <filter_length>, set <blocks> to cover
+#     the 4096 taps from the subsonic.xx.pcm files
+
+coeff "subsonic.mp" {
+    filename:    "SUBSONIC_MP";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+    blocks:      BLOCKS;
+};
+coeff "subsonic.lp" {
+    filename:    "SUBSONIC_LP";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+    blocks:      BLOCKS;
 };
 
 """
@@ -285,22 +308,27 @@ def get_ways():
 
 
 def do_GENERAL_SETTINGS():
+
+    if not int(FS) in (44100, 48000, 96000):
+        print(f'ERROR: Bad fs: {FS} must be in 44100, 48000, 96000')
+        sys.exit()
+
     tmp = GENERAL_SETTINGS
-    tmp = tmp.replace('FS', fs)
-    tmp = tmp.replace('FLENGTH', flength)
+    tmp = tmp.replace('FS', FS)
+    tmp = tmp.replace('FLENGTH', FLENGTH)
     return tmp
 
 
 def do_IO():
 
-    if not dither in ('true', 'false'):
-        print('Bad dither must be true or false')
+    if not DITHER in ('true', 'false'):
+        print('ERROR: Bad dither must be true or false')
         sys.exit()
 
-    IO_tmp  = IO.replace('DITHER', dither)
+    IO_tmp  = IO.replace('DITHER', DITHER)
 
     if 'fr' in WAYS and ('lo' in WAYS or 'hi' in WAYS or 'mi' in WAYS):
-        print('BAD xo.xx FILES')
+        print('ERROR: Bad xo.xx FILES')
         sys.exit()
 
     outs_list   = ''
@@ -435,12 +463,44 @@ def notice_delay2ms(delay_list):
 
     tmp = ''
     for d in delays:
-        ms = round(d / int(fs) * 1000, 1)
+        ms = round(d / int(FS) * 1000, 1)
         tmp += f'{ms}, '
     tmp = tmp.rstrip()[:-1]
 
     notice = notice.replace('xxx', tmp)
     return notice
+
+
+def do_subsonic():
+
+    global COEFF_SUBSONIC
+
+    SUBSONIC_MP = f'{UHOME}/pe.audio.sys/share/eq/{FS}/subsonic.mp.pcm'
+    SUBSONIC_LP = f'{UHOME}/pe.audio.sys/share/eq/{FS}/subsonic.lp.pcm'
+
+    for fname in (SUBSONIC_MP, SUBSONIC_LP):
+        if not pathlib.Path(fname).is_file():
+            print(f'ERROR: cannot access to: {fname}')
+            sys.exit()
+
+    COEFF_SUBSONIC = COEFF_SUBSONIC.replace('SUBSONIC_MP', SUBSONIC_MP)
+    COEFF_SUBSONIC = COEFF_SUBSONIC.replace('SUBSONIC_LP', SUBSONIC_LP)
+
+    # Partition size
+    psize = int( FLENGTH.split(',')[0].strip() )
+
+    # Taps for a FLOAT32 pcm file
+    fsize = pathlib.Path(SUBSONIC_MP).stat().st_size
+    taps = int(fsize / 4)
+
+    if psize / taps < 1:
+        nblocks = int( taps / psize )
+    else:
+        nblocks = 1
+
+    COEFF_SUBSONIC = COEFF_SUBSONIC.replace('BLOCKS', str(nblocks))
+
+    return COEFF_SUBSONIC
 
 
 def main():
@@ -453,6 +513,8 @@ def main():
     tmp += do_GENERAL_SETTINGS()
     tmp += do_IO()
     tmp += COEFF_EQ
+    if subsonic:
+        tmp += do_subsonic()
     tmp += do_DRC_COEFFS()
     tmp += do_XO_COEFFS()
     tmp += do_FILTERS_LEV_EQ_DRC()
@@ -464,25 +526,28 @@ def main():
 
     print()
     print(f'(i) \'brutefir_config_draft\' has been saved to:')
-    print(f'    {LSPKFOLDER}/\n' )
-
-    print(f'    Fs:             {fs}')
-    print(f'    Filter lenght:  {flength}')
-    print(f'    Output dither:  {dither}')
-    print(f'    Outputs delay:  {delay_list} {notice_delay2ms(delay_list)}\n')
-
+    print(f'    {LSPKFOLDER}' )
+    print()
+    print(f'    Fs:                 {FS}')
+    print(f'    Filter lenght:      {FLENGTH}')
+    print(f'    Output dither:      {DITHER}')
+    print(f'    Outputs delay:      {delay_list} {notice_delay2ms(delay_list)}')
+    print(f'    Subsonic filter:    {"enabled" if subsonic else "disabled"}')
+    print()
     print(f'(!) Check carefully:')
     print(f'    - The sampling rate match the one from your .pcm files')
     print(f'    - Soundcard channels mapping and delays')
     print(f'    - Attenuation for each coefficent if needed.')
-    print(f'    - \'to_outputs\': polarity and attenuation for each way.\n')
+    print(f'    - \'to_outputs\': polarity and attenuation for each way.')
+    print()
 
 
 if __name__ == '__main__':
 
-    fs              = '44100'
-    flength         = '16384'
-    dither          = 'true'
+    FS              = '44100'
+    FLENGTH         = '16384'
+    DITHER          = 'true'
+    subsonic        = False
     disable_dump    = False
     fr_is_dummy     = False
 
@@ -496,16 +561,19 @@ if __name__ == '__main__':
     for opc in sys.argv[2:]:
 
         if '-fs=' in opc:
-            fs = opc[4:]
+            FS = opc[4:]
 
-        elif '-flen' in opc:
-            flength = opc.split('=')[-1]
+        elif '-flength=' in opc:
+            FLENGTH = opc.split('=')[-1]
 
-        elif '-dither' in opc:
-            dither = opc.split('=')[-1]
+        elif '-dither=' in opc:
+            DITHER = opc.split('=')[-1]
 
         elif '-nodump' in opc:
             disable_dump = True
+
+        elif '-subsonic' in opc:
+            subsonic = True
 
         else:
             print(__doc__)
