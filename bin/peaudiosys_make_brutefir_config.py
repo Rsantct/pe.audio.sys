@@ -23,6 +23,9 @@
 
         -subsonic     Includes a subsonic filter
 
+        -force        Force to overwrite brutefir_config
+
+
     OPTIONAL CONFIG FILE 'loudspeakers/YOUR_LSPK/config.yml'
 
         Example:
@@ -570,12 +573,13 @@ def main():
     tmp += do_FILTERS_LEV_EQ_DRC()
     tmp += do_FILTERS()
 
-    out_fname = f'{LSPKFOLDER}/brutefir_config_draft'
-    with open(out_fname, 'w') as f:
-        f.write(tmp)
+    if not force:
+        bf_file = 'brutefir_config_draft'
+    else:
+        bf_file = 'brutefir_config'
 
     print()
-    print(f'(i) \'brutefir_config_draft\' has been saved to:')
+    print(f'(i) \'{bf_file}\' is about to be saved to:')
     print(f'    {LSPKFOLDER}' )
     print()
     print(f'    Fs:                 {FS}')
@@ -591,6 +595,18 @@ def main():
     print(f'    - \'to_outputs\': polarity and attenuation for each way.')
     print()
 
+    fout = f'{LSPKFOLDER}/{bf_file}'
+
+    if force:
+        ans = input(f'ARE YOU SURE TO OVERWRITE {bf_file} (y/N) ? ')
+        if ans.lower() != 'y' and ans.lower() != 's':
+            print('NOT saved')
+            sys.exit()
+
+    with open(fout, 'w') as f:
+        f.write(tmp)
+
+    print(f'SAVED to: {fout}')
 
 if __name__ == '__main__':
 
@@ -600,6 +616,7 @@ if __name__ == '__main__':
     subsonic        = False
     disable_dump    = False
     fr_is_dummy     = False
+    force           = False
 
 
     if len( sys.argv ) > 1:
@@ -624,6 +641,9 @@ if __name__ == '__main__':
 
         elif '-subsonic' in opc:
             subsonic = True
+
+        elif '-force' in opc:
+            force = True
 
         else:
             print(__doc__)
