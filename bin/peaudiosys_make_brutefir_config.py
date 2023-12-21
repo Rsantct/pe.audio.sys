@@ -6,15 +6,15 @@
 
 """
     A script to make a Brutefir config file from the
-    files found in the loudspeaker folder.
+    pcm files found in the loudspeaker folder.
 
     Usage:
 
-     peaudiosys_make_brutefir_config.py <loudspeaker_name> [ options ]
+     peaudiosys_make_brutefir_config.py <YOUR_LSPK> [ options ]
 
         -fs=N         Sampling rate, default 44100 Hz
 
-        -flength=N    Filter length, default 16384 taps
+        -flength=N    Filter length, default '16384'
                       (Also as partitioned form: '4096,4')
 
         -dither=X     Output dither  true (default) | false
@@ -22,13 +22,24 @@
         -nodumpeq     Disables dumping rendering eq logic
 
         -subsonic     Includes a subsonic filter
+
+    OPTIONAL CONFIG FILE 'loudspeakers/YOUR_LSPK/config.yml'
+
+        Example:
+
+            drc_coeffs:
+                flat_region_dB: -3.5
+
 """
 
-import sys, os
 import pathlib
+import yaml
+import sys
+import os
+
 UHOME = os.path.expanduser("~")
 
-FREQPATH  = f'{UHOME}/pe.audio.sys/share/eq/freq.dat'
+FREQPATH = f'{UHOME}/pe.audio.sys/share/eq/freq.dat'
 
 
 EQ_CLI = \
@@ -53,7 +64,7 @@ BANDS
 
 '''
 
-R20_BANDS = """
+EQ_BANDS = """
             10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25, 28, 31.5,
             35.5, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112,
             125, 140, 160, 180, 200, 224, 250, 280, 315, 355,
@@ -69,7 +80,7 @@ GENERAL_SETTINGS = \
 # GENERAL SETTINGS
 
 sampling_rate:      FS ;
-filter_length:      FLENGTH ;
+filter_length:      FLENSTR ;
 float_bits:         32 ;
 overflow_warnings:  true ;
 allow_poll_mode:    false ;
@@ -132,6 +143,7 @@ coeff "subsonic.mp" {
     attenuation: 0;
     blocks:      BLOCKS;
 };
+
 coeff "subsonic.lp" {
     filename:    "SUBSONIC_LP";
     format:      "FLOAT_LE";
@@ -154,7 +166,7 @@ coeff "drc.C.NAME" {
     filename:    "drc.C.NAME.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
-    attenuation: 0;
+    attenuation: ATTEN;
 };
 
 '''
@@ -249,21 +261,22 @@ filter "f.sw" {
 '''
 
 
-def get_freqs():
+def update_eq_bands():
     """ get freqs from the share/eq folder
     """
+
+    global EQ_BANDS
 
     try:
         with open(FREQPATH, 'r') as f:
             tmp = f.read()
 
         freqs = [round(float(f),3) for f in tmp.split() if f]
+        EQ_BANDS = make_bands_str(freqs)
+        print(f'(i) Using eq bands from: {FREQPATH}')
 
     except Exception as e:
-        freqs = []
-        print(f'ERROR reading: {FREQPATH}')
-
-    return freqs
+        print(f'(!) ERROR reading: {FREQPATH}, using predefined eq R20 bands.')
 
 
 def make_bands_str(freqs):
@@ -309,13 +322,28 @@ def get_ways():
 
 def do_GENERAL_SETTINGS():
 
+    global PSIZE, NUMPA, FLEN
+
     if not int(FS) in (44100, 48000, 96000):
         print(f'ERROR: Bad fs: {FS} must be in 44100, 48000, 96000')
         sys.exit()
 
+    # Partition size number of partitions and filter length
+    if ',' in FLENSTR:
+        NUMPA = int( FLENSTR.split(',')[-1].strip() )
+    else:
+        NUMPA = 1
+    PSIZE = int( FLENSTR.split(',')[0].strip() )
+    FLEN  = PSIZE * NUMPA
+
+
+    if not FLEN in (1024, 2048, 4096, 8192, 16384, 32768):
+        print(f'ERROR: Bad filter length {FLEN} must be power of 2 and >= 1024')
+        sys.exit()
+
     tmp = GENERAL_SETTINGS
     tmp = tmp.replace('FS', FS)
-    tmp = tmp.replace('FLENGTH', FLENGTH)
+    tmp = tmp.replace('FLENSTR', FLENSTR)
     return tmp
 
 
@@ -389,8 +417,10 @@ def do_DRC_COEFFS():
 
     drcs.sort()
 
+    ATTEN = round( float(CONFIG["drc_coeffs"]["flat_region_dB"]), 1)
+
     for drc in drcs:
-        tmp += COEFF_DRC.replace('C.NAME', drc)
+        tmp += COEFF_DRC.replace('C.NAME', drc).replace('ATTEN', str(ATTEN))
 
     return tmp
 
@@ -486,26 +516,46 @@ def do_subsonic():
     COEFF_SUBSONIC = COEFF_SUBSONIC.replace('SUBSONIC_MP', SUBSONIC_MP)
     COEFF_SUBSONIC = COEFF_SUBSONIC.replace('SUBSONIC_LP', SUBSONIC_LP)
 
-    # Partition size
-    psize = int( FLENGTH.split(',')[0].strip() )
-
     # Taps for a FLOAT32 pcm file
-    fsize = pathlib.Path(SUBSONIC_MP).stat().st_size
-    taps = int(fsize / 4)
+    filesize = pathlib.Path(SUBSONIC_MP).stat().st_size
+    taps = int(filesize / 4)
 
-    if psize / taps < 1:
-        nblocks = int( taps / psize )
+    nblocks = 1
+
+    if FLEN >= taps:
+        while True:
+            if nblocks * PSIZE >= taps:
+                break
+            else:
+                nblocks += 1
     else:
-        nblocks = 1
+        print(f'\nWARNING: Subsonic {taps} taps < {FLENSTR} filter_length\n')
 
     COEFF_SUBSONIC = COEFF_SUBSONIC.replace('BLOCKS', str(nblocks))
 
     return COEFF_SUBSONIC
 
 
+def read_config():
+    """ PENDING to improve
+    """
+
+    global CONFIG
+
+    try:
+        with open(CONFIGPATH, 'r') as f:
+            CONFIG = yaml.safe_load(f)
+
+    except:
+        print(f'{LSPKFOLDER}/config.yml NOT found, using defaults.' )
+        CONFIG = {
+            'drc_coeffs': {'flat_region_dB': 0}
+        }
+
+
 def main():
 
-    tmp = EQ_CLI.replace('BANDS', R20_BANDS[1:-1]).lstrip()
+    tmp = EQ_CLI.replace('BANDS', EQ_BANDS[1:-1]).lstrip()
 
     if disable_dump:
         tmp = tmp.replace('debug_dump_filter', '#debug_dump_filter')
@@ -529,7 +579,7 @@ def main():
     print(f'    {LSPKFOLDER}' )
     print()
     print(f'    Fs:                 {FS}')
-    print(f'    Filter lenght:      {FLENGTH}')
+    print(f'    Filter lenght:      {FLENSTR}')
     print(f'    Output dither:      {DITHER}')
     print(f'    Outputs delay:      {delay_list} {notice_delay2ms(delay_list)}')
     print(f'    Subsonic filter:    {"enabled" if subsonic else "disabled"}')
@@ -545,7 +595,7 @@ def main():
 if __name__ == '__main__':
 
     FS              = '44100'
-    FLENGTH         = '16384'
+    FLENSTR         = '16384'
     DITHER          = 'true'
     subsonic        = False
     disable_dump    = False
@@ -564,7 +614,7 @@ if __name__ == '__main__':
             FS = opc[4:]
 
         elif '-flength=' in opc:
-            FLENGTH = opc.split('=')[-1]
+            FLENSTR = opc.split('=')[-1]
 
         elif '-dither=' in opc:
             DITHER = opc.split('=')[-1]
@@ -579,16 +629,16 @@ if __name__ == '__main__':
             print(__doc__)
             sys.exit()
 
-
-    freqs = get_freqs()
-    if freqs:
-        R20_BANDS = make_bands_str(freqs)
-        print(f'(i) Using eq bands from: {FREQPATH}')
-    else:
-        print(f'(i) Using eq bands from predefined R20 bands.')
+    print()
 
 
     LSPKFOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
+
+    CONFIGPATH = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}/config.yml'
+
+    update_eq_bands()
+
+    read_config()
 
     LSPKFILES = []
     entries = pathlib.Path(LSPKFOLDER)
