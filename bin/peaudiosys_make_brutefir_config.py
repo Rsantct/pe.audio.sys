@@ -598,7 +598,7 @@ def main():
     fout = f'{LSPKFOLDER}/{bf_file}'
 
     if force:
-        ans = input(f'ARE YOU SURE TO OVERWRITE {bf_file} (y/N) ? ')
+        ans = input(f'ARE YOU SURE TO OVERWRITE {bf_file}? (y/N) ')
         if ans.lower() != 'y' and ans.lower() != 's':
             print('NOT saved')
             sys.exit()
