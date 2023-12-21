@@ -1,0 +1,6 @@
+#
+# Currently used by bin/peaudiosys_make_brutefir_config.py
+#
+
+drc_coeffs:
+    flat_region_dB: 0.0
