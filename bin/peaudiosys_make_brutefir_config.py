@@ -418,8 +418,10 @@ def do_DRC_COEFFS():
     def get_atten(drc):
         ch, Id = drc.split('.')
         try:
-            atten = round( float(CONFIG["DRCs"][Id]["flat_region_dB"]), 1)
-        except:
+            val = CONFIG["DRCs"][Id]["flat_region_dB"]
+            atten = round( float(val), 1)
+        except Exception as e:
+            print(f'ERROR reading config.yml: DRCs: {Id}')
             atten = 0.0
         return atten
 
@@ -666,7 +668,7 @@ if __name__ == '__main__':
 
     LSPKFOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPKNAME}'
 
-    CONFIGPATH = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPKNAME}/configx.yml'
+    CONFIGPATH = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPKNAME}/config.yml'
 
     update_eq_bands()
 
