@@ -1,0 +1,12 @@
+#
+# Currently used by bin/peaudiosys_make_brutefir_config.py
+#
+
+DRCs:
+    sofa:
+        flat_region_dB: -5.5
+
+XOs:
+    fr:
+        gain:       0.0
+        polarity:   +

@@ -200,6 +200,11 @@ def init_audio_settings():
     convolver = Convolver()
     warnings  = ''
 
+
+    # DEFAULTS
+    if not 'subsonic' in CONFIG['on_init'] or not CONFIG['on_init']['subsonic']:
+        CONFIG['on_init']['subsonic'] = 'off'
+
     # Iterate over config.on_init:
     for prop in CONFIG['on_init']:
         warning = try_init(prop)
