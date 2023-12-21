@@ -30,8 +30,14 @@
 
         Example:
 
-            drc_coeffs:
-                flat_region_dB: -3.5
+            DRCs:
+                sofa:
+                    flat_region_dB: -3.5
+
+            XOs:
+                fr:
+                    gain:       0.0
+                    polarity:   +
 
 """
 
@@ -276,10 +282,10 @@ def update_eq_bands():
 
         freqs = [round(float(f),3) for f in tmp.split() if f]
         EQ_BANDS = make_bands_str(freqs)
-        print(f'(i) Using eq bands from: {FREQPATH}')
+        print(f'(i) Using eq bands from: {FREQPATH}\n')
 
     except Exception as e:
-        print(f'(!) ERROR reading: {FREQPATH}, using predefined eq R20 bands.')
+        print(f'(!) ERROR reading: {FREQPATH}, using predefined eq R20 bands.\n')
 
 
 def make_bands_str(freqs):
@@ -409,6 +415,15 @@ def do_IO():
 
 def do_DRC_COEFFS():
 
+    def get_atten(drc):
+        ch, Id = drc.split('.')
+        try:
+            atten = round( float(CONFIG["DRCs"][Id]["flat_region_dB"]), 1)
+        except:
+            atten = 0.0
+        return atten
+
+
     tmp = COEFF_DRC_HEADER
 
     drcs = []
@@ -420,10 +435,10 @@ def do_DRC_COEFFS():
 
     drcs.sort()
 
-    ATTEN = round( float(CONFIG["drc_coeffs"]["flat_region_dB"]), 1)
 
     for drc in drcs:
-        tmp += COEFF_DRC.replace('C.NAME', drc).replace('ATTEN', str(ATTEN))
+        atten = get_atten(drc)
+        tmp += COEFF_DRC.replace('C.NAME', drc).replace('ATTEN', str(atten))
 
     return tmp
 
@@ -532,7 +547,7 @@ def do_subsonic():
             else:
                 nblocks += 1
     else:
-        print(f'\nWARNING: Subsonic {taps} taps < {FLENSTR} filter_length\n')
+        print(f'WARNING: Subsonic {taps} taps < {FLENSTR} filter_length\n')
 
     COEFF_SUBSONIC = COEFF_SUBSONIC.replace('BLOCKS', str(nblocks))
 
@@ -550,10 +565,7 @@ def read_config():
             CONFIG = yaml.safe_load(f)
 
     except:
-        print(f'{LSPKFOLDER}/config.yml NOT found, using defaults.' )
-        CONFIG = {
-            'drc_coeffs': {'flat_region_dB': 0}
-        }
+        print(f'(i) {LSPKNAME}/config.yml NOT found, using defaults.\n' )
 
 
 def main():
@@ -620,7 +632,7 @@ if __name__ == '__main__':
 
 
     if len( sys.argv ) > 1:
-        lspkName = sys.argv[1]
+        LSPKNAME = sys.argv[1]
     else:
         print(__doc__)
         sys.exit()
@@ -652,9 +664,9 @@ if __name__ == '__main__':
     print()
 
 
-    LSPKFOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}'
+    LSPKFOLDER = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPKNAME}'
 
-    CONFIGPATH = f'{UHOME}/pe.audio.sys/loudspeakers/{lspkName}/config.yml'
+    CONFIGPATH = f'{UHOME}/pe.audio.sys/loudspeakers/{LSPKNAME}/configx.yml'
 
     update_eq_bands()
 
