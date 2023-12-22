@@ -9,9 +9,60 @@
 
 from time import sleep
 import jack
+from subprocess import check_output
 
 JCLI = jack.Client('tmp', no_start_server=True)
 JCLI.activate()
+
+
+def get_samplerate():
+    """ wrap function """
+    return JCLI.samplerate
+
+
+def get_bufsize():
+    """ wrap function """
+    return JCLI.blocksize
+
+
+def get_device():
+    """ This is not in Jack-CLIENT API
+    """
+    device = ''
+    try:
+        tmp = check_output('pgrep -fla jackd'.split()).decode()
+    except:
+        return device
+
+    if not 'hw:' in tmp:
+        return device
+
+    tmp = tmp.split('hw:')[-1]
+
+    if ',' in tmp:
+        device = tmp.split(',')[0].strip()
+    else:
+        device = tmp.split(' ')[0].strip()
+
+    return device
+
+
+def get_all_connections(pname):
+    """ wrap function """
+    ports = JCLI.get_all_connections(pname)
+    return ports
+
+
+def get_ports(pattern='',  is_audio=True, is_midi=False,
+                                is_input=False, is_output=False,
+                                is_physical=False, can_monitor=False,
+                                is_terminal=False ):
+    """ wrap function """
+    ports = JCLI.get_ports(pattern, is_audio, is_midi,
+                                    is_input, is_output,
+                                    is_physical, can_monitor,
+                                    is_terminal )
+    return ports
 
 
 def connect(p1, p2, mode='connect', verbose=True):
@@ -97,24 +148,3 @@ def clear_preamp():
             connect( client, preamp_port, mode='off' )
 
 
-def get_samplerate():
-    """ wrap function """
-    return JCLI.samplerate
-
-
-def get_all_connections(pname):
-    """ wrap function """
-    ports = JCLI.get_all_connections(pname)
-    return ports
-
-
-def get_ports(pattern='',  is_audio=True, is_midi=False,
-                                is_input=False, is_output=False,
-                                is_physical=False, can_monitor=False,
-                                is_terminal=False ):
-    """ wrap function """
-    ports = JCLI.get_ports(pattern, is_audio, is_midi,
-                                    is_input, is_output,
-                                    is_physical, can_monitor,
-                                    is_terminal )
-    return ports
