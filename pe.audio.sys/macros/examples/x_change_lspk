@@ -1,17 +1,49 @@
 #!/usr/bin/env python3
 """
-    Load an alternate loudspeaker, by using the template 'lspk_macro.py'
-"""
+    Alternates between two loudspeaker sets, both attached to differents
+    channels ports from the same system sound card.
 
+    You need to prepare a macro file whose filename must contain the
+    belonging loudspeaker name.
+
+    ACHTUNG this is purely GEEK  >:-)
+"""
+import os
+import  sys
+from    subprocess import Popen, call, check_output
+from    time import sleep
 import  templates.lspk_macro as lm
 
+UHOME       = os.path.expanduser("~")
+sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
-# First of all, before calling main(), you need to define MY_LSPK
-
-lm.MY_LSPK = {  'name':     'DynC5',
-                'drc_set':  'equilat',
-                'xo_set':   ''
-             }
+from    miscel import CONFIG
 
 
-lm.main()
+#########   SETS OF LOUDSPEAKERS TO TOGGLE BETWEEN      ########
+LSPK_A = "DynC5"
+DRC_A  = 'equilat'
+
+LSPK_B = "cardiojorns"
+DRC_B  = 'equilat'
+################################################################
+
+
+if __name__ == "__main__":
+
+    # Toggling
+    curr_lspk = CONFIG["loudspeaker"]
+    if curr_lspk == LSPK_A:
+        new_lspk = LSPK_B
+        new_drc  = DRC_B
+    else:
+        new_lspk = LSPK_A
+        new_drc  = DRC_A
+
+    # Must define at least lmMY_LSPK['lspk_name'] before calling lm.main()
+    lm.MY_LSPK['lspk_name'] = new_lspk
+    lm.MY_LSPK['drc_set']   = new_drc
+    lm.main()
+
+    print(new_lspk, new_drc)
+
