@@ -300,8 +300,9 @@ class Preamp(object):
         self.bf_sources = bf.get_in_connections()
         # get swap LR
         self.state["lr_swapped"] = self._check_pre_in_swapped()
-        # get JACK buffer
+        # get JACK stuff
         self.state["jack_buffer"] = jack.JCLI.blocksize
+        self.state["jack_device"] = jack.get_device()
         self.save_state()
 
 
