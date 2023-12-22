@@ -281,7 +281,7 @@ class Preamp(object):
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
-        self.state["fs"] = jack.get_samplerate()
+        self.state["fs"] = jack.JCLI.samplerate
         # tone_memo keeps tone values even when tone_defeat is activated
         self.state["tone_defeat"] = False
         self.tone_memo = {}
@@ -300,6 +300,8 @@ class Preamp(object):
         self.bf_sources = bf.get_in_connections()
         # get swap LR
         self.state["lr_swapped"] = self._check_pre_in_swapped()
+        # get JACK buffer
+        self.state["jack_buffer"] = jack.JCLI.blocksize
         self.save_state()
 
 
