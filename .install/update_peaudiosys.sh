@@ -9,8 +9,10 @@
 #               So edit it apart, copy to ~/tmp/ and test it.
 
 if [ -z $1 ] ; then
-    echo usage by indicating a previously downloaded branch in tmp/
-    echo "    download_peaudiosys.sh master|testing|xxx"
+    echo
+    echo "    download_peaudiosys.sh  <branch>"
+    echo
+    echo "    branch: a previously downloaded branch name under tmp/"
     echo
     exit 0
 fi
@@ -158,6 +160,22 @@ cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
 mkdir -p $HOME/bin
 cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
+
+
+########################################################################
+# PREPARING EQ FILES
+########################################################################
+EQFOLDER=$HOME/pe.audio.sys/share/eq
+
+if test -f $EQFOLDER/freq.dat && \
+   test -f $EQFOLDER/bass_mag.dat && \
+   test -f $EQFOLDER/treble_mag.dat; then
+    echo "Detected share/eq/xxxx.dat files"
+else
+    echo "Copying eq.sample.R20_audiotools/xxxxx.dat to share/eq/"
+    cp  $EQFOLDER/eq.sample.R20_audiotools/*dat  $EQFOLDER/
+fi
+
 
 ########################################################################
 # RESTORING PREVIOUS CONFIG IF DESIRED
