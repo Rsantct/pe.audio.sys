@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-    ACHTUNG: this is a purely geek template  :-P
+    ACHTUNG: this is a purely GEEK template  :-P
 
     A module to load a new loudspeaker always attached to the same
     sound card audio interface, so JACK process will keep untouch.
@@ -8,11 +8,14 @@
     Just will load a new config.yml and restarting Brutefir accordingly
     as per loudspeakers/XXXXX/brutefir_config
 
-    You need to define MY_LSPK before calling main(), for example:
+    You need to set MY_LSPK values, at least lspk_name, before calling main()
 
-        MY_LSPK = { 'name':     'cardiojorns',
-                    'drc_set':  'sofa',
-                    'xo_set':   'lp'            }
+    Example:
+
+        import templates.lspk_macro as lm
+        lm.MY_LSPK['lspk_name'] = 'DynC5'
+        lm.MY_LSPK['drc_set']   = 'equilat'
+        lm.main()
 
 """
 
@@ -26,10 +29,9 @@
 #           config.yml.DynC5+AMRsub
 #
 #       Example in differences::
-#           > loudspeaker:      dipocardiojorns         DynC5+AMRsub
-#           > init_xo:          mp                      mp_60Hz
-#           < init_drc:         estant_mp               lp_c5+sub_multip
-#           > ecasound_peq.py:  dj_estant.ecs           -not set-
+#           > loudspeaker:      dipocardiojorns         DynC5
+#           > init_xo:          mp
+#           > init_drc:         sofa                    equilat
 #
 #    Macro procedure:
 #
@@ -57,6 +59,8 @@ import  json
 from    time        import sleep
 from    shutil      import copyfile
 
+# To default to 'mp' xover
+MY_LSPK = {'lspk_name': '', 'drc_set':  '', 'xo_set':  'mp'}
 
 ME = __file__.split('/')[-1]
 
@@ -80,9 +84,9 @@ def main(verbose=False):
     # Turning on AMPS if needed
     #   regleta OUTLETS:
     #   {1: 'DAC', 2: 'AmpLO+HI+SUB', 3: 'DEQ2496', 4: 'N-Core'}
-    if 'DynC5' in MY_LSPK["name"]:
+    if 'DynC5' in MY_LSPK["lspk_name"]:
         Popen( f'{UHOME}/bin/regleta.py on 1 4'.split() )
-    elif 'jorns' in MY_LSPK["name"]:
+    elif 'jorns' in MY_LSPK["lspk_name"]:
         Popen( f'{UHOME}/bin/regleta.py on 2'.split() )
 
 
@@ -112,7 +116,7 @@ def main(verbose=False):
 
 
     # 4- Copy config.yml.YOURLSPK --> config.yml
-    copyfile( f'{MAINFOLDER}/config/config.yml.{MY_LSPK["name"]}',
+    copyfile( f'{MAINFOLDER}/config/config.yml.{MY_LSPK["lspk_name"]}',
               f'{MAINFOLDER}/config/config.yml')
     NEW_CONFIG = yaml.safe_load( open(CONFIGPATH,'r') )
 
@@ -133,7 +137,7 @@ def main(verbose=False):
 
     # 6- Restart Brutefir (needs cd to your lspk folder)
     #    (!!!) BE SURE that your brutefir_config has 50dB initial level atten.
-    os.chdir( f'{MAINFOLDER}/loudspeakers/{MY_LSPK["name"]}' )
+    os.chdir( f'{MAINFOLDER}/loudspeakers/{MY_LSPK["lspk_name"]}' )
     Popen( 'brutefir brutefir_config'.split() )
     os.chdir( UHOME )
     sleep(.33)
@@ -202,6 +206,6 @@ def main(verbose=False):
     send_cmd( f'preamp set_target   {new_state["target"]}',         verbose=verbose )
 
     # 12- Display warning
-    send_cmd( f'aux warning set LSPK: {MY_LSPK["name"]}' )
+    send_cmd( f'aux warning set LSPK: {MY_LSPK["lspk_name"]}' )
     send_cmd(  'aux warning expire 5' )
 
