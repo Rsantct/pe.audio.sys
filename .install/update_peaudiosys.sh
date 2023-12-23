@@ -8,6 +8,12 @@
 #               from ~/tmp/ because it will be modified on runtime.
 #               So edit it apart, copy to ~/tmp/ and test it.
 
+if [ "$2" != "--force" ] ; then
+    force=0
+else
+    force=1
+fi
+
 if [ -z $1 ] ; then
     echo
     echo "    download_peaudiosys.sh  <branch>"
@@ -80,16 +86,18 @@ fi
 ########################################################################
 # IF NO CHANGES IN ZIP COMMENT, WILL CANCEL UPDATING WITH EXIT CODE
 ########################################################################
-if [ -f $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH ]; then
-    if diff $HOME/tmp/pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH \
-            $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH  1>/dev/null ; then
 
-        echo "NO changes to update. Bye."
+if [ $force -eq 0 ]; then
+    if [ -f $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH ]; then
+        if diff $HOME/tmp/pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH \
+                $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH  1>/dev/null ; then
 
-        exit 1
+            echo "NO changes to update. Bye."
+
+            exit 1
+        fi
     fi
 fi
-
 
 ########################################################################
 # BACKUP FILES FOR FUTURE ROLLBACK
