@@ -17,10 +17,19 @@ fi
 
 if [[ $(uname) == *'Linux'* ]];then
     # 'nc' on Linux: -N shutdown the network socket after EOF on the input.
-    echo "$@" | nc -N $ADDR $PORT
+    if [[ $1 ]]; then
+        echo "$@" | nc -N $ADDR $PORT
+    else
+        echo "state" | nc -N $ADDR $PORT
+    fi
+
 else
     # 'nc' on Mac OS:
-    echo "$@" | nc    $ADDR $PORT
+    if [[ $1 ]]; then
+        echo "$@" | nc $ADDR $PORT
+    else
+        echo "state" | nc $ADDR $PORT
+    fi
 fi
 
 echo ''
