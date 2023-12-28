@@ -22,6 +22,7 @@ import pathlib
 import yaml
 import sys
 import os
+from subprocess import call
 
 UHOME = os.path.expanduser("~")
 
@@ -662,6 +663,13 @@ def read_config():
         CONFIG["outputs"][out] = params
 
 
+    # Outputs match the JACK sound card device
+    sc_channels = get_sound_card_num_outputs()
+    num_outputs = len(CONFIG["outputs"].keys())
+    if  num_outputs != sc_channels:
+        raise Exception(f'{num_outputs} outputs does not match sound card {sc_channels} channels')
+
+
     # Subsonic option
     if not 'subsonic' in CONFIG:
         CONFIG["subsonic"] = False
@@ -725,6 +733,57 @@ def main():
         f.write(tmp)
 
     print(f'SAVED to: {fout}\n')
+
+
+def get_sound_card_num_outputs():
+
+    pconfig_path = f'{UHOME}/pe.audio.sys/config/config.yml'
+    with open(pconfig_path, 'r') as f:
+        pconfig = yaml.safe_load(f)
+
+    if not pconfig["loudspeaker"] == LSPKNAME:
+        print(f'\nCannot check SOUND CARD OUTS from the current `{pconfig_path}`\n')
+        return
+
+    if pconfig["jack"]["backend"] != 'alsa':
+        print(f'\nCannot check SOUND CARD OUTS for {pconfig["jack"]["backend"]}`\n')
+        return
+
+    alsa_device = pconfig["jack"]["device"]
+    if not ',' in alsa_device:
+        alsa_device += ',0'
+
+    channels = 0
+
+    try:
+
+        cmd = f'aplay -D {alsa_device} --channels=2 --dump-hw-params ' + \
+              '/usr/share/sounds/alsa/Noise.wav 1>/tmp/aplay_dump_hw_params 2>&1'
+
+        call(cmd, shell=True)
+
+        with open('/tmp/aplay_dump_hw_params', 'r') as f:
+            tmp = f.read()
+
+        tmp = tmp.split('\n')
+
+
+        for line in tmp:
+            if 'CHANNELS' in line:
+                line = line.split(':')[-1].replace('[', '').replace(']', '')
+                n = line.split()[-1]
+                if n:
+                    channels = int(n)
+
+    except:
+        print(f'\nCannot check SOUND CARD OUTS for {pconfig["jack"]["backend"]} ' + \
+               'with aplay --dump-hw-params`\n')
+
+    if not channels:
+        print(f'\nCannot check {alsa_device} SOUND CARD OUTS, may be in use?\n')
+
+    return channels
+
 
 if __name__ == '__main__':
 
