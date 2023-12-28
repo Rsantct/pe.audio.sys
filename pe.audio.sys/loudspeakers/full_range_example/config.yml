@@ -6,31 +6,30 @@
 #
 samplerate: 44100
 
+
 # Filter length (see Brutefir doc)
 #
-filter_length:  4096,4
+filter_length:  2048,16
 
-# Mapping of physical JACK ports and Brutefir outputs
+
+# Mapping of physical Jack ports and Brutefir outputs
 #
 outputs:
 
-    # JACK      BrutefirId   Gain    Polarity  Delay (ms)
-    1:
-    2:
-    3:          fr.L 
-    4:          fr.R 
-    5:
-    6:
-    7:
-    8:
+    # Out   BrutefirId  Gain    Polarity    Delay (ms)
+    1:      fr.L
+    2:      fr.R
+
 
 # Apply dither to outputs
 #
 dither:     true
 
+
 # Includes a subsonic filter
 #
 subsonic:   true
+
 
 # `drc_flat_region_dB` sets the unitary gain loudness when loading the
 # PCM coefficient, then positive gains can occur if any.
@@ -41,5 +40,5 @@ subsonic:   true
 #
 drc_flat_region_dB:
 
-        sample:         -2.5
+        equilat:        0.0
 
