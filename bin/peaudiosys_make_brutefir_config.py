@@ -666,7 +666,7 @@ def read_config():
     # Outputs match the JACK sound card device
     sc_channels = get_sound_card_num_outputs()
     num_outputs = len(CONFIG["outputs"].keys())
-    if  num_outputs != sc_channels:
+    if sc_channels and num_outputs != sc_channels:
         raise Exception(f'{num_outputs} outputs does not match sound card {sc_channels} channels')
 
 
