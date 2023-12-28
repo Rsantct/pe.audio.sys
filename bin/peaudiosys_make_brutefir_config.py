@@ -316,12 +316,15 @@ def do_IO():
     ports_map   = ''
 
     void_count = 0
-    for jack, params in CONFIG["outputs"].items():
+    for out, params in CONFIG["outputs"].items():
         if not params["bflabel"]:
             void_count += 1
             params["bflabel"] = f'void_{void_count}'
         outs_list += f'"{params["bflabel"]}", '
-        ports_map += f'        "system:playback_{jack}"/"{params["bflabel"]}",\n'
+        if not 'void_' in params["bflabel"]:
+            ports_map += f'        "system:playback_{out}"/"{params["bflabel"]}",\n'
+        else:
+            ports_map += f'        ""/"{params["bflabel"]}",\n'
 
     outs_list = outs_list.rstrip()[:-1]
     ports_map = ports_map.rstrip()[:-1]
