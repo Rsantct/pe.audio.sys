@@ -624,6 +624,7 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
 
         # Getting the bf out ports list
         bf_out_ports = jack.get_ports('brutefir', is_output=True)
+        bf_out_ports = [ p for p in bf_out_ports if not 'void' in p.name]
 
         # Ensuring that ports are available
         if len(bf_out_ports) < 2:
