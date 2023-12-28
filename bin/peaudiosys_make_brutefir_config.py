@@ -676,9 +676,6 @@ def main():
     tmp += do_FILTERS_LEV_EQ_DRC()
     tmp += do_FILTERS()
 
-    print(tmp)
-    sys.exit()
-
     if not force:
         bf_file = 'brutefir_config_draft'
     else:
@@ -687,11 +684,11 @@ def main():
     print()
     print(f'(i) `loudspeakers/{LSPKNAME}/{bf_file}`:')
     print()
-    print(f'    Fs:                 {FS}')
-    print(f'    Filter lenght:      {FLENSTR}')
-    print(f'    Output dither:      {DITHER}')
-    print(f'    Outputs delay:      {DELAY_LIST} {notice_delay2ms()}')
-    print(f'    Subsonic filter:    {"enabled" if subsonic else "disabled"}')
+    print(f'    Fs:                 {CONFIG["samplerate"]}')
+    print(f'    Filter lenght:      {CONFIG["partition_size"]},{CONFIG["num_partitions"]}')
+    print(f'    Output dither:      {CONFIG["dither"]}')
+    print(f'    Outputs delay:      {DELAY_LIST}')
+    print(f'    Subsonic filter:    {"enabled" if CONFIG["subsonic"] else "disabled"}')
     print()
     print(f'(!) Check carefully:')
     print(f'    - The sampling rate match the one from your .pcm files')
