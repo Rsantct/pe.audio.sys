@@ -42,7 +42,7 @@ subsonic:   true
 #
 # (i) If you have some drc set so that you want to apply some gain
 #     compensation to by changing the drc in use, consider some extra dB
-#     here, in addition to the flat level region of the coefficient.
+#     here, in addition to the flat level region of the coefficient itself.
 #
 drc_flat_region_dB:
 
