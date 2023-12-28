@@ -1,0 +1,51 @@
+#
+# Used by bin/peaudiosys_make_brutefir_config.py
+#
+
+# Samplerate
+#
+samplerate: 44100
+
+
+# Filter length (see Brutefir doc)
+#
+filter_length:  2048,8
+
+
+# Mapping of physical JACK ports and Brutefir outputs
+#
+outputs:
+
+    # JACK      BrutefirId   Gain    Polarity  Delay (ms)
+    1:
+    2:
+    3:          hi.L         -4.5       -       0.0
+    4:          hi.R         -4.5       -       0.0
+    5:
+    6:          sw            0.0       +       0.0
+    7:          lo.L        -10.0       -       0.75
+    8:          lo.R        -10.0       -       0.75
+
+
+# Apply dither to outputs
+#
+dither:     true
+
+
+# Includes a subsonic filter
+#
+subsonic:   true
+
+
+# `drc_flat_region_dB` sets the unitary gain loudness when loading the
+# PCM coefficient, then positive gains can occur if any.
+#
+# (i) If you have some drc set so that you want to apply some gain
+#     compensation to by changing the drc in use, consider some extra dB
+#     here, in addition to the flat level region of the coefficient.
+#
+drc_flat_region_dB:
+
+        sofa:           0.0
+        equilat:        4.0
+
