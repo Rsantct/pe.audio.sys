@@ -1,6 +1,30 @@
 #
-# Used by bin/peaudiosys_make_brutefir_config.py
+#   Used by `bin/peaudiosys_make_brutefir_config.py`
 #
+#
+#   XOver pcm files must be named as follow:
+#
+#       xo.XX[.C].XOSETNAME.pcm     where XX must be:  fr | lo | mi | hi | sw
+#                                   and channel C is OPTIONAL, can be: L | R
+#                                   if you want dedicated filtering
+#
+#
+#   Full Range systems can avoid any XOver pcm file if you want not EQ at all.
+#
+#
+#   `BrutefirId` out below must match with above, so valid names are:
+#
+#       fr.L    fr.R        for full range filters
+#       hi.L    hi.R        for high pass
+#       lo.L    lo.R        for low pass
+#       sw                  for mixed subwoofer
+#
+#
+#   DRC pcm files must be named:
+#
+#       drc.C.some_set_name.pcm  whe C must be `L` or `R`
+#
+
 
 # Samplerate
 #
