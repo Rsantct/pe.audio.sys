@@ -390,6 +390,9 @@ def do_XO_COEFFS():
                 attenuation: 0;
             };
     '''
+    global NO_FR_XO     # No Full Range Xover flag for later filter definition
+
+    NO_FR_XO = False
 
     xo_files = [ f for f in LSPKFILES if f.startswith('xo.') ]
 
@@ -415,6 +418,11 @@ def do_XO_COEFFS():
                 if bf_way == xo_fset.split('.')[0]:
                     if not xo_fset in tmp:
                         tmp += COEFF_XO.replace('XONAME', xo_fset)
+
+        # We can define full range ways without xover pcm
+        elif bf_way == 'fr':
+            NO_FR_XO = True
+            continue
 
         else:
             raise Exception(f'PCM coeff not found for {bf_way_ch}')
@@ -479,8 +487,12 @@ def do_FILTERS():
 
             # Regular stereo way
             if not 'sw' in way_ch:
+
                 way, ch = way_ch.split('.')
                 tmp += FILTER_STEREO.replace('CH', ch).replace('WAY', way)
+
+                if way == 'fr' and NO_FR_XO:
+                    tmp = tmp.replace('"xo.fr.mp"', '-1')
 
             # Subwoofer mixed way
             else:
@@ -491,6 +503,7 @@ def do_FILTERS():
             pol = params["polarity"]
 
             tmp = tmp.replace( 'ATTEN', str(att)).replace('POL', str(pol2int(pol)) )
+
 
     return tmp
 
