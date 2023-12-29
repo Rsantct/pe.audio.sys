@@ -1,3 +1,18 @@
+# Overview
+
+Configuration involves two main parts:
+
+- System configuration: **`config/config.yml`**
+
+- Loudspeaker XOVER and DRC: **`loudspeakers/<LSPK>/brutefir_config`**
+
+`brutefir_config` is a LOW LEVEL configuration file.
+
+For a more human readable configuration, you can prepare a **`loudspeakers/<LSPK>/config.yml`** file and then use the script **`bin/peaudiosys_make_brutefir_config.py`** to automatically generate a suitable `brutefir_config` file.
+
+See self explained examples under `loudspeakers/examples`.
+
+
 # A check list to prepare your system
 
 Before turn on your amp, here we propose some check points to help you to prepare your pe.audio.sys to be ready to work.
