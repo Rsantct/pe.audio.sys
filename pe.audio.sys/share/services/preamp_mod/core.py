@@ -182,8 +182,10 @@ def init_audio_settings():
         warning = ''
         if func( value ) == 'done':
             preamp.state[state_prop] = value
+            print('(on_init)', prop, value)
         else:
             warning = f'{Fmt.RED}bad {prop}:{value}{Fmt.END}'
+            print('(on_init)', warning)
             # Using last state
             value = preamp.state[state_prop]
             if func( value ) != 'done':
@@ -197,6 +199,11 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
     warnings  = ''
+
+
+    # DEFAULTS
+    if not 'subsonic' in CONFIG['on_init'] or not CONFIG['on_init']['subsonic']:
+        CONFIG['on_init']['subsonic'] = 'off'
 
     # Iterate over config.on_init:
     for prop in CONFIG['on_init']:
@@ -274,7 +281,7 @@ class Preamp(object):
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
-        self.state["fs"] = jack.get_samplerate()
+        self.state["fs"] = jack.JCLI.samplerate
         # tone_memo keeps tone values even when tone_defeat is activated
         self.state["tone_defeat"] = False
         self.tone_memo = {}
@@ -293,6 +300,9 @@ class Preamp(object):
         self.bf_sources = bf.get_in_connections()
         # get swap LR
         self.state["lr_swapped"] = self._check_pre_in_swapped()
+        # get JACK stuff
+        self.state["jack_buffer"] = jack.JCLI.blocksize
+        self.state["jack_device"] = jack.get_device()
         self.save_state()
 
 

@@ -1,3 +1,18 @@
+# Overview
+
+Configuration involves two main parts:
+
+- System configuration: **`config/config.yml`**
+
+- Loudspeaker XOVER and DRC: **`loudspeakers/<LSPK>/brutefir_config`**
+
+`brutefir_config` is a LOW LEVEL configuration file.
+
+For a more human readable configuration, you can prepare a **`loudspeakers/<LSPK>/config.yml`** file and then use the script **`bin/peaudiosys_make_brutefir_config.py`** to automatically generate a suitable `brutefir_config` file.
+
+See self explained examples under `loudspeakers/examples`.
+
+
 # A check list to prepare your system
 
 Before turn on your amp, here we propose some check points to help you to prepare your pe.audio.sys to be ready to work.
@@ -36,9 +51,42 @@ Go to `60_system files.md` for details on **naming conventions and files under y
 
 You can begin from one of the provided loudspeaker examples as a template for customizing your `brutefir_config` file.
 
-Also, we provide a tool **`peaudiosys_make_brutefir_config.py`** to prepare it for you by scanning the `.pcm` files under your loudspeaker folder.
+It is preferred to use
 
-Please check:
+- **`loudspeakers/<LSPK>/config.yml`** 
+- **`peaudiosys_make_brutefir_config.py`** 
+
+Example of loudspeaker config file:
+
+
+    samplerate: 44100
+
+    filter_length:  2048,8
+
+    outputs:
+
+        # JACK      BrutefirId   Gain    Polarity  Delay (ms)
+        1:
+        2:
+        3:          hi.L         -4.5       -       0.0
+        4:          hi.R         -4.5       -       0.0
+        5:
+        6:          sw            0.0       +       0.0
+        7:          lo.L        -10.0       -       0.75
+        8:          lo.R        -10.0       -       0.75
+
+    dither:     true
+
+    subsonic:   true
+
+    drc_flat_region_dB:
+
+            sofa:           0.0
+            equilat:        4.0
+
+
+
+Once you have your `brutefir_config`, please check:
 
     [  ] sampling_rate
 

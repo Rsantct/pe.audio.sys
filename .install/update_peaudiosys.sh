@@ -8,9 +8,17 @@
 #               from ~/tmp/ because it will be modified on runtime.
 #               So edit it apart, copy to ~/tmp/ and test it.
 
+if [ "$2" != "--force" ] ; then
+    force=0
+else
+    force=1
+fi
+
 if [ -z $1 ] ; then
-    echo usage by indicating a previously downloaded branch in tmp/
-    echo "    download_peaudiosys.sh master|testing|xxx"
+    echo
+    echo "    download_peaudiosys.sh  <branch>"
+    echo
+    echo "    branch: a previously downloaded branch name under tmp/"
     echo
     exit 0
 fi
@@ -78,16 +86,18 @@ fi
 ########################################################################
 # IF NO CHANGES IN ZIP COMMENT, WILL CANCEL UPDATING WITH EXIT CODE
 ########################################################################
-if [ -f $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH ]; then
-    if diff $HOME/tmp/pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH \
-            $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH  1>/dev/null ; then
 
-        echo "NO changes to update. Bye."
+if [ $force -eq 0 ]; then
+    if [ -f $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH ]; then
+        if diff $HOME/tmp/pe.audio.sys-"$branch"/pe.audio.sys/THIS_IS_"$branch"_BRANCH \
+                $HOME/pe.audio.sys/THIS_IS_"$branch"_BRANCH  1>/dev/null ; then
 
-        exit 1
+            echo "NO changes to update. Bye."
+
+            exit 1
+        fi
     fi
 fi
-
 
 ########################################################################
 # BACKUP FILES FOR FUTURE ROLLBACK
@@ -158,6 +168,22 @@ cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
 mkdir -p $HOME/bin
 cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
+
+
+########################################################################
+# PREPARING EQ FILES
+########################################################################
+EQFOLDER=$HOME/pe.audio.sys/share/eq
+
+if test -f $EQFOLDER/freq.dat && \
+   test -f $EQFOLDER/bass_mag.dat && \
+   test -f $EQFOLDER/treble_mag.dat; then
+    echo "Detected share/eq/xxxx.dat files"
+else
+    echo "Copying eq.sample.R20_audiotools/xxxxx.dat to share/eq/"
+    cp  $EQFOLDER/eq.sample.R20_audiotools/*dat  $EQFOLDER/
+fi
+
 
 ########################################################################
 # RESTORING PREVIOUS CONFIG IF DESIRED
@@ -296,8 +322,8 @@ forig_wol=$ORIG"/.install/apache-site/pe.audio.sys_wol.conf"
 fdest_wol="/etc/apache2/sites-available/pe.audio.sys_wol.conf"
 
 # updating HOME path inside xxx.conf files
-sed -i s/paudio/$(basename $HOME)/g  $forig_www
-sed -i s/paudio/$(basename $HOME)/g  $forig_wol
+sed -i s/paudio/$(basename $HOME)/g  $forig_www 1>/dev/null 2>&1
+sed -i s/paudio/$(basename $HOME)/g  $forig_wol 1>/dev/null 2>&1
 
 
 # Using Apache

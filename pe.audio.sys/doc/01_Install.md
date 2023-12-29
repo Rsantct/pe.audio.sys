@@ -9,23 +9,37 @@ You need **Python>=3.6** and all python stuff as indicated in **[02_Python 3.md]
 
     `rm -r ~/tmp/pe.audio.sys-*`
 
-2) Under your home folder, download manually a copy of `download_peaudiosys.sh`, an run it as folows:
+2) Download manually a copy of `bin/peaudiosys_upgrade.sh`, and run it as folows:
 
     ```
     cd
-    wget https://raw.githubusercontent.com/AudioHumLab/pe.audio.sys/master/.install/download_peaudiosys.sh
-    sh download_peaudiosys.sh master
+    mkdir -p bin
+    wget -O bin/peaudiosys_upgrade.sh https://raw.githubusercontent.com/AudioHumLab/pe.audio.sys/master/bin/peaudiosys_upgrade.sh
+    ./bin/peaudiosys_upgrade.sh
     ```
-At this point, the install scripts and the whole 'master' repo will be located under `~/tmp` (and also deleted the above downloaded)
 
-3) Install all stuff:
+**IMPORTANT:**
 
-    `sh tmp/update_peaudiosys.sh master`
-
-**(i) IMPORTANT** say **'N'** when asked *keep your current config?*.
+Say **`N`** when prompted  **`keep your current config ?`**.
 
 
-## Automatic updates:
+## Update:
+
+Manual updates can be done whenever you want:
+
+    ./bin/peaudiosys_upgrade.sh
+
+This procedure involves two internal steps:
+
+- Download the last repo from github: `sh tmp/download_peaudiosys.sh branch`
+- Update your `pe.audio.sys` folder: `sh tmp/update_peaudiosys.sh branch`
+
+**IMPORTANT:**
+
+Say **`Y`** when prompted  **`keep your current config ?`**.
+
+
+## Automatic updates (beta):
 
 Be sure that your Linux has `anacron` installed in order to support automatic updates.
 
@@ -33,25 +47,7 @@ Run this only on the first install:
 
     sh ~/tmp/pe.audio.sys-master/.install/crontab/set_auto_update_cronjob.sh --force
 
-(i) You can disable `auto_update` inside the config file (default enabled).
-
-
-## Manual updates:
-
-Manual updates can be done whenever you want, by following the two steps below:
-
-**(1)** Download the last repo from github:
-
-    `sh tmp/download_peaudiosys.sh my_brach`
-
-where `my_branch` can be `master` or whatever branch name you want to test
-
-**(2)** Update your system:
-
-    `sh tmp/update_peaudiosys.sh my_brach`
-
-**IMPORTANT** say **'Y'** when asked *keep your current config?*.
-
+(i) You can disable `auto_update` inside the config file.
 
 
 ## The control web page

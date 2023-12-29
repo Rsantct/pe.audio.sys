@@ -24,6 +24,7 @@ Deeper `share/` levels contains runtime files you don't usually need to access t
     |-- log/                System log files
     |   |
     |   |-- start.log
+    |   |-- brutefir.log
     |   |-- peaudiosys_cmd.log
     |   |-- ...
     |
@@ -195,7 +196,7 @@ This folder contains the set of curves that will be used to apply smooth EQ to t
 - Bass
 - Treble
 - Equal loudness contour
-- Psychoacoustic room dimension equalization (aka 'target')
+- Psychoacoustic EQ for room dimension and room liveness (aka 'target')
 
 Although these curves could be pre-calculated at start up, computing the phase for the iso226:2003 0 phon ~ 90 phon magnitude curves is hard, so a set of curves will help on modest CPU systems.
 
@@ -269,9 +270,7 @@ Brutefir is the last element and the only one that interfaces with the sound car
 
 # The loudspeaker
 
-Loudspeaker config files kind of from the pre.di.c project have been leaved
-
-Only **`brutefir_config`** has to be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
+**`brutefir_config`** must be adjusted to set the proper coeff levels and xover scheme, as well as the system card wiring and the delays on each port.
 
 ( for more info on `brutefir_config` please see `doc/Configuration.md` )
 
@@ -297,14 +296,9 @@ XO pcm files must be named:
     (fr: full range; lo,mi,hi: low,mid,high; sw: subwoofer)
 
 
-SUBSONIC pcm files must be named:
+SUBSONIC pcm files are provided under the `share/eq/<samplerate>` folder.
 
-    subsonic.mp.pcm
-    subsonic.lp.pcm
-
-    These ones are optional files, for more info see the loudspeakers folder.
-
-Subsonic filtering is not performed under the generic EQ stage in order to ensure enough resolution, usually 4096 taps. Dedicated FIRs also allows a more specific subsonic filter design.
+Subsonic filtering is not performed under the generic and soft EQ stage in order to ensure enough resolution, usually 4096 taps. Dedicated FIRs also allows a more specific subsonic filter design.
 
 
 ### Full range loudspeaker w/o correction 'xo' filter
@@ -330,4 +324,8 @@ If you want not to use any xo filter at all, you simply do:
 - Set  `"xo_set":""` inside the `.state` file
 
 - Omit any `xo....pcm` file inside your loudspeaker folder.
+
+## Generate `brutefir_config`
+
+Please use `bin/peaudiosys_make_brutefir_config.py` and  `loudspeakers/<LSPK>/config.yml`.
 
