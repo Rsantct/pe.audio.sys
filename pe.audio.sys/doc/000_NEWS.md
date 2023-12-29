@@ -91,4 +91,7 @@ See the `doc/` folder for detailed information about this.
 - USB DAC watchdog plugin: restarts pe.audio.sys after the USB DAC changes from standby to power on mode.
 - L/R channels from source to preamp can be swapped, useful for some wrong downmix to stereo soundtracks.
 
+## Dec 2023, version 1.0i
+- Human readable Brutefir configuration with `loudspeakers/<LSPK>/config.yml`
+- Easiest upgrade with `bin/peaudiosys_upgrade.sh` involving downloading and updating.
   
