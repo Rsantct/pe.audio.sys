@@ -1,33 +1,33 @@
-# --------- THE EQ & CLI MODULES --------
+# THE EQ & CLI MODULES
 logic:
 
-# The command line interface server, listening on a TCP port.
+# The Command Line Interface server TCP port
 "cli" { port: 3000; },
 
 # The eq module provides a filter coeff to render a run-time EQ.
-# (i) Bands here must match with the ones at your xxxxfreq.dat file.
+# (i) Bands here must match with the ones in your xxxxfreq.dat file.
 "eq" {
-    #debug_dump_filter: "/tmp/brutefir-rendered-%d";
+    debug_dump_filter: "/tmp/brutefir-rendered-%d";
     {
-    coeff: "c.eq";
-    # using audiotools R20 bands
-    bands:
-    10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25, 28, 31.5,
-    35.5, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112,
-    125, 140, 160, 180, 200, 224, 250, 280, 315, 355,
-    400, 450, 500, 560, 630, 710, 800, 900, 1000,
-    1120, 1250, 1400, 1600, 1800, 2000, 2240, 2500,
-    2800, 3150, 3550, 4000, 4500, 5000, 5600, 6300,
-    7100, 8000, 9000, 10000, 11200, 12500, 14000, 16000,
-    18000, 20000;
+        coeff: "c.eq";
+
+        bands:
+            10, 11.2, 12.5, 14, 16, 18, 20, 22.4, 25,
+            28, 31.5, 35.5, 40, 45, 50, 56, 63, 71,
+            80, 90, 100, 112, 125, 140, 160, 180, 200,
+            224, 250, 280, 315, 355, 400, 450, 500, 560,
+            630, 710, 800, 900, 1000, 1120, 1250, 1400, 1600,
+            1800, 2000, 2240, 2500, 2800, 3150, 3550, 4000, 4500,
+            5000, 5600, 6300, 7100, 8000, 9000, 10000, 11200, 12500,
+            14000, 16000, 18000, 20000;
     };
 };
 
 
-# --------- GENERAL SETTINGS --------
+# GENERAL SETTINGS
 
 sampling_rate:      44100 ;
-filter_length:      16384 ;
+filter_length:      2048,16 ;
 float_bits:         32 ;
 overflow_warnings:  true ;
 allow_poll_mode:    false ;
@@ -37,32 +37,38 @@ lock_memory:        true ;
 show_progress:      false ;
 
 
-# -------------  I/O: -------------
+# I/O
 
 input "in.L", "in.R" {
     # does not connect inputs in jack:
-    device:   "jack" {  clientname: "brutefir";
-                        ports: ""/"in.L", ""/"in.R"; };
+    device:   "jack" { clientname: "brutefir";
+                       ports: ""/"in.L", ""/"in.R"; };
     sample:   "AUTO";
     channels: 2/0,1;
 };
 
-output "lo.L", "lo.R", "hi.L", "hi.R" {
-    # hardwire to jack sound card:
+output "void_1", "void_2", "hi.L", "hi.R", "void_3", "sw", "lo.L", "lo.R" {
+    # hardwire to Jack sound card:
     device: "jack" { ports:
-        "system:playback_3"/"lo.L", "system:playback_4"/"lo.R",
-        "system:playback_5"/"hi.L", "system:playback_6"/"hi.R";
+        ""/"void_1",
+        ""/"void_2",
+        "system:playback_3"/"hi.L",
+        "system:playback_4"/"hi.R",
+        ""/"void_3",
+        "system:playback_6"/"sw",
+        "system:playback_7"/"lo.L",
+        "system:playback_8"/"lo.R";
     };
     sample:   "AUTO";
-    channels: 4/0,1,2,3;
-    maxdelay: 1000;
-    dither:   false;
-    delay:    0, 0, 0, 0; # (samples)
-    #   ~:    0.0, 0.0, 0.0, 0.0 (ms)
+    channels: 8/0,1,2,3,4,5,6,7;
+    maxdelay: 10000; # about 200 ms for multiroom compensation
+    dither:   true;
+    delay:    0,0,0,0,0,0,33,33; # ms: 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.75, 0.75
 };
 
-# --------- COEFFs for EQ & LOUDNESS ---------
-# 1 block length is enough to smooth eq curves
+
+# COEFFs for EQ & LOUDNESS
+# 1 block length is enough because smooth eq curves
 
 coeff "c.eq" {
     filename: "dirac pulse";
@@ -70,80 +76,117 @@ coeff "c.eq" {
     blocks: 1;
 };
 
-# --------- COEFFs for SUBSONIC filter (optional) ---------
-# (i) If you use partitioned filter_length, please set blocks
-#     in order to use the 4096 taps from the subsonic.x.pcm files
 
-coeff "subsonic.lp" {
-    filename:    "subsonic.lp.pcm";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-    blocks:      1;
-};
+# COEFFs for SUBSONIC
+# (i) If partitioned <filter_length>, set <blocks> to cover
+#     the 4096 taps from the subsonic.xx.pcm files
 
 coeff "subsonic.mp" {
-    filename:    "subsonic.mp.pcm";
+    filename:    "/home/rafax/pe.audio.sys/share/eq/44100/subsonic.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
-    blocks:      1;
+    blocks:      2;
+};
+
+coeff "subsonic.lp" {
+    filename:    "/home/rafax/pe.audio.sys/share/eq/44100/subsonic.lp.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+    blocks:      2;
 };
 
 
-
-# -------  COEFFs for DRC: --------
+# COEFFs for DRC
 # PCMs found under the loudspeaker folder
 
-coeff "drc.L.sample" {
-    filename:    "drc.L.sample.pcm";
+coeff "drc.L.sofa" {
+    filename:    "drc.L.sofa.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0.0;
+};
+
+
+coeff "drc.R.sofa" {
+    filename:    "drc.R.sofa.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0.0;
+};
+
+
+coeff "drc.L.equilat" {
+    filename:    "drc.L.equilat.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 4.0;
+};
+
+
+coeff "drc.R.equilat" {
+    filename:    "drc.R.equilat.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 4.0;
+};
+
+
+# COEFFs for XO
+# PCMs found under the loudspeaker folder
+
+coeff "xo.hi.mp" {
+    filename:    "xo.hi.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
-coeff "drc.R.sample" {
-    filename:    "drc.R.sample.pcm";
+
+coeff "xo.hi.lp" {
+    filename:    "xo.hi.lp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 
-# -------  COEFFs for XOVER: --------
-coeff "xo.hi.linpha" {
-    filename:    "xo.hi.linpha.pcm";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-};
-
-coeff "xo.hi.minpha" {
-    filename:    "xo.hi.minpha.pcm";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-};
-
-coeff "xo.lo.linpha" {
-    filename:    "xo.lo.linpha.pcm";
-    format:      "FLOAT_LE";
-    shared_mem:  false;
-    attenuation: 0;
-};
-
-coeff "xo.lo.minpha.mp" {
-    filename:    "xo.lo.minpha.pcm";
+coeff "xo.sw.mp" {
+    filename:    "xo.sw.mp.pcm";
     format:      "FLOAT_LE";
     shared_mem:  false;
     attenuation: 0;
 };
 
 
-# ------------ CONVOLVER:  level filter  --------------
-# No filtering just for level and channel routing purposes
+coeff "xo.sw.lp" {
+    filename:    "xo.sw.lp.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+};
+
+
+coeff "xo.lo.lp" {
+    filename:    "xo.lo.lp.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+};
+
+
+coeff "xo.lo.mp" {
+    filename:    "xo.lo.mp.pcm";
+    format:      "FLOAT_LE";
+    shared_mem:  false;
+    attenuation: 0;
+};
+
+
+# CONVOLVER:  LEVEL filter
+# Not a filter just for level and channel routing purposes
 # (i) Initial 50 dB atten for a safe startup
-#     Optional subsonic coeff will be loaded here if needed.
 
 filter "f.lev.L" {
     from_inputs:  "in.L"/50.0/1, "in.R"//0;
@@ -158,7 +201,7 @@ filter "f.lev.R" {
 };
 
 
-# ------------ CONVOLVER:  EQ filters  ----------------
+# CONVOLVER:  EQ filters
 
 filter "f.eq.L" {
     from_filters: "f.lev.L";
@@ -172,44 +215,49 @@ filter "f.eq.R" {
     coeff:        "c.eq";
 };
 
-# ------------ CONVOLVER: DRC filters -------------------
+# CONVOLVER: DRC filters
 
 filter "f.drc.L" {
     from_filters: "f.eq.L";
-    to_filters:   "f.lo.L", "f.hi.L";
+    to_filters:   "f.hi.L", "f.sw", "f.lo.L";
     coeff:        -1;
 };
 
 filter "f.drc.R" {
     from_filters: "f.eq.R";
-    to_filters:   "f.lo.R", "f.hi.R";
+    to_filters:   "f.hi.R", "f.sw", "f.lo.R";
     coeff:        -1;
 };
 
 
-# ------------ CONVOLVER: XOVER filters --------------------
-# Free full range, multiway, subwoofer filters to outputs
-
-filter "f.lo.L" {
-    from_filters: "f.drc.L";
-    to_outputs:   "lo.L"/0.0/+1;
-    coeff:        "xo.lo.minpha";
-};
+# CONVOLVER: XOVER filters
 
 filter "f.hi.L" {
     from_filters: "f.drc.L";
-    to_outputs:   "hi.L"/0.0/+1;
-    coeff:        "xo.hi.minpha";
-};
-
-filter "f.lo.R" {
-    from_filters: "f.drc.R";
-    to_outputs:   "lo.R"/0.0/+1;
-    coeff:        "xo.lo.minpha";
+    to_outputs:   "hi.L"/4.5/-1;
+    coeff:        "xo.hi.mp";
 };
 
 filter "f.hi.R" {
     from_filters: "f.drc.R";
-    to_outputs:   "hi.R"/0.0/+1;
-    coeff:        "xo.hi.minpha";
+    to_outputs:   "hi.R"/4.5/-1;
+    coeff:        "xo.hi.mp";
+};
+
+filter "f.sw" {
+    from_filters: "f.drc.L"/3.0, "f.drc.R"/3.0;
+    to_outputs:   "sw"/0.0/1;
+    coeff:        "xo.sw.mp";
+};
+
+filter "f.lo.L" {
+    from_filters: "f.drc.L";
+    to_outputs:   "lo.L"/10.0/-1;
+    coeff:        "xo.lo.mp";
+};
+
+filter "f.lo.R" {
+    from_filters: "f.drc.R";
+    to_outputs:   "lo.R"/10.0/-1;
+    coeff:        "xo.lo.mp";
 };
