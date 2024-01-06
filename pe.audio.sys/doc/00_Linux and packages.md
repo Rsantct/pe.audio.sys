@@ -87,6 +87,7 @@ Also install the following packages on your linux installation:
                      fil-plugins zita-ajbridge zita-njbridge \
                      apache2 libapache2-mod-php mc jq anacron netcat source-highlight
 
+(i) If you have Debian version >= 12 _bookworm_, please replace `netcat` with `netcat-traditional`
 
 You **MUST** be vigilant during the installation to answer YES when asked for enable **"real time" for JACK**.
 
