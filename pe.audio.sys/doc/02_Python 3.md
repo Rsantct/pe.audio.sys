@@ -45,8 +45,8 @@ Update python setuptools:
 
 ### Optionaly recommended if you wan to run `plugins/loudness_monitor.py`:
 
-    sudo pip3 install sounddevice watchdog
-    sudo apt install libportaudio2
+    sudo apt install libportaudio2 watchdog
+    sudo pip3 install sounddevice 
 
 ### Optional the serial port extensions to run the IR receiver:
 
