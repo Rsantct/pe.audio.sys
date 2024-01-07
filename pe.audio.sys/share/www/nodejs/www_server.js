@@ -19,7 +19,8 @@ const http  = require('http');
 const url   = require('url');
 const fs    = require('fs');
 const net   = require('net');
-const yaml  = require('js-yaml')
+const yaml  = require('js-yaml');
+const os    = require('os');
 
 
 // Command line option '-v' VERBOSE -vv VERY VERBOSE
@@ -35,16 +36,20 @@ if ( opcs.indexOf('-vv') != -1 ){
 }
 
 
-// Reading address & port to communicate to pe.audio.sys
+
+// Getting address & port to communicate to pe.audio.sys
 try {
-    const UHOME = require('os').homedir();
-    let fileContents = fs.readFileSync(UHOME + '/pe.audio.sys/config/config.yml', 'utf8');
-    let CFG = yaml.safeLoad(fileContents);
-    var PAS_ADDR =   CFG.peaudiosys_address; // PAS ~> pe.audio.sys
+    var PAS_ADDR =   os.hostname() + '.local';  // "PAS" ~ pe.audio.sys
+
+    const UHOME = os.homedir();
+    let fileContents = fs.readFileSync(UHOME + '/paudio/config.yml', 'utf8');
+    let CFG = yaml.load(fileContents);
     var PAS_PORT =   CFG.peaudiosys_port;
+
 } catch (e) {
     console.log(e);
 }
+
 
 
 // Helpers to printout http TX and RX chunks w/o repeating them
