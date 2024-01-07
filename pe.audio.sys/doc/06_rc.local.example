@@ -3,8 +3,10 @@
 # switch on your amplifier:
 su -l YOURUSER -c "/home/YOURUSER/bin/amp_on_off.py on"
 
-# starts pe.audio.sys
-# (sleep 5 helps for the user environment to be ready after the power on and before starting pe.audio.sys)
-sleep 5 && su -l YOURUSER -c "peaudiosys_restart.sh start 1>/home/YOURUSER/pe.audio.sys/log/rc.local.log 2>&1 &"
+# (OLD way pip3 system-wide)
+#sleep 5 && su -l paudio -c "peaudiosys_restart.sh start 1>/home/paudio/pe.audio.sys/log/rc.local.log 2>&1 &"
+
+# NEW with Python Virtual Environment
+sleep 5 && su -l paudio -c "source /home/paudio/.env/bin/activate && /home/paudio/bin/peaudiosys_restart.sh"
 
 exit 0
