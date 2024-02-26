@@ -85,9 +85,9 @@ Also install the following packages on your linux installation:
                      mpd mpc gmpc ncmpcpp mplayer cdtool \
                      ecasound ecatools python3-ecasound ladspa-sdk  \
                      fil-plugins zita-ajbridge zita-njbridge \
-                     apache2 libapache2-mod-php mc jq anacron netcat source-highlight
+                     apache2 libapache2-mod-php mc jq anacron netcat-traditional source-highlight
 
-(i) If you have Debian version >= 12 _bookworm_, please replace `netcat` with `netcat-traditional`
+(i) If you have Debian version < 12 _bookworm_, please use `netcat` instead of `netcat-traditional`
 
 You **MUST** be vigilant during the installation to answer YES when asked for enable **"real time" for JACK**.
 
