@@ -4,6 +4,13 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
+
+# Python venv
+if [[ ! $VIRTUAL_ENV ]]; then
+    source /home/paudio/.env/bin/activate 1>/dev/null 2>&1
+fi
+
+
 BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
 
