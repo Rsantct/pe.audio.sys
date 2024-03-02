@@ -52,7 +52,7 @@ From now on we can use `pip3` to install packages, example:
 
 ### Recommended if you wan to run `plugins/loudness_monitor.py`:
 
-    sudo apt install libportaudio2 watchdog
+    sudo apt install libportaudio2 python3-watchdog
     (.env) $ pip3 install sounddevice 
 
 ### CD-Audio:
