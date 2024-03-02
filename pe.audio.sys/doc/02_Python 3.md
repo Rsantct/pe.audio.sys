@@ -36,6 +36,12 @@ From now on we can use `pip3` to install packages:
     #
     (.env) $ pip3 install sounddevice discid
 
+
+**IMPORTANT**
+
+Please remember when running this project you must activate the Python VENV so that modules can be loaded. The provided `bin/peaudiosys_restart.sh` script will do so automatically.
+
+
 ### Optional to manage volume through by the sound card ALSA mixer:
 
 More info at: `config.yml.sample`
