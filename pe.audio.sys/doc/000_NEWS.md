@@ -96,5 +96,5 @@ See the `doc/` folder for detailed information about this.
 - Easiest upgrade with `bin/peaudiosys_upgrade.sh` involving downloading and updating.
 
 ## Jan 2024, version 1.0j
-- Python Virtual Environment revision
+- Python Virtual Environment compliant as per PEP 668 for using non-Debian Python packages.
   
