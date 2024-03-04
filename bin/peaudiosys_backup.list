@@ -1,0 +1,24 @@
+
+# Raspberry pi HAT sound card enabling drivers
+/boot/firmware/config.txt
+
+/etc/rc.local
+/etc/fstab
+/etc/apache2/sites-available/
+
+/usr/bin/librespot
+
+
+/home/paudio/.bashrc
+/home/paudio/.profile
+/home/paudio/.asoundrc
+/home/paudio/.mpdconf
+/home/paudio/.mplayer
+
+/home/paudio/bin
+
+/home/paudio/pe.audio.sys
+
+/home/paudio/.crontab.dump
+
+
