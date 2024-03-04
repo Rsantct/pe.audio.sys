@@ -84,7 +84,7 @@ if [[ $1 == *"-b"* ]]; then
     fi
 
     timestamp=$(date +%Y%m%d_%H%M)
-    tarpath="$destdir"/"$HOSTNAME"/pe.audio.sys_"$HOSTNAME"_"$timestamp".tar.gz
+    tarpath="$destdir"/"$HOSTNAME"/pe.audio.sys_"$timestamp".tar.gz
     logpath="${tarpath/tar.gz/log}"
 
     thisfname=$0
