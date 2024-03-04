@@ -5,6 +5,10 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 
+# NOTICE `peaudio_backup.list` (--files-from) CANNOT manage wildcards, so specify each file or directory.
+
+
+# Default destination folder can be changed from command line
 destdir="$HOME/tmp"
 
 
