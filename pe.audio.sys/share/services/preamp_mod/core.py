@@ -55,7 +55,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
 
     def read_loudness_monitor():
         # Lets use LU_M (LU Momentary) from .loudness_monitor
-        d = read_json_from_file(LDMON_PATH, tries=1)
+        d = read_json_from_file(LDMON_PATH, timeout=1)
         if 'LU_M' in d:
             LU_M = d["LU_M"]
         else:

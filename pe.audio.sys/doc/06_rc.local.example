@@ -3,8 +3,7 @@
 # switch on your amplifier:
 su -l YOURUSER -c "/home/YOURUSER/bin/amp_on_off.py on"
 
-# starts pe.audio.sys
-# (sleep 5 helps for the user environment to be ready after the power on and before starting pe.audio.sys)
-sleep 5 && su -l YOURUSER -c "peaudiosys_restart.sh start 1>/home/YOURUSER/pe.audio.sys/log/rc.local.log 2>&1 &"
+# Start pe.audio.sys
+sleep 5 && su -l paudio -c "/home/paudio/bin/peaudiosys_restart.sh"
 
 exit 0
