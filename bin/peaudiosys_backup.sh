@@ -4,38 +4,54 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
+
+destdir="$HOME/tmp"
+
+
 function print_help {
     echo
-    echo "    A tool to backup or restore pe.audio.sys files to/from"
-    echo "        tmp/peaudiosys.bak_YYYYMMDD.tar.bz2"
+    echo "    A tool to backup pe.audio.sys"
     echo
-    echo "    usage:"
+    echo "    Usage:  peaudiosys_backup -b [destinatior_dir]"
     echo
-    echo "      peaudiosys_backup.sh  --backup"
-    echo "      peaudiosys_backup.sh  --restore [path/to/tarfile*]"
+    echo "    (Restoring is left to be done manually)"
     echo
-    echo "          * if not given, will use the most recent found."
+    echo "    You can use an external USB disk:"
     echo
+    echo "    First identify the external disk, and mount it"
+    echo
+    echo "        sudo fdisk -l   ---> for example  /dev/sda1"
+    echo
+    echo "        sudo mkdir -p /media/pincho"
+    echo "        sudo mount -o user,umask=0000 /dev/sda1 /media/pincho"
+    echo
+    echo "    Then proceed to backup"
+    echo
+    echo "        peaudiosys_backup  -b  /media/pincho "
+    echo
+    echo "    And when finished:"
+    echo
+    echo "        sudo unmount /media/pincho"
+    echo
+
 }
 
 
 function do_backup {
-    cd
-    mkdir -p tmp
 
-    now=$(date +%Y%m%d)
-    me=$(hostname)
-    tarpath=$HOME/tmp/peaudiosys.bak_"$me"_"$now".tar.xz
+    mkdir -p "$destdir"/"$HOSTNAME"
 
     # -j bzip2
     # -J xzip  slower but ~60% smaller
 
     tar --directory $HOME                   \
         --absolute-names                    \
-        -c -j -f "$tarpath"                 \
+        --verbose                           \
+        -c -j                               \
+        -f "$tarpath"                       \
                                             \
         --ignore-failed-read                \
-                                            \
+        --wildcards                         \
         --exclude=*.wav                     \
         --exclude=*.dat                     \
         --exclude=*.png                     \
@@ -48,22 +64,10 @@ function do_backup {
         --exclude=*__pycache__*             \
         --exclude=*.sample                  \
         --exclude=*.example                 \
-                                            \
-        pe.audio.sys/THIS_IS*               \
-        pe.audio.sys/.state                 \
-        pe.audio.sys/config                 \
-        pe.audio.sys/loudspeakers           \
-        pe.audio.sys/macros                 \
-        pe.audio.sys/share/eq/*target*      \
-        bin/*                               \
-        .mpdconf                            \
-        .mplayer                            \
-        .asoundrc                           \
-        .profile                            \
-        .crontab.dump                       \
-        .config/xmgc                        \
-        /etc/rc.local                       \
-        /etc/fstab
+        --verbatim-files-from               \
+        --files-from="$listpath"            \
+        1>$logpath 2>&1
+
 
     echo -n "(peaudiosys_backup.sh) "
     ls -sh "$tarpath"
@@ -71,53 +75,40 @@ function do_backup {
 }
 
 
-function do_restore {
-
-    # arguments $n are passed when calling the function,
-    # and they have function scope.
-
-    if [[ -f "$1" ]]; then
-        tar_file="$1"
-    else
-        tar_file=$(ls -1 tmp/peaudiosys.bak_* | sort | tail -n1)
-        echo "Using: ""$tar_file"
-    fi
-
-
-    cd
-    if [[ -f "$tar_file" ]]; then
-        read -r -p "Want to restore from: ""$tar_file"" (y/N) ? " ans
-        if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
-            echo 'Ok, nothing done. Bye.'
-            exit 0
-        fi
-        read -r -p "Are you sure to overwrite ~/pe.audio.sys, ~/bin (y/N) ? " ans
-        if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
-            echo 'Ok, nothing done. Bye.'
-            exit 0
-        fi
-
-        echo "Extracting ""$tar_file"" ... .. ."
-        if tar -x -j -v -f $tar_file -C $HOME; then
-            echo "Done."
-            exit 0
-        else
-            echo "Error extracting tar file"
-            exit 1
-        fi
-
-    else
-        echo "error with ""$tar_file"
-        exit 1
-    fi
-}
-
 
 if [[ $1 == *"-b"* ]]; then
+
+
+    if [[ $2 ]]; then
+        destdir="$2"
+    fi
+
+    timestamp=$(date +%Y%m%d_%H%M)
+    tarpath="$destdir"/"$HOSTNAME"/pe.audio.sys_"$HOSTNAME"_"$timestamp".tar.gz
+    logpath="${tarpath/tar.gz/log}"
+
+    thisfname=$0
+    listpath="${thisfname/sh/list}"
+
+    echo
+    echo "READING LIST OF FILES FROM:"
+    echo "    "$listpath
+    echo
+    echo "TAR & LOG FILES:"
+    echo "    "$tarpath
+    echo "    "$logpath
+
+
+    echo
+    read -p "Are you sure?: (y/N) " ans
+    if [[ $ans != *"y"*  && $ans != *"Y"* ]];then
+        echo 'Bye!'
+        exit 0
+    fi
+
     do_backup
 
-elif [[ $1 == *"-r"* ]]; then
-    do_restore $2
 else
     print_help
+
 fi
