@@ -94,4 +94,7 @@ See the `doc/` folder for detailed information about this.
 ## Dec 2023, version 1.0i
 - Human readable Brutefir configuration with `loudspeakers/<LSPK>/config.yml`
 - Easiest upgrade with `bin/peaudiosys_upgrade.sh` involving downloading and updating.
+
+## Jan 2024, version 1.0j
+- Python Virtual Environment compliant as per PEP 668 for using non-Debian Python packages.
   

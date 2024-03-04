@@ -15,7 +15,7 @@
 
         -force        Force to overwrite brutefir_config
 
-    See `config.yml` details in loudspeakers/examples
+    See `brutefir_config.yml` details in loudspeakers/examples
 """
 
 import pathlib
@@ -564,7 +564,7 @@ def do_subsonic():
 
 
 def read_config():
-    """ Read configuration from loudspeakers/LSPK/config.yml
+    """ Read configuration from loudspeakers/LSPK/brutefir_config.yml
 
         Outputs are given in NON standard YML, having 4 fields
         An output can be void, or at least to have a valid id:
@@ -604,21 +604,26 @@ def read_config():
     global CONFIG
 
     try:
-        with open(f'{LSPKFOLDER}/config.yml', 'r') as f:
+        with open(f'{LSPKFOLDER}/brutefir_config.yml', 'r') as f:
             CONFIG = yaml.safe_load(f)
 
     except Exception as e:
-        print(f'(i) Error reading {LSPKNAME}/config.yml: {str(e)}\n' )
+        print(f'(i) Error reading {LSPKNAME}/brutefir_config.yml: {str(e)}\n' )
         sys.exit()
 
 
     # Samplerate
     if not CONFIG["samplerate"] in (44100, 48000, 96000):
-        raise Exception( f'Bad samplerate' )
+        raise Exception( f'Bad samplerate in brutefir_config.yml' )
 
 
     # Filter length (partition size and number of partitions)
-    CONFIG["filter_length"] = str(CONFIG["filter_length"])
+    if cmdline_flength:
+        CONFIG["filter_length"] = cmdline_flength
+
+    else:
+        CONFIG["filter_length"] = str(CONFIG["filter_length"])
+
     if ',' in CONFIG["filter_length"]:
         numpa = int( CONFIG["filter_length"].split(',')[-1].strip() )
     else:
@@ -636,7 +641,7 @@ def read_config():
 
     # Dither
     if not CONFIG["dither"] in (True, False):
-        raise Exception( f'Bad dither' )
+        raise Exception( f'Bad dither in brutefir_config.yml' )
 
 
     # Outputs
@@ -680,7 +685,7 @@ def read_config():
     # Check ways
     ways = set(ways)
     if 'fr' in ways and ('lo' in ways or 'hi' in ways or 'mi' in ways):
-        raise Exception( f'Erron in config.yml: {ways} not valid' )
+        raise Exception( f'Erron in brutefir_config.yml: {ways} not valid' )
 
 
 def main():
@@ -789,6 +794,7 @@ if __name__ == '__main__':
 
     disable_dump    = False
     force           = False
+    cmdline_flength = ''
 
 
     if len( sys.argv ) > 1:
@@ -804,6 +810,9 @@ if __name__ == '__main__':
 
         elif '-force' in opc:
             force = True
+
+        elif '-flen' in opc:
+            cmdline_flength = opc.split('=')[-1]
 
         else:
             print(__doc__)

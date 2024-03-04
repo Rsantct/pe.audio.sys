@@ -4,6 +4,16 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
+
+# Python venv
+if [[ ! $VIRTUAL_ENV ]]; then
+    source /home/paudio/.env/bin/activate 1>/dev/null 2>&1
+fi
+
+
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+
 SERVERPATH="$HOME"/"pe.audio.sys/share/miscel/server.py"
 
 opc=$1
@@ -12,9 +22,13 @@ opc=$1
 ADDR=$( grep peaudiosys_address ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
 ADDR=${ADDR//\"/}; CTL_ADDR=${ADDR//\'/}
 PORT=$( grep peaudiosys_port ~/pe.audio.sys/config/config.yml | awk '{print $NF}' )
-if [[ ! $ADDR ]]; then
-    echo ERROR reading config.yml
-    exit -1
+if [[ ! $ADDR || ! PORT ]]; then
+    echo ${BOLD}
+    echo '(i) Not found control TCP server address/port in `config.yml`,'
+    echo '    using defaults `0.0.0.0:9990`'
+    echo ${NORMAL}
+    ADDR='0.0.0.0'
+    PORT=9980
 fi
 
 

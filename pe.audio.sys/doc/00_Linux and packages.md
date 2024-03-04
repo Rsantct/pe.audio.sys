@@ -26,14 +26,12 @@ https://github.com/AudioHumLab/FIRtro/wiki/04a-Instalación-de-Linux-y-paquetes-
 Unlike `FIRtro` or `pre.di.c` **enviroment settings**, here it is no longer needed to point the PYTHONPATH environment variable to your `pe.audio.sys` directories. So, no special user profile is needed here.
 
 
-## Tuning your editor
+## Tuning `nano` and `less`
 
 Please use spaces for tab indenting:
 
-    $ sudo nano /etc/nanorc
-
-        ## Use smooth scrolling as the default.
-        set smooth
+    $ cp /etc/nanorc ~/.nanorc
+    $ nano ~/.nanorc
 
         ## Use this tab size instead of the default; it must be greater than 0.
         set tabsize 4
@@ -45,6 +43,11 @@ Please use spaces for tab indenting:
         set trimblanks
 
 The last one will trim blank spaces at line endings when you justify (Ctrl-J or ESC-J)
+
+To enable `less` to highlight source code and formatted text (bold, etc), please include this at the end of your `~/.profile`
+
+    export LESSOPEN='| /usr/share/source-highlight/src-hilite-lesspipe.sh %s'
+    export LESS=' -R'
 
 
 ## Headless machine (no desktop)
@@ -85,8 +88,9 @@ Also install the following packages on your linux installation:
                      mpd mpc gmpc ncmpcpp mplayer cdtool \
                      ecasound ecatools python3-ecasound ladspa-sdk  \
                      fil-plugins zita-ajbridge zita-njbridge \
-                     apache2 libapache2-mod-php mc jq anacron netcat source-highlight
+                     apache2 libapache2-mod-php mc jq anacron netcat-traditional source-highlight
 
+(i) If you have Debian version < 12 _bookworm_, please use `netcat` instead of `netcat-traditional`
 
 You **MUST** be vigilant during the installation to answer YES when asked for enable **"real time" for JACK**.
 

@@ -536,27 +536,38 @@ def read_cdda_info_from_disk():
     return read_json_from_file(CDDA_INFO_PATH)
 
 
-def read_json_from_file(fname, tries=5):
-    """ read json dicts from disk files
-        (dictionary)
+def read_json_from_file(fpath, timeout=2):
+    """ Some json files cannot be ready to read in first pAudio run,
+        so let's retry
+        Returns: a JSON dictionary
     """
-    d = {}
-    if fname == STATE_PATH:
-        d = {'input':'none', 'level':'0.0'}
 
-    # It is possible to fail while the file is updating :-/
+    if fpath == STATE_PATH:
+        d = {'input':'none', 'level':'0.0'}
+    else:
+        d = {}
+
+    period = 0.25
+    tries = int(timeout / period)
     while tries:
         try:
-            with open( fname, 'r') as f:
-                d = json_loads( f.read() )
+            with open(fpath, 'r') as f:
+                d = json_loads(f.read())
             break
         except:
             tries -= 1
-        sleep(.25)
+            sleep(period)
+
+    if not tries:
+        print(f'{Fmt.RED}(!) Cannot read `{fpath}`{Fmt.END}')
+
+    elif not d:
+        print(f'{Fmt.RED}(i) Void JSON in `{fpath}`{Fmt.END}')
+
     return d
 
 
-# --- generic purpose functions:
+# --- General purpose functions:
 
 def kill_bill(pid=0):
     """ Killing previous instances of a process as per its <pid>.

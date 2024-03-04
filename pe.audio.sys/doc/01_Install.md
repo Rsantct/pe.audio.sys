@@ -15,7 +15,7 @@ You need **Python>=3.6** and all python stuff as indicated in **[02_Python 3.md]
     cd
     mkdir -p bin
     wget -O bin/peaudiosys_upgrade.sh https://raw.githubusercontent.com/AudioHumLab/pe.audio.sys/master/bin/peaudiosys_upgrade.sh
-    ./bin/peaudiosys_upgrade.sh
+    bash ./bin/peaudiosys_upgrade.sh
     ```
 
 **IMPORTANT:**

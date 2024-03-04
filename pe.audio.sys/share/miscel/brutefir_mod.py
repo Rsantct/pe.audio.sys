@@ -234,7 +234,7 @@ def read_brutefir_config_bands():
                 break
 
     freq = freq.split(',')
-    freq = np.array(freq).astype(np.float)
+    freq = np.array(freq).astype(float)
 
     return freq
 
@@ -266,9 +266,9 @@ def read_eq():
     if not freq:
         return bare_flat()
 
-    return  np.array(freq).astype(np.float), \
-            np.array(mag).astype(np.float),  \
-            np.array(pha).astype(np.float)
+    return  np.array(freq).astype(float), \
+            np.array(mag).astype(float),  \
+            np.array(pha).astype(float)
 
 
 def get_drc_headroom(drcID):

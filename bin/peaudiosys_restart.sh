@@ -5,6 +5,12 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 
+# Python venv
+if [[ ! $VIRTUAL_ENV ]]; then
+    source /home/paudio/.env/bin/activate 1>/dev/null 2>&1
+fi
+
+
 function do_stop {
     echo '(i) STOPPING pe.audio.sys'
     $HOME/pe.audio.sys/start.py stop

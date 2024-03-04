@@ -70,8 +70,8 @@ def get_bf_eq():
         if line.strip()[:4] == 'mag:':
             mags = line.split()[1:]
 
-    return np.array(freqs).astype(np.float), \
-           np.array(mags).astype(np.float)
+    return np.array(freqs).astype(float), \
+           np.array(mags).astype(float)
 
 
 def do_graph(freqs, magdB, is_lin_phase=False):
