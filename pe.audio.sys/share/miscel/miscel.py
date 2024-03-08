@@ -375,9 +375,11 @@ def get_remote_zita_params(rem_src_name):
 
 
 def remote_zita_restart(raddr, ctrl_port, zita_port):
-    """ Restarting zita-j2n on the multiroom sender's end,
+    """
+        Restarting zita-j2n on the multiroom sender's end,
         pointing to our ip.
-        (i) The sender will do only if needed
+
+        (i) The sender will run zita_j2n only when a receiver request it
     """
     zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
     remotecmd = f'aux zita_j2n {zargs}'
@@ -387,22 +389,28 @@ def remote_zita_restart(raddr, ctrl_port, zita_port):
 
 
 def local_zita_restart(raddr, udp_port, buff_size):
-    """ Running zita-n2j listen ports on the multiroom receiver's end.
+    """
+        Run zita-n2j listen ports on the multiroom receiver's end.
+
+        (i) Will log zita process printouts under LOG_FOLDER
     """
 
-    zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
-    zitacmd = f'zita-n2j --jname {zitajname} --buff {buff_size} {get_my_ip()} {udp_port}'
+    zitajname = f'zita_n2j_{ raddr.split(".")[-1] }'
+    zitacmd   = f'zita-n2j --jname {zitajname} --buff {buff_size} {get_my_ip()} {udp_port}'
 
     # Assign ALIAS to ports to be able to switch by using
     # the IP port name of a remoteXXXX input in config.yml
-    with open('/dev/null', 'w') as fnull:
+    #
+    with open(f'{LOG_FOLDER}/{zitajname}.log', 'w') as zitalog:
+
         # Ignore if zita-njbridge is not available
         try:
-            sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+            sp.Popen( zitacmd.split(), stdout=zitalog, stderr=zitalog )
             wait4ports(zitajname, 3)
             sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
             sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
-            print(f'(miscel.py) RUNNING LOCAL: {zitacmd}')
+            print(f'(miscel.py) RUNNING LOCAL: {zitacmd}, LOGGING under {LOG_FOLDER}')
+
         except Exception as e:
             print(f'(miscel.py) ERROR: {e}, you may want run it for a remote source?')
 
@@ -537,7 +545,7 @@ def read_cdda_info_from_disk():
 
 
 def read_json_from_file(fpath, timeout=2):
-    """ Some json files cannot be ready to read in first pAudio run,
+    """ Some json files cannot be ready to read in first run,
         so let's retry
         Returns: a JSON dictionary
     """
@@ -567,7 +575,7 @@ def read_json_from_file(fpath, timeout=2):
     return d
 
 
-# --- General purpose functions:
+# --- Generic purpose functions:
 
 def kill_bill(pid=0):
     """ Killing previous instances of a process as per its <pid>.
