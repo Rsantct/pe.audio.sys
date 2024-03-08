@@ -20,7 +20,6 @@
 #   }
 #
 
-import  discid
 import  musicbrainzngs as mz
 import  json
 import  sys
@@ -31,6 +30,13 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config import CONFIG, CDDA_INFO_PATH
 from    fmt    import Fmt
+
+try:
+    import  discid
+except Exception as e:
+    print(str(e))
+    print(f'{Fmt.BOLD}{Fmt.BLINK}Have you activated your Python Virtual Environment?{Fmt.END}')
+
 
 
 ## cdrom device to use
