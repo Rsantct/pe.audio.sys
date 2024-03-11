@@ -4,7 +4,7 @@
 
 #### Debian packages:
 
-    sudo apt install python3-pip python3-dev python3-yaml python3-jack-client python3-mpd \
+    sudo apt install python3-venv python3-pip python3-dev python3-yaml python3-jack-client python3-mpd \
          python3-pydbus python3-numpy python3-scipy python3-matplotlib libffi-dev
          python3-pyudev python3-libdiscid python3-musicbrainzngs libportaudio2 python3-watchdog \
          python3-serial
