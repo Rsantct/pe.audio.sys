@@ -22,7 +22,7 @@ The easiest way to do this is to prepare a `venv` for your user profile, then us
 
 Even O.S. distribution driven Python packages can be instaled separatelly in your Python `venv`, but we prefer using Debian packages when possible. So let's create a `venv` by **inheriting the system packages**:
 
-    $ python -m venv --system-site-packages ~/.env
+    $ python3 -m venv --system-site-packages ~/.env
 
 Lets activate and working inside the `venv`:
 
