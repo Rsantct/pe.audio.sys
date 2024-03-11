@@ -97,7 +97,13 @@ You **MUST** be vigilant during the installation to answer YES when asked for en
 (i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser. The comand line tool `jq` can be useful to read json files from command line. `anacron` supports daily automatic updates of pe.audio.sys.
 
 
-Disable default MPD setup:
+**Disable default MPD setup:**
+
+Recent MPD packages does not load the MPD as a system service, so you may not need to disable it.
+
+    $ pgrep -f mpd
+
+Only if needed, you must disable it:
 
     sudo systemctl stop mpd.socket
     sudo systemctl disable mpd.socket
