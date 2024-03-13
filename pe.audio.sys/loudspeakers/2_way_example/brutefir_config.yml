@@ -40,7 +40,7 @@ filter_length:  2048,8
 #
 outputs:
 
-    # JACK      BrutefirId   Gain    Polarity (+/-)  Delay (ms)
+    # JackOut   BrutefirId  Gain dB    Polarity +/-    Delay ms
     1:
     2:
     3:          hi.L         -4.5       -            0.0
