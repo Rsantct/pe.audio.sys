@@ -67,15 +67,15 @@ GENERAL_SETTINGS = \
 '''
 # GENERAL SETTINGS
 
-sampling_rate:      FS ;
-filter_length:      FLENSTR ;
-float_bits:         32 ;
-overflow_warnings:  true ;
-allow_poll_mode:    false ;
-monitor_rate:       true ;
-powersave:          -80 ;
-lock_memory:        true ;
-show_progress:      false ;
+sampling_rate:      FS;
+filter_length:      FLENSTR;
+float_bits:         32;
+overflow_warnings:  true;
+allow_poll_mode:    false;
+monitor_rate:       true;
+powersave:          -80;
+lock_memory:        true;
+show_progress:      false;
 
 '''
 
