@@ -24,12 +24,12 @@ Even O.S. distribution driven Python packages can be instaled separatelly in you
 
     $ python3 -m venv --system-site-packages ~/.env
 
-Lets activate and working inside the `venv`:
+Lets activate the environment, and go working inside the `venv`:
 
     $ source ~/.env/bin/activate
     (.env) $
 
-From now on we can use `pip3` to install packages:
+From now on we can use `pip3` to install packages not included within Debian:
 
     # upgrading PIP first of all
     (.env) $ python3 -m pip install --upgrade setuptools
