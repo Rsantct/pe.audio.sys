@@ -83,6 +83,8 @@ sudo service dbus restart
 
 Also install the following packages on your linux installation:
 
+    sudo apt update && sudo apt upgrade
+
     sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins  \
                      libjack-jackd2-dev libsamplerate0 libsamplerate0-dev  \
                      mpd mpc gmpc ncmpcpp mplayer cdtool \
