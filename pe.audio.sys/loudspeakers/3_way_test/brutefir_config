@@ -94,7 +94,7 @@ output "fr.L", "fr.R" {
     };
     sample:   "AUTO";
     channels: 2/0,1;
-    maxdelay: 1000;
+    maxdelay: 10000; # about 200 ms for multiroom compensation
     dither:   false;
     delay:    0, 0; # (samples)
 };
