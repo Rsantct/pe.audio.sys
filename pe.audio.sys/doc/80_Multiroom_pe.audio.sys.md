@@ -14,14 +14,12 @@ Define the remote system as a local source.
 
 Example:
 
-    ```
     sources:
         ...
         ...
         remoteLivingRoom:
             gain:       0
             jack_pname: 192.168.1.XXX
-    ```
 
 _pe.audio.sys_ will do automagically:
 
