@@ -40,6 +40,8 @@ _pe.audio.sys_ will do automagically:
         - remote_volume_daemon.py
     ```
 
+NOTICE: In order to link the listener volume and LU offset with the sender ones, the listening machine must send a `hello` command. See more details under `macros/examples/X_RemoteSource`
+
 ### Using a macro to balance latencies for simultaneous listening
 
 Depending on the processing latency on both the local and the remote pe.audio.sys systems, you may want to customize added delays and/or filtering options.
