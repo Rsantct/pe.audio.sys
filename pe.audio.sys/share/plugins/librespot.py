@@ -28,7 +28,7 @@ BACKEND_OPTS = f'--backend jackaudio --device librespot'
 
 # MORE OPTIONS LIST (do not configure here: bitrate, name, backend, device)
 MOREOPT = [
-    '--disable-audio-cache',
+    #'--disable-audio-cache',
     # https://github.com/librespot-org/librespot/wiki/FAQ
     # For AUDIOPHILES
     '--mixer softvol --volume-ctrl fixed --initial-volume 100',
