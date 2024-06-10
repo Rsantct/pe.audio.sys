@@ -150,7 +150,7 @@ def playback_control(cmd, arg=''):
     result = 'stop'
     source = read_state_from_disk()['input']
 
-    if source == 'mpd':
+    if 'mpd' in source.lower():
         result = mpd_control(cmd, arg)
 
     elif source.lower() == 'spotify':
