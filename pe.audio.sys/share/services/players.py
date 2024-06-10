@@ -111,7 +111,7 @@ def get_meta():
         else:
             md['player'] = 'Spotify'
 
-    elif source == 'mpd':
+    elif 'mpd' in source.lower():
         md = mpd_meta(md)
 
     elif source == 'istreams':
