@@ -172,14 +172,19 @@ def mpd_meta( md, port=6600 ):
 
         if 'title' in c.currentsong():
             md['title']     = c.currentsong()['title']
+
         elif 'file' in c.currentsong():
             md['title']     = c.currentsong()['file'].split('/')[-1]
+
 
     if 'playlistlength' in c.status():
         md['tracks_tot']    = c.status()['playlistlength']
 
     if 'bitrate' in c.status():
         md['bitrate']       = c.status()['bitrate']  # kbps
+
+    if 'audio' in c.currentsong():
+        md['audio_format']  = c.status()['audio']
 
     if 'elapsed' in c.status():
         md['time_pos']      = timeFmt( float( c.status()['elapsed'] ) )
@@ -188,3 +193,4 @@ def mpd_meta( md, port=6600 ):
         md['state']         = c.status()['state']
 
     return md
+
