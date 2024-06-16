@@ -13,34 +13,47 @@ import mpd
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import timesec2string as timeFmt
+from miscel import timesec2string as timeFmt, sec2min
+
+c = mpd.MPDClient()
 
 
-def curr_playlist_is_cdda( port=6600 ):
+def connect(port=6600):
+    global c
+    try:
+        c.connect('localhost', port)
+        return True
+    except:
+        return False
+
+def ping():
+    try:
+        c.ping()
+        return True
+    except:
+        return False
+
+
+def curr_playlist_is_cdda():
     """ returns True if the curren playlist has only cdda tracks
     """
     # :-/ the current playlist doesn't have any kind of propiertry to
     # check if the special 'cdda.m3u' is the currently loaded one.
 
-    c = mpd.MPDClient()
-    try:
-        c.connect('localhost', port)
-    except:
-        return False
+    if not ping():
+        if not connect():
+            return False
 
     return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
 
 
-def mpd_playlists(cmd, arg='', port=6600):
+def mpd_playlists(cmd, arg=''):
+
+    if not ping():
+        if not connect():
+            return f'ERROR connecting to MPD at port {port}'
 
     result = ''
-
-    c = mpd.MPDClient()
-    try:
-        c.connect('localhost', port)
-    except:
-        return f'ERROR connecting to MPD at port {port}'
-
 
     if cmd == 'get_playlists':
         # Some setups could use a mount for mpdconf playlist_directory
@@ -114,11 +127,9 @@ def mpd_control( query, arg='', port=6600 ):
         return {'0':'off', '1':'on'}[mode]
 
 
-    c = mpd.MPDClient()
-    try:
-        c.connect('localhost', port)
-    except:
-        return 'stop'
+    if not ping():
+        if not connect():
+            return 'stop'
 
     try:
         result = {  'state':            state,
@@ -138,7 +149,7 @@ def mpd_control( query, arg='', port=6600 ):
     return result
 
 
-def mpd_meta( md, port=6600 ):
+def mpd_meta( md ):
     """ Comuticates to MPD music player daemon
         Input:      blank metadata dict
         Return:     track metadata dict
@@ -146,11 +157,9 @@ def mpd_meta( md, port=6600 ):
 
     md['player'] = 'MPD'
 
-    c = mpd.MPDClient()
-    try:
-        c.connect('localhost', port)
-    except:
-        return md
+    if not ping():
+        if not connect():
+            return md
 
     # (i) Not all tracks have complete currentsong() fields:
     # artist, title, album, track, etc fields may NOT be provided
@@ -184,8 +193,8 @@ def mpd_meta( md, port=6600 ):
 
     # time: 'current:total'
     if 'time' in c.status():
-        md["time_pos"] = timeFmt( int( c.status()["time"].split(':')[0] ))
-        md["time_tot"] = timeFmt( int( c.status()["time"].split(':')[1] ))
+        md["time_pos"] = sec2min( int( c.status()["time"].split(':')[0] ), mode=':')
+        md["time_tot"] = sec2min( int( c.status()["time"].split(':')[1] ), mode=':')
 
     if 'state' in c.status():
         md['state']         = c.status()['state']
