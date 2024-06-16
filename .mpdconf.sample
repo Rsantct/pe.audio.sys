@@ -57,6 +57,12 @@ audio_output {
 }
 
 resampler {
-  plugin "soxr"
-  quality "very high"
+    
+    # 48k -> 44.1k core i3 cpu ~ 3.5 %
+    plugin "soxr"
+    quality "very high"
+
+    # 48k -> 44.1k core i3 cpu ~ 21 %
+    #plugin    "libsamplerate"
+    #type      "Best Sinc Interpolator"
 }
