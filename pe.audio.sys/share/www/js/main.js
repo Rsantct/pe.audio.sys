@@ -48,6 +48,8 @@ var metablank           = {         // A player's metadata blank dict
                             'time_pos':     '',
                             'time_tot':     '',
                             'bitrate':      '',
+                            'format':       '',
+                            'file':         '',
                             'artist':       '',
                             'album':        '',
                             'title':        '',
@@ -450,6 +452,16 @@ function page_update() {
                 d = metablank;
             }
 
+            if (d['format']) {
+                document.getElementById("format").innerText = d['format'];
+            } else {
+                document.getElementById("bitrate").innerText = "-:-:2"
+            }
+            if (d['file']) {
+                document.getElementById("file").innerText = d['file'];
+            } else {
+                document.getElementById("bitrate").innerText = "-"
+            }
             if (d['bitrate']) {
                 document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
             } else {
@@ -518,6 +530,8 @@ function page_update() {
         player_controls_update(     player_info.state       );
         player_metadata_update(     player_info.metadata    );
         player_random_mode_update(  player_info.random_mode );
+
+        console.log(player_info.metadata);
 
         // Updates tracks list if disc has changed
         if (last_disc != player_info.discid) {
@@ -721,6 +735,8 @@ function page_update() {
 
 
     function player_info_clear() {
+        document.getElementById("file").innerText = "-"
+        document.getElementById("format").innerText = "-:-:2"
         document.getElementById("bitrate").innerText = "-\nkbps"
         document.getElementById("artist").innerText = "-"
         document.getElementById("track_info").innerText = "-"
@@ -1100,6 +1116,7 @@ function ck_display_advanced(mode) {
     }
 
     if ( show_advanced == true ) {
+        document.getElementById("format_file").style.display = "table-row";
         document.getElementById("div_advanced_controls").style.display = "block";
         document.getElementById("main_lside").style.display = "table-cell";
         document.getElementById("SoloInfo").style.display = "table-cell";
@@ -1110,6 +1127,7 @@ function ck_display_advanced(mode) {
         document.getElementById("bt_tone_defeat").style.display = "inline-block";
     }
     else {
+        document.getElementById("format_file").style.display = "none";
         document.getElementById("div_advanced_controls").style.display = "none";
         document.getElementById("main_lside").style.display = "none";
         document.getElementById("SoloInfo").style.display = "none";
