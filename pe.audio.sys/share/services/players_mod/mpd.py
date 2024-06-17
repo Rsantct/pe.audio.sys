@@ -19,12 +19,12 @@ c = mpd.MPDClient()
 
 
 def connect(port=6600):
-    global c
     try:
         c.connect('localhost', port)
         return True
     except:
         return False
+
 
 def ping():
     try:
@@ -44,7 +44,9 @@ def curr_playlist_is_cdda():
         if not connect():
             return False
 
-    return [x for x in c.playlist() if 'cdda' in x ] == c.playlist()
+    plist = c.playlist()
+
+    return [x for x in plist if 'cdda' in x ] == plist
 
 
 def mpd_playlists(cmd, arg=''):
@@ -80,41 +82,41 @@ def mpd_control( query, arg='', port=6600 ):
     """
 
     def state(dummy_arg):
-        return c.status()['state']
+        return sta['state']
 
     def stop(dummy_arg):
         c.stop()
-        return c.status()['state']
+        return sta['state']
 
     def pause(dummy_arg):
         c.pause()
-        return c.status()['state']
+        return sta['state']
 
     def play(dummy_arg):
         c.play()
-        return c.status()['state']
+        return sta['state']
 
     def next(dummy_arg):
         try:
             c.next()  # avoids error if some playlist has wrong items
         except:
             pass
-        return c.status()['state']
+        return sta['state']
 
     def previous(dummy_arg):
         try:
             c.previous()
         except:
             pass
-        return c.status()['state']
+        return sta['state']
 
     def rew(dummy_arg):  # for REW and FF will move 30 seconds
         c.seekcur('-30')
-        return c.status()['state']
+        return sta['state']
 
     def ff(dummy_arg):
         c.seekcur('+30')
-        return c.status()['state']
+        return sta['state']
 
     def random(arg):
         if arg == 'on':
@@ -122,14 +124,16 @@ def mpd_control( query, arg='', port=6600 ):
         elif arg == 'off':
             c.random(0)
         elif arg == 'toggle':
-            c.random( {'0':1, '1':0}[ c.status()['random'] ])
-        mode = c.status()['random']
+            c.random( {'0':1, '1':0}[ sta['random'] ])
+        mode = sta['random']
         return {'0':'off', '1':'on'}[mode]
 
 
     if not ping():
         if not connect():
             return 'stop'
+
+    sta = c.status()
 
     try:
         result = {  'state':            state,
@@ -145,7 +149,6 @@ def mpd_control( query, arg='', port=6600 ):
     except:
         result = f'erron with \'{query}\''
 
-    c.close()
     return result
 
 
@@ -161,42 +164,46 @@ def mpd_meta( md ):
         if not connect():
             return md
 
+    cs = c.currentsong()
+    st = c.status()
+
+
     # (i) Not all tracks have complete currentsong() fields:
     # artist, title, album, track, etc fields may NOT be provided
     # file, time, duration, pos, id           are ALWAYS provided
 
     # Skip if no currentsong is loaded
-    if c.currentsong():
-        if 'artist' in c.currentsong():
-            md['artist']    = c.currentsong()['artist']
+    if cs:
+        if 'artist' in cs:
+            md['artist']    = cs['artist']
 
-        if 'album' in c.currentsong():
-            md['album']     = c.currentsong()['album']
+        if 'album' in cs:
+            md['album']     = cs['album']
 
-        if 'track' in c.currentsong():
-            md['track_num'] = c.currentsong()['track']
+        if 'track' in cs:
+            md['track_num'] = cs['track']
 
-        if 'title' in c.currentsong():
-            md['title']     = c.currentsong()['title']
-        elif 'file' in c.currentsong():
-            md['title']     = c.currentsong()['file'].split('/')[-1]
+        if 'title' in cs:
+            md['title']     = cs['title']
+        elif 'file' in cs:
+            md['title']     = cs['file'].split('/')[-1]
 
-        if 'audio' in c.currentsong():
-            md['audio_format'] = c.currentsong()['audio']
+        if 'audio' in cs:
+            md['audio_format'] = cs['audio']
 
 
-    if 'playlistlength' in c.status():
-        md['tracks_tot']    = c.status()['playlistlength']
+    if 'playlistlength' in st:
+        md['tracks_tot']    = st['playlistlength']
 
-    if 'bitrate' in c.status():
-        md['bitrate']       = c.status()['bitrate']  # kbps
+    if 'bitrate' in st:
+        md['bitrate']       = st['bitrate']  # kbps
 
-    # time: 'current:total'
-    if 'time' in c.status():
-        md["time_pos"] = sec2min( int( c.status()["time"].split(':')[0] ), mode=':')
-        md["time_tot"] = sec2min( int( c.status()["time"].split(':')[1] ), mode=':')
+    if 'time' in st:
+        # time is given as a string 'current:total', each part in seconds
+        md["time_pos"] = sec2min( int( st["time"].split(':')[0] ), mode=':')
+        md["time_tot"] = sec2min( int( st["time"].split(':')[1] ), mode=':')
 
-    if 'state' in c.status():
-        md['state']         = c.status()['state']
+    if 'state' in st:
+        md['state']         = st['state']
 
     return md
