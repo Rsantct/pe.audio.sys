@@ -761,13 +761,19 @@ def get_my_ip():
         return ''
 
 
-def sec2min(s):
-    """ Format a given float (seconds) to "XXmYYs"
+def sec2min(s, mode=''):
+    """ Format a given float (seconds) to "MMmSSs"
+        or to "MM:SS" if mode == ':'
         (string)
     """
     m = s // 60
     s = s % 60
-    return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
+
+    if mode == ':':
+        return f'{str(m).rjust(2,"0")}:{str(s).rjust(2,"0")}'
+
+    else:
+        return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
 
 
 def timesec2string(x):
@@ -780,4 +786,3 @@ def timesec2string(x):
     m = int( x / 60 )           # minutes from the new x
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
-
