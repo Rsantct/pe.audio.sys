@@ -167,7 +167,6 @@ def mpd_meta( md ):
     cs = c.currentsong()
     st = c.status()
 
-
     # (i) Not all tracks have complete currentsong() fields:
     # artist, title, album, track, etc fields may NOT be provided
     # file, time, duration, pos, id           are ALWAYS provided
@@ -196,7 +195,9 @@ def mpd_meta( md ):
         md['tracks_tot']    = st['playlistlength']
 
     if 'bitrate' in st:
-        md['bitrate']       = st['bitrate']  # kbps
+        # playing wav/aiff files gives bitrate: '0'
+        if st['bitrate'] != '0':
+            md['bitrate']       = st['bitrate']  # kbps
 
     if 'audio' in st:
         md['format'] = st['audio']
