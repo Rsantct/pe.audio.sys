@@ -60,11 +60,14 @@ METATEMPLATE = {
                 'time_pos':     '-',
                 'time_tot':     '-',
                 'bitrate':      '-',
+                'format':       '-:-:2',
+                'file':         '',
                 'artist':       '-',
                 'album':        '-',
                 'title':        '-',
                 'track_num':    '-',
-                'tracks_tot':   '-' }
+                'tracks_tot':   '-'
+                }
 
 # The runtime metadata variable and refresh period in seconds
 CURRENT_MD          = METATEMPLATE.copy()
