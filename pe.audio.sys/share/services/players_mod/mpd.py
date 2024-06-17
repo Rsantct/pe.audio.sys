@@ -188,8 +188,8 @@ def mpd_meta( md ):
         elif 'file' in cs:
             md['title']     = cs['file'].split('/')[-1]
 
-        if 'audio' in cs:
-            md['audio_format'] = cs['audio']
+        if 'file' in cs:
+            md['file'] = cs["file"]
 
 
     if 'playlistlength' in st:
@@ -197,6 +197,9 @@ def mpd_meta( md ):
 
     if 'bitrate' in st:
         md['bitrate']       = st['bitrate']  # kbps
+
+    if 'audio' in st:
+        md['format'] = st['audio']
 
     if 'time' in st:
         # time is given as a string 'current:total', each part in seconds
