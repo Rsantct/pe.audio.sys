@@ -78,7 +78,7 @@ def mpd_playlists(cmd, arg=''):
 def mpd_control( query, arg='', port=6600 ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
-        Return:     playback state string
+        Return:     playback state string ( stop | play | pause )
     """
 
     def state(dummy_arg):
@@ -207,7 +207,5 @@ def mpd_meta( md ):
         md["time_pos"] = sec2min( int( st["time"].split(':')[0] ), mode=':')
         md["time_tot"] = sec2min( int( st["time"].split(':')[1] ), mode=':')
 
-    if 'state' in st:
-        md['state']         = st['state']
 
     return md
