@@ -766,8 +766,8 @@ def sec2min(s, mode=''):
         or to "MM:SS" if mode == ':'
         (string)
     """
-    m = s // 60
-    s = s % 60
+    m = int(s // 60)
+    s = int(s % 60)
 
     if mode == ':':
         return f'{str(m).rjust(2,"0")}:{str(s).rjust(2,"0")}'
