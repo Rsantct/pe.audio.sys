@@ -142,19 +142,6 @@ def get_meta():
     if md['artist'] == '-' and md['album'] == '-':
         md['artist'] = f'- {source.upper()} -'
 
-    # Normalize the 'state' field (it depends on the player's given info)
-    #
-    if 'play' in md["state"].lower():
-        md["state"] = 'play'
-
-    elif 'paus' in md["state"].lower():
-        md["state"] = 'pause'
-
-    elif 'stop' in md["state"].lower():
-        md["state"] = 'stop'
-
-    else:
-        md["state"] = 'play'
 
     return md
 
