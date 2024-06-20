@@ -23,7 +23,8 @@ from miscel import sec2min
 def librespot_control(cmd, arg=''):
     """ (i) This is a fake control
         input:  a fake command
-        output: the result is predefined
+        output: the result is fixed for playlists and random mode,
+                we can only retrive the player state from librespot printouts
     """
     if cmd == 'get_playlists':
         return []
@@ -31,8 +32,35 @@ def librespot_control(cmd, arg=''):
     elif cmd == 'random':
         return 'n/a'
 
-    else:
-        return 'play'
+    elif 'state' in cmd:
+
+        state = 'stop'
+        try:
+            with open(f'{MAINFOLDER}/.librespot_events', 'r') as f:
+                lines = f.readlines()[-10:]
+
+                # For the playing state (play/paused/stop) we get the last line
+                for line in lines[::-1]:
+
+                    # 'state' field
+                    if '"PLAYER_EVENT"' in line:
+                        envvars = '{' + line.split('{')[1]
+                        state = json.loads(envvars)["PLAYER_EVENT"].lower()
+
+                        if 'play' in state:
+                            state = 'play'
+                        elif 'paus' in state:
+                            state = 'pause'
+                        elif 'stop' in state:
+                            state = 'stop'
+                        else:
+                            state = 'play'
+
+                        break
+        except:
+            pass
+
+        return state
 
 
 def librespot_meta(md):
@@ -78,7 +106,7 @@ def librespot_meta(md):
         #                       to update the "POSITION_MS" field, so we do not update this md field
 
         with open(f'{MAINFOLDER}/.librespot_events', 'r') as f:
-            lines = f.readlines()[-20:]
+            lines = f.readlines()[-30:]
 
             # Iterate over the lines of messages. Will do backwards,
             # because first line is the one containing " Loading "
@@ -106,14 +134,6 @@ def librespot_meta(md):
                     envvars = '{' + line.split('{')[1]
                     dur_ms = float(json.loads(envvars)["DURATION_MS"])
                     md['time_tot'] = sec2min(dur_ms/1000)
-
-            # For the playing state (play/paused/stop) we get the last line
-            for line in lines:
-
-                # 'state' field
-                if '"PLAYER_EVENT"' in line:
-                    envvars = '{' + line.split('{')[1]
-                    md['state'] = json.loads(envvars)["PLAYER_EVENT"]
 
     except:
         pass
