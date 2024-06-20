@@ -447,7 +447,6 @@ function page_update() {
 
         function player_metadata_update(d) {
 
-
             if ( d['artist'] == ''  && d['album'] == '' && d['title'] == '' ){
                 d = metablank;
             }
@@ -455,12 +454,12 @@ function page_update() {
             if (d['format']) {
                 document.getElementById("format").innerText = d['format'];
             } else {
-                document.getElementById("bitrate").innerText = "-:-:2"
+                document.getElementById("format").innerText = "-:-:2"
             }
             if (d['file']) {
                 document.getElementById("file").innerText = d['file'];
             } else {
-                document.getElementById("bitrate").innerText = "-"
+                document.getElementById("file").innerText = "-"
             }
             if (d['bitrate']) {
                 document.getElementById("bitrate").innerText = d['bitrate'] + "\nkbps";
@@ -530,8 +529,6 @@ function page_update() {
         player_controls_update(     player_info.state       );
         player_metadata_update(     player_info.metadata    );
         player_random_mode_update(  player_info.random_mode );
-
-        console.log(player_info.metadata);
 
         // Updates tracks list if disc has changed
         if (last_disc != player_info.discid) {
