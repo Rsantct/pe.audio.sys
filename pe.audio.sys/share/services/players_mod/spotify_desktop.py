@@ -214,10 +214,16 @@ def spotify_meta(md):
                 md[k] = ' '.join(value)
             elif type(value) == str:
                 md[k] = value
+
         # track_num:
         md['track_num'] = tmp["xesam:trackNumber"]
-        # and time lenght:
+
+        # time lenght:
         md['time_tot'] = timeFmt( tmp["mpris:length"] / 1e6 )
+
+        # loaded file
+        md["file"] = tmp["mpris:trackid"]
+        #md["file"] = tmp["xesam:url"]
 
     except:
         pass
