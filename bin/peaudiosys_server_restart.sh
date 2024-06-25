@@ -33,7 +33,7 @@ fi
 
 
 if [[ $opc == *"-h"* ]]; then
-    echo "usage:    peaudiosys_service_restart.sh  [stop | --verbose]"
+    echo "usage:    peaudiosys_server_restart.sh  [stop | --verbose]"
     echo ""
     echo "          stop            stops the server"
     echo "          -v --verbose    will keep messages to console,"
