@@ -28,7 +28,7 @@ if [[ ! $ADDR || ! PORT ]]; then
     echo '    using defaults `0.0.0.0:9990`'
     echo ${NORMAL}
     ADDR='0.0.0.0'
-    PORT=9980
+    PORT=9990
 fi
 
 
