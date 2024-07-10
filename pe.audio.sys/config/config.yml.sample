@@ -213,6 +213,10 @@ source_monitors:
 # The scripts files are located under the share/plugins folder.
 # Files must be executable, also must accept 'start' and 'stop' as
 # command line argument in order to be launched and stopped at system startup.
+#
+# Look inside the file of the plugin you want to activate to find out more about it.
+#
+
 
 plugins:
 
@@ -229,10 +233,10 @@ plugins:
     - sound_cards_prepare.py
 
     ## Runs MPD:
-    - mpd.py
+    #- mpd.py
 
     ## Internet url audio streams player based on Mplayer:
-    - istreams.py
+    #- istreams.py
 
     ## Set Pulseaudio apps to sound through by JACK:
     #- pulseaudio-jack-sink.py
@@ -247,7 +251,7 @@ plugins:
     #- autoplay_cdda.py
 
     ## A daemon to auto eject a CD-Audio when playback is over
-    - autoeject_cdda.py
+    #- autoeject_cdda.py
 
     ## librespot (a headless Spotify Connect player daemon)
     #- librespot.py
@@ -262,13 +266,13 @@ plugins:
     #- mouse_volume_daemon.py
 
     ## A daemon that monitorizes the EBU R128 LU-I Loudness Integrated
-    #- loudness_monitor.py
+    - loudness_monitor.py
 
     ## The LCDd server and lcd_daemon.py
     #- lcd.py
 
     ## Power amp control
-    - power_amp_control.py
+    #- power_amp_control.py
 
 
 # ========================= MISCEL CONFIGURATIONS ==============================

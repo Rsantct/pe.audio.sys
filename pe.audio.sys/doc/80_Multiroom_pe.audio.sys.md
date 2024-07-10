@@ -14,14 +14,12 @@ Define the remote system as a local source.
 
 Example:
 
-    ```
     sources:
         ...
         ...
         remoteLivingRoom:
             gain:       0
             jack_pname: 192.168.1.XXX
-    ```
 
 _pe.audio.sys_ will do automagically:
 
@@ -41,6 +39,8 @@ _pe.audio.sys_ will do automagically:
         ## A volume forwarder to remote listeners
         - remote_volume_daemon.py
     ```
+
+NOTICE: In order to link the listener volume and LU offset with the sender ones, the listening machine must send a `hello` command. See more details under `macros/examples/X_RemoteSource`
 
 ### Using a macro to balance latencies for simultaneous listening
 

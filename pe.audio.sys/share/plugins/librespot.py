@@ -25,10 +25,12 @@ BINARY = '/usr/bin/librespot'
 
 # BACKEND OPTIONS
 BACKEND_OPTS = f'--backend jackaudio --device librespot'
+# If needed to use Pulseaudio in order to reesample to reach Jack+Brutefir @ 48 KHz
+#BACKEND_OPTS = f'--backend pulseaudio'
 
 # MORE OPTIONS LIST (do not configure here: bitrate, name, backend, device)
 MOREOPT = [
-    '--disable-audio-cache',
+    #'--disable-audio-cache',
     # https://github.com/librespot-org/librespot/wiki/FAQ
     # For AUDIOPHILES
     '--mixer softvol --volume-ctrl fixed --initial-volume 100',

@@ -60,11 +60,14 @@ METATEMPLATE = {
                 'time_pos':     '-',
                 'time_tot':     '-',
                 'bitrate':      '-',
+                'format':       '-:-:2',
+                'file':         '',
                 'artist':       '-',
                 'album':        '-',
                 'title':        '-',
                 'track_num':    '-',
-                'tracks_tot':   '-' }
+                'tracks_tot':   '-'
+                }
 
 # The runtime metadata variable and refresh period in seconds
 CURRENT_MD          = METATEMPLATE.copy()
@@ -111,7 +114,7 @@ def get_meta():
         else:
             md['player'] = 'Spotify'
 
-    elif source == 'mpd':
+    elif 'mpd' in source.lower():
         md = mpd_meta(md)
 
     elif source == 'istreams':
@@ -139,6 +142,7 @@ def get_meta():
     if md['artist'] == '-' and md['album'] == '-':
         md['artist'] = f'- {source.upper()} -'
 
+
     return md
 
 
@@ -150,7 +154,7 @@ def playback_control(cmd, arg=''):
     result = 'stop'
     source = read_state_from_disk()['input']
 
-    if source == 'mpd':
+    if 'mpd' in source.lower():
         result = mpd_control(cmd, arg)
 
     elif source.lower() == 'spotify':

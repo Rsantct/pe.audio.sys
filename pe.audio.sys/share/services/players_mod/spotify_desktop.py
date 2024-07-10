@@ -22,8 +22,9 @@ from    config  import MAINFOLDER
 from    miscel  import timesec2string as timeFmt
 
 
-# (i) BITRATE IS HARDWIRED pending on how to retrieve it from the desktop client.
+# (i) AUDIO FORMAT IS HARDWIRED pending on how to retrieve it from the desktop client.
 SPOTIFY_BITRATE = '320'
+SPOTIFY_FORMAT  = '44100:16:2'
 
 # USER PLAYLISTS
 plist_file = f'{MAINFOLDER}/config/spotify_plists.yml'
@@ -175,8 +176,11 @@ def spotify_meta(md):
         Output:     Spotify metadata dict
         (dictionary)
     """
+
+    # Fixed metadata
     md['player']  = 'Spotify Desktop Client'
     md['bitrate'] = SPOTIFY_BITRATE
+    md["format"]  = SPOTIFY_FORMAT
 
     # try reconnecting if SessionBus was lost for some reason
     try:
@@ -210,10 +214,16 @@ def spotify_meta(md):
                 md[k] = ' '.join(value)
             elif type(value) == str:
                 md[k] = value
+
         # track_num:
         md['track_num'] = tmp["xesam:trackNumber"]
-        # and time lenght:
+
+        # time lenght:
         md['time_tot'] = timeFmt( tmp["mpris:length"] / 1e6 )
+
+        # loaded file
+        md["file"] = tmp["mpris:trackid"]
+        #md["file"] = tmp["xesam:url"]
 
     except:
         pass

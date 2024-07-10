@@ -443,10 +443,13 @@ def mplayer_get_meta(md, service):
 
     # Communicates to Mplayer trough by its input fifo
     # to get the current media filename and bitrate:
-    mplayer_control(cmd='get_audio_bitrate', service=service)
-    mplayer_control(cmd='get_file_name',     service=service)
-    mplayer_control(cmd='get_time_pos',      service=service)
-    mplayer_control(cmd='get_time_length',   service=service)
+
+    mplayer_control(cmd='get_audio_samples', service=service)   # ANS_AUDIO_SAMPLES='48000 Hz, 2 ch.'
+    mplayer_control(cmd='get_audio_codec',   service=service)   # ANS_AUDIO_CODEC='ffac3'
+    mplayer_control(cmd='get_audio_bitrate', service=service)   # ANS_AUDIO_BITRATE='160 kbps'
+    mplayer_control(cmd='get_file_name',     service=service)   # ANS_FILENAME='Radio Clasica HQ'
+    mplayer_control(cmd='get_time_pos',      service=service)   # ANS_TIME_POSITION=3840.1
+    mplayer_control(cmd='get_time_length',   service=service)   # ANS_LENGTH=-1.24
 
     # Triyng to read Mplayer output from its redirected file
     lines = []
@@ -455,12 +458,12 @@ def mplayer_get_meta(md, service):
         # Waiting for Mplayer ANS_xxxx to be written to the output file
         sleep(.10)
         try:
-            # Reading a tail of 300 bytes from the Mplayer output file
+            # Reading a tail of 350 bytes from the Mplayer output file
             fsize = os.path.getsize(mplayer_redirection_path)
-            tail_lenght = 300
+            tail_len = 350
             with open(mplayer_redirection_path, 'rb') as f:
-                f.seek(fsize - tail_lenght)
-                lines = f.read(tail_lenght).decode().split('\n')
+                f.seek(fsize - tail_len)
+                lines = f.read(tail_len).decode().split('\n')
             break
         except:
             tries -= 1
@@ -472,9 +475,20 @@ def mplayer_get_meta(md, service):
     #       ANS_TIME_POSITION=4399.8
     #       ANS_LENGTH=-0.95
     #       ANS_AUDIO_BITRATE='256 kbps'
+    #       ANS_AUDIO_SAMPLES='48000 Hz, 2 ch.'
     for line in lines:
+
+        if 'ANS_AUDIO_CODEC=' in line:
+            md['codec'] = line.split('=')[-1].replace("'", "")
+
+        if 'ANS_AUDIO_SAMPLES=' in line:
+            Hz = line.split('=')[-1].replace("'", "").split('Hz')[0]
+            ch = line.split('=')[-1].replace("'", "").split('ch')[0].split()[-1]
+            md['format'] = f'{Hz}:-:{ch}'
+
         if 'ANS_AUDIO_BITRATE=' in line:
             md['bitrate'] = line.split('=')[-1].replace("'", "").split()[0]
+
         if 'ANS_FILENAME=' in line:
             md['title'] = line.split('=')[-1].replace("'", "")
 

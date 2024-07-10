@@ -238,7 +238,7 @@ def manage_warning_msg(arg):
             warning_expire(timeout=60)
             result = 'done'
 
-    if args[0] == 'perm':
+    elif args[0] == 'perm':
 
         if AUX_INFO['warning']:
             result = 'warning message in use'

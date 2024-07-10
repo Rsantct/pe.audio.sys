@@ -1,16 +1,38 @@
 # DVB-T presets (radio or not)
-#  <preset#> : <the_station_name_inside_channels.conf>
+#
+#  NUM#:
+#       name:   Mandatory. The station name inside channels.conf
+#       codec:  Optional. Currently 'ffac3' will set a 12 dB boost in Mplayer
 
-presets:
-  1: Radio Nacional
-  2: Radio Clasica HQ
-  3: Radio 3 HQ
-  4: Radio Exterior RNE
-  5: Radio 5
-  6: SER
-  7: Kiss FM
-  8: ONDA CERO
-  9: ONDA MADRID
-  12: Radio Clasica HQ MPA
-  22: Radio Clasica HQ A52
+1:
+    name:   Radio Nacional
+    codec:  mpg123
 
+2:
+    name:   Radio Clasica HQ A52
+    codec:  ffac3
+
+22:
+    name:   Radio Clasica HQ MPA
+    codec:  mpg123
+
+3:
+    name:   Radio 3 HQ
+
+4:
+    name:   Radio Exterior RNE
+
+5:
+    name:   Radio 5
+
+6:
+    name:   SER
+
+7:
+    name:   Kiss FM
+
+8:
+    name:   ONDA CERO
+
+9:
+    name:   ONDA MADRID

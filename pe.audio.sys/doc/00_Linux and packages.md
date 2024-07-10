@@ -83,12 +83,18 @@ sudo service dbus restart
 
 Also install the following packages on your linux installation:
 
-    sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins  \
-                     libjack-jackd2-dev libsamplerate0 libsamplerate0-dev  \
-                     mpd mpc gmpc ncmpcpp mplayer cdtool \
-                     ecasound ecatools python3-ecasound ladspa-sdk  \
-                     fil-plugins zita-ajbridge zita-njbridge \
-                     apache2 libapache2-mod-php mc jq anacron netcat-traditional source-highlight
+```
+sudo apt update && sudo apt upgrade
+```
+
+```
+sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins  \
+                 libjack-jackd2-dev libsamplerate0 libsamplerate0-dev  \
+                 mpd mpc gmpc ncmpcpp mplayer cdtool \
+                 ecasound ecatools python3-ecasound ladspa-sdk  \
+                 fil-plugins zita-ajbridge zita-njbridge \
+                 apache2 libapache2-mod-php mc jq anacron netcat-traditional source-highlight
+```
 
 (i) If you have Debian version < 12 _bookworm_, please use `netcat` instead of `netcat-traditional`
 
@@ -97,7 +103,13 @@ You **MUST** be vigilant during the installation to answer YES when asked for en
 (i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser. The comand line tool `jq` can be useful to read json files from command line. `anacron` supports daily automatic updates of pe.audio.sys.
 
 
-Disable default MPD setup:
+**Disable default MPD setup:**
+
+Recent MPD packages does not load the MPD as a system service, so you may not need to disable it.
+
+    $ pgrep -f mpd
+
+Only if needed, you must disable it:
 
     sudo systemctl stop mpd.socket
     sudo systemctl disable mpd.socket

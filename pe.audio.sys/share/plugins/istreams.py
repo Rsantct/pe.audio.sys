@@ -39,6 +39,7 @@ from miscel import check_Mplayer_config_file, Fmt
 
 # Mplayer options:
 options = '-quiet -nolirc -slave -idle'
+
 # Aditional option to avoid Mplayer defaults to
 # "Playlist parsing disabled for security reasons."
 # This applies to RTVE.es, which radio urls are given in .m3u playlist format.
@@ -59,13 +60,21 @@ redirection_path = f'{UHOME}/pe.audio.sys/.istreams_events'
 
 
 def load_url(url):
+
     try:
-        command = ('loadfile ' + url + '\n' )
+        # a playlist
+        if 'm3u' in url[-4:]:
+            command = ('loadlist ' + url + '\n' )
+        # a stream
+        else:
+            command = ('loadfile ' + url + '\n' )
+
         print( f'(istreams) trying to load \'{url}\'' )
         with open( input_fifo, 'w') as f:
             f.write(command)
         sleep(.5)
         return True
+
     except:
         return False
 

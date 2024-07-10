@@ -27,6 +27,12 @@ from config import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PAT
 from miscel import  read_state_from_disk, read_metadata_from_disk
 
 
+# for printouts
+BOLD  = '\033[1m'
+BLINK = '\033[5m'
+END   = '\033[0m'
+
+
 def prepare_control_fifo(fname):
     try:
         if os.path.exists(fname):
@@ -169,7 +175,7 @@ if __name__ == '__main__':
     if sys.argv[1:]:
 
         if sys.argv[1] == 'stop':
-            Popen( 'pkill -KILL -f "loudness_monitor.py\ start"', shell=True )
+            Popen( 'pkill -KILL -f "loudness_monitor.py start"', shell=True )
             with open(LDMON_PATH, 'w') as f:
                 f.write('{"LU_I": -99.0, "LU_M": -99.0, "scope": "album"}')
             sys.exit()
@@ -177,7 +183,12 @@ if __name__ == '__main__':
         elif sys.argv[1] == 'start':
             # (i) Only import LU_meter when 'start' because it takes a long time,
             # so it can trouble the stop pkill (can be too much delayed).
-            from audiotools.loudness_meter  import  LU_meter
+            try:
+                from audiotools.loudness_meter  import  LU_meter
+            except Exception as e:
+                print(str(e))
+                print(f'{BOLD}{BLINK}Have you activated your Python Virtual Environment?{END}')
+
 
         else:
             print(__doc__)

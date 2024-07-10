@@ -4,8 +4,8 @@
 
 #### Debian packages:
 
-    sudo apt install python3-pip python3-dev python3-yaml python3-jack-client python3-mpd \
-         python3-pydbus python3-numpy python3-scipy python3-matplotlib libffi-dev
+    sudo apt install python3-venv python3-pip python3-dev python3-yaml python3-jack-client \
+         python3-mpd python3-pydbus python3-numpy python3-scipy python3-matplotlib libffi-dev \
          python3-pyudev python3-libdiscid python3-musicbrainzngs libportaudio2 python3-watchdog \
          python3-serial
 
@@ -22,14 +22,14 @@ The easiest way to do this is to prepare a `venv` for your user profile, then us
 
 Even O.S. distribution driven Python packages can be instaled separatelly in your Python `venv`, but we prefer using Debian packages when possible. So let's create a `venv` by **inheriting the system packages**:
 
-    $ python -m venv --system-site-packages ~/.env
+    $ python3 -m venv --system-site-packages ~/.env
 
-Lets activate and working inside the `venv`:
+Lets activate the environment, and go working inside the `venv`:
 
     $ source ~/.env/bin/activate
     (.env) $
 
-From now on we can use `pip3` to install packages:
+From now on we can use `pip3` to install packages not included within Debian:
 
     # upgrading PIP first of all
     (.env) $ python3 -m pip install --upgrade setuptools
