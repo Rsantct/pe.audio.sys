@@ -20,10 +20,19 @@
                         preset  <preset_num>
                         name    <channel_name>
 
+
     Notice:
     When loading a new stream, Mplayer jack ports will dissapear for a while,
     so you'll need to wait for Mplayer ports to re-emerge before switching
     the preamp input.
+
+
+    VOLUME MANAGEMENT
+    http://www.mplayerhq.hu/DOCS/HTML/en/MPlayer.html#advaudio-volume
+
+    Mplayer SLAVE MODE
+    http://www.mplayerhq.hu/DOCS/tech/slave.txt
+
 """
 
 from    pathlib import Path
@@ -37,75 +46,111 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-from miscel import check_Mplayer_config_file, Fmt
+from miscel import wait4ports, check_Mplayer_config_file, Fmt
 
 
-## USER SETTINGS: see inside DVB-T.yml
+CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
+PRESETS_PATH    = f'{MAINFOLDER}/config/DVB-T.yml'
+REDIR_PATH      = f'{MAINFOLDER}/.dvb_events'
+INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
 
-## Mplayer options:
-tuner_file = f'{UHOME}/.mplayer/channels.conf'
-options = '-quiet -nolirc -slave -idle'
 
-# Input FIFO. Mplayer runs in server mode (-slave) and
-# will read commands from a fifo:
-input_fifo = f'{MAINFOLDER}/.dvb_fifo'
-f = Path( input_fifo )
-if not f.is_fifo():
-    Popen( f'mkfifo {input_fifo}'.split() )
-del(f)
+# (i) VOLUME management
+#     '-softvol-max 400' alows to amplify 12 dB for AC3 encoded streams
+#     Then, when necessary we can issue a slave mode volume command
+MPLAYER_OPTIONS = '-quiet -nolirc -slave -idle -softvol -softvol-max 400'
 
-# Mplayer output is redirected to a file,
-# so it can be read what it is been playing:
-redirection_path = f'{MAINFOLDER}/.dvb_events'
-# (i) This file grows about 200K per hour if mplayer is the selected input
-#     so players.py will periodically queries metadata info from mplayer.
+
+def select_by_preset(pnum):
+    """ loads a stream by its presets file number id """
+
+    try:
+        channel_name = PRESETS[pnum]['name']
+        select_by_name(channel_name)
+
+    except:
+        tmp = f'(DVB-T.py) error with preset # {pnum}'
+        print(f'{Fmt.BOLD}{tmp}{Fmt.END}')
+        sys.exit()
 
 
 def select_by_name(channel_name):
-    """ loads a stream by its preset name """
+    """ loads a stream by its channel.conf name """
 
+
+    def get_volume():
+
+        volume = 0
+
+        for pnum in PRESETS:
+
+            if PRESETS[pnum]['name'] == channel_name:
+                if 'codec' in  PRESETS[pnum] and PRESETS[pnum]['codec']:
+                    if 'ac3' in  PRESETS[pnum]['codec']:
+                        volume = 400 # 12 dB in percent
+                break
+
+        return volume
+
+
+    # Searching the channel_name in channels file
     try:
-        # check_output will fail if no command output
-        check_output( ['grep', channel_name, tuner_file] ).decode()
-    except:
-        print( f'(DVB-T.py) Channel NOT found: \'{channel_name}\'' )
-        return False
+        check_output( ['grep', channel_name, CHANNELS_PATH] ).decode()
 
+    except:
+        print( f"(DVB-T.py) Channel NOT found: '{channel_name}'" )
+        sys.exit()
+
+
+    # Loading the DVB-T station
     try:
-        print( f'(DVB-T.py) trying to load \'{channel_name}\'' )
-        # The whole address after 'loadfile' needs to be
-        # SINGLE quoted to load properly:
-        command = ('loadfile \'dvb://' + channel_name + '\'\n' )
-        with open( input_fifo, 'w') as f:
-            f.write(command)
-        return True
-    except:
-        print( f'(DVB-T.py) failed to load \'{channel_name}\'' )
-        return False
+
+        # The whole address after 'loadfile' needs to be SINGLE quoted to load properly
+        command = f"loadfile 'dvb://{channel_name}'"
+
+        with open( INPUT_FIFO, 'w') as f:
+            f.write( f"{command}\n" )
+
+        print( f"(DVB-T.py) issued: {command}" )
 
 
-def select_by_preset(preset_num):
-    """ loads a stream by its preset number """
-    try:
-        channel_name = DVB_config['presets'][ preset_num ]
-        select_by_name(channel_name)
-        return True
+        # Optional VOLUME for multichannel codec 'ffac3'
+        volume = get_volume()
+
+        if volume:
+
+            # see Mplayer docs: slave.txt
+            command = f"volume {volume} 1"
+
+            with open( INPUT_FIFO, 'w') as f:
+                f.write( f"{command}\n" )
+
+            print( f"(DVB-T.py) issued: {command}" )
+
+
     except:
-        print( f'(DVB-T.py) error in preset # {preset_num}' )
-        return False
+
+        print( f"(DVB-T.py) failed to load '{channel_name}'" )
+        sys.exit()
+
+
+    # Wait a bit for the new Mplayer ports to emerge (informational only)
+    sleep(2)
+    if wait4ports('mplayer_dvb', 5):
+        print( f"(DVB-T.py) Mplayer JACK ports emerged" )
+    else:
+        print( f"(DVB-T.py) Mplayer JACK ports NOT available" )
 
 
 def start():
-    tmp = check_Mplayer_config_file(profile='dvb')
-    if tmp != 'ok':
-        print( f'{Fmt.RED}(DVB-T.py) {tmp}{Fmt.END}' )
-        sys.exit()
-    cmd = f'mplayer {options} -profile dvb -input file={input_fifo}'
-    with open(redirection_path, 'w') as redirfile:
+
+    cmd = f'mplayer {MPLAYER_OPTIONS} -profile dvb -input file={INPUT_FIFO}'
+
+    # (i) The "redir" file grows about 200K per hour while running mplayer
+    with open(REDIR_PATH, 'w') as f:
         # clearing the file for this session
-        redirfile.write('')
-        Popen( cmd.split(), shell=False, stdout=redirfile,
-                                            stderr=redirfile )
+        f.write('')
+        Popen( cmd.split(), shell=False, stdout=f, stderr=f )
 
 
 def stop():
@@ -113,16 +158,46 @@ def stop():
     call( ['pkill', '-KILL', '-f', 'profile dvb'] )
 
 
+def do_check_files():
+    """ Check the necessary files for this to work
+    """
+
+    global PRESETS
+
+    # Input FIFO for Mplayer -slave mode
+    f = Path( INPUT_FIFO )
+    if not f.is_fifo():
+        Popen( f'mkfifo {INPUT_FIFO}'.split() )
+    del(f)
+
+    # Mplayer config file
+    tmp = check_Mplayer_config_file(profile='dvb')
+
+    if tmp != 'ok':
+        print( f'{Fmt.RED}(DVB-T.py) {tmp}{Fmt.END}' )
+        sys.exit()
+
+    # Channels file
+    f = Path( CHANNELS_PATH )
+    if not f.is_file():
+        print( f"(DVB-T.py) ERROR reading channels file: '{CHANNELS_PATH}'" )
+        sys.exit()
+    del(f)
+
+    # DVB-T presets file
+    try:
+        with open(PRESETS_PATH, 'r') as f:
+            PRESETS = yaml.safe_load(f)
+    except:
+        print( f"(DVB-T.py) ERROR reading user presets file: '{PRESETS_PATH}'" )
+        sys.exit()
+
+
 if __name__ == '__main__':
 
-    ### Reading the DVB-T config file
-    DVB_config_path = f'{MAINFOLDER}/config/DVB-T.yml'
-    try:
-        with open(DVB_config_path, 'r') as f:
-            DVB_config = yaml.safe_load(f)
-    except:
-        print( f'(DVB-T.py) ERROR reading \'{DVB_config_path}\'' )
-        sys.exit()
+    # Check the necessary files for this to work
+    do_check_files()
+
 
     ### Reading the command line
     if sys.argv[1:]:
