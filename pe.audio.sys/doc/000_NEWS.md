@@ -98,3 +98,8 @@ See the `doc/` folder for detailed information about this.
 ## Jan 2024, version 1.0j
 - Python Virtual Environment compliant as per PEP 668 for using non-Debian Python packages.
   
+## Jul 2024, version 1.0k
+- DVB-T volume adjustement for multichannel AC3 streams
+- A macro template to playing an akamaized m3u8 stream througby MPD (some internet radios as RTVE)
+- Audio format and bitrate info in control web
+  
