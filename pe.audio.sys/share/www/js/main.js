@@ -601,6 +601,11 @@ function page_update() {
             highlight_macro_button(mName)
         }
 
+
+        // sysmon
+        // Example when wifi is not conneted:
+        //  "sysmon": {"wifi": {"Tx-Power": "12"}, "temp": 69.2}}
+        //
         let sysmon = '';
         const temp = aux_info.sysmon.temp
         const wifi = aux_info.sysmon.wifi
@@ -610,9 +615,11 @@ function page_update() {
         }
 
         if (! isEmpty(wifi)){
-            sysmon += ' | wifi: ' + wifi['Bit-rate-Mb/s'] + ' Mb/s';
-            sysmon += ' quality: ' + wifi['Quality'];
-            sysmon += ' Rx: ' + wifi['Signal-level'] + ' dBm';
+            if ('Bit-rate-Mb/s' in wifi){
+                sysmon += ' | wifi: ' + wifi['Bit-rate-Mb/s'] + ' Mb/s';
+                sysmon += ' quality: ' + wifi['Quality'];
+                sysmon += ' Rx: ' + wifi['Signal-level'] + ' dBm';
+            }
         }
 
         document.getElementById("sysmon").innerText = sysmon;
