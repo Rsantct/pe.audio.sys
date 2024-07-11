@@ -619,6 +619,8 @@ function page_update() {
                 sysmon += ' | wifi: ' + wifi['Bit-rate-Mb/s'] + ' Mb/s';
                 sysmon += ' quality: ' + wifi['Quality'];
                 sysmon += ' Rx: ' + wifi['Signal-level'] + ' dBm';
+            }else{
+                sysmon += ' | wifi: ' + wifi['iface'] + ' (not connected)';
             }
         }
 
