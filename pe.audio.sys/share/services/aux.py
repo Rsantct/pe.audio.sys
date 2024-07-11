@@ -11,7 +11,7 @@
 from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
 import  jack
-from    subprocess          import  Popen
+from    subprocess          import  Popen, check_output
 from    time                import  sleep
 import  os
 import  sys
@@ -33,11 +33,87 @@ def dump_aux_info():
         by third party processes
     """
     # Dynamic updates
-    AUX_INFO['amp'] =               manage_amp_switch( 'state' )
-    AUX_INFO['loudness_monitor'] =  get_loudness_monitor()
+    AUX_INFO['amp']              = manage_amp_switch( 'state' )
+    AUX_INFO['loudness_monitor'] = get_loudness_monitor()
+    AUX_INFO['sysmon']           = get_sysmon('wlan0')
+
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
         f.write( json_dumps(AUX_INFO) )
+
+
+def get_sysmon(w_iface='wlan0'):
+    """ A simple reader of
+            - CPU temperature
+            - wireless link stattus
+    """
+
+    def get_wifi(iface='wlan0'):
+        """ Returns a dict, example:
+
+            {   'Bit-rate-Mb/s': '72.2',
+                'Tx-Power': '31',
+                'Quality': '61/70',
+                'Signal-level': '-49'
+            }
+        """
+        #   $ cat /proc/net/wireless
+        #   Inter-| sta-|   Quality        |   Discarded packets               | Missed | WE
+        #    face | tus | link level noise |  nwid  crypt   frag  retry   misc | beacon | 22
+        #    wlan0: 0000   61.  -49.  -256        0      0      0      0      0        0
+
+
+        #   $ iwconfig wlan0
+        #   wlan0     IEEE 802.11  ESSID:"MOVISTAR_FC50"
+        #             Mode:Managed  Frequency:2.412 GHz  Access Point: 4C:AB:F8:CB:FC:5F
+        #             Bit Rate=72.2 Mb/s   Tx-Power=31 dBm
+        #             Retry short limit:7   RTS thr:off   Fragment thr:off
+        #             Power Management:on
+        #             Link Quality=61/70  Signal level=-49 dBm
+        #             Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+        #             Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+
+        d = {}
+
+        try:
+            tmp = check_output(f'iwconfig {iface}'.split()).decode().split()
+
+            for e in tmp:
+                if '=' in e:
+                    k, v = e.split('=')
+                    if k.lower() == 'rate':     k = 'Bit-rate-Mb/s'
+                    if k.lower() == 'level':    k = 'Signal-level'
+                    d[k] = v
+
+        except Exception as e:
+            print( str(e) )
+
+        return d
+
+
+    def get_temp():
+        """
+        """
+        #   This works on Intel and ARM
+        #   $ cat /sys/class/thermal/thermal_zone0/temp
+        #   74136
+
+        temp = 0.0
+
+        try:
+            tmp = check_output('cat /sys/class/thermal/thermal_zone0/temp'.split()).decode()
+
+            temp = round(int(tmp) / 1000, 1)
+
+        except Exception as e:
+            print( str(e) )
+
+        return temp
+
+
+    return  {   'wifi': get_wifi( w_iface),
+                'temp': get_temp()
+            }
 
 
 def get_web_config():
