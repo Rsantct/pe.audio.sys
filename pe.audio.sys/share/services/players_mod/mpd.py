@@ -6,19 +6,22 @@
 
 """ A MPD interface module for players.py
 """
-import os
-import sys
-import mpd
+import  os
+import  sys
+import  mpd
+from    time import sleep
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from miscel import timesec2string as timeFmt, sec2min
 
+PORT = 6600
+
 c = mpd.MPDClient()
 
 
-def connect(port=6600):
+def connect(port=PORT):
     try:
         c.connect('localhost', port)
         return True
@@ -27,11 +30,21 @@ def connect(port=6600):
 
 
 def ping():
-    try:
-        c.ping()
-        return True
-    except:
-        return False
+
+    tries = 3
+
+    while tries:
+
+        try:
+            c.ping()
+            return True
+        except:
+            pass
+
+        sleep(.2)
+        tries -= 1
+
+    return False
 
 
 def curr_playlist_is_cdda():
@@ -53,7 +66,7 @@ def mpd_playlists(cmd, arg=''):
 
     if not ping():
         if not connect():
-            return f'ERROR connecting to MPD at port {port}'
+            return f'ERROR connecting to MPD at port {PORT}'
 
     result = ''
 
@@ -75,7 +88,7 @@ def mpd_playlists(cmd, arg=''):
     return result
 
 
-def mpd_control( query, arg='', port=6600 ):
+def mpd_control( query, arg='', port=PORT ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
         Return:     playback state string ( stop | play | pause )
