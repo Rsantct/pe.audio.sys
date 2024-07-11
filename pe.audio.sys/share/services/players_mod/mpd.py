@@ -164,12 +164,23 @@ def mpd_meta( md ):
         if not connect():
             return md
 
-    cs = c.currentsong()
     st = c.status()
 
-    # (i) Not all tracks have complete currentsong() fields:
-    # artist, title, album, track, etc fields may NOT be provided
-    # file, time, duration, pos, id           are ALWAYS provided
+    cs = c.currentsong()
+
+    # (i) Not all tracks have complete currentsong() fields. Some examples:
+    #
+    #   {'file': 'http://192.168.1.46:49149/qobuz/track/version/1/trackId/4526528',
+    #   'artist': 'Claudio Arrau',
+    #   'album': 'Liszt: Piano Sonata in B Minor / Annees De Pelerinage / Ballade No. 2 / Transcendental Etude No. 10 (Arrau) (1970-1981)',
+    #   'title': 'Piano Sonata in B Minor, S. 178/R. 21',
+    #   'pos': '0',
+    #   'id': '135'}
+    #
+    #   {'file': 'https://rtvelivestream.akamaized.net/rtvesec/rne/GL0/34_2024_07_11_20_11_03_113822.ts',
+    #   'pos': '0',
+    #   'id': '156'}
+
 
     # Skip if no currentsong is loaded
     if cs:
@@ -189,6 +200,11 @@ def mpd_meta( md ):
 
         if 'file' in cs:
             md['file'] = cs["file"]
+
+            if not 'album' in cs:
+                # Try to put the URL site as 'album', if available
+                if '//' in md['file']:
+                    md['album'] = '/'.join( md['file'].split('/')[:3] )
 
 
     if 'playlistlength' in st:
