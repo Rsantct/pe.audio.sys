@@ -17,7 +17,7 @@ else
 fi
 
 echo
-read -p "Upgrading from 'https://github.com/"$GITSITE"/"$BRANCH"'.  It's ok? (y/N): " ans
+read -p "Will get the most recent update scripts from 'https://github.com/"$GITSITE"/"$BRANCH"'.  It's ok? (y/N): " ans
 if [[ $ans != *"y"*  && $ans != *"Y"* ]];then
     echo 'Bye!'
     exit 0
