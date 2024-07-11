@@ -72,6 +72,14 @@ def get_sysmon(w_iface='wlan0'):
         #             Link Quality=61/70  Signal level=-49 dBm
         #             Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
         #             Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+        #
+        #   not connected here:
+        #
+        #   wlan0     IEEE 802.11  ESSID:off/any
+        #             Mode:Managed  Access Point: Not-Associated   Tx-Power=12 dBm
+        #             Retry short limit:7   RTS thr:off   Fragment thr:off
+        #             Power Management:off
+        #
 
         d = {}
 
