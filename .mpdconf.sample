@@ -7,6 +7,18 @@
 # to debug:                     mpd --stdout --no-daemon --verbose
 #
 
+# For logging see man mpd.conf
+#
+#   error:     errors
+#   warning:   warnings
+#   notice:    interesting informational messages (DEFAULT)
+#   info:      unimportant informational messages
+#   verbose:   debug messages (for developers and for troubleshooting)
+#
+log_file                "~/.config/mpd/mpd.log"
+log_level               "notice"
+
+
 port                    "6600"
 
 music_directory         "~/music"
