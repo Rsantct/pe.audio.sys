@@ -10,6 +10,9 @@
         play_m3u8.py    station_name
 
         station_name as per configured within config/istreams.yml
+
+    (i) If someone modifies the playlist, then will exit from this loop
+
 """
 
 import  sys
@@ -21,23 +24,35 @@ from    time import sleep
 
 UHOME = os.path.expanduser("~")
 
-mpdcli = mpd.MPDClient()
+PORT = 6600
+
+c = mpd.MPDClient()
 
 
-def mpd_connect(port=6600):
+def mpd_connect(port=PORT):
     try:
-        mpdcli.connect('localhost', port)
+        c.connect('localhost', port)
         return True
     except:
         return False
 
 
 def mpd_ping():
-    try:
-        mpdcli.ping()
-        return True
-    except:
-        return False
+
+    tries = 3
+
+    while tries:
+
+        try:
+            c.ping()
+            return True
+        except:
+            pass
+
+        sleep(.2)
+        tries -= 1
+
+    return False
 
 
 def get_m3u8_target_duration(url):
@@ -102,9 +117,9 @@ if __name__ == "__main__":
         print('Error with MPD')
         sys.exit()
 
-    mpdcli.clear()
-    old_consume = mpdcli.status()["consume"]
-    mpdcli.consume(1)
+    c.clear()
+    old_consume = c.status()["consume"]
+    c.consume(1)
 
 
     # Loading the M3U8 into MPD and playing it
@@ -121,7 +136,7 @@ if __name__ == "__main__":
 
             play_issued = False
 
-            mpd_pl = [ x.split()[-1] for x in mpdcli.playlist() ]
+            mpd_pl = [ x.split()[-1] for x in c.playlist() ]
 
             # URIs are changing over time
             uris = get_m3u8_uris(radio_url)
@@ -129,15 +144,15 @@ if __name__ == "__main__":
             for uri in uris:
 
                 # Someone wants to play anything else
-                if len(mpdcli.playlist()) > len(uris):
+                if len(c.playlist()) > len(uris):
                     print('The playing queue was modified, so bye!')
                     sys.exit()
 
                 if not uri in mpd_pl:
-                    mpdcli.add(uri)
+                    c.add(uri)
 
             if not play_issued:
-                mpdcli.play()
+                c.play()
                 play_issued = True
 
 
@@ -149,6 +164,6 @@ if __name__ == "__main__":
 
 
     except KeyboardInterrupt:
-        mpdcli.clear()
-        mpdcli.consume(old_consume)
+        c.clear()
+        c.consume(old_consume)
         print('\nBye!')
