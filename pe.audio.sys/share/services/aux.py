@@ -86,6 +86,8 @@ def get_sysmon(w_iface='wlan0'):
         try:
             tmp = check_output(f'iwconfig {iface}'.split()).decode().split()
 
+            d['iface'] = iface
+
             for e in tmp:
                 if '=' in e:
                     k, v = e.split('=')
