@@ -170,11 +170,15 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
             c.seekcur('+30')
 
         case 'random':
+
             if arg == 'on':
                 c.random(1)
+
             elif arg == 'off':
                 c.random(0)
+
             elif arg == 'toggle':
+                st = get_wrapper('status')
                 c.random( {'0':1, '1':0}[ st['random'] ])
 
 
