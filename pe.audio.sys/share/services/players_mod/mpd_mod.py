@@ -22,12 +22,20 @@ c = mpd.MPDClient()
 
 
 def connect(port=MPD_PORT):
+
     try:
         c.connect('localhost', port)
         return True
-    except:
-        print(f"{Fmt.BOLD}(mpd_mod.py) cannot connect to MPD{Fmt.END}")
-        return False
+
+    except Exception as e:
+
+        print(f"{Fmt.RED}(mpd_mod.py) connect ERROR: {type(e)} {str(e)}{Fmt.END}")
+
+        if str(e) == 'Already connected':
+            return True
+
+        else:
+            return False
 
 
 def ping(tries=3):
@@ -37,52 +45,13 @@ def ping(tries=3):
         try:
             c.ping()
             return True
-        except:
-            print(f"{Fmt.GRAY}(mpd_mod.py) retrying ping ...{Fmt.END}")
+        except Exception as e:
+            print(f"{Fmt.GRAY}(mpd_mod.py) retrying ping ... {str(e)}{Fmt.END}")
 
         sleep(.2)
         tries -= 1
 
     return False
-
-
-def get_wrapper(prop='status', tries=3):
-    """ This is a wrapper for MPDClient.status/currentsong because
-        sometimes in slow machines an Exception is raised even if
-        MPDClient.ping works just before issuing MPDClient.status
-
-        Example:
-
-        st = c.status()
-        ...
-        ...
-        File "/usr/lib/python3/dist-packages/mpd/base.py", line 571, in _read_line
-          raise ConnectionError("Connection lost while reading line")
-    """
-
-
-    res = {'state': 'stop', 'random': '0'}
-
-    while tries:
-
-        try:
-
-            if prop == 'status':
-                res = c.status()
-
-            elif prop == 'currentsong':
-                res = {'file': ''}
-                res = c.currentsong()
-
-            break
-
-        except Exception as e:
-
-            print(f"{Fmt.BOLD}(mpd_mod.py) PANIC: {str(e)}{Fmt.END}")
-            sleep(.2)
-            tries -= 1
-
-    return res
 
 
 def curr_playlist_is_cdda():
@@ -91,7 +60,7 @@ def curr_playlist_is_cdda():
     # :-/ the current playlist doesn't have any kind of propiertry to
     # check if the special 'cdda.m3u' is the currently loaded one.
 
-    if not ping(1):
+    if not ping():
         if not connect():
             return False
 
@@ -102,9 +71,9 @@ def curr_playlist_is_cdda():
 
 def mpd_playlists(cmd, arg=''):
 
-    if not ping(1):
+    if not ping():
         if not connect():
-            return f'ERROR connecting to MPD at port {MPD_PORT}'
+            return 'ERROR connecting to MPD'
 
     result = ''
 
@@ -135,6 +104,14 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
                     OR
                     a random mode (on/off)
     """
+
+    # If no connection
+    if not ping():
+        if not connect():
+            if cmd == 'random':
+                return 'off'
+            else:
+                return 'stop'
 
     # Do execute the command
     match cmd:
@@ -178,21 +155,12 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
                 c.random(0)
 
             elif arg == 'toggle':
-                st = get_wrapper('status')
+                st = c.status()
                 c.random( {'0':1, '1':0}[ st['random'] ])
 
 
-    # If no connection
-    if not ping(1):
-        if not connect():
-            if cmd == 'random':
-                return 'off'
-            else:
-                return 'stop'
+    st = c.status()
 
-
-    # Getting the playback state OR the random mode
-    st = get_wrapper('status')
 
     try:
 
@@ -219,13 +187,14 @@ def mpd_meta( md ):
 
     md['player'] = 'MPD'
 
-    if not ping(1):
+    # If no connection
+    if not ping():
         if not connect():
             return md
 
-    st = get_wrapper('status')
+    st = c.status()
 
-    cs = get_wrapper('currentsong')
+    cs = c.currentsong()
 
 
     # (i) Not all tracks have complete currentsong() fields. Some examples:
