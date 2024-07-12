@@ -32,7 +32,7 @@ from  miscel                        import  detect_spotify_client,      \
                                             read_cdda_info_from_disk,   \
                                             send_cmd, is_IP
 
-from  players_mod.mpd               import  mpd_control,                \
+from  players_mod.mpd_mod           import  mpd_control,                \
                                             mpd_meta,                   \
                                             mpd_playlists
 
