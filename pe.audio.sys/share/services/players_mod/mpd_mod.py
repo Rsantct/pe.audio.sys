@@ -26,7 +26,7 @@ def connect(port=MPD_PORT):
         c.connect('localhost', port)
         return True
     except:
-        print(f"{Fmt.BOLD}(mpd.py) cannot connect to MPD{Fmt.END}")
+        print(f"{Fmt.BOLD}(mpd_mod.py) cannot connect to MPD{Fmt.END}")
         return False
 
 
@@ -38,7 +38,7 @@ def ping(tries=3):
             c.ping()
             return True
         except:
-            print(f"{Fmt.GRAY}(mpd.py) retrying ping ...{Fmt.END}")
+            print(f"{Fmt.GRAY}(mpd_mod.py) retrying ping ...{Fmt.END}")
 
         sleep(.2)
         tries -= 1
@@ -60,19 +60,25 @@ def get_wrapper(prop='status', tries=3):
           raise ConnectionError("Connection lost while reading line")
     """
 
-    res = {}
+
+    res = {'state': 'stop', 'random': '0'}
 
     while tries:
 
         try:
+
             if prop == 'status':
                 res = c.status()
+
             elif prop == 'currentsong':
+                res = {'file': ''}
                 res = c.currentsong()
+
             break
 
         except Exception as e:
-            print(f"{Fmt.BOLD}(mpd.py) PANIC: {str(e)}{Fmt.END}")
+
+            print(f"{Fmt.BOLD}(mpd_mod.py) PANIC: {str(e)}{Fmt.END}")
             sleep(.2)
             tries -= 1
 
@@ -107,7 +113,7 @@ def mpd_playlists(cmd, arg=''):
         try:
             result = [ x['playlist'] for x in c.listplaylists() ]
         except Exception as e:
-            print(f"{Fmt.RED}(mpd.py) error with 'get_playlists' {str(e)}{Fmt.END}")
+            print(f"{Fmt.RED}(mpd_mod.py) error with 'get_playlists' {str(e)}{Fmt.END}")
 
     elif cmd == 'load_playlist':
         c.load(arg)
@@ -120,83 +126,85 @@ def mpd_playlists(cmd, arg=''):
     return result
 
 
-def mpd_control( query, arg='', port=MPD_PORT ):
+def mpd_control( cmd, arg='', port=MPD_PORT ):
     """ Comuticates to MPD music player daemon
-        Input:      a command to query to the MPD daemon
-        Return:     playback state string ( stop | play | pause )
+
+        Input:      a command [arg] to query to the MPD daemon
+
+        Returns:    a playback state string ( stop | play | pause )
+                    OR
+                    a random mode (on/off)
     """
 
-    def state(_):
-        return sta['state']
+    # Do execute the command
+    match cmd:
 
-    def stop(_):
-        c.stop()
-        return sta['state']
+        case 'state':
+            pass
 
-    def pause(_):
-        c.pause()
-        return sta['state']
+        case 'stop':
+            c.stop()
 
-    def play(_):
-        c.play()
-        return sta['state']
+        case 'pause':
+            c.pause()
 
-    def next(_):
-        try:
-            c.next()  # avoids error if some playlist has wrong items
-        except:
-            print(f"{Fmt.GRAY}(mpd.py) error with 'next'{Fmt.END}")
-        return sta['state']
+        case 'play':
+            c.play()
 
-    def previous(_):
-        try:
-            c.previous()
-        except:
-            print(f"{Fmt.GRAY}(mpd.py) error with 'previous'{Fmt.END}")
-        return sta['state']
+        case 'next':
+            try:
+                c.next()    # avoids error if some playlist has wrong items
+            except:
+                print(f"{Fmt.GRAY}(mpd_mod.py) error with 'next'{Fmt.END}")
 
-    def rew(_):  # for REW and FF will move 30 seconds
-        c.seekcur('-30')
-        return sta['state']
+        case 'previous':
+            try:
+                c.previous()
+            except:
+                print(f"{Fmt.GRAY}(mpd_mod.py) error with 'previous'{Fmt.END}")
 
-    def ff(_):
-        c.seekcur('+30')
-        return sta['state']
+        case 'rew':         # for REW and FF will move 30 seconds
+            c.seekcur('-30')
 
-    def random(arg):
-        if arg == 'on':
-            c.random(1)
-        elif arg == 'off':
-            c.random(0)
-        elif arg == 'toggle':
-            c.random( {'0':1, '1':0}[ sta['random'] ])
-        mode = sta['random']
-        return {'0':'off', '1':'on'}[mode]
+        case 'ff':
+            c.seekcur('+30')
+
+        case 'random':
+            if arg == 'on':
+                c.random(1)
+            elif arg == 'off':
+                c.random(0)
+            elif arg == 'toggle':
+                c.random( {'0':1, '1':0}[ st['random'] ])
 
 
+    # If no connection
     if not ping(1):
         if not connect():
-            return 'stop'
+            if cmd == 'random':
+                return 'off'
+            else:
+                return 'stop'
 
-    sta = get_wrapper('status')
+
+    # Getting the playback state OR the random mode
+    st = get_wrapper('status')
 
     try:
-        result = {  'state':            state,
-                    'stop':             stop,
-                    'pause':            pause,
-                    'play':             play,
-                    'next':             next,
-                    'previous':         previous,
-                    'rew':              rew,
-                    'ff':               ff,
-                    'random':           random
-                 }[query](arg)
+
+        if cmd == 'random':
+            return {'0':'off', '1':'on'}[ st['random'] ]
+        else:
+            return st['state']
 
     except:
-        result = f"(mpd.py) error with 'mpd_control {query}'"
-        print(f"{Fmt.BOLD}{result}{Fmt.END}")
 
-    return result
+        print(f"(mpd_mod.py) WRONG MPDClient.status: {st}")
+
+        if cmd == 'random':
+            return 'off'
+        else:
+            return 'stop'
 
 
 def mpd_meta( md ):
