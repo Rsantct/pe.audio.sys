@@ -5,14 +5,15 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Plays an akamaized m3u8 stream througby MPD
+    Plays an akamaized 'm3u8' playlist througby MPD
 
-        play_m3u8.py    station_name
+    Usage:  play_m3u8.py    station_name (*)
 
-        station_name as per configured within config/istreams.yml
+        (*) as per configured in config/istreams.yml
 
-    (i) If someone modifies the playlist, then will exit from this loop
 
+    This program is a loop that feeds the m3u8 chunks into the MPD playlist.
+    If someone modifies the MPD playlist, then this loop will end.
 """
 
 import  sys
@@ -24,12 +25,12 @@ from    time import sleep
 
 UHOME = os.path.expanduser("~")
 
-PORT = 6600
+MPD_PORT = 6600
 
 c = mpd.MPDClient()
 
 
-def mpd_connect(port=PORT):
+def mpd_connect(port=MPD_PORT):
     try:
         c.connect('localhost', port)
         return True
@@ -61,6 +62,7 @@ def get_m3u8_target_duration(url):
         return pl.target_duration
     except:
         return 0
+
 
 def get_m3u8_uris(url):
     try:
