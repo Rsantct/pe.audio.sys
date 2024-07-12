@@ -5,7 +5,9 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    usage:  mpd.py  start|stop
+    A simple user session MPD launcher
+
+    usage:  mpd.py   start | stop
 
     Notice:
 
@@ -43,12 +45,13 @@ def check_systemd_service():
 
 
 def stop():
-    call( ['pkill', '-KILL', 'mpd'] )
+    call( ['pkill', '-KILL', '-f', 'mpd /home/paudio/.mpdconf'] )
 
 
 def start():
     check_systemd_service()
-    Popen( f'mpd {UHOME}/.mpdconf'.split() )
+    with open('/dev/null', 'w') as fnull:
+        Popen( f'mpd {UHOME}/.mpdconf'.split(), stdout=fnull, stderr=fnull )
 
 
 if __name__ == '__main__':
