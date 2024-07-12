@@ -46,6 +46,39 @@ def ping(tries=3):
     return False
 
 
+def get_wrapper(prop='status', tries=3):
+    """ This is a wrapper for MPDClient.status/currentsong because
+        sometimes in slow machines an Exception is raised even if
+        MPDClient.ping works just before issuing MPDClient.status
+
+        Example:
+
+        st = c.status()
+        ...
+        ...
+        File "/usr/lib/python3/dist-packages/mpd/base.py", line 571, in _read_line
+          raise ConnectionError("Connection lost while reading line")
+    """
+
+    res = {}
+
+    while tries:
+
+        try:
+            if prop == 'status':
+                res = c.status()
+            elif prop == 'currentsong':
+                res = c.currentsong()
+            break
+
+        except Exception as e:
+            print(f"{Fmt.BOLD}(mpd.py) PANIC: {str(e)}{Fmt.END}")
+            sleep(.2)
+            tries -= 1
+
+    return res
+
+
 def curr_playlist_is_cdda():
     """ returns True if the curren playlist has only cdda tracks
     """
@@ -145,7 +178,7 @@ def mpd_control( query, arg='', port=MPD_PORT ):
         if not connect():
             return 'stop'
 
-    sta = c.status()
+    sta = get_wrapper('status')
 
     try:
         result = {  'state':            state,
@@ -159,8 +192,8 @@ def mpd_control( query, arg='', port=MPD_PORT ):
                     'random':           random
                  }[query](arg)
 
-    except Exception as e:
-        result = f"(mpd.py) error with '{query}': {str(e)}"
+    except:
+        result = f"(mpd.py) error with 'mpd_control {query}'"
         print(f"{Fmt.BOLD}{result}{Fmt.END}")
 
     return result
@@ -178,9 +211,10 @@ def mpd_meta( md ):
         if not connect():
             return md
 
-    st = c.status()
+    st = get_wrapper('status')
 
-    cs = c.currentsong()
+    cs = get_wrapper('currentsong')
+
 
     # (i) Not all tracks have complete currentsong() fields. Some examples:
     #
