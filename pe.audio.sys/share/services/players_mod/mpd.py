@@ -14,24 +14,23 @@ from    time import sleep
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import timesec2string as timeFmt, sec2min
+from miscel import timesec2string as timeFmt, sec2min, Fmt
 
-PORT = 6600
+MPD_PORT = 6600
 
 c = mpd.MPDClient()
 
 
-def connect(port=PORT):
+def connect(port=MPD_PORT):
     try:
         c.connect('localhost', port)
         return True
     except:
+        print(f"{Fmt.BOLD}(mpd.py) cannot connect to MPD{Fmt.END}")
         return False
 
 
-def ping():
-
-    tries = 3
+def ping(tries=3):
 
     while tries:
 
@@ -39,7 +38,7 @@ def ping():
             c.ping()
             return True
         except:
-            pass
+            print(f"{Fmt.GRAY}(mpd.py) retrying ping ...{Fmt.END}")
 
         sleep(.2)
         tries -= 1
@@ -53,7 +52,7 @@ def curr_playlist_is_cdda():
     # :-/ the current playlist doesn't have any kind of propiertry to
     # check if the special 'cdda.m3u' is the currently loaded one.
 
-    if not ping():
+    if not ping(1):
         if not connect():
             return False
 
@@ -64,9 +63,9 @@ def curr_playlist_is_cdda():
 
 def mpd_playlists(cmd, arg=''):
 
-    if not ping():
+    if not ping(1):
         if not connect():
-            return f'ERROR connecting to MPD at port {PORT}'
+            return f'ERROR connecting to MPD at port {MPD_PORT}'
 
     result = ''
 
@@ -75,7 +74,7 @@ def mpd_playlists(cmd, arg=''):
         try:
             result = [ x['playlist'] for x in c.listplaylists() ]
         except Exception as e:
-            print(f'(mpd.py) {str(e)}')
+            print(f"{Fmt.RED}(mpd.py) error with 'get_playlists' {str(e)}{Fmt.END}")
 
     elif cmd == 'load_playlist':
         c.load(arg)
@@ -88,46 +87,46 @@ def mpd_playlists(cmd, arg=''):
     return result
 
 
-def mpd_control( query, arg='', port=PORT ):
+def mpd_control( query, arg='', port=MPD_PORT ):
     """ Comuticates to MPD music player daemon
         Input:      a command to query to the MPD daemon
         Return:     playback state string ( stop | play | pause )
     """
 
-    def state(dummy_arg):
+    def state(_):
         return sta['state']
 
-    def stop(dummy_arg):
+    def stop(_):
         c.stop()
         return sta['state']
 
-    def pause(dummy_arg):
+    def pause(_):
         c.pause()
         return sta['state']
 
-    def play(dummy_arg):
+    def play(_):
         c.play()
         return sta['state']
 
-    def next(dummy_arg):
+    def next(_):
         try:
             c.next()  # avoids error if some playlist has wrong items
         except:
-            pass
+            print(f"{Fmt.GRAY}(mpd.py) error with 'next'{Fmt.END}")
         return sta['state']
 
-    def previous(dummy_arg):
+    def previous(_):
         try:
             c.previous()
         except:
-            pass
+            print(f"{Fmt.GRAY}(mpd.py) error with 'previous'{Fmt.END}")
         return sta['state']
 
-    def rew(dummy_arg):  # for REW and FF will move 30 seconds
+    def rew(_):  # for REW and FF will move 30 seconds
         c.seekcur('-30')
         return sta['state']
 
-    def ff(dummy_arg):
+    def ff(_):
         c.seekcur('+30')
         return sta['state']
 
@@ -142,7 +141,7 @@ def mpd_control( query, arg='', port=PORT ):
         return {'0':'off', '1':'on'}[mode]
 
 
-    if not ping():
+    if not ping(1):
         if not connect():
             return 'stop'
 
@@ -159,8 +158,10 @@ def mpd_control( query, arg='', port=PORT ):
                     'ff':               ff,
                     'random':           random
                  }[query](arg)
-    except:
-        result = f'erron with \'{query}\''
+
+    except Exception as e:
+        result = f"(mpd.py) error with '{query}': {str(e)}"
+        print(f"{Fmt.BOLD}{result}{Fmt.END}")
 
     return result
 
@@ -173,7 +174,7 @@ def mpd_meta( md ):
 
     md['player'] = 'MPD'
 
-    if not ping():
+    if not ping(1):
         if not connect():
             return md
 
@@ -238,3 +239,6 @@ def mpd_meta( md ):
 
 
     return md
+
+
+connect()
