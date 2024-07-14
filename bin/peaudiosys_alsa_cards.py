@@ -246,15 +246,15 @@ def list_cards(pattern=''):
 
 
     if get_use:
-        print(" # CARD                 PCM          ACCESS               FORMAT       CH  RATE   PER. BUFF. USER       PID      COMMAND")
-        print("----------------------------------------------------------------------------------------------------------------------------")
-        #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000  256  512 somebody   12345    someprocess
+        print(" # CARD                 PCM          ACCESS               FORMAT       CH  RATE    PER.  BUFF. USER       PID      COMMAND")
+        print("------------------------------------------------------------------------------------------------------------------------------")
+        #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000    256  512 somebody   12345    someprocess
         #       1 ICUSBAUDIO7D         pcm0p/sub0   CLOSED
 
     else:
-        print(" # CARD                 PCM          ACCESS               FORMAT       CH  RATE   PER. BUFF.")
-        print("--------------------------------------------------------------------------------------------")
-        #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000  256  512
+        print(" # CARD                 PCM          ACCESS               FORMAT       CH  RATE    PER.  BUFF.")
+        print("----------------------------------------------------------------------------------------------")
+        #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000    256  512
         #       1 ICUSBAUDIO7D         pcm0p/sub0   CLOSED
 
 
@@ -310,14 +310,14 @@ def list_cards(pattern=''):
                     c_name.ljust(20),
                     pcm_name.ljust(12),
                     access.ljust(20), bits.ljust(12), channels.rjust(2),
-                    rate.rjust(6), period.rjust(5), buff.rjust(5),
+                    rate.rjust(6), period.rjust(6), buff.rjust(6),
                     user.ljust(10), pid.ljust(8), cmd,
                     COEND)
 
             # extra uses of the sound device
             for mu in more_uses:
                 user, pid, cmd = use
-                print( f"{COLOR}{' '*92}", user.ljust(10), pid.ljust(8), cmd, COEND)
+                print( f"{COLOR}{' '*94}", user.ljust(10), pid.ljust(8), cmd, COEND)
 
 
 def do_loop():
