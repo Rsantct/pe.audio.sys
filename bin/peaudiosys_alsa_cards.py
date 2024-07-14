@@ -2,7 +2,7 @@
 """
     ALSA cards visualizer
 
-    usage:      peaudiosys_alsa_cards.py  [--loop] [--usage] [pattern]
+    usage:      peaudiosys_alsa_cards.py  [--loop] [--nousage] [pattern]
 """
 
 import  os
@@ -337,7 +337,7 @@ if __name__ == "__main__":
 
     pattern   = ''
     loop_mode = False
-    get_use   = False
+    get_use   = True
 
     for opc in sys.argv[1:]:
 
@@ -348,8 +348,8 @@ if __name__ == "__main__":
         elif '-l' in opc:
             loop_mode = True
 
-        elif '-u' in opc:
-            get_use = True
+        elif '-n' in opc:
+            get_use = False
 
         else:
             pattern = opc
