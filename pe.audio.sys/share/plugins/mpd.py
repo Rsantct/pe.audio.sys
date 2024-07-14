@@ -45,7 +45,7 @@ def check_systemd_service():
 
 
 def stop():
-    call( ['pkill', '-KILL', '-f', 'mpd /home/paudio/.mpdconf'] )
+    call( ['pkill', '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
 
 
 def start():
