@@ -251,11 +251,14 @@ def list_cards(pattern=''):
         #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000    256  512 somebody   12345    someprocess
         #       1 ICUSBAUDIO7D         pcm0p/sub0   CLOSED
 
+        devs_snd_usage = get_devs_snd_usage()
+
     else:
         print(" # CARD                 PCM          ACCESS               FORMAT       CH  RATE    PER.  BUFF.")
         print("----------------------------------------------------------------------------------------------")
         #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000    256  512
         #       1 ICUSBAUDIO7D         pcm0p/sub0   CLOSED
+        devs_snd_usage = {}
 
 
     for card in cards:
@@ -325,6 +328,7 @@ def do_loop():
     while True:
 
         try:
+            #print("\033c")
             os.system('clear')
             list_cards(pattern)
             sleep(1)
@@ -356,9 +360,6 @@ if __name__ == "__main__":
 
 
     cards = get_sound_cards()
-
-    if get_use:
-        devs_snd_usage = get_devs_snd_usage()
 
     if cards:
 
