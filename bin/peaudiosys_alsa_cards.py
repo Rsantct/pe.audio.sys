@@ -2,7 +2,9 @@
 """
     ALSA cards visualizer
 
-    usage:      peaudiosys_alsa_cards.py  [--loop] [--nousage] [pattern]
+    usage:      peaudiosys_alsa_cards.py  [--loop] [--nouse] [pattern]
+
+                --nouse     omits showing the process using the device
 """
 
 import  os
@@ -92,7 +94,7 @@ class Fmt:
     END             = '\033[0m'
 
 
-def get_devs_snd_usage():
+def get_devs_snd_use():
 
     #   $ fuser -v /dev/snd/*
     #                        USER        PID ACCESS COMMAND
@@ -222,12 +224,12 @@ def get_card_pcms(card):
 
 def list_cards(pattern=''):
 
-    def get_pcm_usage(alsa_index, alsa_pcm):
+    def get_pcm_use(alsa_index, alsa_pcm):
         """
             example of alsa_pcm:            pcm0c/sub0
                                                ^----------------    device
 
-            example in devs_snd_usage:      /dev/snd/pcmC0D0c
+            example in devs_snd_use:        /dev/snd/pcmC0D0c
                                                             ^---    type
                                                            ^----    device
                                                          ^------    card
@@ -239,8 +241,8 @@ def list_cards(pattern=''):
 
         dev_id = f"/dev/snd/pcmC{c}D{d}{t}"
 
-        if dev_id in devs_snd_usage:
-            return devs_snd_usage[dev_id]
+        if dev_id in devs_snd_use:
+            return devs_snd_use[dev_id]
         else:
             return []
 
@@ -251,14 +253,14 @@ def list_cards(pattern=''):
         #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000    256  512 somebody   12345    someprocess
         #       1 ICUSBAUDIO7D         pcm0p/sub0   CLOSED
 
-        devs_snd_usage = get_devs_snd_usage()
+        devs_snd_use = get_devs_snd_use()
 
     else:
         print(" # CARD                 PCM          ACCESS               FORMAT       CH  RATE    PER.  BUFF.")
         print("----------------------------------------------------------------------------------------------")
         #       1 ICUSBAUDIO7D         pcm0c/sub0   MMAP_INTERLEAVED     S16_LE STD    2  48000    256  512
         #       1 ICUSBAUDIO7D         pcm0p/sub0   CLOSED
-        devs_snd_usage = {}
+        devs_snd_use = {}
 
 
     for card in cards:
@@ -297,14 +299,14 @@ def list_cards(pattern=''):
 
             if get_use:
 
-                uses = get_pcm_usage(c_index, pcm_name)
+                uses = get_pcm_use(c_index, pcm_name)
 
                 if uses:
 
                     # First use to be printed in-line (usually the only and one)
                     user, pid, cmd = uses[0]
 
-                    # if more uses were found (rare cases or none)
+                    # if more uses were found (rare cases)
                     for use in uses[1:]:
                         more_uses.append( use )
 
