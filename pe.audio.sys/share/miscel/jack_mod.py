@@ -7,11 +7,11 @@
 """ A JACK wrapper
 """
 
-from time import sleep
+from time import sleep, time
 import jack
 from subprocess import check_output
 
-JCLI = jack.Client('tmp', no_start_server=True)
+JCLI = jack.Client(name=str(int(time())), no_start_server=True)
 JCLI.activate()
 
 
