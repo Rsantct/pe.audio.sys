@@ -58,15 +58,15 @@ jack:
     #       misc_params:   <.....>
     #
     #
-    #   example: an usb device for capture
+    #   example: a usb device for capture
     #
     #   LineIN:
-    #       device:        hw:CODEC
+    #       device:        hw:USBCODEC,0
     #       resampler:     zita-a2j
     #       resamplingQ:   auto
-    #       misc_params:
+    #       misc_params:   -p 1024 -r 48000 -n 3
     #
-    #   example: an usb device for signal monitoring
+    #   example: a usb device for signal monitoring
     #
     #   external_monitor:
     #       device:        hw:CODEC
