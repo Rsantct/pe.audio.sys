@@ -162,4 +162,56 @@ Una solución es duplicar la emisora en `.mplayer/channels.conf`, con otro nombr
 
 `Radio Clasica Dolby:634000000:INVERSION_AUTO:BANDWIDTH_8_MHZ:FEC_AUTO:FEC_AUTO:QAM_AUTO:TRANSMISSION_MODE_AUTO:GUARD_INTERVAL_AUTO:HIERARCHY_AUTO:0:2012:40005`
 
+# 6. Grabar a un archivo
+
+Preparamos un script, por ejemplo **`~/bin/grabar_radio.sh`**
+
+    #!/bin/bash
+    
+    
+    # El codec de Radio Clasica HD A52 es ffmpeg (FFmpeg AC-3) viene float32 y se oye bajo
+    #   - solo lleva los canales L y R vienen a -12 dB, por tanto subimos el volumen, por prudencia +9 dB
+    #   - para reducir el tamaño del WAV convertimos a 16 bit (32 bit => 3.07 Mb/s ~ 1 Gb/h, 16 bit => 1.54 Mb/s)
+    
+    volume_dB=9
+    now=$(date '+%Y%m%d_%H%M%S')
+    
+    
+    
+    if [[ $1 == *'-s'* || $1 == *'stop'* ]]; then
+        pkill -SIGTERM -f "mplayer dvb"
+        echo DETENIDO
+        exit 0
+    fi
+    
+    mplayer 'dvb://Radio Clasica HQ A52' \
+            -nolirc -quiet  \
+            -ao pcm:waveheader:file=radio_$now.wav \
+            -af volume=$volume_dB,format=s16le &
+    
+    echo GRABANDO ...
+    echo
+
+
+Y programamos la grabación en nuestro **`crontab`**, por ejemplo:
+
+
+    # m h  dom mon dow   command
+
+    # DAS RHEINGOLD     28-jul  18:00 - 20:35
+    40 17   28  7   *     /home/paudio/bin/graba_radio.sh
+    55 20   28  7   *     /home/paudio/bin/graba_radio.sh --stop
+
+    # DIE WALKÜRE       29-jul  16:00 - 21:55
+    40 17   29  7   *     /home/paudio/bin/graba_radio.sh
+    15 22   29  7   *     /home/paudio/bin/graba_radio.sh --stop
+
+    # SIEGFRIED         31-jul  16:00 - 22:05
+    40 17   31  7   *     /home/paudio/bin/graba_radio.sh
+    25 22   31  7   *     /home/paudio/bin/graba_radio.sh --stop
+
+    # GÖTTERDÄMMERUNG   02-ago  16:00 - 22:30
+    40 17    2  8   *     /home/paudio/bin/graba_radio.sh
+    50 22    2  8   *     /home/paudio/bin/graba_radio.sh --stop
+
 
