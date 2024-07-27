@@ -16,7 +16,7 @@ Podemos usar un pincho USB receptor de DVB-T como por ejemplo:
 
 - NPG Real HDTV Nano 3D `http://www.npgtech.com/multimedia/24-categoria-productos/multimedia/51-real-hdtv-nano-3d.html`
 
-![NPG](https://github.com/AudioHumLab/FIRtro/blob/master/doc/screenshots/NPG%20HDTV%20Nano%203D.jpg)
+![NPG](https://github.com/Rsantct/pe.audio.sys/blob/master/pe.audio.sys/doc/images/NPG%20HDTV%20Nano%203D.jpg)
 
 (i) IMPORTANTE: estas tarjetas necesitan un firmware, ver:
 
