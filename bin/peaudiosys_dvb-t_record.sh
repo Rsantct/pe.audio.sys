@@ -20,6 +20,8 @@ if [[ $1 == *'-h'* || $1 == *'help'* ]]; then
     echo "         If no channel name, will use the default channel inside this script:"
     echo "         ""$channel"
     echo
+    echo "         Files will be stored under ~/radio/"
+    echo
     exit 0
 
 
@@ -40,7 +42,10 @@ if [[ ! $(grep -F "$channel" .mplayer/channels.conf) ]]; then
     exit 0
 fi
 
-fname=radio_"$(date '+%Y%m%d_%H%M%S')".wav
+
+mkdir -p ~/radio
+
+fname=radio/radio_"$(date '+%Y%m%d_%H%M%S')".wav
 
 mplayer "dvb://""$channel" \
         -nolirc -quiet  \
