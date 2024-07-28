@@ -174,17 +174,7 @@ Y programamos la grabación en nuestro **`crontab`**, por ejemplo:
     # DAS RHEINGOLD     28-jul  18:00 - 20:35
     40 17   28  7   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh
     55 20   28  7   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh --stop
-    
-    # DIE WALKÜRE       29-jul  16:00 - 21:55
-    40 17   29  7   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh
-    15 22   29  7   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh --stop
-    
-    # SIEGFRIED         31-jul  16:00 - 22:05
-    40 17   31  7   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh
-    25 22   31  7   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh --stop
-    
-    # GÖTTERDÄMMERUNG   02-ago  16:00 - 22:30
-    40 17    2  8   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh
-    50 22    2  8   *     /home/paudio/bin/peaudiosys_dvb-t_record.sh --stop
+    ...
+    ...
 
 
