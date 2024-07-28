@@ -15,7 +15,7 @@ dB_gain=9
 
 if [[ $1 == *'-h'* || $1 == *'help'* ]]; then
     echo
-    echo "USAGE:   dvb-t_record.sh  [ --stop  | \"Channel Name\" ]"
+    echo "USAGE:   peaudiosys_dvb-t_record.sh  [ --stop  | \"Channel Name\" ]"
     echo
     echo "         If no channel name, will use the default channel inside this script:"
     echo "         ""$channel"
