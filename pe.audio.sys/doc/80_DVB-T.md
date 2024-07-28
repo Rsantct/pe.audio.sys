@@ -164,54 +164,75 @@ Una solución es duplicar la emisora en `.mplayer/channels.conf`, con otro nombr
 
 # 6. Grabar a un archivo
 
-Preparamos un script, por ejemplo **`~/bin/grabar_radio.sh`**
+Preparamos un script, por ejemplo **`~/bin/dvb-t_record.sh`**
 
     #!/bin/bash
     
+    # Put here the channel name as per ~/.mplayer/channels.conf
+    #
+    channel="Radio Clasica HQ A52"
     
-    # El codec de Radio Clasica HD A52 es ffmpeg (FFmpeg AC-3) viene float32 y se oye bajo
-    #   - solo lleva los canales L y R vienen a -12 dB, por tanto subimos el volumen, por prudencia +9 dB
-    #   - para reducir el tamaño del WAV convertimos a 16 bit (32 bit => 3.07 Mb/s ~ 1 Gb/h, 16 bit => 1.54 Mb/s)
+    # 'Radio Clasica HD A52' is codified in Dolby Digital AC-3 (5.1 channels 48KHz/float32)
+    #  It only carries FL and FR channels with volume reduced about 12 dB.
+    #  Mplayer will convert to 16 bit in order to reduce the recorded file size,
+    #  also will apply a volume gain (12 dB should work fine, but 9 dB is safer)
+    #
+    dB_gain=9
     
-    volume_dB=9
-    now=$(date '+%Y%m%d_%H%M%S')
     
     
-    
-    if [[ $1 == *'-s'* || $1 == *'stop'* ]]; then
-        pkill -SIGTERM -f "mplayer dvb"
-        echo DETENIDO
+    if [[ $1 == *'-h'* || $1 == *'help'* ]]; then
+        echo
+        echo "USAGE:   dvb-t_record.sh  [ --stop  | \"Channel Name\" ]"
+        echo
+        echo "         If no channel name, will use the default channel inside this script:"
+        echo "         ""$channel"
+        echo
         exit 0
+    
+    
+    elif [[ $1 == *'-s'* || $1 == *'stop'* ]]; then
+        echo STOPPING RECORDING.
+        pkill -SIGTERM -f "mplayer dvb"
+        exit 0
+    
+    else
+        channel=$1
     fi
     
-    mplayer 'dvb://Radio Clasica HQ A52' \
-            -nolirc -quiet  \
-            -ao pcm:waveheader:file=radio_$now.wav \
-            -af volume=$volume_dB,format=s16le &
     
-    echo GRABANDO ...
+    fname=radio_"$(date '+%Y%m%d_%H%M%S')".wav
+    
+    mplayer "dvb://""$channel" \
+            -nolirc -quiet  \
+            -ao pcm:waveheader:file=$fname \
+            -af volume=$dB_gain,format=s16le &
+    
     echo
+    echo RECORDING TO $fname ...
+    echo
+
 
 
 Y programamos la grabación en nuestro **`crontab`**, por ejemplo:
 
 
     # m h  dom mon dow   command
-
+    
     # DAS RHEINGOLD     28-jul  18:00 - 20:35
-    40 17   28  7   *     /home/paudio/bin/graba_radio.sh
-    55 20   28  7   *     /home/paudio/bin/graba_radio.sh --stop
-
+    40 17   28  7   *     /home/paudio/bin/dvb-t_record.sh
+    55 20   28  7   *     /home/paudio/bin/dvb-t_record.sh --stop
+    
     # DIE WALKÜRE       29-jul  16:00 - 21:55
-    40 17   29  7   *     /home/paudio/bin/graba_radio.sh
-    15 22   29  7   *     /home/paudio/bin/graba_radio.sh --stop
-
+    40 17   29  7   *     /home/paudio/bin/dvb-t_record.sh
+    15 22   29  7   *     /home/paudio/bin/dvb-t_record.sh --stop
+    
     # SIEGFRIED         31-jul  16:00 - 22:05
-    40 17   31  7   *     /home/paudio/bin/graba_radio.sh
-    25 22   31  7   *     /home/paudio/bin/graba_radio.sh --stop
-
+    40 17   31  7   *     /home/paudio/bin/dvb-t_record.sh
+    25 22   31  7   *     /home/paudio/bin/dvb-t_record.sh --stop
+    
     # GÖTTERDÄMMERUNG   02-ago  16:00 - 22:30
-    40 17    2  8   *     /home/paudio/bin/graba_radio.sh
-    50 22    2  8   *     /home/paudio/bin/graba_radio.sh --stop
+    40 17    2  8   *     /home/paudio/bin/dvb-t_record.sh
+    50 22    2  8   *     /home/paudio/bin/dvb-t_record.sh --stop
 
 
