@@ -10,7 +10,12 @@
 
     https://github.com/librespot-org/librespot
 
-    Usage:    librespot.py   start | stop
+    Usage:  librespot.py   start [pulseaudio] | stop
+
+    'pulseaudio' uses Pulseaudio as backend instead of direct output to Jack.
+    This is useful if your sound card cannot run at the same samplerate as
+    pe.audio.sys, as mine does (ESI UDJ6 only works at 48 KHz)
+
 """
 import sys
 import os
@@ -23,13 +28,9 @@ UHOME = os.path.expanduser("~")
 # BINARY
 BINARY = '/usr/bin/librespot'
 
-# BACKEND OPTIONS
-BACKEND_OPTS = f'--backend jackaudio --device librespot'
-# If needed to use Pulseaudio in order to reesample to reach Jack+Brutefir @ 48 KHz
-#BACKEND_OPTS = f'--backend pulseaudio'
 
-# MORE OPTIONS LIST (do not configure here: bitrate, name, backend, device)
-MOREOPT = [
+# OPTIONS LIST (do not configure here: bitrate, name, backend, device)
+OTHER_OPTS = [
     #'--disable-audio-cache',
     # https://github.com/librespot-org/librespot/wiki/FAQ
     # For AUDIOPHILES
@@ -44,7 +45,7 @@ def start():
     # read from a player control daemon.
 
 
-    moreopt_str = ' '.join(MOREOPT)
+    moreopt_str = ' '.join(OTHER_OPTS)
 
     cmd = f'{BINARY} --name {gethostname()} ' + \
           f'--onevent {UHOME}/pe.audio.sys/share/plugins/librespot/bind_ports.sh ' + \
@@ -60,13 +61,25 @@ def stop():
     call( 'pkill -KILL -f bin/librespot'.split() )
 
 
-if sys.argv[1:]:
-    if sys.argv[1] == 'start':
-        stop()
-        start()
-    elif sys.argv[1] == 'stop':
-        stop()
+if __name__ == "__main__":
+
+    if sys.argv[1:]:
+
+        if sys.argv[1] == 'start':
+
+            if sys.argv[2:] and 'pulse' in sys.argv[2].lower():
+                BACKEND_OPTS = f'--backend pulseaudio'
+            else:
+                BACKEND_OPTS = f'--backend jackaudio --device librespot'
+
+            stop()
+            start()
+
+        elif sys.argv[1] == 'stop':
+            stop()
+
+        else:
+            print(__doc__)
+
     else:
         print(__doc__)
-else:
-    print(__doc__)
