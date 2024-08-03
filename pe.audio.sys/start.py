@@ -429,12 +429,16 @@ def run_plugins(mode='start'):
         if plugin == 'sound_cards_prepare.py' or plugin == 'power_amp_control.py':
             continue
 
-        # (i) Some elements on the plugins list from config.yml can be a dict,
-        #     e.g the ecasound_peq, so we need to extract the plugin name.
-        if type(plugin) == dict:
-            plugin = list(plugin.keys())[0]
+        # Some plugin command line can have options, for example:
+        #   - librespot.py  pulseaudio
+        tmp = plugin.split()
+        pname = tmp[0]
+        if tmp[1:]:
+            options = ' '.join(tmp[1:])
+        else:
+            options = ''
 
-        cmd = f'{MAINFOLDER}/share/plugins/{plugin} {mode}'
+        cmd = f'{MAINFOLDER}/share/plugins/{pname} {mode} {options}'
 
         if mode == 'start':
             print(f'(start) starting plugin: {plugin} ...')
