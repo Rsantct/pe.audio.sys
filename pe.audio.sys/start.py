@@ -621,10 +621,6 @@ if __name__ == "__main__":
     # STARTING:
     if mode in ('all'):
 
-        # If necessary will prepare DRC GRAPHS for use of the web page
-        if CONFIG["web_config"]["show_graphs"]:
-            prepare_drc_graphs()
-
         # Starting JACK, EXTERNAL_CARDS and JLOOPS
         jack_stuff = start_jack_stuff()
         if  jack_stuff != 'done':
@@ -652,6 +648,10 @@ if __name__ == "__main__":
 
         # - PREAMP  -->  MONITORS
         core.connect_monitors()
+
+        # If necessary will prepare DRC GRAPHS for use of the web page
+        if CONFIG["web_config"]["show_graphs"]:
+            prepare_drc_graphs()
 
         del core
         print(f'{Fmt.MAGENTA}(start) Closing the temporary \'core\' instance.{Fmt.END}')
