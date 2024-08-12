@@ -277,6 +277,9 @@ def do(cmd, arg):
                 'rew', 'ff', 'play_track'):
         result = playback_control( cmd, arg )
 
+    elif cmd == 'volume':
+        result = playback_control( cmd, arg )
+
     elif cmd == 'random_mode':
         result = random_control(arg)
 
