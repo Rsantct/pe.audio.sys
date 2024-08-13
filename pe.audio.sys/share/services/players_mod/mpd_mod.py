@@ -48,7 +48,7 @@ def ping(tries=3):
         except Exception as e:
             print(f"{Fmt.GRAY}(mpd_mod.py) retrying ping ... {str(e)}{Fmt.END}")
 
-        sleep(.2)
+        sleep(.1)
         tries -= 1
 
     return False
