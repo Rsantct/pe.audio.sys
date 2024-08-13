@@ -171,7 +171,6 @@ def spotify_control(cmd, arg=''):
                 return str( round(spotibus.Volume, 2) )
 
 
-        sleep(.1)
         result = {  'Playing':  'play',
                     'Paused':   'pause',
                     'Stopped':  'stop' } [spotibus.PlaybackStatus]
