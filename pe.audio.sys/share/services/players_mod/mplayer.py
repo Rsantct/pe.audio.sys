@@ -221,10 +221,9 @@ def playing_status(service=''):
 
     with open(f'{MAINFOLDER}/.{service}_fifo', 'w') as f:
         f.write( 'pausing_keep_force get_property pause\n' )
-    sleep(.1)
 
     last_lines = read_last_lines( f'{MAINFOLDER}/.{service}_events', nlines=5)
-    # will result based on the last ANS_pause line read
+    # The result will be based on the last 'ANS_pause' read line
     for line in last_lines:
         if line == 'ANS_pause=yes':
             result = 'pause'
