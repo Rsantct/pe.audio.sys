@@ -11,7 +11,7 @@
 from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
 import  jack
-from    subprocess          import  Popen, check_output
+import  subprocess as sp
 from    time                import  sleep
 import  os
 import  sys
@@ -84,7 +84,7 @@ def get_sysmon(w_iface='wlan0'):
         d = {}
 
         try:
-            tmp = check_output(f'iwconfig {iface}'.split()).decode().split()
+            tmp = sp.check_output(f'iwconfig {iface}'.split()).decode().split()
 
             d['iface'] = iface
 
@@ -111,7 +111,7 @@ def get_sysmon(w_iface='wlan0'):
         temp = 0.0
 
         try:
-            tmp = check_output('cat /sys/class/thermal/thermal_zone0/temp'.split()).decode()
+            tmp = sp.check_output('cat /sys/class/thermal/thermal_zone0/temp'.split()).decode()
 
             temp = round(int(tmp) / 1000, 1)
 
@@ -152,7 +152,7 @@ def get_web_config():
 def run_macro(mname):
     if mname in get_macros():
         print( f'(aux) running macro: {mname}' )
-        Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
+        sp.Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
         AUX_INFO["last_macro"] = mname
         # for others to have fresh 'last_macro'
         dump_aux_info()
@@ -180,8 +180,7 @@ def zita_j2n(args):
     # STOP mode
     if do_stop == 'stop':
         zitapattern  = f'zita-j2n --jname {zitajname}'
-        Popen( ['pkill', '-KILL', '-f',  zitapattern] )
-        sleep(.2)
+        sp.Popen( ['pkill', '-KILL', '-f',  zitapattern] )
         return f'killing {zitajname}'
 
     # NORMAL mode
@@ -191,7 +190,7 @@ def zita_j2n(args):
     if not [x for x in jports if zitajname in x.name]:
         zitacmd     = f'zita-j2n --jname {zitajname} {dest} {udpport}'
         with open('/dev/null', 'w') as fnull:
-            Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
+            sp.Popen( zitacmd.split(), stdout=fnull, stderr=fnull )
 
     wait4ports(zitajname, timeout=3)
 
@@ -249,7 +248,7 @@ def play_url(arg):
         error = False
 
         # Tune the radio station (Mplayer jack ports will dissapear for a while)
-        Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'.split() )
+        sp.Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'.split() )
 
         # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
         sleep(2)
