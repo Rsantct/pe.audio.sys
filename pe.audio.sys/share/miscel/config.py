@@ -123,6 +123,8 @@ def _init():
         print( '(config) ERROR loading EQ_CURVES from share/eq/' )
         sys.exit()
 
+    if not 'cdrom_device' in CONFIG and not CONFIG["cdrom_device"]:
+        CONFIG["cdrom_device"] = '/dev/cdrom'
 
 
 # AUTOEXEC
