@@ -180,8 +180,7 @@ def manage_amp_switch(mode):
 
         # SHUTDOWN the COMPUTER:
         if 'amp_off_shutdown' in CONFIG and CONFIG['amp_off_shutdown']:
-            sp.Popen('eject /dev/sr0', shell=True)
-            sp.Popen('eject /dev/sr1', shell=True)
+            sp.Popen(f'eject {CONFIG["cdrom_device"]}', shell=True)
             sleep(3)
             sp.Popen('sudo poweroff',  shell=True)
 
