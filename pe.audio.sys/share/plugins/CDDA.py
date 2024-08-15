@@ -23,6 +23,9 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from    config import CONFIG, MAINFOLDER
 from    miscel import check_Mplayer_config_file, Fmt
 
+# CD-ROM device
+CDROM_DEVICE = CONFIG['cdrom_device']
+
 
 ## --- Mplayer options ---
 # -quiet: see channels change
@@ -42,14 +45,6 @@ del(f)
 ## Mplayer output is redirected to a file,
 #  so what it is been playing can be read:
 redirection_path = f'{MAINFOLDER}/.cdda_events'
-
-
-## cdrom device to use
-try:
-    CDROM_DEVICE = CONFIG['cdrom_device']
-except:
-    CDROM_DEVICE = '/dev/cdrom'
-    print(f'(CDDA.py) Using default \'{CDROM_DEVICE}\'')
 
 
 def eject():
