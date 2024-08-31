@@ -24,7 +24,9 @@ import  yaml
 from    numpy import loadtxt as np_loadtxt
 import  os
 import  sys
+from    getpass import getuser
 
+USER                = getuser()
 UHOME               = os.path.expanduser("~")
 MAINFOLDER          = f'{UHOME}/pe.audio.sys'
 CONFIG              = {}
