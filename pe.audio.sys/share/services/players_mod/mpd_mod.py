@@ -14,9 +14,10 @@ from    time import sleep
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import timesec2string as timeFmt, sec2min, Fmt
+from miscel import timesec2string as timeFmt, sec2min, Fmt, \
+                   read_mpd_config_port
 
-MPD_PORT = 6600
+MPD_PORT = read_mpd_config_port()
 
 c = mpd.MPDClient()
 
