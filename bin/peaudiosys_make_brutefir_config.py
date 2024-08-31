@@ -15,6 +15,8 @@
 
         -force        Force to overwrite brutefir_config
 
+        -p=N          Set listen port (default 3000)
+
     See `brutefir_config.yml` details in loudspeakers/examples
 """
 
@@ -28,27 +30,27 @@ UHOME = os.path.expanduser("~")
 
 EQFOLDER = f'{UHOME}/pe.audio.sys/share/eq'
 FREQPATH = f'{EQFOLDER}/freq.dat'
-
+PORT = 3000
 
 EQ_CLI = \
-'''
+f'''
 # THE EQ & CLI MODULES
 logic:
 
 # The Command Line Interface server TCP port
-"cli" { port: 3000; },
+"cli" {{ port: PORT; }},
 
 # The eq module provides a filter coeff to render a run-time EQ.
 # (i) Bands here must match with the ones in your xxxxfreq.dat file.
-"eq" {
+"eq" {{
     debug_dump_filter: "/tmp/brutefir-rendered-%d";
-    {
+    {{
         coeff: "c.eq";
 
         bands:
 BANDS
-    };
-};
+    }};
+}};
 
 '''
 
@@ -363,11 +365,14 @@ def do_DRC_COEFFS():
         return atten
 
 
+    tmp = COEFF_DRC_HEADER
+
     drc_files = [ f for f in LSPKFILES if f.startswith('drc.') ]
 
-    drc_sets = set( [ f.replace('.pcm', '').split('.')[-1] for f in drc_files ] )
+    if not drc_files:
+        return tmp
 
-    tmp = COEFF_DRC_HEADER
+    drc_sets = set( [ f.replace('.pcm', '').split('.')[-1] for f in drc_files ] )
 
     for drc in CONFIG["drc_flat_region_dB"]:
         atten = get_atten(drc)
@@ -690,7 +695,8 @@ def read_config():
 
 def main():
 
-    tmp = EQ_CLI.replace('BANDS', EQ_BANDS[1:-1]).lstrip()
+    tmp = EQ_CLI.replace('BANDS', EQ_BANDS[1:-1]).lstrip() \
+                .replace('PORT', str(PORT))
 
     if disable_dump:
         tmp = tmp.replace('debug_dump_filter', '#debug_dump_filter')
@@ -811,8 +817,8 @@ if __name__ == '__main__':
         elif '-force' in opc:
             force = True
 
-        elif '-flen' in opc:
-            cmdline_flength = opc.split('=')[-1]
+        elif '-p' in opc:
+            PORT = int( opc.split('=')[-1] )
 
         else:
             print(__doc__)
