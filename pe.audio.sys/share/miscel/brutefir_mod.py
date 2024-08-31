@@ -15,8 +15,8 @@ from    socket      import socket
 from    config      import  CONFIG, UHOME, LSPK_FOLDER, EQ_CURVES, \
                             BFCFG_PATH, LOG_FOLDER
 
-from    miscel      import  read_bf_config_fs, process_is_running, Fmt, \
-                            send_cmd, calc_gain
+from    miscel      import  read_bf_config_fs, read_bf_config_port, Fmt, \
+                            process_is_running, send_cmd, calc_gain
 
 import  jack_mod as jack
 
@@ -48,7 +48,7 @@ def cli(cmd):
     with socket() as s:
         try:
             s.settimeout(1)
-            s.connect( ('localhost', 3000) )
+            s.connect( ('localhost', BF_PORT) )
             s.send( f'{cmd}; quit;\n'.encode() )
             while True:
                 tmp = s.recv(1024)
@@ -835,6 +835,11 @@ def add_delay(ms):
 
 # Autoexec on loading this module
 def init():
+
+    global BF_PORT
+
+    BF_PORT = read_bf_config_port()
+
 
     if not process_is_running('brutefir'):
         return
