@@ -221,6 +221,32 @@ def get_loudness_monitor():
         return result
 
 
+def read_mpd_config_port():
+    """ Default port: 6600
+    """
+
+    mpdport = 6600
+
+    with open(f'{UHOME}/.mpdconf', 'r') as f:
+        lines = f.readlines()
+
+    for l in lines:
+
+        if 'port' in l and l.strip()[0] != '#':
+
+            print(l)
+
+            try:
+                mpdport = int([x for x in l.replace('"', '').split()
+                                     if x.isdigit() ][0])
+                break
+
+            except:
+                pass
+
+    return mpdport
+
+
 def read_bf_config_port():
     """ Default port: 3000
     """
