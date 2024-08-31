@@ -26,7 +26,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from config import  CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
+from config import  USER, CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
 
 from miscel import  read_bf_config_fs, server_is_running, process_is_running, \
                     kill_bill, read_state_from_disk, force_to_flush_file, Fmt, \
@@ -184,7 +184,7 @@ def start_jack_stuff():
         sleep(2)
 
     # Pulseaudio
-    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
+    if 'pulseaudio' in sp.check_output(f"pgrep -u {USER} -fl pulseaudio",
                                        shell=True).decode():
         release_cards_from_pulseaudio()
 
@@ -297,7 +297,7 @@ def stop_zita_link():
         # LOCAL
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
         zitapattern  = f'zita-n2j --jname {zitajname}'
-        sp.Popen( ['pkill', '-KILL', '-f',  zitapattern] )
+        sp.Popen( ['pkill', '-KILL', '-u', USER, '-f',  zitapattern] )
         sleep(.2)
 
 
@@ -332,7 +332,7 @@ def manage_server( mode='', service='peaudiosys'):
         print(f'{Fmt.RED}(start) stopping \'server.py {service}\'{Fmt.END}')
         # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
         #              to avoid confusion with 'peaudiosys_ctrl'
-        sp.Popen( f'pkill -KILL -f "server.py {service} " \
+        sp.Popen( f'pkill -KILL -u {USER} -f "server.py {service} " \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
@@ -358,7 +358,7 @@ def stop_processes(mode):
         print('(start) waiting for jackd to be killed ')
         while tries:
             try:
-                sp.check_output('pgrep -f jackd'.split())
+                sp.check_output(f'pgrep -u {USER} -f jackd'.split())
                 tries -= 1
                 sleep(1)
             except:
@@ -383,17 +383,17 @@ def stop_processes(mode):
     if mode in ('all', 'stop'):
         # Stop Jack Loops Daemon
         print(f'(start) STOPPING JACK LOOPS')
-        sp.Popen('pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f jloops_daemon.py >/dev/null 2>&1', shell=True)
         # Stop Brutefir
         print(f'(start) STOPPING BRUTEFIR')
-        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f brutefir >/dev/null 2>&1', shell=True)
         # Stop Zita_Link
         if REMOTES:
             print(f'(start) STOPPING ZITA_LINK')
             stop_zita_link()
         # Stop Jack
         print(f'(start) STOPPING JACKD')
-        sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f jackd >/dev/null 2>&1', shell=True)
 
     # This optimizes instead of a fixed sleep
     wait4jackdkilled()
@@ -551,7 +551,7 @@ def prepare_log_header():
 def usb_dac_watchdog(mode='stop'):
 
     if mode == 'stop':
-        sp.Popen(f'pkill -KILL -f "usb_dac_watchdog.py"', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f "usb_dac_watchdog.py"', shell=True)
 
     elif mode=='start':
 
