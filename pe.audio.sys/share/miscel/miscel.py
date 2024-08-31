@@ -37,7 +37,7 @@ def jackd_process(cname):
     """ Check the if the jackd process is running
     """
     try:
-        tmp = sp.check_output('pgrep -fla jackd'.split()).decode().strip()
+        tmp = sp.check_output(f'pgrep -u {USER} -fla jackd'.split()).decode().strip()
     except:
         tmp = ''
     if cname in tmp:
@@ -73,7 +73,7 @@ def process_is_running(pattern):
     """
     try:
         # do NOT use shell=True because pgrep ...  will appear it self.
-        plist = sp.check_output(['pgrep', '-fla', pattern]).decode().split('\n')
+        plist = sp.check_output(['pgrep', '-u', USER, '-fla', pattern]).decode().split('\n')
     except:
         return False
     for p in plist:
@@ -219,6 +219,26 @@ def get_loudness_monitor():
                           'scope': 'album'}
 
         return result
+
+
+def read_bf_config_port():
+    """ Default port: 3000
+    """
+
+    bfport = 3000
+
+    with open(BFCFG_PATH, 'r') as f:
+        lines = f.readlines()
+
+    for l in lines:
+        if 'port:' in l and l.strip()[0] != '#':
+            try:
+                bfport = int([x for x in l.replace(';', '').split()
+                                     if x.isdigit() ][0])
+            except:
+                pass
+
+    return bfport
 
 
 def read_bf_config_fs():
@@ -507,14 +527,14 @@ def detect_spotify_client():
 
     # If using librespot
     try:
-        sp.check_output( 'pgrep -f librespot'.split() )
+        sp.check_output( f'pgrep -u {USER} -f librespot'.split() )
         result = 'librespot'
     except:
         pass
 
     # If using plugins/spotify_monitor.py while running a Spotify Desktop client
     try:
-        sp.check_output( 'pgrep -f spotify_monitor'.split() )
+        sp.check_output( f'pgrep -u {USER} -f spotify_monitor'.split() )
         result = 'desktop'
     except:
         pass
