@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""
+    restart the whole system with a new Loudspeaker
+"""
+
+import os
+import subprocess as sp
+
+LSPK = 'Taurus'
+
+UHOME = os.path.expanduser("~")
+CFG_FOLDER = f'{UHOME}/pe.audio.sys/config'
+
+sp.call(f'cp {CFG_FOLDER}/config.yml.{LSPK} {CFG_FOLDER}/config.yml', shell=True)
+
+sp.Popen(f'peaudiosys_restart.sh', shell=True)
