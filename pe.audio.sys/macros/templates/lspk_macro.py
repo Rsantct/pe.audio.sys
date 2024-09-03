@@ -2,8 +2,12 @@
 """
     ACHTUNG: this is a purely GEEK template  :-P
 
-    A module to load a new loudspeaker always attached to the same
-    sound card audio interface, so JACK process will keep untouch.
+    A module to load a new loudspeaker always attached to the SAME
+    sound card and at the SAME sample rate...
+
+        ******************************************
+        *** so: JACK process will keep untouch ***
+        ******************************************
 
     Just will load a new config.yml and restarting Brutefir accordingly
     as per loudspeakers/XXXXX/brutefir_config
@@ -208,4 +212,3 @@ def main(verbose=False):
     # 12- Display warning
     send_cmd( f'aux warning set LSPK: {MY_LSPK["lspk_name"]}' )
     send_cmd(  'aux warning expire 5' )
-
