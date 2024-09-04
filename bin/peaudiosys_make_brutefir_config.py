@@ -69,6 +69,7 @@ GENERAL_SETTINGS = \
 '''
 # GENERAL SETTINGS
 
+convolver_config:  "~/.brutefir_convolver_FS";
 sampling_rate:      FS;
 filter_length:      FLENSTR;
 float_bits:         32;
