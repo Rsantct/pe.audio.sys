@@ -1,3 +1,3 @@
 
-Scripts to help while designing and testing a loudspeaker.
+Scripts to help while testing a loudspeaker design.
 
