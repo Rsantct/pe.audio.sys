@@ -101,7 +101,7 @@ PORTS_MAP;
     };
     sample:   "AUTO";
     channels: CHANNELS_LIST;
-    maxdelay: 10000; # about 200 ms for multiroom compensation
+    maxdelay: MAXDELAY; # about 500 ms for multiroom compensation
     dither:   DITHER;
     delay:    DELAY_LIST
 };
@@ -299,7 +299,7 @@ def do_GENERAL_SETTINGS():
         FLENSTR += f',{numpa}'
 
     tmp = GENERAL_SETTINGS
-    tmp = tmp.replace('FS', str(CONFIG["samplerate"]))
+    tmp = tmp.replace('FS', str(FS))
     tmp = tmp.replace('FLENSTR', FLENSTR)
     return tmp
 
@@ -307,7 +307,7 @@ def do_GENERAL_SETTINGS():
 def do_IO():
 
     def ms2samples(ms):
-        return int( round(ms * CONFIG["samplerate"] / 1000))
+        return int( round(ms * FS / 1000))
 
 
     if not CONFIG["dither"] in (True, False):
@@ -351,6 +351,7 @@ def do_IO():
 
     IO_tmp = IO_tmp.replace('CHANNELS_LIST', chann_list)
     IO_tmp = IO_tmp.replace('DELAY_LIST',    DELAY_LIST)
+    IO_tmp = IO_tmp.replace('MAXDELAY', str(int(FS / 2)))
 
     return IO_tmp
 
@@ -535,8 +536,8 @@ def do_subsonic():
 
     global COEFF_SUBSONIC
 
-    SUBSONIC_MP = f'{EQFOLDER}/{CONFIG["samplerate"]}/subsonic.mp.pcm'
-    SUBSONIC_LP = f'{EQFOLDER}/{CONFIG["samplerate"]}/subsonic.lp.pcm'
+    SUBSONIC_MP = f'{EQFOLDER}/{FS}/subsonic.mp.pcm'
+    SUBSONIC_LP = f'{EQFOLDER}/{FS}/subsonic.lp.pcm'
 
     for fname in (SUBSONIC_MP, SUBSONIC_LP):
         if not pathlib.Path(fname).is_file():
@@ -607,7 +608,7 @@ def read_config():
         return out, (bflabel, gain, pol, delay)
 
 
-    global CONFIG
+    global CONFIG, FS
 
     try:
         with open(f'{LSPKFOLDER}/brutefir_config.yml', 'r') as f:
@@ -621,6 +622,8 @@ def read_config():
     # Samplerate
     if not CONFIG["samplerate"] in (44100, 48000, 96000):
         raise Exception( f'Bad samplerate in brutefir_config.yml' )
+
+    FS = CONFIG["samplerate"]
 
 
     # Filter length (partition size and number of partitions)
@@ -720,7 +723,7 @@ def main():
     print()
     print(f'(i) `loudspeakers/{LSPKNAME}/{bf_file}`:')
     print()
-    print(f'    Fs:                 {CONFIG["samplerate"]}')
+    print(f'    Fs:                 {FS}')
     print(f'    Filter lenght:      {CONFIG["partition_size"]},{CONFIG["num_partitions"]}')
     print(f'    Output dither:      {CONFIG["dither"]}')
     print(f'    Outputs delay:      {DELAY_LIST}')
