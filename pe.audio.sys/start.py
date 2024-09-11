@@ -29,6 +29,19 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from miscel import *
 
 
+# Init plugins (to run first)
+INIT_PLUGINS = (
+
+    # Amplifier switch needs to power on the external DAC in order to
+    # by accesible from the alsa module
+    'power_amp_control.py',
+
+    # Zeroing alsa mixer must be done before restoring
+    # the saved level if alsa mixer is used for volume management.
+    'sound_cards_prepare.py'
+)
+
+
 def start_zita_link():
     """ A LAN audio connection based on zita-njbridge from Fons Adriaensen.
 
@@ -100,8 +113,7 @@ def stop_zita_link():
         # LOCAL
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
         zitapattern  = f'zita-n2j --jname {zitajname}'
-        sp.Popen( ['pkill', '-KILL', '-u', USER, '-f',  zitapattern] )
-        sleep(.2)
+        sp.call( ['pkill', '-KILL', '-u', USER, '-f',  zitapattern] )
 
 
 def start_brutefir():
@@ -157,17 +169,22 @@ def stop_processes(mode):
     """ (void)
     """
     def wait4jackdkilled():
-        tries = 20
+
         print('(start) waiting for jackd to be killed ')
+
+        tries = 20
         while tries:
+
             try:
                 sp.check_output(f'pgrep -u {USER} -f jackd'.split())
                 tries -= 1
-                sleep(1)
+                sleep(.2)
+
             except:
                 print('(start) jackd was killed')
-                sleep(1)
+                sleep(.2)
                 return
+
         # This should never happen
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
         sys.exit()
@@ -202,34 +219,26 @@ def stop_processes(mode):
     wait4jackdkilled()
 
 
-def run_special_plugins():
-    """ Special plugins
-
-        - Amplifier switch needs to power on the external DAC in order to
-          by accesible from the alsa module
-
-        - Zeroing alsa mixer must be done before restoring
-          the saved level if alsa mixer is used for volume management.
+def run_init_plugins():
+    """ plugins to run first
     """
 
-    # Using 'call' to wait for the script to finish
-    if 'power_amp_control.py' in CONFIG['plugins']:
-        cmd = f'{MAINFOLDER}/share/plugins/power_amp_control.py start'
-        print(f'(start) starting plugin: power_amp_control.py ...')
-        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    for pname in INIT_PLUGINS:
 
-    if 'sound_cards_prepare.py' in CONFIG['plugins']:
-        cmd = f'{MAINFOLDER}/share/plugins/sound_cards_prepare.py start'
-        print(f'(start) starting plugin: sound_cards_prepare.py ...')
-        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+        if pname in CONFIG['plugins']:
+
+            cmd = f'{MAINFOLDER}/share/plugins/{pname} start'
+            print(f'(start) starting plugin: {pname} ...')
+            sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_plugins(mode='start'):
     """ (void)
     """
+
     for plugin in CONFIG['plugins']:
 
-        if plugin == 'sound_cards_prepare.py' or plugin == 'power_amp_control.py':
+        if plugin in INIT_PLUGINS:
             continue
 
         # Some plugin command line can have options, for example:
@@ -244,16 +253,23 @@ def run_plugins(mode='start'):
         cmd = f'{MAINFOLDER}/share/plugins/{pname} {mode} {options}'
 
         if mode == 'start':
+
+            try:
+                # (i) we need shell because plugins can be Python, Bash, etc...
+                res = sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr).returncode
+            except Exception as e:
+                res = str(e)
+
             print(f'(start) starting plugin: {plugin} ...')
-            # (i) Notice that we are open to run plugins writen in python, bash, etc...
-            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
         elif mode == 'stop':
+
             try:
-                ans = sp.check_output(cmd, shell=True).decode()
+                res = sp.Popen(cmd, shell=True).returncode
             except Exception as e:
-                ans = str(e)
-            print(f'(start.py) stopping plugin: {plugin}', ans )
+                res = str(e)
+
+            print(f'(start.py) stopping plugin: {plugin}', res if res else '')
 
         else:
             pass
@@ -418,8 +434,8 @@ if __name__ == "__main__":
         print(f'(start) Bye!')
         sys.exit()
 
-    # SPECIAL PLUGINS.
-    run_special_plugins()
+    # INIT PLUGINS.
+    run_init_plugins()
 
     # STARTING:
     if mode in ('all'):
