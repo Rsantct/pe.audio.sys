@@ -113,7 +113,7 @@ INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
 
 # (i) STREAM LEVEL management
 #     '-softvol-max 400' alows to amplify 12 dB for AC3 encoded streams, see
-#     above examples. Then latre, we can issue a slave mode volume command.
+#     above examples. Then later, we can issue a slave mode volume command.
 MPLAYER_OPTIONS = '-quiet -nolirc -slave -idle -softvol -softvol-max 400'
 
 
