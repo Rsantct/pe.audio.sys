@@ -421,7 +421,7 @@ class Preamp(object):
             return x
 
 
-        result = ['none']
+        result = []
 
         files = os.listdir( EQ_FOLDER )
         tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
@@ -431,7 +431,7 @@ class Preamp(object):
             if not set_name in result:
                 result.append( set_name )
 
-        return result
+        return ['none'] + sorted(result)
 
 
     def _calc_eq_curve(self, cname, candidate):
