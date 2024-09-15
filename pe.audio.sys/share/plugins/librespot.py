@@ -21,6 +21,7 @@ import sys
 import os
 from subprocess import Popen, call
 from socket import gethostname
+from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 
@@ -58,7 +59,7 @@ def start():
 
 
 def stop():
-    call( 'pkill -KILL -f bin/librespot'.split() )
+    call( ['pkill', '-u', USER, '-KILL', '-f',  'bin/librespot']  )
 
 
 if __name__ == "__main__":
