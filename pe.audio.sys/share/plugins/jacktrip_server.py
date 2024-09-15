@@ -12,6 +12,7 @@
 
 import sys
 from subprocess import Popen
+from getpass    import getuser
 
 
 def start():
@@ -21,7 +22,7 @@ def start():
 
 
 def stop():
-    Popen( ['pkill', '-KILL', '-f', 'jacktripserver'] )
+    Popen( ['pkill', '-u', getuser(), '-KILL', '-f', 'jacktripserver'] )
 
 
 if sys.argv[1:]:
