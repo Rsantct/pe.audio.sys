@@ -53,7 +53,7 @@ import os
 UHOME   =  os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import send_cmd, read_state_from_disk
+from miscel import send_cmd, read_state_from_disk, USER
 
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 try:
@@ -169,7 +169,7 @@ def main_loop(alertdB=CFG['alertdB'], beep=CFG['beep']):
 
 def stop():
     # arakiri
-    sp.Popen( 'pkill -KILL -f mouse_volume_daemon.py'.split() )
+    sp.Popen( f'pkill -u {USER} -KILL -f mouse_volume_daemon.py', shell=True )
 
 
 if __name__ == "__main__":
