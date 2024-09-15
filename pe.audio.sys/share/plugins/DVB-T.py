@@ -102,7 +102,7 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-from miscel import wait4ports, check_Mplayer_config_file, Fmt
+from miscel import wait4ports, check_Mplayer_config_file, Fmt, USER
 
 
 CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
@@ -213,7 +213,7 @@ def start():
 
 def stop():
     # Killing our mplayer instance
-    call( ['pkill', '-KILL', '-f', 'profile dvb'] )
+    call( ['pkill', '-u', USER, '-KILL', '-f', 'profile dvb'] )
 
 
 def do_check_files():
