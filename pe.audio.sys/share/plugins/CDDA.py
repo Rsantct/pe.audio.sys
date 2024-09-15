@@ -20,7 +20,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config import CONFIG, MAINFOLDER
+from    config import CONFIG, MAINFOLDER, USER
 from    miscel import check_Mplayer_config_file, Fmt
 
 # CD-ROM device
@@ -64,7 +64,7 @@ def start():
 
 
 def stop():
-    sp.Popen( ['pkill', '-KILL', '-f', 'profile cdda'] )
+    sp.Popen( ['pkill', '-u', USER, '-KILL', '-f', 'profile cdda'] )
 
 
 if __name__ == '__main__':
