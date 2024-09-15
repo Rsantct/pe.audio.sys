@@ -29,7 +29,7 @@ UHOME           = os.path.expanduser("~")
 sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
 import  server
-from    config  import CONFIG
+from    config  import CONFIG, USER
 from    miscel  import send_cmd, get_remote_selected_source, read_last_line
 
 LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
@@ -193,7 +193,7 @@ def do(cmd):
 
 
 def killme():
-    Popen( f'pkill -f "remote_volume_daemon.py start"', shell=True )
+    Popen( f'pkill -u {USER} -f "remote_volume_daemon.py start"', shell=True )
     sys.exit()
 
 
