@@ -20,6 +20,7 @@ import sys
 import os
 from subprocess import Popen, call, check_output
 from time import sleep
+from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 
@@ -45,7 +46,7 @@ def check_systemd_service():
 
 
 def stop():
-    call( ['pkill', '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
+    call( ['pkill'. '-u', getuser() , '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
 
 
 def start():
