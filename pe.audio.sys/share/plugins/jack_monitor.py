@@ -41,7 +41,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 JACKDLOGPATH = f'{UHOME}/pe.audio.sys/log/jackd.log'
 
-from    miscel              import send_cmd, read_last_lines
+from    miscel              import send_cmd, read_last_lines, USER
 from    share.miscel        import do_3_beep
 
 VERBOSE = False
@@ -108,7 +108,7 @@ def start():
 
 
 def stop():
-    Popen( ['pkill', '-f', 'jack_monitor.py'] )
+    Popen( ['pkill', '-u', USER, '-f', 'jack_monitor.py'] )
 
 
 if __name__ == "__main__":
