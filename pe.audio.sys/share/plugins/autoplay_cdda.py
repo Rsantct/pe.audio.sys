@@ -34,7 +34,7 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 sys.path.append(f'{UHOME}/pe.audio.sys/share/services')
 
-from    miscel              import send_cmd, get_macros
+from    miscel              import send_cmd, get_macros, USER
 from    players_mod.cdda    import save_disc_metadata
 
 ME = 'autoplay_cdda'
@@ -108,7 +108,7 @@ def check_for_CDDA(d):
 
 
 def stop():
-    Popen( ['pkill', '-KILL', '-f', 'autoplay_cdda.py start'] )
+    Popen( ['pkill', '-u', USER, '-KILL', '-f', 'autoplay_cdda.py start'] )
 
 
 def main():
