@@ -20,7 +20,7 @@ UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    miscel  import  read_state_from_disk, read_metadata_from_disk, \
-                        LOG_FOLDER
+                        LOG_FOLDER, USER
 
 
 def main_loop():
@@ -76,7 +76,7 @@ def main_loop():
 
 
 def stop():
-    call( ['pkill', '-KILL', '-f', 'autoeject_cdda.py start'] )
+    call( ['pkill', '-u', USER, '-KILL', '-f', 'autoeject_cdda.py start'] )
 
 
 if __name__ == '__main__':
