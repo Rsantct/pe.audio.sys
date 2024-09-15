@@ -11,6 +11,7 @@
 import sys
 from subprocess import Popen, call
 from socket import gethostname
+from getpass import getuser
 
 # Debian package system service NEEDS to be disabled after installing:
 #     sudo systemctl stop shairport-sync.service
@@ -23,7 +24,7 @@ def start():
 
 
 def stop():
-    call( ['pkill', '-KILL', '-f', f'shairport-sync -a {gethostname()}'] )
+    call( ['pkill', '-u', getuser(), '-KILL', '-f', f'shairport-sync -a {gethostname()}'] )
 
 
 if sys.argv[1:]:
