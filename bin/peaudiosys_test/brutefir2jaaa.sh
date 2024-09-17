@@ -2,7 +2,7 @@
 
 # A helper to analyze the real XO output as sent to the sound card DAC,
 # so you can decide if more or less convolver gain can be used on each way
-# alogside with an some analog line attenuator, this way you can probably
+# alongside with some analog line attenuator, this way you can probably
 # improve the S/N mainly in the tweeter analog chain.
 #
 # JAAA is a excellent tool from Fons Adriaensen
