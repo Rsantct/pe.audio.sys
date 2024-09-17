@@ -46,7 +46,7 @@ def check_systemd_service():
 
 
 def stop():
-    call( ['pkill'. '-u', getuser() , '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
+    call( ['pkill', '-u', getuser() , '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
 
 
 def start():
