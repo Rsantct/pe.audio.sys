@@ -584,12 +584,14 @@ function page_update() {
 
 
     function aux_info_refresh(){
+
         if ( aux_info.amp == 'off' || aux_info.amp == 'on' ) {
             document.getElementById("bt_onoff").innerText = aux_info.amp.toUpperCase();
             document.getElementById("bt_onoff").style.display = 'block';
         }else{
             document.getElementById("bt_onoff").style.display = 'none';
         }
+
         if ( ! aux_info.last_macro ){
             clear_macro_buttons_highlight();
         }else{
@@ -598,6 +600,31 @@ function page_update() {
             clear_macro_buttons_highlight();
             highlight_macro_button(mName)
         }
+
+
+        // sysmon
+        // Example when wifi is not conneted:
+        //  "sysmon": {"wifi": {"Tx-Power": "12"}, "temp": 69.2}}
+        //
+        let sysmon = '';
+        const temp = aux_info.sysmon.temp
+        const wifi = aux_info.sysmon.wifi
+
+        if (temp){
+            sysmon += 'temp: ' + temp + 'º';
+        }
+
+        if (! isEmpty(wifi)){
+            if ('Bit-rate-Mb/s' in wifi){
+                sysmon += ' | wifi: ' + wifi['Bit-rate-Mb/s'] + ' Mb/s';
+                sysmon += ' quality: ' + wifi['Quality'];
+                sysmon += ' Rx: ' + wifi['Signal-level'] + ' dBm';
+            }else{
+                sysmon += ' | wifi: ' + wifi['iface'] + ' (not connected)';
+            }
+        }
+
+        document.getElementById("sysmon").innerText = sysmon;
     }
 
 
@@ -1116,6 +1143,7 @@ function ck_display_advanced(mode) {
         document.getElementById("format_file").style.display = "table-row";
         document.getElementById("div_advanced_controls").style.display = "block";
         document.getElementById("main_lside").style.display = "table-cell";
+        document.getElementById("sysmon").style.display = "table-cell";
         document.getElementById("SoloInfo").style.display = "table-cell";
         document.getElementById("PolarityInfo").style.display = "table-cell";
         document.getElementById("bt_aod").style.display = "inline-block";
@@ -1127,6 +1155,7 @@ function ck_display_advanced(mode) {
         document.getElementById("format_file").style.display = "none";
         document.getElementById("div_advanced_controls").style.display = "none";
         document.getElementById("main_lside").style.display = "none";
+        document.getElementById("sysmon").style.display = "none";
         document.getElementById("SoloInfo").style.display = "none";
         document.getElementById("PolarityInfo").style.display = "none";
         if ( state.extra_delay === 0 ) {
@@ -1279,6 +1308,11 @@ function allAreTrue(arr) {
   return arr.every(element => element === true);
 }
 
+
+function isEmpty(obj) {
+    // test if some object (say a dict) is empty
+    return Object.keys(obj).length === 0;
+}
 
 //////// ELEMENTS HIGHLIGHT ////////
 

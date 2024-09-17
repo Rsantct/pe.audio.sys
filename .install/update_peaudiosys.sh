@@ -166,8 +166,9 @@ mkdir -p $HOME/pe.audio.sys/config
 mkdir -p $HOME/pe.audio.sys/log
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
-mkdir -p $HOME/bin
-cp    $ORIG/bin/*               $HOME/bin/          >/dev/null 2>&1
+mkdir -p $HOME/bin/peaudiosys_test
+cp    $ORIG/bin/*                   $HOME/bin/                  >/dev/null 2>&1
+cp    $ORIG/bin/peaudiosys_test/*   $HOME/bin/peaudiosys_test/  >/dev/null 2>&1
 
 
 ########################################################################
@@ -251,6 +252,8 @@ chmod +x    pe.audio.sys/share/services/preamp_mod/jloops_daemon.py \
                                                     >/dev/null 2>&1
 chmod +x    bin/*py                                 >/dev/null 2>&1
 chmod +x    bin/peaudiosys*                         >/dev/null 2>&1
+chmod +x    bin/peaudiosys_test/*.py                >/dev/null 2>&1
+chmod +x    bin/peaudiosys_test/*.sh                >/dev/null 2>&1
 
 ########################################################################
 # Prepare miscel files

@@ -5,7 +5,9 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    usage:  mpd.py  start|stop
+    A simple user session MPD launcher
+
+    usage:  mpd.py   start | stop
 
     Notice:
 
@@ -18,6 +20,7 @@ import sys
 import os
 from subprocess import Popen, call, check_output
 from time import sleep
+from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 
@@ -43,12 +46,13 @@ def check_systemd_service():
 
 
 def stop():
-    call( ['pkill', '-KILL', 'mpd'] )
+    call( ['pkill', '-u', getuser() , '-KILL', '-f', f'mpd {UHOME}/.mpdconf'] )
 
 
 def start():
     check_systemd_service()
-    Popen( f'mpd {UHOME}/.mpdconf'.split() )
+    with open('/dev/null', 'w') as fnull:
+        Popen( f'mpd {UHOME}/.mpdconf'.split(), stdout=fnull, stderr=fnull )
 
 
 if __name__ == '__main__':

@@ -21,6 +21,7 @@ import time
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 MAINFOLDER = f'{UHOME}/pe.audio.sys'
@@ -35,7 +36,7 @@ SPOTIFYfile   = f'{MAINFOLDER}/.spotify_events'
 def run_playerctl():
     """ Runs playerctl in --follow mode """
     # Kills previous
-    sp.Popen( ['pkill', '-f', 'playerctl -p spotify'] )
+    sp.Popen( ['pkill', '-u', getuser(), '-f', 'playerctl -p spotify'] )
     time.sleep(.25)
     # Launch a new one
     cmd = 'playerctl -p spotify metadata --follow'

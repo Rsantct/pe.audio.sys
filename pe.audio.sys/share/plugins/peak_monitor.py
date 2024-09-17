@@ -35,7 +35,7 @@ from    watchdog.events     import FileSystemEventHandler
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel              import send_cmd, read_last_line
+from    miscel              import send_cmd, read_last_line, USER
 from    share.miscel        import do_3_beep
 
 
@@ -135,7 +135,7 @@ def start():
 
 
 def stop():
-    Popen( ['pkill', '-f', 'peak_monitor.py start'] )
+    Popen( ['pkill', '-u', USER, '-f', 'peak_monitor.py start'] )
 
 
 if __name__ == "__main__":

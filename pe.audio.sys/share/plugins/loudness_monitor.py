@@ -23,7 +23,8 @@ MAINFOLDER      = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share')
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-from config import  CONFIG, STATE_PATH, LDMON_PATH, LDCTRL_PATH, PLAYER_META_PATH
+from config import  CONFIG, USER, STATE_PATH, LDMON_PATH, LDCTRL_PATH, \
+                    PLAYER_META_PATH
 from miscel import  read_state_from_disk, read_metadata_from_disk
 
 
@@ -175,7 +176,7 @@ if __name__ == '__main__':
     if sys.argv[1:]:
 
         if sys.argv[1] == 'stop':
-            Popen( 'pkill -KILL -f "loudness_monitor.py start"', shell=True )
+            Popen( f'pkill -u {USER} -KILL -f "loudness_monitor.py start"', shell=True )
             with open(LDMON_PATH, 'w') as f:
                 f.write('{"LU_I": -99.0, "LU_M": -99.0, "scope": "album"}')
             sys.exit()

@@ -14,10 +14,11 @@ import sys
 import os
 from subprocess import Popen, check_output, call
 from time import sleep
+from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 LCDFOLDER = f'{UHOME}/pe.audio.sys/share/plugins/lcd'
-
+USER = getuser()
 
 def start():
     # wait 10 s for the pe.audio.sys server to be listening at :9990
@@ -41,8 +42,8 @@ def start():
 
 
 def stop():
-    call( ['pkill', '-f', 'lcd/LCDd.conf'] )
-    call( ['pkill', '-f', 'lcd_daemon.py'] )
+    call( ['pkill', '-u', USER, '-f', 'lcd/LCDd.conf'] )
+    call( ['pkill', '-u', USER, '-f', 'lcd_daemon.py'] )
 
 
 if sys.argv[1:]:

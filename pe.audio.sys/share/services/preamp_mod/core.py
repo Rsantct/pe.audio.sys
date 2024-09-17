@@ -421,7 +421,7 @@ class Preamp(object):
             return x
 
 
-        result = ['none']
+        result = []
 
         files = os.listdir( EQ_FOLDER )
         tfiles = [ x for x in files if ('target_mag' in x) or ('target_pha' in x) ]
@@ -431,7 +431,7 @@ class Preamp(object):
             if not set_name in result:
                 result.append( set_name )
 
-        return result
+        return ['none'] + sorted(result)
 
 
     def _calc_eq_curve(self, cname, candidate):
@@ -563,9 +563,9 @@ class Preamp(object):
             if bf.is_running():
                 self.bf_sources = bf.get_in_connections()
                 # Allows other Brutefir, kills just our.
-                Popen(f'pkill -f  "brutefir\ brutefir_config"', shell=True)
+                Popen(f'pkill -f  "brutefir brutefir_config"', shell=True)
                 # Brutefir 1.0m process is 'brutefir.real'
-                Popen(f'pkill -f  "brutefir.real\ brutefir_config"', shell=True)
+                Popen(f'pkill -f  "brutefir.real brutefir_config"', shell=True)
                 sleep(2)
                 print(f'{Fmt.BLUE}{Fmt.BOLD}(core) STOPPING BRUTEFIR (!){Fmt.END}')
                 result = 'done'

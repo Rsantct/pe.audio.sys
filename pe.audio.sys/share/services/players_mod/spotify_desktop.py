@@ -151,15 +151,26 @@ def spotify_control(cmd, arg=''):
         # MPRIS Shuffle is an only-readable property.
         # (https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html)
         elif cmd == 'random':
+
             if arg in ('get', ''):
                 return spotibus.Shuffle
+
             elif arg in ('on', 'off'):
                 set_shuffle(arg)
                 return spotibus.Shuffle
+
             else:
                 return f'error with \'random {arg}\''
 
-        sleep(.25)
+        elif cmd == 'volume':
+
+            if arg:
+                spotibus.Volume = float(arg)
+
+            else:
+                return str( round(spotibus.Volume, 2) )
+
+
         result = {  'Playing':  'play',
                     'Paused':   'pause',
                     'Stopped':  'stop' } [spotibus.PlaybackStatus]

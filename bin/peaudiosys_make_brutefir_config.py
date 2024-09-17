@@ -15,6 +15,8 @@
 
         -force        Force to overwrite brutefir_config
 
+        -p=N          Set listen port (default 3000)
+
     See `brutefir_config.yml` details in loudspeakers/examples
 """
 
@@ -28,27 +30,27 @@ UHOME = os.path.expanduser("~")
 
 EQFOLDER = f'{UHOME}/pe.audio.sys/share/eq'
 FREQPATH = f'{EQFOLDER}/freq.dat'
-
+PORT = 3000
 
 EQ_CLI = \
-'''
+f'''
 # THE EQ & CLI MODULES
 logic:
 
 # The Command Line Interface server TCP port
-"cli" { port: 3000; },
+"cli" {{ port: PORT; }},
 
 # The eq module provides a filter coeff to render a run-time EQ.
 # (i) Bands here must match with the ones in your xxxxfreq.dat file.
-"eq" {
+"eq" {{
     debug_dump_filter: "/tmp/brutefir-rendered-%d";
-    {
+    {{
         coeff: "c.eq";
 
         bands:
 BANDS
-    };
-};
+    }};
+}};
 
 '''
 
@@ -67,6 +69,7 @@ GENERAL_SETTINGS = \
 '''
 # GENERAL SETTINGS
 
+convolver_config:  "~/.brutefir_convolver_FS";
 sampling_rate:      FS;
 filter_length:      FLENSTR;
 float_bits:         32;
@@ -98,7 +101,7 @@ PORTS_MAP;
     };
     sample:   "AUTO";
     channels: CHANNELS_LIST;
-    maxdelay: 10000; # about 200 ms for multiroom compensation
+    maxdelay: MAXDELAY; # about 500 ms for multiroom compensation
     dither:   DITHER;
     delay:    DELAY_LIST
 };
@@ -296,7 +299,7 @@ def do_GENERAL_SETTINGS():
         FLENSTR += f',{numpa}'
 
     tmp = GENERAL_SETTINGS
-    tmp = tmp.replace('FS', str(CONFIG["samplerate"]))
+    tmp = tmp.replace('FS', str(FS))
     tmp = tmp.replace('FLENSTR', FLENSTR)
     return tmp
 
@@ -304,7 +307,7 @@ def do_GENERAL_SETTINGS():
 def do_IO():
 
     def ms2samples(ms):
-        return int( round(ms * CONFIG["samplerate"] / 1000))
+        return int( round(ms * FS / 1000))
 
 
     if not CONFIG["dither"] in (True, False):
@@ -348,6 +351,7 @@ def do_IO():
 
     IO_tmp = IO_tmp.replace('CHANNELS_LIST', chann_list)
     IO_tmp = IO_tmp.replace('DELAY_LIST',    DELAY_LIST)
+    IO_tmp = IO_tmp.replace('MAXDELAY', str(int(FS / 2)))
 
     return IO_tmp
 
@@ -363,11 +367,14 @@ def do_DRC_COEFFS():
         return atten
 
 
+    tmp = COEFF_DRC_HEADER
+
     drc_files = [ f for f in LSPKFILES if f.startswith('drc.') ]
 
-    drc_sets = set( [ f.replace('.pcm', '').split('.')[-1] for f in drc_files ] )
+    if not drc_files:
+        return tmp
 
-    tmp = COEFF_DRC_HEADER
+    drc_sets = set( [ f.replace('.pcm', '').split('.')[-1] for f in drc_files ] )
 
     for drc in CONFIG["drc_flat_region_dB"]:
         atten = get_atten(drc)
@@ -529,8 +536,8 @@ def do_subsonic():
 
     global COEFF_SUBSONIC
 
-    SUBSONIC_MP = f'{EQFOLDER}/{CONFIG["samplerate"]}/subsonic.mp.pcm'
-    SUBSONIC_LP = f'{EQFOLDER}/{CONFIG["samplerate"]}/subsonic.lp.pcm'
+    SUBSONIC_MP = f'{EQFOLDER}/{FS}/subsonic.mp.pcm'
+    SUBSONIC_LP = f'{EQFOLDER}/{FS}/subsonic.lp.pcm'
 
     for fname in (SUBSONIC_MP, SUBSONIC_LP):
         if not pathlib.Path(fname).is_file():
@@ -601,7 +608,7 @@ def read_config():
         return out, (bflabel, gain, pol, delay)
 
 
-    global CONFIG
+    global CONFIG, FS
 
     try:
         with open(f'{LSPKFOLDER}/brutefir_config.yml', 'r') as f:
@@ -615,6 +622,8 @@ def read_config():
     # Samplerate
     if not CONFIG["samplerate"] in (44100, 48000, 96000):
         raise Exception( f'Bad samplerate in brutefir_config.yml' )
+
+    FS = CONFIG["samplerate"]
 
 
     # Filter length (partition size and number of partitions)
@@ -690,7 +699,8 @@ def read_config():
 
 def main():
 
-    tmp = EQ_CLI.replace('BANDS', EQ_BANDS[1:-1]).lstrip()
+    tmp = EQ_CLI.replace('BANDS', EQ_BANDS[1:-1]).lstrip() \
+                .replace('PORT', str(PORT))
 
     if disable_dump:
         tmp = tmp.replace('debug_dump_filter', '#debug_dump_filter')
@@ -713,7 +723,7 @@ def main():
     print()
     print(f'(i) `loudspeakers/{LSPKNAME}/{bf_file}`:')
     print()
-    print(f'    Fs:                 {CONFIG["samplerate"]}')
+    print(f'    Fs:                 {FS}')
     print(f'    Filter lenght:      {CONFIG["partition_size"]},{CONFIG["num_partitions"]}')
     print(f'    Output dither:      {CONFIG["dither"]}')
     print(f'    Outputs delay:      {DELAY_LIST}')
@@ -811,8 +821,8 @@ if __name__ == '__main__':
         elif '-force' in opc:
             force = True
 
-        elif '-flen' in opc:
-            cmdline_flength = opc.split('=')[-1]
+        elif '-p' in opc:
+            PORT = int( opc.split('=')[-1] )
 
         else:
             print(__doc__)

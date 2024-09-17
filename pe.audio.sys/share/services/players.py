@@ -32,7 +32,7 @@ from  miscel                        import  detect_spotify_client,      \
                                             read_cdda_info_from_disk,   \
                                             send_cmd, is_IP
 
-from  players_mod.mpd               import  mpd_control,                \
+from  players_mod.mpd_mod           import  mpd_control,                \
                                             mpd_meta,                   \
                                             mpd_playlists
 
@@ -69,9 +69,9 @@ METATEMPLATE = {
                 'tracks_tot':   '-'
                 }
 
-# The runtime metadata variable and refresh period in seconds
+# The runtime metadata variable and the loop refresh period in seconds
 CURRENT_MD          = METATEMPLATE.copy()
-CURRENT_MD_REFRESH  = 2
+MD_REFRESH_PERIOD  = 2
 
 
 def remote_get_meta(host, port=9990):
@@ -261,7 +261,7 @@ def init():
             sleep(period)
 
     # Loop storing metadata
-    period = CURRENT_MD_REFRESH
+    period = MD_REFRESH_PERIOD
     meta_loop = threading.Thread( target=store_meta_loop, args=(period,) )
     meta_loop.start()
 
@@ -275,6 +275,9 @@ def do(cmd, arg):
 
     if cmd in ( 'state', 'stop', 'pause', 'play', 'next', 'previous',
                 'rew', 'ff', 'play_track'):
+        result = playback_control( cmd, arg )
+
+    elif cmd == 'volume':
         result = playback_control( cmd, arg )
 
     elif cmd == 'random_mode':

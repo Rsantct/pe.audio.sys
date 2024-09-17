@@ -17,7 +17,7 @@ import sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from config import CONFIG
+from config import CONFIG, USER
 
 ctrlport = CONFIG['peaudiosys_port']
 
@@ -25,7 +25,7 @@ cmdline = f'node {UHOME}/pe.audio.sys/share/www/nodejs/www_server.js'
 
 
 def stop():
-    Popen( f'pkill -KILL -f "{cmdline}"', shell=True )
+    Popen( f'pkill -u {USER} -KILL -f "{cmdline}"', shell=True )
     sleep(.5)
 
 

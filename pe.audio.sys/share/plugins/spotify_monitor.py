@@ -20,6 +20,7 @@ import sys
 import os
 from subprocess import Popen, check_output, call
 from time import sleep
+from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 PLUGINSFOLDER = f'{UHOME}/pe.audio.sys/share/plugins'
@@ -63,7 +64,7 @@ def start():
 
 
 def stop():
-    call( 'pkill -f spotify_monitor_daemon'.split() )
+    call( f'pkill -u {getuser()} -f spotify_monitor_daemon', shell=True )
 
 
 if sys.argv[1:]:
