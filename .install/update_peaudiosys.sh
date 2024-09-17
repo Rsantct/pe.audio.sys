@@ -252,6 +252,8 @@ chmod +x    pe.audio.sys/share/services/preamp_mod/jloops_daemon.py \
                                                     >/dev/null 2>&1
 chmod +x    bin/*py                                 >/dev/null 2>&1
 chmod +x    bin/peaudiosys*                         >/dev/null 2>&1
+chmod +x    bin/peaudiosys_test/*.py                >/dev/null 2>&1
+chmod +x    bin/peaudiosys_test/*.sh                >/dev/null 2>&1
 
 ########################################################################
 # Prepare miscel files
