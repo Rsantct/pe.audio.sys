@@ -13,13 +13,20 @@
     during setting up your convolver stages.
 
     However, CPU consumption is minimal and can be left
-    permanently activated in config.yml 'plugins' section.
+    permanently activated in the config.yml 'plugins' section.
 
-    WARNING MESSAGES will be displayed in the control web page,
-    as well you can see console printouts if --verbose.
+    If so, when peak occurs a WARNING MESSAGE with the most peaking event
+    will be displayed in the control web page, as well you can see console
+    printouts if running this script with the --verbose option.
+
+    You can also check peaks with timestamp by issuing:
+
+        tal -F ~/pe.audio.sys/log/brutefir_peaks.log
+
 
     A BEEP sound at -10 dB will be played when detecting peaks.
     (Needs a 'brutefir' ALSA device, see .asoundrc.sample)
+
 
     Usage:   peak_monitor.py    start | stop  [--verbose]
 
@@ -40,6 +47,8 @@ from    miscel              import send_cmd, read_last_line, USER, LOG_FOLDER
 from    share.miscel        import do_3_beep
 
 
+LOG_PATH = f'{LOG_FOLDER}/brutefir_peaks.log'
+
 VERBOSE = False
 
 
@@ -59,12 +68,34 @@ class MyFileEventHandler(FileSystemEventHandler):
             check_bf_log()
 
 
-def log_peak(peak_info):
+def log_peak(peaks):
+    """ peaks is a raw list of peaks, example:
 
-    log_path = f'{LOG_FOLDER}/brutefir_peaks.log'
+            [-inf, -inf, -8.6, 2.5, 10.1, -8.8, 1.7, 9.7]
+    """
 
-    with open(log_path, 'a') as f:
-        f.write( f'{ctime()} {peak_info}\n' )
+    # Brutefir Outputs MAP example:
+    #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
+
+    # Will add the Output ID to make the log human readable
+    peaks_str = ''
+
+    for n, p in enumerate(peaks):
+
+        out_name = BFOUTMAP[str(n)]["name"]
+
+        if 'void' in out_name:
+            continue
+
+        if p > 0:
+            peaks_str += f'  {out_name.rjust(4)}: {str(p).rjust(4)}'
+
+        else:
+            peaks_str += f'  {out_name.rjust(4)}:  ·· '
+
+
+    with open(LOG_PATH, 'a') as f:
+        f.write( f'{ctime()} {peaks_str}\n' )
 
 
 def check_bf_log(reset_bf_peaks=True):
@@ -85,11 +116,22 @@ def check_bf_log(reset_bf_peaks=True):
 
                 peak: 0/197/+2.55 1/123/+0.61
 
-            returns: a list of peaks in dB per output channel
+            returns: a list of peaks in dB per output channel, example:
+            [-inf, -inf, -11.6, -1.7, 9.6, -11.4, -1.2, 10.2]
         """
-        pks = pkline.split()[1:]
-        pks = [x.split('/')[-1] for x in pks]
+        pks = []
+
+        try:
+            pks = pkline.split()[1:]
+            pks = [x.split('/')[-1] for x in pks]
+            # round to 1 decimal place
+            pks = [round(float(x), 1) for x in pks]
+
+        except:
+            pass
+
         return pks
+
 
 
     def get_bf_peak_and_reset(reset=reset_bf_peaks):
@@ -99,13 +141,14 @@ def check_bf_log(reset_bf_peaks=True):
         """
 
         peaks    = []
-        peakInfo = ''
+        pMaxInfo = ''
 
         bf_log_tail = read_last_line(BFLOGPATH)
 
         if bf_log_tail.startswith('peak:'):
 
             peaks = bf_peak_parse( bf_log_tail )
+            # example: [-inf, -inf, -21.3, -3.1, 8.3, -17.4, -3.8, 7.3]
 
             if reset:
                 try:
@@ -114,27 +157,30 @@ def check_bf_log(reset_bf_peaks=True):
                     pass
 
         if peaks:
+
             try:
-                peaks    = [round(float(x), 1) for x in peaks]
+                # find MAX peak
                 pmaxIdx  = max(range(len(peaks)), key=peaks.__getitem__)
                 pmaxdB   = peaks[pmaxIdx]
                 pmaxOut  = BFOUTMAP[ str(pmaxIdx) ]['name']
-                peakInfo = f'PEAK {pmaxOut}: {pmaxdB} dB'
+                pMaxInfo = f'PEAK {pmaxOut}: {pmaxdB} dB'
+
             except:
                 pass
 
-        return peakInfo
+        return pMaxInfo, peaks
 
 
-    peakInfo = get_bf_peak_and_reset()
+    pMaxInfo, peaks = get_bf_peak_and_reset()
 
-    if peakInfo:
+    if pMaxInfo:
 
         job_beep = threading.Thread(target=do_3_beep)
         job_beep.start()
 
-        log_peak( peakInfo )
-        send_warning( peakInfo )
+        log_peak( peaks )
+
+        send_warning( pMaxInfo )
 
 
 def start():
@@ -155,9 +201,10 @@ if __name__ == "__main__":
 
     try:
         from brutefir_mod  import cli as bf_cli, get_config_outputs, BFLOGPATH
-        # Outputs map example:
+        # Brutefir Outputs MAP example:
         #   {'0': {'name': 'fr.L', 'delay': 0}, '1': {'name': 'fr.R', 'delay': 0}}
         BFOUTMAP = get_config_outputs()
+
     except:
         print(f'(peak_monitor) Brutefir not available')
         stop()
