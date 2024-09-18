@@ -28,6 +28,7 @@
 import  sys
 import  os
 from    subprocess          import Popen, DEVNULL
+from    time                import ctime
 import  threading
 from    watchdog.observers  import Observer
 from    watchdog.events     import FileSystemEventHandler
@@ -35,7 +36,7 @@ from    watchdog.events     import FileSystemEventHandler
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    miscel              import send_cmd, read_last_line, USER
+from    miscel              import send_cmd, read_last_line, USER, LOG_FOLDER
 from    share.miscel        import do_3_beep
 
 
@@ -56,6 +57,14 @@ class MyFileEventHandler(FileSystemEventHandler):
         #print( f'DEBUG: {event.event_type} {event.src_path}' ) # DEBUG
         if event.src_path == self.fpath:
             check_bf_log()
+
+
+def log_peak(peak_info):
+
+    log_path = f'{LOG_FOLDER}/brutefir_peaks.log'
+
+    with open(log_path, 'a') as f:
+        f.write( f'{ctime()} {peak_info}\n' )
 
 
 def check_bf_log(reset_bf_peaks=True):
@@ -120,8 +129,12 @@ def check_bf_log(reset_bf_peaks=True):
     peakInfo = get_bf_peak_and_reset()
 
     if peakInfo:
-        do_3_beep()
-        send_warning(peakInfo)
+
+        job_beep = threading.Thread(target=do_3_beep)
+        job_beep.start()
+
+        log_peak( peakInfo )
+        send_warning( peakInfo )
 
 
 def start():
