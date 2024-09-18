@@ -69,18 +69,18 @@ if __name__ == "__main__":
 
     outs = get_bf_outs()
 
-    for w in ('SW', 'L', 'R'):
+    for ch in ('SW', 'L', 'R'):
 
-        if outs[w]:
+        if outs[ch]:
 
-            outs_str = ' '.join( outs[w] )
+            outs_str = ' '.join( outs[ch] )
 
             #   meterbridge -c 3 -t dpm -n Meter_L \
             #       brutefir:lo.L \
             #       brutefir:mi.L \
             #       brutefir:hi.L
 
-            cmd = f'meterbridge -c {len( outs[w] )} -t dpm -n Meter_{w} {outs_str}'
+            cmd = f'meterbridge -c {len( outs[ch] )} -t dpm -n Meter_{ch} {outs_str}'
 
             with open('/dev/null', 'w') as f:
                 sp.Popen(cmd, shell=True, stdout=f, stderr=f)
