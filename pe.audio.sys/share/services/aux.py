@@ -12,7 +12,7 @@ from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
 import  jack
 import  subprocess as sp
-from    time                import  sleep
+from    time                import  sleep, ctime
 import  os
 import  sys
 import  threading
@@ -370,6 +370,29 @@ def alert_new_eq_graph(timeout=1):
     return f'alerting for {timeout} s'
 
 
+def get_bf_today_peaks():
+    """ from brutefir_peaks.log
+    """
+    try:
+        with open(f'{LOG_FOLDER}/brutefir_peaks.log', 'r') as f:
+            peaks = f.read().split('\n')
+    except:
+        return []
+
+    #    0        9          20
+    # [ 'Thu Sep 19 21:05:19 2024 ... ....',
+    #   'Thu Sep 19 21:05:33 2024 ... ....',
+    #    ... ]
+
+    today = ctime()
+
+    today_peaks = [x[11:19] + '  ' + x[27:] for x in peaks
+                     if  x[:10] == today[:10]
+                     and x[20:24] == today[20:24] ]
+
+    return today_peaks
+
+
 def get_help():
     """ List of end user available commands
     """
@@ -485,6 +508,9 @@ def do( cmd, arg=None ):
 
     elif cmd == 'alert_new_eq_graph':
         result = alert_new_eq_graph()
+
+    elif cmd == 'get_bf_today_peaks':
+        result = get_bf_today_peaks()
 
     elif cmd == 'help':
         result = get_help()
