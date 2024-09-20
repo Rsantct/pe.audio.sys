@@ -15,6 +15,7 @@ import  subprocess as sp
 import  configparser
 import  os
 import  threading
+import  psutil
 
 from    config      import *
 from    fmt         import Fmt
@@ -801,7 +802,21 @@ def read_json_from_file(fpath, timeout=2):
 
 # --- Generic purpose functions:
 
-def process_is_running(pattern):
+def process_is_running(process_name):
+    # Iterate through all running processes
+    for proc in psutil.process_iter(['cmdline']):
+        try:
+            # (i) proc.info['cmdline']) is a list of command line args
+            cmdline = ' '.join( proc.info['cmdline'] )
+            # Match process name (case-insensitive)
+            if process_name.lower() in cmdline.lower():
+                return True
+        except:
+            pass
+    return False
+
+
+def OLD_process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
     """
