@@ -6,6 +6,7 @@
 
 import sys
 import subprocess as sp
+from getpass import getuser
 
 
 def sorted_outs( outs ):
@@ -48,9 +49,9 @@ def get_bf_outs():
 
 
 def kill_me():
-    cmd = 'killall meterbridge'
+    cmd = f'pkill -u {getuser()} -TERM meterbridge'
     with open('/dev/null', 'w') as f:
-        sp.Popen(cmd, shell=True, stdout=f, stderr=f)
+        sp.call(cmd, shell=True, stdout=f, stderr=f)
 
 
 if __name__ == "__main__":
