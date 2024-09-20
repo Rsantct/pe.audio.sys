@@ -36,6 +36,7 @@ def dump_aux_info():
     AUX_INFO['amp']              = manage_amp_switch( 'state' )
     AUX_INFO['loudness_monitor'] = get_loudness_monitor()
     AUX_INFO['sysmon']           = get_sysmon('wlan0')
+    AUX_INFO['convolver_peaks']  = get_bf_peaks(only_today=True)
 
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
@@ -370,7 +371,7 @@ def alert_new_eq_graph(timeout=1):
     return f'alerting for {timeout} s'
 
 
-def get_bf_today_peaks():
+def get_bf_peaks(only_today = True):
     """ from brutefir_peaks.log
     """
     try:
@@ -384,13 +385,15 @@ def get_bf_today_peaks():
     #   'Thu Sep 19 21:05:33 2024 ... ....',
     #    ... ]
 
-    today = ctime()
+    if only_today:
 
-    today_peaks = [x[11:19] + '  ' + x[27:] for x in peaks
-                     if  x[:10] == today[:10]
-                     and x[20:24] == today[20:24] ]
+        today = ctime()
 
-    return today_peaks
+        peaks = [x[11:19] + '  ' + x[27:] for x in peaks
+                         if  x[:10] == today[:10]
+                         and x[20:24] == today[20:24] ]
+
+    return peaks
 
 
 def get_help():
