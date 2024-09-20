@@ -33,10 +33,11 @@ def dump_aux_info():
         by third party processes
     """
     # Dynamic updates
-    AUX_INFO['amp']              = manage_amp_switch( 'state' )
-    AUX_INFO['loudness_monitor'] = get_loudness_monitor()
-    AUX_INFO['sysmon']           = get_sysmon('wlan0')
-    AUX_INFO['convolver_peaks']  = get_bf_peaks(only_today=True)
+    AUX_INFO['amp']                     = manage_amp_switch( 'state' )
+    AUX_INFO['loudness_monitor']        = get_loudness_monitor()
+    AUX_INFO['sysmon']                  = get_sysmon('wlan0')
+    AUX_INFO['convolver_peaks']         = get_bf_peaks(only_today=True)
+    AUX_INFO['peak_monitor_running']    = process_is_running('peak_monitor.py')
 
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
