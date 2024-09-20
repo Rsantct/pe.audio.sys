@@ -18,15 +18,21 @@ function init(){
 
 function page_update(){
 
-    display_peaks();
+    const aux_info = JSON.parse( control_cmd('aux info') );
+
+    const peaks = aux_info.convolver_peaks;
+    const peak_monitor_running = aux_info.peak_monitor_running;
+
+    if (peak_monitor_running){
+        display_peaks(peaks);
+    }else{
+        document.getElementById("peaks_str").innerText = '(peak_monitor is not running)'
+    }
+
 }
 
 
-function display_peaks(){
-
-    const aux_info = JSON.parse( control_cmd('aux info') );
-
-    let peaks = aux_info.convolver_peaks;
+function display_peaks(peaks){
 
     if (PEAKS_SINCE){
         peaks = peaks.filter( (row) => row.slice(0,8) > PEAKS_SINCE );
