@@ -91,7 +91,7 @@ def log_peak(peaks):
             peaks_str += f'  {out_name.rjust(4)}: {str(p).rjust(4)}'
 
         else:
-            peaks_str += f'  {out_name.rjust(4)}:  ·· '
+            peaks_str += f'  {out_name.rjust(4)}:     '
 
 
     with open(LOG_PATH, 'a') as f:
