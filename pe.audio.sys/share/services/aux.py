@@ -152,13 +152,14 @@ def get_web_config():
 
 
 def run_macro(mname):
+
     if mname in get_macros():
+
         print( f'(aux) running macro: {mname}' )
         sp.Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
         AUX_INFO["last_macro"] = mname
-        # for others to have fresh 'last_macro'
-        dump_aux_info()
         return 'ordered'
+
     else:
         return 'macro not found'
 
@@ -219,7 +220,6 @@ def peq_load(peqpath):
     if res == 'done':
         AUX_INFO["peq_set"] = os.path.basename(peqpath).replace('.peq','')
         AUX_INFO['peq_bypassed'] = eca_bypass('get')
-        dump_aux_info()
 
     return res
 
@@ -233,7 +233,6 @@ def peq_bypass(mode):
     newmode = eca_bypass(mode)
 
     AUX_INFO['peq_bypassed'] = newmode
-    dump_aux_info()
 
     return f'{newmode}'
 
@@ -304,7 +303,7 @@ def warning_expire(timeout=5):
     def mytimer(timeout):
         sleep(timeout)
         AUX_INFO['warning'] = ''
-        dump_aux_info()
+
     job = threading.Thread(target=mytimer, args=(timeout,))
     job.start()
 
@@ -321,7 +320,6 @@ def manage_warning_msg(arg):
             result = 'warning message in use'
         else:
             AUX_INFO['warning'] = ' '.join(args[1:])
-            dump_aux_info()
             warning_expire(timeout=60)
             result = 'done'
 
@@ -331,12 +329,10 @@ def manage_warning_msg(arg):
             result = 'warning message in use'
         else:
             AUX_INFO['warning'] = ' '.join(args[1:])
-            dump_aux_info()
             result = 'done'
 
     elif args[0] == 'clear':
         AUX_INFO['warning'] = ''
-        dump_aux_info()
         result = 'done'
 
     elif args[0] == 'get':
@@ -521,6 +517,9 @@ def do( cmd, arg=None ):
 
     else:
         result = f'(aux) bad command \'{cmd}\''
+
+
+    dump_aux_info()
 
     return result
 
