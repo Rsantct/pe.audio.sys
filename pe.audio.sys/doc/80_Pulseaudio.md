@@ -17,7 +17,7 @@ A desktop machine already have Pulseaudio installed, you'll need just some modul
                         pulseaudio-module-jack pulseaudio-module-bluetooth
 
 
-#### Configuring Pulseaudio services (systemd)
+### Pulseaudio services (systemd)
 
 - Check systemd services (normally disabled after installation):
 
@@ -34,6 +34,19 @@ A desktop machine already have Pulseaudio installed, you'll need just some modul
 
         systemctl  stop    pulseaudio
         systemctl  disable pulseaudio
+
+### Pulseaudio configuration `/etc/pulse/daemon.conf`
+
+Check the available resample methods:
+
+        $ pulseaudio --dump-resample-methods
+
+Configure in `/etc/pulse/daemon.conf`:
+
+        resample-method = soxr-vhq
+        avoid-resampling = no
+        realtime-scheduling = yes
+
 
 ### pe.audio.sys
 
