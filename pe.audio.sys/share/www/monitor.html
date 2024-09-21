@@ -46,12 +46,18 @@
 
 <div id="div_peaks" style="font-family:monospace,monospace">
 
-    Convolver peaks monitor
-
-    <button type="button" id="bt_clear"
-            title="Clear old peaks" onmousedown="omd_clear_old_peaks()">
-            CLEAR old peaks
-    </button>
+    <table>
+        <tr>
+            <td id="peaks_monitor_state">
+            </td>
+            <td>
+                <button type="button" id="bt_clear"
+                        title="Clear old peaks" onmousedown="omd_clear_old_peaks()">
+                        CLEAR old peaks
+                </button>
+            </td>
+        </tr>
+    </table>
 
     <pre id="peaks_str" ></pre>
 
