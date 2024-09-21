@@ -24,11 +24,13 @@ function page_update(){
     const peak_monitor_running = aux_info.peak_monitor_running;
 
     if (peak_monitor_running){
+        document.getElementById("peaks_monitor_state").innerText = 'Convolver peaks monitor running ...'
         display_peaks(peaks);
-    }else{
-        document.getElementById("peaks_str").innerText = '(peak_monitor is not running)'
-    }
 
+    }else{
+        document.getElementById("peaks_monitor_state").innerText = '(convolver peaks monitor is NOT running)'
+        display_peaks([]);
+    }
 }
 
 
@@ -37,7 +39,6 @@ function display_peaks(peaks){
     if (PEAKS_SINCE){
         peaks = peaks.filter( (row) => row.slice(0,8) > PEAKS_SINCE );
     }
-
 
     let peaks_str = '';
 
