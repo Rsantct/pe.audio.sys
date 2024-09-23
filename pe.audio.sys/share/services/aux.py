@@ -36,8 +36,6 @@ def dump_aux_info():
     AUX_INFO['amp']                     = manage_amp_switch( 'state' )
     AUX_INFO['loudness_monitor']        = get_loudness_monitor()
     AUX_INFO['sysmon']                  = get_sysmon('wlan0')
-    AUX_INFO['convolver_peaks']         = get_bf_peaks(only_today=True)
-    AUX_INFO['peak_monitor_running']    = process_is_running('peak_monitor.py')
 
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
@@ -467,14 +465,16 @@ def do( cmd, arg=None ):
 
     cmd = cmd.lower()
 
-    if   cmd == 'amp_switch':
-        result = manage_amp_switch(arg)
+
+    # Dump AUX_INFO is NOT needed
+    if   cmd == 'peak_monitor_running':
+        result = process_is_running('peak_monitor.py')
+
+    elif cmd == 'get_bf_today_peaks':
+        result = get_bf_peaks(only_today=True)
 
     elif cmd == 'get_macros':
         result = get_macros()
-
-    elif cmd == 'run_macro':
-        result = run_macro(arg)
 
     elif cmd == 'play_url':
         result = play_url(arg)
@@ -494,32 +494,39 @@ def do( cmd, arg=None ):
     elif cmd == 'zita_j2n':
         result = zita_j2n(arg)
 
-    elif cmd == 'peq_bypass':
-        result = peq_bypass(arg)
-
-    elif cmd == 'peq_load':
-        result = peq_load(arg)
-
-    elif cmd == 'warning':
-        result = manage_warning_msg(arg)
-
     elif cmd == 'get_web_config':
         result = get_web_config()
-
-    elif cmd == 'alert_new_eq_graph':
-        result = alert_new_eq_graph()
-
-    elif cmd == 'get_bf_today_peaks':
-        result = get_bf_today_peaks()
 
     elif cmd == 'help':
         result = get_help()
 
+
+    # Dump AUX_INFO is needed
     else:
-        result = f'(aux) bad command \'{cmd}\''
 
+        if   cmd == 'amp_switch':
+            result = manage_amp_switch(arg)
 
-    dump_aux_info()
+        elif cmd == 'run_macro':
+            result = run_macro(arg)
+
+        elif cmd == 'peq_bypass':
+            result = peq_bypass(arg)
+
+        elif cmd == 'peq_load':
+            result = peq_load(arg)
+
+        elif cmd == 'warning':
+            result = manage_warning_msg(arg)
+
+        elif cmd == 'alert_new_eq_graph':
+            result = alert_new_eq_graph()
+
+        else:
+            return f'(aux) bad command \'{cmd}\''
+
+        dump_aux_info()
+
 
     return result
 
