@@ -18,12 +18,12 @@ function init(){
 
 function page_update(){
 
-    const aux_info = JSON.parse( control_cmd('aux info') );
-
-    const peaks = aux_info.convolver_peaks;
-    const peak_monitor_running = aux_info.peak_monitor_running;
+    const peak_monitor_running  = JSON.parse( control_cmd('aux peak_monitor_running') );
 
     if (peak_monitor_running){
+
+        const peaks = JSON.parse( control_cmd('aux get_bf_today_peaks')   );
+
         document.getElementById("peaks_monitor_state").innerText = 'Convolver peaks monitor running ...'
         display_peaks(peaks);
 
