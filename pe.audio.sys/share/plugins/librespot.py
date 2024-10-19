@@ -59,7 +59,7 @@ def start():
 
 
 def stop():
-    call( ['pkill', '-u', USER, '-KILL', '-f',  'bin/librespot']  )
+    call( ['pkill', '-u', getuser(), '-KILL', '-f',  'bin/librespot']  )
 
 
 if __name__ == "__main__":
