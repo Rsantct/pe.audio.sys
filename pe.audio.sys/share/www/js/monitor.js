@@ -24,7 +24,7 @@ function page_update(){
 
         const peaks = JSON.parse( control_cmd('aux get_bf_today_peaks')   );
 
-        document.getElementById("peaks_monitor_state").innerText = 'Convolver peaks monitor running ...'
+        document.getElementById("peaks_monitor_state").innerText = 'Convolver peaks monitor is running ...'
         display_peaks(peaks);
 
     }else{
