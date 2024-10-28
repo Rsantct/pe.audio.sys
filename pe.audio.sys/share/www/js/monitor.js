@@ -9,7 +9,6 @@ const AUTO_UPDATE_INTERVAL = 1000;
 
 var   PEAKS_SINCE = '';
 
-
 function init(){
 
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
@@ -22,19 +21,19 @@ function page_update(){
 
     if (peak_monitor_running){
 
-        const peaks = JSON.parse( control_cmd('aux get_bf_today_peaks')   );
-
         document.getElementById("peaks_monitor_state").innerText = 'Convolver peaks monitor is running ...'
-        display_peaks(peaks);
+        const peaks = JSON.parse( control_cmd('aux get_bf_today_peaks') );
+        display_peaks(peaks.header, peaks.peaks);
 
     }else{
+
         document.getElementById("peaks_monitor_state").innerText = '(convolver peaks monitor is NOT running)'
-        display_peaks([]);
+        document.getElementById("peaks_str").innerText = '';
     }
 }
 
 
-function display_peaks(peaks){
+function display_peaks(header, peaks){
 
     if (PEAKS_SINCE){
         peaks = peaks.filter( (row) => row.slice(0,8) > PEAKS_SINCE );
@@ -46,6 +45,7 @@ function display_peaks(peaks){
         peaks_str += file + '\n';
     }
 
+    document.getElementById("peaks_hdr").innerText = header;
     document.getElementById("peaks_str").innerText = peaks_str;
 }
 
