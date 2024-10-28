@@ -366,9 +366,36 @@ def alert_new_eq_graph(timeout=1):
     return f'alerting for {timeout} s'
 
 
-def get_bf_peaks(only_today = True):
+def get_bf_peaks(only_today=True):
     """ from brutefir_peaks.log
     """
+
+    def get_peaks_header(pline):
+        """
+                                   27   -->    +12
+        Fri Sep 20 12:47:40 2024   lo.L:  5.3  mi.L:  6.2  hi.L: 10.1  lo.R:  5.4  mi.R:  5.5  hi.R: 10.1
+        """
+
+        ptail = pline[27:]
+
+        header = ' ' * 27
+        i = 0
+        ch = ptail[i + 3]
+        while i < len(ptail):
+
+            # add spaces when channel changes
+            if ch != ptail[i + 3]:
+                header += ' ' * 3
+            ch = ptail[i + 3]
+
+            header += ptail[i:i + 12][:2] + '    '
+
+            i += 12
+
+        # lo    mi    hi          lo    mi    hi
+        return header
+
+
     try:
         with open(f'{LOG_FOLDER}/brutefir_peaks.log', 'r') as f:
             peaks = f.read().split('\n')
@@ -376,19 +403,59 @@ def get_bf_peaks(only_today = True):
         return []
 
     #    0        9          20
-    # [ 'Thu Sep 19 21:05:19 2024 ... ....',
-    #   'Thu Sep 19 21:05:33 2024 ... ....',
+    # [ 'Thu Sep 19 21:05:19 2024   lo.L:  5.3  mi.L:  5.9 ...',
+    #   'Thu Sep 19 21:05:33 2024   ... ....',
     #    ... ]
+
+    header = ''
+    if peaks:
+        header = get_peaks_header(peaks[0])
+
+
+    # lets remove the out.ch: labels
+    #                            27   -->    +12
+    # Fri Sep 20 12:48:02 2024   lo.L:  5.3  mi.L:  5.9  hi.L: 10.2  lo.R:  5.4  mi.R:  5.3  hi.R: 11.1
+
+    for n, pline in enumerate(peaks):
+
+        if not pline:
+            continue
+
+        pdate = pline[:27]
+        ptail = pline[27:]
+
+        values = ''
+        i = 0
+        ch = ptail[i + 3]
+        while i < len(ptail):
+
+            # add spaces when channel changes
+            if ch != ptail[i + 3]:
+                values += ' ' * 3
+            ch = ptail[i + 3]
+
+            values += ptail[i:i + 12][6:]
+
+            i += 12
+
+        peaks[n] = pdate + values
+
 
     if only_today:
 
+        header = header[16:]
+
+        #           10        20
+        #           |         |
+        # Fri Sep 20 12:48:02 2024
         today = ctime()
 
         peaks = [x[11:19] + '  ' + x[27:] for x in peaks
-                         if  x[:10] == today[:10]
+                         if  x[:10]   == today[:10]
                          and x[20:24] == today[20:24] ]
 
-    return peaks
+
+    return {'header': header, 'peaks': peaks}
 
 
 def get_help():
