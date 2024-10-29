@@ -371,7 +371,9 @@ def get_bf_peaks(only_today=True):
     """
 
     def get_peaks_header(pline):
-        """
+        """ Extract output names (2 characters) from a brutefir peaks log line
+            with heading spaces in order to be aligned with the below lines
+
                                    27   -->    +12
         Fri Sep 20 12:47:40 2024   lo.L:  5.3  mi.L:  6.2  hi.L: 10.1  lo.R:  5.4  mi.R:  5.5  hi.R: 10.1
         """
@@ -380,46 +382,29 @@ def get_bf_peaks(only_today=True):
 
         header = ' ' * 27
         i = 0
-        ch = ptail[i + 3]
+        channel = ptail[i + 3]
         while i < len(ptail):
 
             # add spaces when channel changes
-            if ch != ptail[i + 3]:
+            if channel != ptail[i + 3]:
                 header += ' ' * 3
-            ch = ptail[i + 3]
+            channel = ptail[i + 3]
 
             header += ptail[i:i + 12][:2] + '    '
 
             i += 12
 
-        # lo    mi    hi          lo    mi    hi
-        return header
+        #                        LO    MI    HI        LO    MI    HI
+        return header.upper()
 
 
-    try:
-        with open(f'{LOG_FOLDER}/brutefir_peaks.log', 'r') as f:
-            peaks = f.read().split('\n')
-    except:
-        return []
+    def remove_labels(pline):
+        """ Extract output peak values from a brutefir peaks log line
+            with spacing in order to be aligned with the header line.
 
-    #    0        9          20
-    # [ 'Thu Sep 19 21:05:19 2024   lo.L:  5.3  mi.L:  5.9 ...',
-    #   'Thu Sep 19 21:05:33 2024   ... ....',
-    #    ... ]
-
-    header = ''
-    if peaks:
-        header = get_peaks_header(peaks[0])
-
-
-    # lets remove the out.ch: labels
-    #                            27   -->    +12
-    # Fri Sep 20 12:48:02 2024   lo.L:  5.3  mi.L:  5.9  hi.L: 10.2  lo.R:  5.4  mi.R:  5.3  hi.R: 11.1
-
-    for n, pline in enumerate(peaks):
-
-        if not pline:
-            continue
+                                   27   -->    +12
+        Fri Sep 20 12:47:40 2024   lo.L:  5.3  mi.L:  6.2  hi.L: 10.1  lo.R:  5.4  mi.R:  5.5  hi.R: 10.1
+        """
 
         pdate = pline[:27]
         ptail = pline[27:]
@@ -438,12 +423,45 @@ def get_bf_peaks(only_today=True):
 
             i += 12
 
-        peaks[n] = pdate + values
+        pline = pdate + '   ' + values
+
+        # Fri Sep 20 12:48:02 2024      1.2   2.3  10.1      5.4   5.5  10.1
+        return pline
 
 
+    result = { 'header': '', 'peaks': [] }
+
+    try:
+        with open(f'{LOG_FOLDER}/brutefir_peaks.log', 'r') as f:
+            peaks = f.read().split('\n')
+    except:
+        result["header"] = 'Error reading peaks'
+        return result
+
+    # Example:
+    #      0        9          20
+    #   [ 'Thu Sep 19 21:05:19 2024   lo.L:  5.3  mi.L:  5.9 ...',
+    #     'Thu Sep 19 21:05:33 2024   ... ....',
+    #      ... ]
+
+
+    # Prepare the header
+    header = ''
+    if peaks:
+        header = get_peaks_header(peaks[0])
+
+
+    # Let's keep the timestamp and values, removing the 'out.ch:' labels
+    for n, pline in enumerate(peaks):
+        if not pline:
+            continue
+        peaks[n] = remove_labels( pline )
+
+
+    # removing the day, month and year and shorten the header line
     if only_today:
 
-        header = header[16:]
+        header = header[13:]
 
         #           10        20
         #           |         |
@@ -455,7 +473,10 @@ def get_bf_peaks(only_today=True):
                          and x[20:24] == today[20:24] ]
 
 
-    return {'header': header, 'peaks': peaks}
+    result["header"] = header
+    result["peaks"]  = peaks
+
+    return result
 
 
 def get_help():
