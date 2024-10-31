@@ -629,7 +629,7 @@ function page_update() {
         }
 
         if (fans){
-            sysmon += ' fan: ' + fans + ' rpm';
+            sysmon += ' | fan: ' + fans + ' rpm';
         }
 
         if (! isEmpty(wifi)){
