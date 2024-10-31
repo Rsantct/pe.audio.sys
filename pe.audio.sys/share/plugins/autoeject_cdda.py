@@ -8,6 +8,8 @@
     A pe.audio.sys daemon to auto eject a CD-Audio when playback is over
 
     Usage:  auteject_cdda.py  start | stop  &
+
+    (needs:  udisks2, usbmount)
 """
 
 from    os.path import expanduser
