@@ -121,8 +121,27 @@ def get_sysmon(w_iface='wlan0'):
         return temp
 
 
+    def get_fans_speed(get_zero_rmp=False):
+        """
+        """
+        fans = {'fan1':'', 'fan2':'', 'fan3':'', }
+        hw_dir = '/sys/class/hwmon/hwmon1'
+        for i in 1,2,3:
+            try:
+                with open(f'{hw_dir}/fan{i}_input', 'r') as f:
+                    x = f.read().strip()
+                    if int(x) or get_zero_rmp:
+                        fans[f"fan{i}"] = x
+            except:
+                pass
+
+        return fans
+
+
+
     return  {   'wifi': get_wifi( w_iface),
-                'temp': get_temp()
+                'temp': get_temp(),
+                'fans': get_fans_speed()
             }
 
 
