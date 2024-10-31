@@ -609,9 +609,27 @@ function page_update() {
         let sysmon = '';
         const temp = aux_info.sysmon.temp
         const wifi = aux_info.sysmon.wifi
+        const fan1 = aux_info.sysmon.fans.fan1
+        const fan2 = aux_info.sysmon.fans.fan2
+        const fan3 = aux_info.sysmon.fans.fan3
+
+        let fans = ''
+        if (fan1){
+            fans += fan1
+        }
+        if (fan2){
+            fans += ',' + fan2
+        }
+        if (fan3){
+            fans += ',' + fan3
+        }
 
         if (temp){
             sysmon += 'temp: ' + temp + 'º';
+        }
+
+        if (fans){
+            sysmon += ' fan: ' + fans + ' rpm';
         }
 
         if (! isEmpty(wifi)){
