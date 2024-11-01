@@ -766,7 +766,14 @@ def read_cdda_info_from_disk():
     """ wrapper for reading the cdda info dict
         (dictionary)
     """
-    return read_json_from_file(CDDA_INFO_PATH)
+
+    result = read_json_from_file( CDDA_INFO_PATH )
+
+    if not result:
+        result = CDDA_INFO_TEMPLATE
+
+    return result
+
 
 
 def read_json_from_file(fpath, timeout=2):
@@ -1040,3 +1047,33 @@ def timesec2string(x):
     m = int( x / 60 )           # minutes from the new x
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
+
+
+def msec2str(msec=0, string=''):
+    """ Convert milliseconds <--> string MM:SS.CC
+
+        Give me only one parameter: number or string
+    """
+
+    if msec and string:
+        return 'Error converting msec'
+
+    elif msec:
+
+        sec  = msec / 1e3
+        mm   = f'{sec // 60:.0f}'.zfill(2)
+        ss   = f'{sec %  60:.2f}'.zfill(5)
+
+        return f'{mm}:{ss}'
+
+    elif string:
+
+        mm   = int( string.split(':')[0] )
+        sscc =      string.split(':')[1]
+        ss   = int( sscc.split('.')[0]   )
+        cc   = int( sscc.split('.')[1]   )
+
+        millisec = mm * 60 * 1000 + ss * 1000 + cc * 10
+
+        return millisec
+
