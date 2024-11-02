@@ -21,7 +21,7 @@
 
     You can also check peaks with timestamp by issuing:
 
-        tal -F ~/pe.audio.sys/log/brutefir_peaks.log
+        tail -F ~/pe.audio.sys/log/brutefir_peaks.log
 
 
     A BEEP sound at -10 dB will be played when detecting peaks.
