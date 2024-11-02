@@ -503,7 +503,7 @@ function page_update() {
         function fill_in_track_selector() {
             // getting tracks
             try{
-                var tracks = JSON.parse( control_cmd( 'player list_playlist' ) );
+                var tracks = JSON.parse( control_cmd( 'player get_playlist' ) );
             }catch(e){
                 console.log( e.name, e.message );
                 return;
@@ -550,9 +550,11 @@ function page_update() {
         // Displays the track selector if input == 'cd'
         if ( state.input == "cd") {
             document.getElementById( "track_selector").style.display = "inline";
+            document.getElementById( "playlist_selector").style.display = "none";
         }
         else {
             document.getElementById( "track_selector").style.display = "none";
+            document.getElementById( "playlist_selector").style.display = "inline";
         }
 
         // Clears the CD track selector when expired
