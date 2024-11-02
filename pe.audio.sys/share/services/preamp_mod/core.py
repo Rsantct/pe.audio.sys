@@ -953,9 +953,11 @@ class Preamp(object):
             jport = CONFIG["sources"][source]["jack_pname"].split(':')[0]
             res = jack.connect_bypattern(jport, 'pre_in')
 
-            if res != 'ordered':
+            if res == 'ordered':
                 self.state["input_port"] = jport
+            else:
                 w += res
+
 
             # Trying to set the desired xo and drc for this source
             c = Convolver()
