@@ -401,30 +401,51 @@ def get_loudness_monitor():
         return result
 
 
-def read_mpd_config_port():
-    """ Default port: 6600
+def read_mpd_config():
+    """ Currently only the port and the playlists directory
+
+        Example .mpdconf
+
+        port                    "6600"
+        #playlist_directory      "~/.config/mpd/playlists"
+        playlist_directory      "/mnt/qnas/media/playlists/"
     """
 
-    mpdport = 6600
+    def get_parameter(line, parameter):
 
-    with open(f'{UHOME}/.mpdconf', 'r') as f:
-        lines = f.readlines()
+        return line.split(parameter)[1]              \
+                   .strip().split()[0]               \
+                   .replace('"','').replace("'", "")
 
-    for l in lines:
 
-        if 'port' in l and l.strip()[0] != '#':
+    c = {'port': 6600, 'playlist_directory': UHOME}
 
-            print(l)
+    try:
+        with open(f'{UHOME}/.mpdconf', 'r') as f:
+            lines = f.read().split('\n')
+    except:
+        return c
 
-            try:
-                mpdport = int([x for x in l.replace('"', '').split()
-                                     if x.isdigit() ][0])
-                break
+    for line in lines:
 
-            except:
-                pass
+        if line and line.strip()[0] != '#':
 
-    return mpdport
+            if 'playlist_directory' in line:
+
+                tmp = get_parameter(line, 'playlist_directory')
+                if tmp.endswith('/'):
+                    tmp = tmp[:-1]
+
+                c["playlist_directory"] = tmp
+
+            if line.strip()[:4] == 'port':
+
+                try:
+                    c["port"] = int( get_parameter(line, 'port') )
+                except:
+                    c["error"] = 'Error reading MPD port'
+
+    return c
 
 
 def read_bf_config_port():
