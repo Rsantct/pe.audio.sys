@@ -14,11 +14,12 @@
 # .player_metadata  'w'     Stores the current player metadata
 #
 
-from    os.path import expanduser
+from    os.path     import expanduser
 import  sys
 import  threading
-from    time    import sleep
+from    time        import sleep
 import  json
+from    subprocess  import Popen, run
 
 
 UHOME = expanduser("~")
@@ -34,7 +35,9 @@ from  miscel                        import  detect_spotify_client,      \
 
 from  players_mod.mpd_mod           import  mpd_control,                \
                                             mpd_meta,                   \
-                                            mpd_playlists
+                                            mpd_playlist,               \
+                                            mpd_playlists,              \
+                                            mpd_cdda_in_playlist
 
 from  players_mod.mplayer           import  mplayer_control,            \
                                             mplayer_get_meta,           \
@@ -124,7 +127,8 @@ def get_meta():
         md = mplayer_get_meta(md, service='dvb')
 
     elif 'cd' in source:
-        md = mplayer_get_meta(md, service='cdda')
+        #md = mplayer_get_meta(md, service='cdda')
+        md = mpd_meta(md)
 
     elif source.startswith('remote'):
         # For a 'remote.....' named source, it is expected to have
@@ -172,7 +176,8 @@ def playback_control(cmd, arg=''):
         result = mplayer_control(cmd=cmd, service='istreams')
 
     elif source == 'cd':
-        result = mplayer_control(cmd=cmd, arg=arg, service='cdda')
+        #result = mplayer_control(cmd=cmd, arg=arg, service='cdda')
+        result = mpd_control(cmd, arg)
 
     elif source.startswith('remote'):
         # For a 'remote.....' named source, it is expected to have
@@ -196,17 +201,24 @@ def playlists_control(cmd, arg):
         (i) Currently only works with: Spotify Desktop, MPD.
     """
     result = []
-    source = read_state_from_disk()['input']
+    source      = read_state_from_disk()['input']
+    source_port = read_state_from_disk()['input_port']
 
-    if source == 'mpd':
-        result = mpd_playlists(cmd, arg)
+    if 'mpd' in source or 'mpd' in source_port:
+
+        if cmd == 'get_playlist':
+            result = mpd_playlist()
+
+        else:
+            result = mpd_playlists(cmd, arg)
 
     elif source == 'spotify':
 
         if   SPOTIFY_CLIENT == 'desktop':
             result = spotify_playlists(cmd, arg)
 
-    elif source == 'cd':
+    # 2024.11 not in use
+    elif source == 'cd' and 'mplayer' in source_port:
         result = mplayer_playlists(cmd=cmd, arg=arg, service='cdda')
 
     return result
@@ -273,6 +285,8 @@ def do(cmd, arg):
         - out:  a string result (dicts are json dumped)
     """
 
+    result = f'(players.py) error with {cmd} {arg}'
+
     if cmd in ( 'state', 'stop', 'pause', 'play', 'next', 'previous',
                 'rew', 'ff', 'play_track'):
         result = playback_control( cmd, arg )
@@ -292,8 +306,23 @@ def do(cmd, arg):
     elif '_playlist' in cmd:
         result = playlists_control( cmd, arg )
 
+    # (i) Must be a clean eject
     elif cmd == 'eject':
-        result = mplayer_control('eject', service='cdda')
+
+        source_port = read_state_from_disk()['input_port']
+
+        if 'mpd' in source_port:
+            result = mpd_control('eject')
+
+        elif 'mplayer' in source_port:
+            result = mplayer_control('eject', service='cdda')
+
+        else:
+            if mpd_cdda_in_playlist():
+                run('mpc stop'.split())
+                run('mpc clear'.split())
+            Popen('eject'.split())
+            result = 'ordered'
 
     else:
         result = f'(players) unknown command \'{cmd}\''
