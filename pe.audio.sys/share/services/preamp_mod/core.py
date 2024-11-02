@@ -275,34 +275,55 @@ class Preamp(object):
 
         # The available inputs
         self.inputs = CONFIG["sources"]
+
         # The state dictionary
         self.state = read_state_from_disk()
+
+        # The jack port of the selected source
+        source = self.state["input"]
+        if source != 'none':
+            jport = CONFIG["sources"][source]["jack_pname"].split(':')[0]
+        else:
+            jport = ''
+        self.state["input_port"] = jport
+
+        # Convoler runs
         self.state["convolver_runs"] = bf.is_running()
+
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
         self.state["fs"] = jack.JCLI.samplerate
+
         # tone_memo keeps tone values even when tone_defeat is activated
         self.state["tone_defeat"] = False
         self.tone_memo = {}
         self.tone_memo["bass"]    = self.state["bass"]
         self.tone_memo["treble"]  = self.state["treble"]
+
         # The target curves available under the 'eq' folder
         self.target_sets = self._find_target_sets()
+
         # The available span for tone curves
         self.bass_span   = int( (EQ_CURVES["bass_mag"].shape[0] - 1) / 2 )
         self.treble_span = int( (EQ_CURVES["treb_mag"].shape[0] - 1) / 2 )
+
         # Max authorised gain
         self.gain_max    = float(CONFIG["gain_max"])
         # Max authorised balance
         self.balance_max = float(CONFIG["balance_max"])
+
         # Initiate brutefir input connected ports (used from switch_convolver)
         self.bf_sources = bf.get_in_connections()
+
         # get swap LR
         self.state["lr_swapped"] = self._check_pre_in_swapped()
+
         # get JACK stuff
         self.state["jack_buffer"] = jack.JCLI.blocksize
         self.state["jack_device"] = jack.get_device()
+
+        # UPDATE STATE FILE
         self.save_state()
 
 
@@ -933,6 +954,7 @@ class Preamp(object):
             res = jack.connect_bypattern(jport, 'pre_in')
 
             if res != 'ordered':
+                self.state["input_port"] = jport
                 w += res
 
             # Trying to set the desired xo and drc for this source
@@ -979,6 +1001,7 @@ class Preamp(object):
         # Source = 'none'
         if source == 'none':
             jack.clear_preamp()
+            self.state["input_port"] = ''
             self.state["input"] = source
             result = 'done'
 
