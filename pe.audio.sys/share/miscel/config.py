@@ -46,6 +46,7 @@ LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
 LDMON_PATH          = f'{MAINFOLDER}/.loudness_monitor'
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
 CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
+CDDA_INFO_TEMPLATE  = {}                            # cdda.py will define it later
 AUX_INFO_PATH       = f'{MAINFOLDER}/.aux_info'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 
