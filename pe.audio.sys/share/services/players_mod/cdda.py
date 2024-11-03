@@ -47,13 +47,6 @@ else:
     print(f'{Fmt.BLUE}(cdda.py) Using default \'{CDROM_DEVICE}\'{Fmt.END}')
 
 
-# cdda info template with a fake track #1
-CDDA_INFO_TEMPLATE = { 'discid': '', 'artist': '-', 'album': '-',
-                       'tracks': {
-                                    '1': {'title': '-', 'length': '00:00.00'}
-                       }
-                     }
-
 CDDA_MUSICBRAINZ_PATH = f'{UHOME}/pe.audio.sys/.cdda_musicbrainz'
 
 
