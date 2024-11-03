@@ -1043,6 +1043,23 @@ def get_my_ip():
         return ''
 
 
+def time_diff(t1, t2):
+    """ input:   <strings> 'MM:SS'
+        returns: <int>  the difference in seconds or <string> Error
+    """
+    try:
+        s1 = int(t1[:2]) * 60 + int(t1[-2:])
+    except Exception as e:
+        return str(e)
+
+    try:
+        s2 = int(t2[:2]) * 60 + int(t2[-2:])
+    except Exception as e:
+        return str(e)
+
+    return s2 - s1
+
+
 def sec2min(s, mode=''):
     """ Format a given float (seconds) to "MMmSSs"
         or to "MM:SS" if mode == ':'
