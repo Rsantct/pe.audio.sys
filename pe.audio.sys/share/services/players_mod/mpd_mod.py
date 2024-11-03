@@ -18,7 +18,8 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 sys.path.append( os.path.dirname(__file__) )
 
 from miscel import timesec2string as timeFmt, sec2min, Fmt,     \
-                   read_mpd_config, read_cdda_info_from_disk
+                   read_mpd_config, read_cdda_info_from_disk,   \
+                   METATEMPLATE
 
 MPD_PORT                = read_mpd_config()["port"]
 CDDA_MPD_PLAYLIST_PATH  = f'{UHOME}/pe.audio.sys/.cdda_mpd_playlist'
@@ -46,6 +47,7 @@ def ping_mpd():
             print(f'{Fmt.GRAY}(mpd_mod.py) Trying to connect ... .. .{Fmt.END}')
             c.connect('localhost', MPD_PORT)
             print(f'{Fmt.BLUE}(mpd_mod.py) Connected to MPD{Fmt.END}')
+            sleep(.1)
             return True
 
         except Exception as e:
@@ -184,6 +186,7 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
             # clean eject
             case 'eject':
                 c.stop()
+                sleep(.2)
                 c.clear()
                 sleep(.2)
                 Popen( 'eject'.split() )
@@ -221,7 +224,7 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
             return 'stop'
 
 
-def mpd_meta( md ):
+def mpd_meta( md=METATEMPLATE.copy() ):
     """ Comuticates to MPD music player daemon
         Input:      blank metadata dict
         Return:     track metadata dict
