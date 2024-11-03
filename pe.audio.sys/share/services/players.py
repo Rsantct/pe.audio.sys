@@ -34,6 +34,7 @@ from  config                        import  CONFIG, PLAYER_META_PATH,   \
 from  miscel                        import  detect_spotify_client,      \
                                             read_state_from_disk,       \
                                             read_cdda_info_from_disk,   \
+                                            read_mpd_config,            \
                                             send_cmd, is_IP
 
 from  players_mod.mpd_mod           import  mpd_control,                \
@@ -297,25 +298,24 @@ def do(cmd, arg):
     # (i) Must be a clean eject
     elif cmd == 'eject':
 
-        source_port = read_state_from_disk()['input_port']
+        if mpd_cdda_in_playlist(all_or_any='any'):
+            run( 'mpc stop'.split()  )
+            sleep(.2)
+            run( 'mpc clear'.split() )
+            sleep(1)
 
-        if 'mpd' in source_port:
-            result = mpd_control('eject')
-
-        elif 'mplayer' in source_port:
-            result = mplayer_control('eject', service='cdda')
-
-        else:
-            if mpd_cdda_in_playlist():
-                run('mpc stop'.split())
-                run('mpc clear'.split())
-            Popen('eject'.split())
-            result = 'ordered'
+        Popen( 'eject'.split() )
+        result = 'ordered'
 
         sleep(1)
 
+        # blank cdda_info
         with open(CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps(CDDA_INFO_TEMPLATE) )
+
+        # delete MPD cdda playlist files
+        fname = f'{ read_mpd_config()["playlist_directory"] }/cdda.*'
+        Popen( f'rm -f {fname}', shell=True )
 
     else:
         result = f'(players) unknown command \'{cmd}\''
