@@ -325,6 +325,7 @@ def do(cmd, arg):
             Popen('eject'.split())
             result = 'ordered'
 
+        sleep(1)
         with open(CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps(CDDA_INFO_TEMPLATE) )
 
