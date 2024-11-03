@@ -183,14 +183,6 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
                     if 'random' in st:
                         c.random( {'0':1, '1':0}[ st["random"] ])
 
-            # clean eject
-            case 'eject':
-                c.stop()
-                sleep(.2)
-                c.clear()
-                sleep(.2)
-                Popen( 'eject'.split() )
-
 
     except Exception as e:
         print(f'{Fmt.RED}(mpd_mod.py) error with `{cmd}`{Fmt.END}' )
