@@ -91,12 +91,16 @@ def _get_disc_metadata(device=CDROM_DEVICE):
         # A second of CD-AUDIO has 75 frames (or sectors) -wikipedia-
         track_sectors = toc[3:] + [toc[2]]
         track_sectors = [int(x) for x in track_sectors]
+
         for i in range(len(track_sectors)):
+
             if i == 0:
                 continue
+
             trackNum = i
             trackLen = ( track_sectors[i] - track_sectors[i - 1] ) / 75
-            md[str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
+
+            md["tracks"][str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
                                  'length': msec2str(trackLen * 1e3)}
 
         return md
