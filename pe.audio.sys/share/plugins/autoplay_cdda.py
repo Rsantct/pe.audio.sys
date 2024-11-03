@@ -60,6 +60,7 @@ def load_CDDA():
 
     if 'mpd' in CONFIG['sources']['cd']['jack_pname']:
         run('mpc clear'.split())
+        run('mpc consume off'.split())
         run('mpc load cdda'.split())
 
     send_cmd( 'player pause', sender=ME, verbose=True )
