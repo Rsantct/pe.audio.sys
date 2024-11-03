@@ -26,7 +26,8 @@ UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 
-from  config                        import  CONFIG, PLAYER_META_PATH
+from  config                        import  CONFIG, PLAYER_META_PATH,   \
+                                            CDDA_INFO_PATH, CDDA_INFO_TEMPLATE
 
 from  miscel                        import  detect_spotify_client,      \
                                             read_state_from_disk,       \
@@ -323,6 +324,9 @@ def do(cmd, arg):
                 run('mpc clear'.split())
             Popen('eject'.split())
             result = 'ordered'
+
+        with open(CDDA_INFO_PATH, 'w') as f:
+            f.write( json.dumps(CDDA_INFO_TEMPLATE) )
 
     else:
         result = f'(players) unknown command \'{cmd}\''
