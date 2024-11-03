@@ -27,7 +27,9 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 
 from  config                        import  CONFIG, PLAYER_META_PATH,   \
-                                            CDDA_INFO_PATH, CDDA_INFO_TEMPLATE
+                                            METATEMPLATE,               \
+                                            CDDA_INFO_PATH,             \
+                                            CDDA_INFO_TEMPLATE
 
 from  miscel                        import  detect_spotify_client,      \
                                             read_state_from_disk,       \
@@ -58,24 +60,9 @@ SOURCES = CONFIG["sources"]
 ## Spotify client detection
 SPOTIFY_CLIENT = detect_spotify_client()
 
-## generic metadata template (!) remember to use copies of this ;-)
-METATEMPLATE = {
-                'player':       '',
-                'time_pos':     '-',
-                'time_tot':     '-',
-                'bitrate':      '-',
-                'format':       '-:-:2',
-                'file':         '',
-                'artist':       '-',
-                'album':        '-',
-                'title':        '-',
-                'track_num':    '-',
-                'tracks_tot':   '-'
-                }
-
 # The runtime metadata variable and the loop refresh period in seconds
 CURRENT_MD          = METATEMPLATE.copy()
-MD_REFRESH_PERIOD  = 2
+MD_REFRESH_PERIOD   = 2
 
 
 def remote_get_meta(host, port=9990):
@@ -107,7 +94,8 @@ def get_meta():
     """
     md = METATEMPLATE.copy()
 
-    source = read_state_from_disk()['input']
+    source      = read_state_from_disk()['input']
+    source_port = read_state_from_disk()['input_port']
 
     if 'librespot' in source or 'spotify' in source.lower():
         if SPOTIFY_CLIENT == 'desktop':
@@ -326,6 +314,7 @@ def do(cmd, arg):
             result = 'ordered'
 
         sleep(1)
+
         with open(CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps(CDDA_INFO_TEMPLATE) )
 
