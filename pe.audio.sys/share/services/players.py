@@ -68,13 +68,12 @@ MD_REFRESH_PERIOD   = 2
 def remote_get_meta(host, port=9990):
     """ Get metadata from a remote pe.audio.sys system
     """
-    md = METATEMPLATE.copy()
     try:
         tmp = send_cmd( cmd='player get_meta',
                         host=host, port=port, timeout=1)
         md = json.loads(tmp)
     except:
-        pass
+        md = METATEMPLATE.copy()
     return md
 
 
