@@ -138,63 +138,61 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
         return 'stop'
 
     # Do execute the command
-    match cmd:
+    try:
+        match cmd:
 
-        case 'state':
-            pass
+            case 'state':
+                pass
 
-        case 'stop':
-            c.stop()
+            case 'stop':
+                c.stop()
 
-        case 'pause':
-            c.pause()
+            case 'pause':
+                c.pause()
 
-        case 'play':
-            c.play()
+            case 'play':
+                c.play()
 
-        case 'play_track':
-            try:
+            case 'play_track':
                 c.play(int(arg) - 1)
-            except:
-                print(f'{Fmt.GRAY}(mpd_mod.py) error with `{cmd}`{Fmt.END}' )
 
-        case 'next':
-            try:
-                c.next()    # avoids error if some playlist has wrong items
-            except:
-                print(f'{Fmt.GRAY}(mpd_mod.py) error with `{cmd}`{Fmt.END}' )
+            case 'next':
+                c.next()
 
-        case 'previous':
-            try:
+            case 'previous':
                 c.previous()
-            except:
-                print(f'{Fmt.GRAY}(mpd_mod.py) error with `{cmd}`{Fmt.END}' )
 
-        case 'rew':         # for REW and FF will move 30 seconds
-            c.seekcur('-30')
+            case 'rew':         # for REW and FF will move 30 seconds
+                c.seekcur('-30')
 
-        case 'ff':
-            c.seekcur('+30')
+            case 'ff':
+                c.seekcur('+30')
 
-        case 'random':
+            case 'random':
 
-            if arg == 'on':
-                c.random(1)
+                if arg == 'on':
+                    c.random(1)
 
-            elif arg == 'off':
-                c.random(0)
+                elif arg == 'off':
+                    c.random(0)
 
-            elif arg == 'toggle':
-                st = c.status()
-                if 'random' in st:
-                    c.random( {'0':1, '1':0}[ st["random"] ])
+                elif arg == 'toggle':
+                    st = c.status()
+                    if 'random' in st:
+                        c.random( {'0':1, '1':0}[ st["random"] ])
 
-        # clean eject
-        case 'eject':
-            c.stop()
-            c.clear()
-            sleep(.2)
-            Popen( 'eject'.split() )
+            # clean eject
+            case 'eject':
+                c.stop()
+                c.clear()
+                sleep(.2)
+                Popen( 'eject'.split() )
+
+
+    except Exception as e:
+        print(f'{Fmt.RED}(mpd_mod.py) error with `{cmd}`{Fmt.END}' )
+        print(f'{Fmt.RED}(mpd_mod.py) {str(e)}{Fmt.END}' )
+
 
 
     # (i) Must wait a bit to avoid a weird behavior after ordering a command
