@@ -35,6 +35,62 @@
 
 """
 
+""" Examples of Mplayer printouts when playing DVB-T radio channels
+
+rafax@salon64:~$ mplayer -nolirc -ao alsa "dvb://Radio Clasica HQ MPA"
+MPlayer 1.4 (Debian), built with gcc-11 (C) 2000-2019 MPlayer Team
+
+Playing dvb://Radio Clasica HQ MPA.
+dvb_tune Freq: 634000000
+TS file format detected.
+NO VIDEO! AUDIO MPA(pid=2010) NO SUBS (yet)!  PROGRAM N. 0
+==========================================================================
+Opening audio decoder: [mpg123] MPEG 1.0/2.0/2.5 layers I, II, III
+AUDIO: 48000 Hz, 2 ch, s16le, 160.0 kbit/10.42% (ratio: 20000->192000)
+Selected audio codec: [mpg123] afm: mpg123 (MPEG 1.0/2.0/2.5 layers I, II, III)
+==========================================================================
+AO: [alsa] 48000Hz 2ch s16le (2 bytes per sample)
+Video: no video
+Starting playback...
+A:17726.5 ( 4:55:26.4) of -0.8 (unknown) ??,?%
+[AO_ALSA] Write error: Broken pipe
+[AO_ALSA] Trying to reset soundcard.
+A:17737.3 ( 4:55:37.3) of -0.8 (unknown) 13.8%
+
+
+MPlayer interrupted by signal 2 in module: decode_audio
+dvb_streaming_read, attempt N. 6 failed with errno 4 when reading 24 bytes
+A:17737.4 ( 4:55:37.4) of -0.8 (unknown) 13.9%
+
+Exiting... (Quit)
+
+
+rafax@salon64:~$ mplayer -nolirc -ao alsa "dvb://Radio Clasica HQ A52"
+MPlayer 1.4 (Debian), built with gcc-11 (C) 2000-2019 MPlayer Team
+
+Playing dvb://Radio Clasica HQ A52.
+dvb_tune Freq: 634000000
+TS file format detected.
+NO VIDEO! AUDIO A52(pid=2012) NO SUBS (yet)!  PROGRAM N. 0
+==========================================================================
+Opening audio decoder: [ffmpeg] FFmpeg/libavcodec audio decoders
+libavcodec version 58.134.100 (external)
+AUDIO: 48000 Hz, 2 ch, floatle, 256.0 kbit/8.33% (ratio: 32000->384000)
+Selected audio codec: [ffac3] afm: ffmpeg (FFmpeg AC-3)
+==========================================================================
+AO: [alsa] 48000Hz 2ch floatle (4 bytes per sample)
+Video: no video
+Starting playback...
+A:17840.4 ( 4:57:20.4) of -0.6 (unknown) 69.5%
+
+
+MPlayer interrupted by signal 2 in module: decode_audio
+dvb_streaming_read, attempt N. 6 failed with errno 4 when reading 776 bytes
+A:17840.5 ( 4:57:20.5) of -0.6 (unknown) 69.8%
+
+Exiting... (Quit)
+"""
+
 from    pathlib import Path
 from    time    import sleep
 from    subprocess import Popen, call, check_output
@@ -46,7 +102,7 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-from miscel import wait4ports, check_Mplayer_config_file, Fmt
+from miscel import wait4ports, check_Mplayer_config_file, Fmt, USER
 
 
 CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
@@ -55,9 +111,9 @@ REDIR_PATH      = f'{MAINFOLDER}/.dvb_events'
 INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
 
 
-# (i) VOLUME management
-#     '-softvol-max 400' alows to amplify 12 dB for AC3 encoded streams
-#     Then, when necessary we can issue a slave mode volume command
+# (i) STREAM LEVEL management
+#     '-softvol-max 400' alows to amplify 12 dB for AC3 encoded streams, see
+#     above examples. Then later, we can issue a slave mode volume command.
 MPLAYER_OPTIONS = '-quiet -nolirc -slave -idle -softvol -softvol-max 400'
 
 
@@ -79,6 +135,8 @@ def select_by_name(channel_name):
 
 
     def get_volume():
+        """ Boost 12 dB if 'codec' is AC3 kind of as per the PRESETS user file.
+        """
 
         volume = 0
 
@@ -86,7 +144,7 @@ def select_by_name(channel_name):
 
             if PRESETS[pnum]['name'] == channel_name:
                 if 'codec' in  PRESETS[pnum] and PRESETS[pnum]['codec']:
-                    if 'ac3' in  PRESETS[pnum]['codec']:
+                    if 'ac3' in  PRESETS[pnum]['codec'].lower():
                         volume = 400 # 12 dB in percent
                 break
 
@@ -155,7 +213,7 @@ def start():
 
 def stop():
     # Killing our mplayer instance
-    call( ['pkill', '-KILL', '-f', 'profile dvb'] )
+    call( ['pkill', '-u', USER, '-KILL', '-f', 'profile dvb'] )
 
 
 def do_check_files():

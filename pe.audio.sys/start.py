@@ -26,204 +26,20 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from config import  CONFIG, STATE_PATH, MAINFOLDER, LOUDSPEAKER, LOG_FOLDER
-
-from miscel import  read_bf_config_fs, server_is_running, process_is_running, \
-                    kill_bill, read_state_from_disk, force_to_flush_file, Fmt, \
-                    get_remote_sources, remote_zita_restart, local_zita_restart, \
-                    send_cmd, get_my_ip
-
-from sound_cards import *
+from miscel import *
 
 
-def load_extra_cards(channels=2):
-    """ This launch resamplers that connects extra sound cards into Jack
-        (void)
-    """
-    jc = CONFIG["jack"]
-    if ('external_cards' not in jc) or (not jc["external_cards"]):
-        return
+# Init plugins (to run first)
+INIT_PLUGINS = (
 
-    ext_cards = jc["external_cards"]
+    # Amplifier switch needs to power on the external DAC in order to
+    # by accesible from the alsa module
+    'power_amp_control.py',
 
-    for card, params in ext_cards.items():
-        jack_name = card
-        device    = params['device']
-        resampler = params['resampler']
-
-        if ('resamplingQ' in params) and (params['resamplingQ']):
-            quality = params['resamplingQ']
-        else:
-            quality = ''
-
-        if ('misc_params' in params) and (params['misc_params']):
-            misc = params['misc_params']
-        else:
-            misc = ''
-
-        if (not quality) and ('zita' in resampler):
-                quality == 'auto'
-
-        cmd = f'{resampler} -d {device} -j {jack_name} -c {channels}'
-
-        if quality:
-            cmd += f' -q {quality}'
-
-        if misc:
-            cmd += f' {misc}'
-
-        if 'zita' in resampler:
-            cmd = cmd.replace("-q", "-Q")
-
-        print(f'(start) loading resampled extra card: {card}')
-        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
-
-
-def run_jloops():
-    """ Jack loops launcher
-        (void)
-    """
-    # Jack loops launcher external daemon
-    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py', shell=True)
-
-
-def check_jloops():
-    """ Jack loops checking
-        (bool)
-    """
-    # The configured loops
-    cfg_loops = []
-    loop_names = ['pre_in_loop']
-    for source in CONFIG['sources']:
-        pname = CONFIG['sources'][source]['jack_pname']
-        if 'loop' in pname and pname not in loop_names:  # avoids duplicates
-            loop_names.append( pname )
-    for loop_name in loop_names:
-            cfg_loops.append( f'{loop_name}:input_1' )
-            cfg_loops.append( f'{loop_name}:input_2' )
-            cfg_loops.append( f'{loop_name}:output_1' )
-            cfg_loops.append( f'{loop_name}:output_2' )
-
-    if not cfg_loops:
-        return True
-
-    # Waiting for all loops to be spawned
-    tries = 10
-    while tries:
-        # The running ones
-        run_loops = sp.check_output(['jack_lsp', 'loop']).decode().split()
-        if sorted(cfg_loops) == sorted(run_loops):
-            break
-        sleep(1)
-        tries -= 1
-    if tries:
-        print(f'{Fmt.BLUE}(start) JACK LOOPS RUNNING{Fmt.END}')
-        return True
-    else:
-        print(f'{Fmt.BOLD}(start) JACK LOOPS FAILED{Fmt.END}')
-        return False
-
-
-def jack_is_running():
-    """ checks for jackd process to be running
-        (bool)
-    """
-    try:
-        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
-        return True
-    except sp.CalledProcessError:
-        return False
-
-
-def start_jack_stuff():
-    """ runs jackd with configured options, jack loops and extrernal cards ports
-        (void)
-    """
-    warnings = ''
-
-    jc = CONFIG['jack']
-
-    # silent (no Xrun messages)
-    if ('silent' in jc) and (jc["silent"] == True):
-        jOpts = f'-R --silent -d {jc["backend"]}'
-    else:
-        jOpts = f'-R -d {jc["backend"]}'
-
-    # default period and nperiod
-    if ('period' not in jc) or not jc["period"]:
-        jc["period"] = 1024
-    if ('nperiods' not in jc) or not jc["nperiods"]:
-        jc["nperiods"] = 2
-
-    if jc["backend"] != 'dummy':
-        jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
-    else:
-        jBkndOpts  = f'-p {jc["period"]}'
-
-    # set FS
-    jBkndOpts += f' -r {read_bf_config_fs()}'
-
-    # other backend options (config.yml)
-    if ('miscel' in jc) and (jc["miscel"]):
-        jBkndOpts += f' {jc["miscel"]}'
-
-    # Use 'softmode' for ALSA backend even if not configured under 'miscel:'
-    # (i) This does not disable Xrun printouts if any occurs (see man page)
-    if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
-        jBkndOpts += ' --softmode'
-
-    # Firewire: reset the Firewire Bus and run ffado-dbus-server
-    if jc["backend"] == 'firewire':
-        print(f'{Fmt.BOLD}(start) resetting the FIREWIRE BUS, sorry for users '
-              f'using other FW things :-|{Fmt.END}')
-        sp.Popen('ffado-test BusReset'.split())
-        sleep(1)
-        print(f'{Fmt.BLUE}(start) running FIREWIRE DBUS SERVER ...{Fmt.END}')
-        sp.Popen('killall -KILL ffado-dbus-server', shell=True)
-        sp.Popen('ffado-dbus-server 1>/dev/null 2>&1', shell=True)
-        sleep(2)
-
-    # Pulseaudio
-    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
-                                       shell=True).decode():
-        release_cards_from_pulseaudio()
-
-    # Launch JACKD process
-    with open(f'{LOG_FOLDER}/jackd.log', 'w') as jlog:
-        sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True,
-                        stdout=jlog,
-                        stderr=jlog)
-
-    # Will check if JACK ports are available
-    sleep(1)
-    tries = 10
-    while tries:
-        if jack_is_running():
-            print(f'{Fmt.BOLD}{Fmt.BLUE}(start) JACKD STARTED{Fmt.END}')
-            break
-        print(f'(start) waiting for jackd ' + '.' * tries)
-        sleep(.5)
-        tries -= 1
-    # Still will wait a few, convenient for fast CPUs
-    sleep(.5)
-
-    if not tries:
-        # JACK FAILED :-/
-        warnings += ' JACKD FAILED.'
-
-    else:
-        # Adding EXTRA SOUND CARDS resampled into jack, aka 'external_cards'
-        load_extra_cards()
-
-        # Emerging JACKLOOPS (external daemon)
-        run_jloops()
-        if not check_jloops():
-            warnings += ' JACKLOOPS FAILED.'
-
-    if warnings:
-        return warnings.strip()
-    else:
-        return 'done'
+    # Zeroing alsa mixer must be done before restoring
+    # the saved level if alsa mixer is used for volume management.
+    'sound_cards_prepare.py'
+)
 
 
 def start_zita_link():
@@ -297,8 +113,7 @@ def stop_zita_link():
         # LOCAL
         zitajname  = f'zita_n2j_{ raddr.split(".")[-1] }'
         zitapattern  = f'zita-n2j --jname {zitajname}'
-        sp.Popen( ['pkill', '-KILL', '-f',  zitapattern] )
-        sleep(.2)
+        sp.call( ['pkill', '-KILL', '-u', USER, '-f',  zitapattern] )
 
 
 def start_brutefir():
@@ -332,7 +147,7 @@ def manage_server( mode='', service='peaudiosys'):
         print(f'{Fmt.RED}(start) stopping \'server.py {service}\'{Fmt.END}')
         # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
         #              to avoid confusion with 'peaudiosys_ctrl'
-        sp.Popen( f'pkill -KILL -f "server.py {service} " \
+        sp.Popen( f'pkill -KILL -u {USER} -f "server.py {service} " \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
@@ -354,17 +169,22 @@ def stop_processes(mode):
     """ (void)
     """
     def wait4jackdkilled():
-        tries = 20
+
         print('(start) waiting for jackd to be killed ')
+
+        tries = 20
         while tries:
+
             try:
-                sp.check_output('pgrep -f jackd'.split())
+                sp.check_output(f'pgrep -u {USER} -f jackd'.split())
                 tries -= 1
-                sleep(1)
+                sleep(.2)
+
             except:
                 print('(start) jackd was killed')
-                sleep(1)
+                sleep(.2)
                 return
+
         # This should never happen
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
         sys.exit()
@@ -383,70 +203,73 @@ def stop_processes(mode):
     if mode in ('all', 'stop'):
         # Stop Jack Loops Daemon
         print(f'(start) STOPPING JACK LOOPS')
-        sp.Popen('pkill -KILL -f jloops_daemon.py >/dev/null 2>&1', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f jloops_daemon.py >/dev/null 2>&1', shell=True)
         # Stop Brutefir
         print(f'(start) STOPPING BRUTEFIR')
-        sp.Popen('pkill -KILL -f brutefir >/dev/null 2>&1', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f brutefir >/dev/null 2>&1', shell=True)
         # Stop Zita_Link
         if REMOTES:
             print(f'(start) STOPPING ZITA_LINK')
             stop_zita_link()
         # Stop Jack
         print(f'(start) STOPPING JACKD')
-        sp.Popen('pkill -KILL -f jackd >/dev/null 2>&1', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f jackd >/dev/null 2>&1', shell=True)
 
     # This optimizes instead of a fixed sleep
     wait4jackdkilled()
 
 
-def run_special_plugins():
-    """ Special plugins
-
-        - Amplifier switch needs to power on the external DAC in order to
-          by accesible from the alsa module
-
-        - Zeroing alsa mixer must be done before restoring
-          the saved level if alsa mixer is used for volume management.
+def run_init_plugins():
+    """ plugins to run first
     """
 
-    # Using 'call' to wait for the script to finish
-    if 'power_amp_control.py' in CONFIG['plugins']:
-        cmd = f'{MAINFOLDER}/share/plugins/power_amp_control.py start'
-        print(f'(start) starting plugin: power_amp_control.py ...')
-        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    for pname in INIT_PLUGINS:
 
-    if 'sound_cards_prepare.py' in CONFIG['plugins']:
-        cmd = f'{MAINFOLDER}/share/plugins/sound_cards_prepare.py start'
-        print(f'(start) starting plugin: sound_cards_prepare.py ...')
-        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+        if pname in CONFIG['plugins']:
+
+            cmd = f'{MAINFOLDER}/share/plugins/{pname} start'
+            print(f'(start) starting plugin: {pname} ...')
+            sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def run_plugins(mode='start'):
     """ (void)
     """
+
     for plugin in CONFIG['plugins']:
 
-        if plugin == 'sound_cards_prepare.py' or plugin == 'power_amp_control.py':
+        if plugin in INIT_PLUGINS:
             continue
 
-        # (i) Some elements on the plugins list from config.yml can be a dict,
-        #     e.g the ecasound_peq, so we need to extract the plugin name.
-        if type(plugin) == dict:
-            plugin = list(plugin.keys())[0]
+        # Some plugin command line can have options, for example:
+        #   - librespot.py  pulseaudio
+        tmp = plugin.split()
+        pname = tmp[0]
+        if tmp[1:]:
+            options = ' '.join(tmp[1:])
+        else:
+            options = ''
 
-        cmd = f'{MAINFOLDER}/share/plugins/{plugin} {mode}'
+        cmd = f'{MAINFOLDER}/share/plugins/{pname} {mode} {options}'
 
         if mode == 'start':
+
+            try:
+                # (i) we need shell because plugins can be Python, Bash, etc...
+                res = sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr).returncode
+            except Exception as e:
+                res = str(e)
+
             print(f'(start) starting plugin: {plugin} ...')
-            # (i) Notice that we are open to run plugins writen in python, bash, etc...
-            sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
         elif mode == 'stop':
+
             try:
-                ans = sp.check_output(cmd, shell=True).decode()
+                res = sp.Popen(cmd, shell=True).returncode
             except Exception as e:
-                ans = str(e)
-            print(f'(start.py) stopping plugin: {plugin}', ans )
+                res = str(e)
+
+            print(f'(start.py) stopping plugin: {plugin}', res if res else '')
 
         else:
             pass
@@ -547,7 +370,7 @@ def prepare_log_header():
 def usb_dac_watchdog(mode='stop'):
 
     if mode == 'stop':
-        sp.Popen(f'pkill -KILL -f "usb_dac_watchdog.py"', shell=True)
+        sp.Popen(f'pkill -KILL -u {USER} -f "usb_dac_watchdog.py"', shell=True)
 
     elif mode=='start':
 
@@ -611,15 +434,11 @@ if __name__ == "__main__":
         print(f'(start) Bye!')
         sys.exit()
 
-    # SPECIAL PLUGINS.
-    run_special_plugins()
+    # INIT PLUGINS.
+    run_init_plugins()
 
     # STARTING:
     if mode in ('all'):
-
-        # If necessary will prepare DRC GRAPHS for use of the web page
-        if CONFIG["web_config"]["show_graphs"]:
-            prepare_drc_graphs()
 
         # Starting JACK, EXTERNAL_CARDS and JLOOPS
         jack_stuff = start_jack_stuff()
@@ -648,6 +467,10 @@ if __name__ == "__main__":
 
         # - PREAMP  -->  MONITORS
         core.connect_monitors()
+
+        # If necessary will prepare DRC GRAPHS for use of the web page
+        if CONFIG["web_config"]["show_graphs"]:
+            prepare_drc_graphs()
 
         del core
         print(f'{Fmt.MAGENTA}(start) Closing the temporary \'core\' instance.{Fmt.END}')

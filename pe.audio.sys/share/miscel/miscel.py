@@ -15,9 +15,11 @@ import  subprocess as sp
 import  configparser
 import  os
 import  threading
+import  psutil
 
 from    config      import *
 from    fmt         import Fmt
+from    sound_cards import release_cards_from_pulseaudio
 
 # --- pe.audio.sys common usage functions:
 
@@ -33,11 +35,204 @@ def detect_USB_DAC(cname):
     return result
 
 
+def load_extra_cards(config=CONFIG, channels=2):
+    """ This launch resamplers that connects extra sound cards into Jack
+        (void)
+    """
+    jc = config["jack"]
+    if ('external_cards' not in jc) or (not jc["external_cards"]):
+        return
+
+    ext_cards = jc["external_cards"]
+
+    for card, params in ext_cards.items():
+        jack_name = card
+        device    = params['device']
+        resampler = params['resampler']
+
+        if ('resamplingQ' in params) and (params['resamplingQ']):
+            quality = params['resamplingQ']
+        else:
+            quality = ''
+
+        if ('misc_params' in params) and (params['misc_params']):
+            misc = params['misc_params']
+        else:
+            misc = ''
+
+        if (not quality) and ('zita' in resampler):
+                quality == 'auto'
+
+        cmd = f'{resampler} -d {device} -j {jack_name} -c {channels}'
+
+        if quality:
+            cmd += f' -q {quality}'
+
+        if misc:
+            cmd += f' {misc}'
+
+        if 'zita' in resampler:
+            cmd = cmd.replace("-q", "-Q")
+
+        print(f'(start) loading resampled extra card: {card}')
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+
+def start_jack_stuff(config=CONFIG):
+    """ runs jackd with configured options, jack loops and extrernal cards ports
+        (void)
+    """
+    warnings = ''
+
+    jc = config['jack']
+
+    # silent (no Xrun messages)
+    if ('silent' in jc) and (jc["silent"] == True):
+        jOpts = f'-R --silent -d {jc["backend"]}'
+    else:
+        jOpts = f'-R -d {jc["backend"]}'
+
+    # default period and nperiod
+    if ('period' not in jc) or not jc["period"]:
+        jc["period"] = 1024
+    if ('nperiods' not in jc) or not jc["nperiods"]:
+        jc["nperiods"] = 2
+
+    if jc["backend"] != 'dummy':
+        jBkndOpts  = f'-d {jc["device"]} -p {jc["period"]} -n {jc["nperiods"]}'
+    else:
+        jBkndOpts  = f'-p {jc["period"]}'
+
+    # set FS
+    jBkndOpts += f' -r {read_bf_config_fs()}'
+
+    # other backend options (config.yml)
+    if ('miscel' in jc) and (jc["miscel"]):
+        jBkndOpts += f' {jc["miscel"]}'
+
+    # Use 'softmode' for ALSA backend even if not configured under 'miscel:'
+    # (i) This does not disable Xrun printouts if any occurs (see man page)
+    if ('alsa' in jOpts) and ('-s' not in jBkndOpts):
+        jBkndOpts += ' --softmode'
+
+    # Firewire: reset the Firewire Bus and run ffado-dbus-server
+    if jc["backend"] == 'firewire':
+        print(f'{Fmt.BOLD}(start) resetting the FIREWIRE BUS, sorry for users '
+              f'using other FW things :-|{Fmt.END}')
+        sp.Popen('ffado-test BusReset'.split())
+        sleep(1)
+        print(f'{Fmt.BLUE}(start) running FIREWIRE DBUS SERVER ...{Fmt.END}')
+        sp.Popen('killall -KILL ffado-dbus-server', shell=True)
+        sp.Popen('ffado-dbus-server 1>/dev/null 2>&1', shell=True)
+        sleep(2)
+
+    # Pulseaudio
+    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
+                                       shell=True).decode():
+        release_cards_from_pulseaudio()
+
+    # Launch JACKD process
+    with open(f'{LOG_FOLDER}/jackd.log', 'w') as jlog:
+        sp.Popen(f'jackd {jOpts} {jBkndOpts}', shell=True,
+                        stdout=jlog,
+                        stderr=jlog)
+
+    # Will check if JACK ports are available
+    sleep(1)
+    tries = 10
+    while tries:
+        if jack_is_running():
+            print(f'{Fmt.BOLD}{Fmt.BLUE}(start) JACKD STARTED{Fmt.END}')
+            break
+        print(f'(start) waiting for jackd ' + '.' * tries)
+        sleep(.5)
+        tries -= 1
+    # Still will wait a few, convenient for fast CPUs
+    sleep(.5)
+
+    if not tries:
+        # JACK FAILED :-/
+        warnings += ' JACKD FAILED.'
+
+    else:
+        # Adding EXTRA SOUND CARDS resampled into jack, aka 'external_cards'
+        load_extra_cards()
+
+        # Emerging JACKLOOPS (external daemon)
+        run_jloops()
+        if not check_jloops():
+            warnings += ' JACKLOOPS FAILED.'
+
+    if warnings:
+        return warnings.strip()
+    else:
+        return 'done'
+
+
+def run_jloops():
+    """ Jack loops launcher
+        (void)
+    """
+    # Jack loops launcher external daemon
+    sp.Popen(f'{MAINFOLDER}/share/services/preamp_mod/jloops_daemon.py', shell=True)
+
+
+def check_jloops(config=CONFIG):
+    """ Jack loops checking
+        (bool)
+    """
+    # The configured loops
+    cfg_loops = []
+
+    loop_names = ['pre_in_loop']
+
+    for source in config['sources']:
+        pname = config['sources'][source]['jack_pname']
+        if 'loop' in pname and pname not in loop_names:  # avoids duplicates
+            loop_names.append( pname )
+
+    for loop_name in loop_names:
+            cfg_loops.append( f'{loop_name}:input_1' )
+            cfg_loops.append( f'{loop_name}:input_2' )
+            cfg_loops.append( f'{loop_name}:output_1' )
+            cfg_loops.append( f'{loop_name}:output_2' )
+
+    if not cfg_loops:
+        return True
+
+    # Waiting for all loops to be spawned
+    tries = 10
+    while tries:
+        # The running ones
+        run_loops = sp.check_output(['jack_lsp', 'loop']).decode().split()
+        if sorted(cfg_loops) == sorted(run_loops):
+            break
+        sleep(1)
+        tries -= 1
+    if tries:
+        print(f'{Fmt.BLUE}JACK LOOPS RUNNING{Fmt.END}')
+        return True
+    else:
+        print(f'{Fmt.BOLD}JACK LOOPS FAILED{Fmt.END}')
+        return False
+
+
+def jack_is_running():
+    """ checks for jackd process to be running
+        (bool)
+    """
+    try:
+        sp.check_output('jack_lsp >/dev/null 2>&1'.split())
+        return True
+    except sp.CalledProcessError:
+        return False
+
+
 def jackd_process(cname):
     """ Check the if the jackd process is running
     """
     try:
-        tmp = sp.check_output('pgrep -fla jackd'.split()).decode().strip()
+        tmp = sp.check_output(f'pgrep -u {USER} -fla jackd'.split()).decode().strip()
     except:
         tmp = ''
     if cname in tmp:
@@ -65,21 +260,6 @@ def jackd_response(cname=''):
             result = True
 
     return result
-
-
-def process_is_running(pattern):
-    """ check for a system process to be running by a given pattern
-        (bool)
-    """
-    try:
-        # do NOT use shell=True because pgrep ...  will appear it self.
-        plist = sp.check_output(['pgrep', '-fla', pattern]).decode().split('\n')
-    except:
-        return False
-    for p in plist:
-        if pattern in p:
-            return True
-    return False
 
 
 def server_is_running(who_asks='miscel'):
@@ -180,8 +360,7 @@ def manage_amp_switch(mode):
 
         # SHUTDOWN the COMPUTER:
         if 'amp_off_shutdown' in CONFIG and CONFIG['amp_off_shutdown']:
-            sp.Popen('eject /dev/sr0', shell=True)
-            sp.Popen('eject /dev/sr1', shell=True)
+            sp.Popen(f'eject {CONFIG["cdrom_device"]}', shell=True)
             sleep(3)
             sp.Popen('sudo poweroff',  shell=True)
 
@@ -220,6 +399,73 @@ def get_loudness_monitor():
                           'scope': 'album'}
 
         return result
+
+
+def read_mpd_config():
+    """ Currently only the port and the playlists directory
+
+        Example .mpdconf
+
+        port                    "6600"
+        #playlist_directory      "~/.config/mpd/playlists"
+        playlist_directory      "/mnt/qnas/media/playlists/"
+    """
+
+    def get_parameter(line, parameter):
+
+        return line.split(parameter)[1]              \
+                   .strip().split()[0]               \
+                   .replace('"','').replace("'", "")
+
+
+    c = {'port': 6600, 'playlist_directory': UHOME}
+
+    try:
+        with open(f'{UHOME}/.mpdconf', 'r') as f:
+            lines = f.read().split('\n')
+    except:
+        return c
+
+    for line in lines:
+
+        if line and line.strip()[0] != '#':
+
+            if 'playlist_directory' in line:
+
+                tmp = get_parameter(line, 'playlist_directory')
+                if tmp.endswith('/'):
+                    tmp = tmp[:-1]
+
+                c["playlist_directory"] = tmp
+
+            if line.strip()[:4] == 'port':
+
+                try:
+                    c["port"] = int( get_parameter(line, 'port') )
+                except:
+                    c["error"] = 'Error reading MPD port'
+
+    return c
+
+
+def read_bf_config_port():
+    """ Default port: 3000
+    """
+
+    bfport = 3000
+
+    with open(BFCFG_PATH, 'r') as f:
+        lines = f.readlines()
+
+    for l in lines:
+        if 'port:' in l and l.strip()[0] != '#':
+            try:
+                bfport = int([x for x in l.replace(';', '').split()
+                                     if x.isdigit() ][0])
+            except:
+                pass
+
+    return bfport
 
 
 def read_bf_config_fs():
@@ -508,14 +754,14 @@ def detect_spotify_client():
 
     # If using librespot
     try:
-        sp.check_output( 'pgrep -f librespot'.split() )
+        sp.check_output( f'pgrep -u {USER} -f librespot'.split() )
         result = 'librespot'
     except:
         pass
 
     # If using plugins/spotify_monitor.py while running a Spotify Desktop client
     try:
-        sp.check_output( 'pgrep -f spotify_monitor'.split() )
+        sp.check_output( f'pgrep -u {USER} -f spotify_monitor'.split() )
         result = 'desktop'
     except:
         pass
@@ -541,7 +787,14 @@ def read_cdda_info_from_disk():
     """ wrapper for reading the cdda info dict
         (dictionary)
     """
-    return read_json_from_file(CDDA_INFO_PATH)
+
+    result = read_json_from_file( CDDA_INFO_PATH )
+
+    if not result:
+        result = CDDA_INFO_TEMPLATE
+
+    return result
+
 
 
 def read_json_from_file(fpath, timeout=2):
@@ -576,6 +829,35 @@ def read_json_from_file(fpath, timeout=2):
 
 
 # --- Generic purpose functions:
+
+def process_is_running(process_name):
+    # Iterate through all running processes
+    for proc in psutil.process_iter(['cmdline']):
+        try:
+            # (i) proc.info['cmdline']) is a list of command line args
+            cmdline = ' '.join( proc.info['cmdline'] )
+            # Match process name (case-insensitive)
+            if process_name.lower() in cmdline.lower():
+                return True
+        except:
+            pass
+    return False
+
+
+def OLD_process_is_running(pattern):
+    """ check for a system process to be running by a given pattern
+        (bool)
+    """
+    try:
+        # do NOT use shell=True because pgrep ...  will appear it self.
+        plist = sp.check_output(['pgrep', '-u', USER, '-fla', pattern]).decode().split('\n')
+    except:
+        return False
+    for p in plist:
+        if pattern in p:
+            return True
+    return False
+
 
 def kill_bill(pid=0):
     """ Killing previous instances of a process as per its <pid>.
@@ -761,6 +1043,23 @@ def get_my_ip():
         return ''
 
 
+def time_diff(t1, t2):
+    """ input:   <strings> 'MM:SS'
+        returns: <int>  the difference in seconds or <string> Error
+    """
+    try:
+        s1 = int(t1[:2]) * 60 + int(t1[-2:])
+    except Exception as e:
+        return str(e)
+
+    try:
+        s2 = int(t2[:2]) * 60 + int(t2[-2:])
+    except Exception as e:
+        return str(e)
+
+    return s2 - s1
+
+
 def sec2min(s, mode=''):
     """ Format a given float (seconds) to "MMmSSs"
         or to "MM:SS" if mode == ':'
@@ -786,3 +1085,33 @@ def timesec2string(x):
     m = int( x / 60 )           # minutes from the new x
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
+
+
+def msec2str(msec=0, string=''):
+    """ Convert milliseconds <--> string MM:SS.CC
+
+        Give me only one parameter: number or string
+    """
+
+    if msec and string:
+        return 'Error converting msec'
+
+    elif msec:
+
+        sec  = msec / 1e3
+        mm   = f'{sec // 60:.0f}'.zfill(2)
+        ss   = f'{sec %  60:.2f}'.zfill(5)
+
+        return f'{mm}:{ss}'
+
+    elif string:
+
+        mm   = int( string.split(':')[0] )
+        sscc =      string.split(':')[1]
+        ss   = int( sscc.split('.')[0]   )
+        cc   = int( sscc.split('.')[1]   )
+
+        millisec = mm * 60 * 1000 + ss * 1000 + cc * 10
+
+        return millisec
+

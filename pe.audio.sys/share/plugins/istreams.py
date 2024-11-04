@@ -34,7 +34,7 @@ import  os
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import check_Mplayer_config_file, Fmt
+from miscel import check_Mplayer_config_file, Fmt, USER
 
 
 # Mplayer options:
@@ -118,7 +118,7 @@ def start():
 
 def stop():
     # Killing our mplayer instance
-    call( ['pkill', '-KILL', '-f', 'profile istreams'] )
+    call( ['pkill', '-u', USER, '-KILL', '-f', 'profile istreams'] )
 
 
 if __name__ == '__main__':

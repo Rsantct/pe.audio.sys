@@ -5,6 +5,8 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
+    *** OBSOLETE ***  2024-11 cdda playback was replaced by MPD
+
     Start or stop Mplayer for CDDA playback.
 
     Also used to CD play control and disk eject.
@@ -20,8 +22,11 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config import CONFIG, MAINFOLDER
+from    config import CONFIG, MAINFOLDER, USER
 from    miscel import check_Mplayer_config_file, Fmt
+
+# CD-ROM device
+CDROM_DEVICE = CONFIG['cdrom_device']
 
 
 ## --- Mplayer options ---
@@ -44,14 +49,6 @@ del(f)
 redirection_path = f'{MAINFOLDER}/.cdda_events'
 
 
-## cdrom device to use
-try:
-    CDROM_DEVICE = CONFIG['cdrom_device']
-except:
-    CDROM_DEVICE = '/dev/cdrom'
-    print(f'(CDDA.py) Using default \'{CDROM_DEVICE}\'')
-
-
 def eject():
     sp.Popen( f'eject {CDROM_DEVICE}'.split() )
 
@@ -69,7 +66,7 @@ def start():
 
 
 def stop():
-    sp.Popen( ['pkill', '-KILL', '-f', 'profile cdda'] )
+    sp.Popen( ['pkill', '-u', USER, '-KILL', '-f', 'profile cdda'] )
 
 
 if __name__ == '__main__':

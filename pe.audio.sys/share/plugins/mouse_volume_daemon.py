@@ -11,6 +11,7 @@
 import sys
 import os
 from subprocess import Popen
+from getpass import getuser
 
 THISDIR =  os.path.dirname( os.path.realpath(__file__) )
 
@@ -22,7 +23,7 @@ def start():
 
 def stop():
     # arakiri
-    Popen( 'pkill -KILL -f mouse_volume_daemon.py'.split() )
+    Popen( f'pkill -u {getuser()} -KILL -f mouse_volume_daemon.py', shell=True )
 
 
 if __name__ == "__main__":

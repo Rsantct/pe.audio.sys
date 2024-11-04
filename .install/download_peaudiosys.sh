@@ -31,7 +31,7 @@ fi
 
 if [ $automode -eq 0 ]; then
     echo
-    echo "WARNING: Will download from: [ ""$gitsite"" ]"
+    echo "WARNING: Will download from: ""$gitsite""/""$branch"
     read -r -p "         Is this OK? [y/N] " tmp
     if [ "$tmp" != "y" ] && [ "$tmp" != "Y" ]; then
         echo 'Bye.'

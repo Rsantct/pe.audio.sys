@@ -47,7 +47,7 @@ function do_start {
         while [[ $n -gt 0 ]]; do
             # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
             #              to avoid confusion with 'peaudiosys_ctrl'
-            if [[ $(pgrep -fla "server.py peaudiosys ") ]]; then
+            if [[ $(pgrep -fla "server.py peaudiosys " -u $USER) ]]; then
                 ok='true'
                 break
             fi

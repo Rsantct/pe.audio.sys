@@ -21,7 +21,7 @@
     *** Multicast UDP must be used in a dedicated wired Ethernet LAN ***
 
     (!) UPDATE:
-    
+
     Currently pe.audio.sys integrates a point to point zita-njbridge system.
     Please see doc/Multiroom
 
@@ -29,6 +29,7 @@
 import sys
 import subprocess as sp
 from os import uname
+from getpass import getuser
 
 
 # Additional buffering (ms) (default 10, safe value 50, WiFi 100)
@@ -86,7 +87,7 @@ def start():
 
 
 def stop():
-    sp.Popen( 'pkill -KILL zita-n2j'.split() )
+    sp.Popen( f'pkill -u {getuser()} -KILL zita-n2j', shell=True )
 
 
 if __name__ == '__main__':

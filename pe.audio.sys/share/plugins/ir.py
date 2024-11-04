@@ -13,16 +13,19 @@
 import  sys
 import  os
 from    subprocess import Popen, call
+from    getpass import getuser
 
 UHOME    = os.path.expanduser("~")
 THISPATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def stop():
-    call( ['pkill', '-f', CMDLINE] )
+    call( ['pkill', '-u', getuser(), '-f', CMDLINE] )
+
 
 def start():
     Popen( CMDLINE.split() )
+
 
 if __name__ == '__main__':
 

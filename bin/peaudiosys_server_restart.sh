@@ -49,7 +49,7 @@ if [[ ! $server_is_runnnig ]]; then
 fi
 # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
 #              to avoid confusion with 'peaudiosys_ctrl'
-pkill -KILL -f "server.py peaudiosys "
+pkill -KILL -u $USER -f "server.py peaudiosys "
 if [[ $opc == *'stop'* ]]; then
     exit 0
 fi

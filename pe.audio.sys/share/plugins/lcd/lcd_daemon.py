@@ -371,7 +371,7 @@ def update_lcd_metadata(scr='scr_1'):
     def compose_marquee(md):
         tmp = ''
         for k, v in md.items():
-            if k in ('artist', 'album', 'title') and v != '-':
+            if k in ('artist', 'album', 'title') and v and v != '-':
                 tmp += k[:2] + ':' + str(v).replace('"', '\\"') + ' '
         return tmp[:-1]
 

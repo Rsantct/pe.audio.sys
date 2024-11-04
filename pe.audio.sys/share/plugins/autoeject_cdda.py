@@ -8,6 +8,8 @@
     A pe.audio.sys daemon to auto eject a CD-Audio when playback is over
 
     Usage:  auteject_cdda.py  start | stop  &
+
+    (needs:  udisks2, usbmount)
 """
 
 from    os.path import expanduser
@@ -20,63 +22,66 @@ UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    miscel  import  read_state_from_disk, read_metadata_from_disk, \
-                        LOG_FOLDER
+                        time_diff, LOG_FOLDER, USER
 
 
 def main_loop():
 
-    def eject_job(timer=5):
-        """ Runs forever every 5 sec:
-            - Reads the playback files to detect when a CD disc is over,
-              then ejects the disc.
-            - Waits the timer
+    def eject_job(timer=3):
+        """ Runs forever every <time> sec: reads the playback files
+            to detect when a CD disc is over, then ejects the disc.
         """
 
         disc_is_over    = False
 
         while True:
 
-            md = read_metadata_from_disk()
-            if not md:
+            if not read_state_from_disk()['input'].lower() == 'cd':
+                sleep(timer)
                 continue
 
-            # check if source = 'cd'
-            if read_state_from_disk()['input'].lower() == 'cd':
+            md = read_metadata_from_disk()
+            if not md:
+                sleep(timer)
+                continue
 
-                # check if the track being playe is last one,
-                # also avoids bare default metadata
-                if md["track_num"] == md["tracks_tot"] and \
-                   md["time_tot"][-2:].isdigit()       and \
-                   md["time_tot"]   != '00:00':
 
-                    # time_pos could not reach time_tot by ~2 sec :-/
-                    if md["time_pos"][3:-1] == md["time_tot"][:-1]:
-                        if abs( int(md["time_pos"][-2:]) -
-                                int(md["time_tot"][-2:]) )  <= 2:
-                            disc_is_over = True
+            track_num = md["track_num"]    # '2'
+            tracks    = md["tracks_tot"]   # '6'
+            time_pos  = md["time_pos"]     # '01:23'
+            time_tot  = md["time_tot"]     # '12:34'
 
+            if time_tot[-2:].isdigit() and time_tot != '00:00' \
+               and track_num == tracks:
+
+                diff = time_diff(time_pos, time_tot)
+                if type(diff) != str:
+                    if abs( diff ) < 4.0:
+                        disc_is_over = True
 
             if disc_is_over:
-                tmp = f'{ctime()} tpos: {md["time_pos"]}, ttot: {md["time_tot"]}'
+
+                tmp = f'{ctime()} tpos: {time_pos}, ttot: {time_tot}'
                 print(f'(autoeject_cdda) {tmp}')
                 with open(logPath, 'a') as f:
                     f.write(f'{tmp}, ejecting disc.\n')
-                sleep(2) # courtesy wait
+
+                # real audio can be buffered several seconds
+                sleep(10)
+
                 Popen("peaudiosys_control player eject".split())
                 print(f'(autoeject_cdda) CD playback is over, disc ejected.')
                 disc_is_over = False
 
-            # sleep timer
             sleep(timer)
 
 
-    # Thread the job
     job_loop = threading.Thread( target=eject_job, args=() )
     job_loop.start()
 
 
 def stop():
-    call( ['pkill', '-KILL', '-f', 'autoeject_cdda.py start'] )
+    call( ['pkill', '-u', USER, '-KILL', '-f', 'autoeject_cdda.py start'] )
 
 
 if __name__ == '__main__':

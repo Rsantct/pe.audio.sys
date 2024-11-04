@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
+    !!! ACHTUNG this is purely GEEK  >:-)
+
     Alternates between two loudspeaker sets, both attached to differents
-    channels ports from the same system sound card.
+    channels ports from THE SAME system sound card.
 
     You need to prepare a macro file whose filename must contain the
     belonging loudspeaker name.
 
-    ACHTUNG this is purely GEEK  >:-)
 """
 import os
 import  sys
@@ -28,6 +29,22 @@ LSPK_B = "cardiojorns"
 DRC_B  = 'equilat'
 ################################################################
 
+def trigger_DAC_poweron():
+    tmp = ''
+    try:
+        tmp = check_output('sispmctl -g 1', shell=True).decode()
+    except:
+        pass
+
+    if 'off' in tmp:
+        print('Switching ON the DAC switch ...')
+        call(f'{UHOME}/bin/regleta.py off 4', shell=True)
+        call(f'{UHOME}/bin/regleta.py on 1', shell=True)
+        sleep(2)
+        Popen(f'{UHOME}/bin/regleta.py on 4', shell=True)
+    else:
+        print('DAC switch is already ON')
+
 
 if __name__ == "__main__":
 
@@ -39,6 +56,10 @@ if __name__ == "__main__":
     else:
         new_lspk = LSPK_A
         new_drc  = DRC_A
+
+    # Topping DAC needs to be triggered (this takes ~1 s if already on)
+    if 'DynC5' in new_lspk:
+        trigger_DAC_poweron()
 
     # Must define at least lmMY_LSPK['lspk_name'] before calling lm.main()
     lm.MY_LSPK['lspk_name'] = new_lspk

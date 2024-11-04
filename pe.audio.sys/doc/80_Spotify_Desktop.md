@@ -4,7 +4,7 @@ Running the official client is the preferred option, because it provides complet
 
 You need a Linux amd64 machine (PC/Mac), but ARM is not still supported :-/
 
-## Download and logging account
+## Download and log in
 
 Download Spotify Desktop client following instructions from the official site:
 
@@ -17,6 +17,16 @@ https://www.spotify.com/es/download/linux/
 First time you need to connect a keyboard and mouse, then login with your credentials.
 
 Later, you can consider a 'headless' Desktop system, by auto login on your desktop, see below.
+
+### Limit the disk cache size
+
+The Linux client may consume a lot of disk space for storing cache, and currently the configuration interface only offers clearing the cache.
+
+For 1 Gb limit, add the following line in **`/home/$USER/snap/spotify/current/.config/spotify/prefs`**
+
+        storage.size=1024
+
+If you installed Spotify in Ubuntu via apititude, the config file is `~/.var/app/com.spotify.Client/config/spotify/prefs`
 
 
 ## pe.audio.sys configuration

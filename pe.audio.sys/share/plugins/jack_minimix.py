@@ -32,6 +32,7 @@
 """
 import argparse
 import sys
+from getpass import getuser
 from os.path import expanduser
 from os import chdir
 from subprocess import Popen, check_output, call
@@ -59,7 +60,7 @@ def start_brutefir():
 
 
 def stop_brutefir():
-    Popen( 'pkill -KILL -f brutefir >/dev/null 2>&1', shell=True )
+    Popen( f'pkill -u {getuser()} -KILL -f brutefir >/dev/null 2>&1', shell=True )
 
 
 def check_fullrange():
@@ -98,7 +99,7 @@ def start_mixer():
 
 def stop_mixer():
     # Kills the mixer
-    call( 'pkill -f "jackminimix -p"', shell=True )
+    call( f'pkill -u {getuser()} -f "jackminimix -p"', shell=True )
     # Restarts Brutefir
     # (!!!) BE SURE that your brutefir_config has a 50dB initial level atten.
     start_brutefir()

@@ -41,6 +41,7 @@ sys.path.append(f'{MAINFOLDER}/share/miscel')
 
 import  peq_mod as pm
 
+from    miscel import USER
 
 VERBOSE = False
 
@@ -96,7 +97,7 @@ def start():
 def stop():
 
     # Killing
-    Popen( ['pkill', '-f', f'ecasound -q --server'] )
+    Popen( ['pkill', '-f', f'ecasound -q --server', '-u', USER] )
     if VERBOSE:
         print( f'(ecasound_peq) killing Ecasound ...' )
 
