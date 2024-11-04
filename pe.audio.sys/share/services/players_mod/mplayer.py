@@ -6,8 +6,8 @@
 
 """ A module to players.py to deal with playing services supported by Mplayer:
         DVB-T
-        CDDA
         istreams
+        CDDA        2024-11 not on use, cdda playback was replaced by MPD
 """
 
 # (i) I/O FILES MANAGED HERE:
@@ -59,9 +59,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from    config import   MAINFOLDER
 from    miscel import   timesec2string, read_last_lines, \
                         process_is_running, read_cdda_info_from_disk
-
-sys.path.append( os.path.dirname(__file__) )
-import cdda
+import  cdda
 
 
 def timestring2sec(t):
