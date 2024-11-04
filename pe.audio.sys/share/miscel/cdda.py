@@ -10,7 +10,7 @@
 import  musicbrainzngs as mz
 import  json
 import  sys
-from    os
+import  os
 from    miscel import CONFIG, CDDA_INFO_PATH, CDDA_INFO_TEMPLATE, \
                       Fmt, msec2str, read_mpd_config
 
