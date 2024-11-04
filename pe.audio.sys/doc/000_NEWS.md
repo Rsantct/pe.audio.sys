@@ -104,7 +104,8 @@ See the `doc/` folder for detailed information about this.
 - Audio format and bitrate info in control web
   
 ## Nov 2024, version 1.0l
-- CD playback leaves Mplayer and runs with MPD
-- New Brutefir peaks monitor plugin and web page
-- Scripts to help while testing a loudspeaker design at `bin/peaudiosys_test/` 
+- CD playback leaves Mplayer and runs with MPD.
+- Web page includes wifi, temperature and fan speed info.
+- New Brutefir peaks monitor plugin with a dedicated web page `http://<IP>/monitor.html`.
+- Scripts to help while testing a loudspeaker design at `bin/peaudiosys_test/`.
   
