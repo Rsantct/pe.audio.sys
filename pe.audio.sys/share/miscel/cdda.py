@@ -6,28 +6,11 @@
 
 """ A module to manage CD-AUDIO
 """
-# (i) I/O FILES MANAGED HERE:
-#
-# .cdda_info        'w'     CDDA album and tracks info in json format.
-#
-#   Example:
-#
-#   {   'artist': 'xxxx',
-#        'album': 'xxxx',
-#            '1': { 'title': 'xxxx', 'length': 'mm:ss.cc' }
-#            '2': { ... ...
-#            ...
-#   }
-#
 
 import  musicbrainzngs as mz
 import  json
 import  sys
-from    os.path import expanduser
-
-UHOME = expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
-
+from    os
 from    miscel import CONFIG, CDDA_INFO_PATH, CDDA_INFO_TEMPLATE, \
                       Fmt, msec2str, read_mpd_config
 
@@ -38,7 +21,6 @@ except Exception as e:
     print(f'{Fmt.BOLD}{Fmt.BLINK}Have you activated your Python Virtual Environment?{Fmt.END}')
 
 
-
 ## cdrom device to use
 if 'cdrom_device' in CONFIG:
     CDROM_DEVICE = CONFIG['cdrom_device']
@@ -47,7 +29,14 @@ else:
     print(f'{Fmt.BLUE}(cdda.py) Using default \'{CDROM_DEVICE}\'{Fmt.END}')
 
 
+UHOME                 = os.path.expanduser("~")
 CDDA_MUSICBRAINZ_PATH = f'{UHOME}/pe.audio.sys/.cdda_musicbrainz'
+
+# (i) I/O FILES MANAGED HERE:
+#
+# pe.audio.sys/.cdda_info           CDDA album and tracks info in json format for players use
+# pe.audio.sys/.cdda_musicbrainz    dump file with no use
+# MPD_playlist_folder/cdda.m3u      M3U CD playlist to be loaded from MPD
 
 
 def _get_disc_metadata(device=CDROM_DEVICE):
