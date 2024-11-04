@@ -103,3 +103,7 @@ See the `doc/` folder for detailed information about this.
 - A macro template to playing an akamaized m3u8 stream througby MPD (some internet radios as RTVE)
 - Audio format and bitrate info in control web
   
+## Nov 2024, version 1.0l
+- CD playback leaves Mplayer and runs with MPD
+- New Brutefir peaks monitor plugin and web page 
+  
