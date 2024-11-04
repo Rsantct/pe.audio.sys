@@ -14,17 +14,15 @@
 
 import  os
 import  sys
-from    time import sleep
+from    time    import sleep
 import  pyudev
-from    subprocess import check_output, Popen, run
+from    subprocess  import check_output, Popen, run
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
-sys.path.append(f'{UHOME}/pe.audio.sys/share/services')
 
-from    miscel              import send_cmd, get_macros, USER, CONFIG
-
-from    players_mod.cdda    import dump_cdda_metadata
+from    miscel  import send_cmd, get_macros, USER, CONFIG
+from    cdda    import dump_cdda_metadata
 
 
 # autoplay mode: if False will only load the disc.
