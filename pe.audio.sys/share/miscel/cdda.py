@@ -142,6 +142,10 @@ def _get_disc_metadata(device=CDROM_DEVICE):
 
         mz_md = result['cdstub']
 
+        # JUST MAKE A SIMPLE MD
+        return simple_md(disc)
+
+        # NOT USED BECAUSE FAKE DATA
         if 'artist' in mz_md:
             md['artist'] = mz_md['artist']
         elif 'artist-credit-phrase' in mz_md:
