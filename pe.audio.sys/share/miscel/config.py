@@ -48,25 +48,23 @@ AUX_INFO_PATH       = f'{MAINFOLDER}/.aux_info'
 AMP_STATE_PATH      = f'{UHOME}/.amplifier'
 
 PLAYER_META_PATH    = f'{MAINFOLDER}/.player_metadata'
-METATEMPLATE        = {
-                'player':       '',
-                'time_pos':     '-',
-                'time_tot':     '-',
-                'bitrate':      '-',
-                'format':       '-:-:2',
-                'file':         '',
-                'artist':       '-',
-                'album':        '-',
-                'title':        '-',
-                'track_num':    '-',
-                'tracks_tot':   '-'
-                }
+METATEMPLATE        = { 'player':       '',
+                        'time_pos':     '',
+                        'time_tot':     '',
+                        'bitrate':      '',
+                        'format':       '-:-:2',
+                        'file':         '',
+                        'artist':       '',
+                        'album':        '',
+                        'title':        '',
+                        'track_num':    '',
+                        'tracks_tot':   ''
+                      }
 
 CDDA_INFO_PATH      = f'{MAINFOLDER}/.cdda_info'
 # cdda info template with a fake track #1
-CDDA_INFO_TEMPLATE = { 'discid': '', 'artist': '-', 'album': '-',
-                       'tracks': {
-                                    '1': {'title': '-', 'length': '00:00.00'}
+CDDA_INFO_TEMPLATE = { 'discid': '', 'artist': '', 'album': '',
+                       'tracks': { '1': {'title': '', 'length': '00:00.00'}
                        }
                      }
 
