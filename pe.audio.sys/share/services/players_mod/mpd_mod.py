@@ -225,7 +225,7 @@ def mpd_meta( md=METATEMPLATE.copy() ):
     def get_bitrate_from_format(f):
         """ example '44100:16:2'
         """
-        br = '-'
+        br = ''
         try:
             a,b,c = f.split(':')
             br = round(int(a) * int(b) * int(c) / 1e6, 3)
@@ -277,7 +277,7 @@ def mpd_meta( md=METATEMPLATE.copy() ):
             md['title']     = cs['file'].split('/')[-1]
 
         if 'file' in cs:
-            md['file'] = cs["file"]
+            md['file']      = cs["file"]
 
             if not 'album' in cs:
                 # Try to put the URL site as 'album', if available
@@ -291,12 +291,12 @@ def mpd_meta( md=METATEMPLATE.copy() ):
     if 'bitrate' in st:
         # playing wav/aiff/cdda files gives bitrate: '0'
         if st['bitrate'] != '0':
-            md['bitrate']       = st['bitrate']  # kbps
+            md['bitrate']   = st['bitrate']  # kbps
 
     if 'audio' in st:
         md['format'] = st['audio']
 
-        if md['bitrate'] == '-':
+        if not md['bitrate']:
             md['bitrate'] = get_bitrate_from_format( md['format'] )
 
     if 'time' in st:
@@ -305,8 +305,8 @@ def mpd_meta( md=METATEMPLATE.copy() ):
         md["time_tot"] = sec2min( int( st["time"].split(':')[1] ), mode=':')
 
 
-    # special case CD audio we need to read track metadata
-    # from a file previously saved to disk
+    # Special case CD audio we need to read artist and album
+    # from the .cdda_info file previously saved to disk
     if 'file' in cs and 'cdda:/' in cs["file"]:
 
         curr_cd_track =  cs["file"].split('/')[-1]
