@@ -12,7 +12,7 @@ from watchdog.observers     import  Observer
 from watchdog.events        import  FileSystemEventHandler
 import  jack
 import  subprocess as sp
-from    time                import  sleep
+from    time                import  sleep, ctime
 import  os
 import  sys
 import  threading
@@ -33,9 +33,9 @@ def dump_aux_info():
         by third party processes
     """
     # Dynamic updates
-    AUX_INFO['amp']              = manage_amp_switch( 'state' )
-    AUX_INFO['loudness_monitor'] = get_loudness_monitor()
-    AUX_INFO['sysmon']           = get_sysmon('wlan0')
+    AUX_INFO['amp']                     = manage_amp_switch( 'state' )
+    AUX_INFO['loudness_monitor']        = get_loudness_monitor()
+    AUX_INFO['sysmon']                  = get_sysmon('wlan0')
 
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
@@ -121,8 +121,27 @@ def get_sysmon(w_iface='wlan0'):
         return temp
 
 
+    def get_fans_speed(get_zero_rmp=False):
+        """
+        """
+        fans = {'fan1':'', 'fan2':'', 'fan3':'', }
+        hw_dir = '/sys/class/hwmon/hwmon1'
+        for i in 1,2,3:
+            try:
+                with open(f'{hw_dir}/fan{i}_input', 'r') as f:
+                    x = f.read().strip()
+                    if int(x) or get_zero_rmp:
+                        fans[f"fan{i}"] = x
+            except:
+                pass
+
+        return fans
+
+
+
     return  {   'wifi': get_wifi( w_iface),
-                'temp': get_temp()
+                'temp': get_temp(),
+                'fans': get_fans_speed()
             }
 
 
@@ -150,13 +169,14 @@ def get_web_config():
 
 
 def run_macro(mname):
+
     if mname in get_macros():
+
         print( f'(aux) running macro: {mname}' )
         sp.Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
         AUX_INFO["last_macro"] = mname
-        # for others to have fresh 'last_macro'
-        dump_aux_info()
         return 'ordered'
+
     else:
         return 'macro not found'
 
@@ -217,7 +237,6 @@ def peq_load(peqpath):
     if res == 'done':
         AUX_INFO["peq_set"] = os.path.basename(peqpath).replace('.peq','')
         AUX_INFO['peq_bypassed'] = eca_bypass('get')
-        dump_aux_info()
 
     return res
 
@@ -231,7 +250,6 @@ def peq_bypass(mode):
     newmode = eca_bypass(mode)
 
     AUX_INFO['peq_bypassed'] = newmode
-    dump_aux_info()
 
     return f'{newmode}'
 
@@ -302,7 +320,7 @@ def warning_expire(timeout=5):
     def mytimer(timeout):
         sleep(timeout)
         AUX_INFO['warning'] = ''
-        dump_aux_info()
+
     job = threading.Thread(target=mytimer, args=(timeout,))
     job.start()
 
@@ -319,7 +337,6 @@ def manage_warning_msg(arg):
             result = 'warning message in use'
         else:
             AUX_INFO['warning'] = ' '.join(args[1:])
-            dump_aux_info()
             warning_expire(timeout=60)
             result = 'done'
 
@@ -329,12 +346,10 @@ def manage_warning_msg(arg):
             result = 'warning message in use'
         else:
             AUX_INFO['warning'] = ' '.join(args[1:])
-            dump_aux_info()
             result = 'done'
 
     elif args[0] == 'clear':
         AUX_INFO['warning'] = ''
-        dump_aux_info()
         result = 'done'
 
     elif args[0] == 'get':
@@ -368,6 +383,119 @@ def alert_new_eq_graph(timeout=1):
     job.start()
     AUX_INFO['new_eq_graph'] = True
     return f'alerting for {timeout} s'
+
+
+def get_bf_peaks(only_today=True):
+    """ from brutefir_peaks.log
+    """
+
+    def get_peaks_header(pline):
+        """ Extract output names (2 characters) from a brutefir peaks log line
+            with heading spaces in order to be aligned with the below lines
+
+                                   27   -->    +12
+        Fri Sep 20 12:47:40 2024   lo.L:  5.3  mi.L:  6.2  hi.L: 10.1  lo.R:  5.4  mi.R:  5.5  hi.R: 10.1
+        """
+
+        ptail = pline[27:]
+
+        header = ' ' * 27
+        i = 0
+        channel = ptail[i + 3]
+        while i < len(ptail):
+
+            # add spaces when channel changes
+            if channel != ptail[i + 3]:
+                header += ' ' * 3
+            channel = ptail[i + 3]
+
+            header += ptail[i:i + 12][:2] + '    '
+
+            i += 12
+
+        #                        LO    MI    HI        LO    MI    HI
+        return header.upper()
+
+
+    def remove_labels(pline):
+        """ Extract output peak values from a brutefir peaks log line
+            with spacing in order to be aligned with the header line.
+
+                                   27   -->    +12
+        Fri Sep 20 12:47:40 2024   lo.L:  5.3  mi.L:  6.2  hi.L: 10.1  lo.R:  5.4  mi.R:  5.5  hi.R: 10.1
+        """
+
+        pdate = pline[:27]
+        ptail = pline[27:]
+
+        values = ''
+        i = 0
+        ch = ptail[i + 3]
+        while i < len(ptail):
+
+            # add spaces when channel changes
+            if ch != ptail[i + 3]:
+                values += ' ' * 3
+            ch = ptail[i + 3]
+
+            values += ptail[i:i + 12][6:]
+
+            i += 12
+
+        pline = pdate + '   ' + values
+
+        # Fri Sep 20 12:48:02 2024      1.2   2.3  10.1      5.4   5.5  10.1
+        return pline
+
+
+    result = { 'header': '', 'peaks': [] }
+
+    try:
+        with open(f'{LOG_FOLDER}/brutefir_peaks.log', 'r') as f:
+            peaks = f.read().split('\n')
+    except:
+        result["header"] = 'Error reading peaks'
+        return result
+
+    # Example:
+    #      0        9          20
+    #   [ 'Thu Sep 19 21:05:19 2024   lo.L:  5.3  mi.L:  5.9 ...',
+    #     'Thu Sep 19 21:05:33 2024   ... ....',
+    #      ... ]
+
+
+    # Prepare the header
+    header = ''
+    if peaks:
+        header = get_peaks_header(peaks[0])
+
+
+    # Let's keep the timestamp and values, removing the 'out.ch:' labels
+    for n, pline in enumerate(peaks):
+        if not pline:
+            continue
+        peaks[n] = remove_labels( pline )
+
+
+    # removing the day, month and year and shorten the header line
+    if only_today:
+
+        header = header[13:]
+
+        #           10        20
+        #           |         |
+        # Fri Sep 20 12:48:02 2024
+        today = ctime()
+
+        peaks = [x[11:19] + '  ' + x[27:] for x in peaks
+                         if  x[:10]   == today[:10]
+                         and x[20:24] == today[20:24] ]
+
+
+    result["header"] = header
+    result["peaks"]  = peaks
+
+    return result
 
 
 def get_help():
@@ -444,14 +572,16 @@ def do( cmd, arg=None ):
 
     cmd = cmd.lower()
 
-    if   cmd == 'amp_switch':
-        result = manage_amp_switch(arg)
+
+    # Dump AUX_INFO is NOT needed
+    if   cmd == 'peak_monitor_running':
+        result = process_is_running('peak_monitor.py')
+
+    elif cmd == 'get_bf_today_peaks':
+        result = get_bf_peaks(only_today=True)
 
     elif cmd == 'get_macros':
         result = get_macros()
-
-    elif cmd == 'run_macro':
-        result = run_macro(arg)
 
     elif cmd == 'play_url':
         result = play_url(arg)
@@ -471,26 +601,39 @@ def do( cmd, arg=None ):
     elif cmd == 'zita_j2n':
         result = zita_j2n(arg)
 
-    elif cmd == 'peq_bypass':
-        result = peq_bypass(arg)
-
-    elif cmd == 'peq_load':
-        result = peq_load(arg)
-
-    elif cmd == 'warning':
-        result = manage_warning_msg(arg)
-
     elif cmd == 'get_web_config':
         result = get_web_config()
-
-    elif cmd == 'alert_new_eq_graph':
-        result = alert_new_eq_graph()
 
     elif cmd == 'help':
         result = get_help()
 
+
+    # Dump AUX_INFO is needed
     else:
-        result = f'(aux) bad command \'{cmd}\''
+
+        if   cmd == 'amp_switch':
+            result = manage_amp_switch(arg)
+
+        elif cmd == 'run_macro':
+            result = run_macro(arg)
+
+        elif cmd == 'peq_bypass':
+            result = peq_bypass(arg)
+
+        elif cmd == 'peq_load':
+            result = peq_load(arg)
+
+        elif cmd == 'warning':
+            result = manage_warning_msg(arg)
+
+        elif cmd == 'alert_new_eq_graph':
+            result = alert_new_eq_graph()
+
+        else:
+            return f'(aux) bad command \'{cmd}\''
+
+        dump_aux_info()
+
 
     return result
 

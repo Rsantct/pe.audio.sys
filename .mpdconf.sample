@@ -44,6 +44,8 @@ database {
 input {
     plugin  "cdio_paranoia"
     speed   "1"
+    # mode disable|overlap|full
+    mode    "overlap"
 }
 
 audio_output {

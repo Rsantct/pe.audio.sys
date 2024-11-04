@@ -8,7 +8,26 @@
     A pe.audio.sys daemon to autoplay a CD-Audio when inserted
 
     Usage:  autoplay_cdda.py  start | stop  &
+
+    (needs:  udisks2, usbmount)
 """
+
+import  os
+import  sys
+from    time    import sleep
+import  pyudev
+from    subprocess  import check_output, Popen, run
+
+UHOME = os.path.expanduser("~")
+sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
+
+from    miscel  import send_cmd, get_macros, USER, CONFIG
+from    cdda    import dump_cdda_metadata
+
+
+# autoplay mode: if False will only load the disc.
+AUTO_PLAY = True
+
 
 # To check your devices from command line:
 # $ udevadm monitor
@@ -24,36 +43,35 @@
 #       python-dev libcdio-dev libiso9660-dev swig pkg-config
 # Workaround: lets use 'cdinfo' from 'cdtool' package (cdrom command line tools)
 
-import  os
-import  sys
-from    time import sleep
-import  pyudev
-from    subprocess import check_output, Popen
-
-UHOME = os.path.expanduser("~")
-sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
-sys.path.append(f'{UHOME}/pe.audio.sys/share/services')
-
-from    miscel              import send_cmd, get_macros, USER
-from    players_mod.cdda    import save_disc_metadata
 
 ME = 'autoplay_cdda'
 
-# OPTIONAL USER CONFIG
-USE_CD_MACRO = False
 
-
-def find_cd_macro():
-    """ Looks for a macro named 'NN_cd' or similar, if not found
-        then returns a fake macro name.
+def clear_CDDA():
+    """ clear the player queue (needed only if MPD is used to play CD Audio)
     """
-    result = '-'    # a fake macro name
-    mNames = get_macros()
-    for mName in mNames:
-        if '_cd' in mName.lower():
-            result = mName
-            break
-    return result
+    if 'mpd' in CONFIG['sources']['cd']['jack_pname']:
+        Popen( f'mpc clear'.split() )
+
+
+def load_CDDA():
+
+    if 'mpd' in CONFIG['sources']['cd']['jack_pname']:
+        run('mpc clear'.split())
+        run('mpc consume off'.split())
+        run('mpc load cdda'.split())
+
+    send_cmd( 'player pause', sender=ME, verbose=True )
+    send_cmd( 'aux warning clear', sender=ME, verbose=True, timeout=1 )
+    send_cmd( 'aux warning set disc loading ...', sender=ME, verbose=True, timeout=1 )
+    send_cmd( 'aux warning expire 10', sender=ME, verbose=True, timeout=1 )
+    send_cmd( 'preamp input cd', sender=ME, verbose=True )
+    sleep(.5)
+
+    # (!) Ordering 'play' will BLOCK the server while
+    #     waiting for the disc to be loaded
+    if AUTO_PLAY:
+        send_cmd( 'player play', sender=ME, verbose=True )
 
 
 def check_for_CDDA(d):
@@ -61,49 +79,32 @@ def check_for_CDDA(d):
     srDevice = d.device_path.split('/')[-1]
     CDROM = f'/dev/{srDevice}'
 
-    def autoplay_CDDA():
-
-        cd_macro_found = False
-
-        if USE_CD_MACRO:
-            mName = find_cd_macro()
-            if mName == '-':
-                cd_macro_found = True
-                send_cmd( f'aux run_macro {mName}' )
-
-        if not cd_macro_found:
-            send_cmd( 'player pause', sender=ME, verbose=True )
-            send_cmd( 'aux warning clear', sender=ME, verbose=True, timeout=1 )
-            send_cmd( 'aux warning set disc loading ...', sender=ME, verbose=True, timeout=1 )
-            send_cmd( 'aux warning expire 10', sender=ME, verbose=True, timeout=1 )
-            send_cmd( 'preamp input cd', sender=ME, verbose=True )
-            sleep(.5)
-            # (!) Ordering 'play' will BLOCK the server while
-            #     waiting for the disc to be loaded
-            send_cmd( 'player play',                      sender=ME, verbose=True )
-
-
     # Verbose if not CDDA detected
     try:
         # $ cdinfo -a # will output: no_disc | data_disc | xx:xx.xx
         tmp = check_output( f'cdinfo -a -d {CDROM}'.split() ).decode().strip()
 
+        # CD-Audio detected
         if ':' in tmp:
-            print( f'(autoplay_cdda) trying to play the CD Audio disk' )
-            # autoplay the disc
-            autoplay_CDDA()
 
-        elif 'no_disc' in tmp:
-            print( f'(autoplay_cdda) no disc' )
-            # flushing .cdda_info
-            save_disc_metadata()
+            # dumping metadata to a file to be used later from the underlaying player
+            dump_cdda_metadata()
+            print( f'(autoplay_cdda) trying to load the CD Audio' )
+            load_CDDA()
 
+        # Data disc
         elif 'data_disc' in tmp:
             print( f'(autoplay_cdda) data disc' )
-            # flushing .cdda_info
-            save_disc_metadata()
+            clear_CDDA()
 
-    except:
+        # No disc
+        elif 'no_disc' in tmp:
+            print( f'(autoplay_cdda) no disc' )
+            clear_CDDA()
+
+
+    except Exception as e:
+        print( f'(autoplay_cdda) {str(e)}' )
         print( f'(autoplay_cdda) This plugin needs \'cdtool\' (command line cdrom tool)' )
 
 

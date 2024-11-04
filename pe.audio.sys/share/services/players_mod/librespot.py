@@ -81,7 +81,7 @@ def librespot_meta(md):
         # /bin/librespot ... --bitrate 320 ...
         librespot_bitrate = tmp.split('--bitrate')[1].split()[0].strip()
     except:
-        librespot_bitrate = '-'
+        librespot_bitrate = ''
 
 
     # Fixed metadata

@@ -6,8 +6,8 @@
 
 """ A module to players.py to deal with playing services supported by Mplayer:
         DVB-T
-        CDDA
         istreams
+        CDDA        2024-11 not on use, cdda playback was replaced by MPD
 """
 
 # (i) I/O FILES MANAGED HERE:
@@ -56,11 +56,10 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config import    MAINFOLDER
-from    miscel import    timesec2string, read_last_lines, process_is_running
-
-sys.path.append( os.path.dirname(__file__) )
-import cdda
+from    config import   MAINFOLDER
+from    miscel import   timesec2string, read_last_lines, \
+                        process_is_running, read_cdda_info_from_disk
+import  cdda
 
 
 def timestring2sec(t):
@@ -85,16 +84,20 @@ def cdda_is_loaded():
     # Avoid writing to a FIFO if mplayer was not working for some reason
     if not process_is_running('cdda_fifo'):
         return False
+
     # Querying Mplayer to get the FILENAME
     # (if it results void it means no playing)
     with open(f'{MAINFOLDER}/.cdda_fifo', 'w') as f:
         f.write('get_file_name\n')
     sleep(.1)
+
     with open(f'{MAINFOLDER}/.cdda_events', 'r') as f:
         tmp = f.read().split('\n')
+
     for line in tmp[-2:]:
         if line.startswith('ANS_FILENAME='):
             return True
+
     return False
 
 
@@ -107,7 +110,7 @@ def cdda_load():
     print( f'(mplayer) loading disk ...' )
 
     # Save disk info into a json file
-    cdda.save_disc_metadata()
+    cdda.dump_cdda_metadata()
 
     # Loading disc in Mplayer
     cmd = 'pausing loadfile \'cdda://1-100:1\''
@@ -158,8 +161,8 @@ def cdda_get_current_track():
         cummTracksLength = 0.0
         trackPos = 0.0
         # Iterate tracks until discPos is exceeded
-        while str(trackNum) in cd_info:
-            trackLength = timestring2sec(cd_info[str(trackNum)]['length'])
+        while str(trackNum) in cd_info["tracks"]:
+            trackLength = timestring2sec(cd_info["tracks"][str(trackNum)]['length'])
             cummTracksLength += trackLength
             if cummTracksLength > discPos:
                 trackPos = discPos - ( cummTracksLength - trackLength )
@@ -168,11 +171,7 @@ def cdda_get_current_track():
         return trackNum, trackPos
 
     # We need the cd_info tracks list dict
-    try:
-        with open(cdda.CDDA_INFO_PATH, 'r') as f:
-            cd_info = json.loads( f.read() )
-    except:
-        cd_info = cdda.CDDA_INFO_TEMPLATE.copy()
+    cd_info = read_cdda_info_from_disk()
 
     discPos             = get_disc_pos()
     trackNum, trackPos  = calc_track_and_pos(discPos)
@@ -185,9 +184,10 @@ def cdda_get_current_track():
     return trackNum, trackPos
 
 
-def pre_connect(mode, pname=cdda.CD_JACK_PNAME):
+def pre_connect(mode, pname):
     """ Manage Mplayer jack ports connections to preamp ports.
     """
+
     # (i) Mplayer cdda pausing becomes on strange behavior,
     #     a stutter audio frame stepping phenomena,
     #     even if a 'pausing_keep mute 1' command was issued.
@@ -252,12 +252,16 @@ def mplayer_playlists(cmd, arg='', service=''):
     """ This works only for CDDA
     """
     result = []
+
     if service == 'cdda':
+
         if cmd == 'list_playlist':
-            with open(cdda.CDDA_INFO_PATH, 'r') as f:
-                cd_info = json.loads( f.read() )
-            for tnum in [x for x in cd_info.keys() if x.isdigit()]:
-                result.append( cd_info[tnum]['title'] )
+
+            cd_info = read_cdda_info_from_disk()
+
+            for tnum in cd_info["tracks"]:
+                result.append( cd_info["tracks"][tnum]['title'] )
+
     return result
 
 
@@ -292,18 +296,23 @@ def mplayer_control(cmd, arg='', service=''):
     if cmd.startswith('get_'):
         send_mplayer_cmd( cmd, service )
         return status
+
     # Early return if STATE or NOT SUPPORTED command:
     elif cmd == 'state'or cmd not in supported_commands:
         return status
 
     # Special command EJECT
     if cmd == 'eject':
+
         Popen( f'eject {cdda.CDROM_DEVICE}'.split() )
+
         # Flush .cdda_info
         with open( cdda.CDDA_INFO_PATH, 'w') as f:
             f.write( json.dumps( cdda.CDDA_INFO_TEMPLATE.copy() ) )
+
         # Flush Mplayer playlist and player status file
         send_mplayer_cmd('stop', service)
+
         return playing_status(service)
 
 
@@ -346,20 +355,23 @@ def mplayer_control(cmd, arg='', service=''):
             cmd = 'stop'
 
         elif cmd == 'pause' and status == 'play':
-            cmd = 'pausing pause'               # Mplayer will toggle to pause
-            pre_connect('off')
+            cmd = 'pausing pause'                       # will toggle to pause
+            pre_connect('off', pname=CONFIG['sources']['cd']['jack_pname'])
 
         elif cmd == 'play':
+
             # Loading (and playing) disc if necessary
             if not cdda_is_loaded():
                 cdda_load()
+
             else:
                 if status == 'pause':
-                    cmd = 'pausing_togle pause'       # Mplayer will toggle to play
+                    cmd = 'pausing_togle pause'         # will toggle to play
                 else:
                     cmd = ''
 
         elif cmd == 'play_track':
+
             # Loading disc if necessary
             if not cdda_is_loaded():
                 cdda_load()
@@ -378,7 +390,7 @@ def mplayer_control(cmd, arg='', service=''):
         status = playing_status(service)
 
         if status == 'play':
-            pre_connect('on')
+            pre_connect('on', pname=CONFIG['sources']['cd']['jack_pname'])
 
     else:
         print( f'(mplayer) unknown Mplayer service \'{service}\'' )
@@ -407,11 +419,7 @@ def mplayer_get_meta(md, service):
         curr_track, trackPos = cdda_get_current_track()
 
         # We need the cd_info tracks list dict
-        try:
-            with open(cdda.CDDA_INFO_PATH, 'r') as f:
-                cd_info = json.loads( f.read() )
-        except:
-            cd_info = cdda.CDDA_INFO_TEMPLATE.copy()
+        cd_info = read_cdda_info_from_disk()
 
         # Updating md fields:
         md['track_num'] = '1'
@@ -496,7 +504,7 @@ def mplayer_get_meta(md, service):
 
 # Autoexec when loading this module
 def init():
-    cdda.save_disc_metadata()
+    cdda.dump_cdda_metadata()
 
 # Autoexec when loading this module
 init()

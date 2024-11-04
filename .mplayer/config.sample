@@ -16,7 +16,10 @@
 [dvb]
 ao=jack:name=mplayer_dvb:noconnect
 
+[istreams]
+ao=jack:name=mplayer_istreams:noconnect
 
+# OBSOLETE: before 2024-11 CD playback was in charge of Mplayer, currently it works with MPD.
 [cdda]
 ao=jack:name=mplayer_cdda:noconnect
 speed=1
@@ -26,8 +29,5 @@ cache=4000
 # Playback will start when the cache has been filled up to <cache-min=percentage> of the total.
 cache-min=99 
 
-
-[istreams]
-ao=jack:name=mplayer_istreams:noconnect
 
 

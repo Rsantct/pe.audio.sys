@@ -15,6 +15,7 @@ import  subprocess as sp
 import  configparser
 import  os
 import  threading
+import  psutil
 
 from    config      import *
 from    fmt         import Fmt
@@ -400,30 +401,51 @@ def get_loudness_monitor():
         return result
 
 
-def read_mpd_config_port():
-    """ Default port: 6600
+def read_mpd_config():
+    """ Currently only the port and the playlists directory
+
+        Example .mpdconf
+
+        port                    "6600"
+        #playlist_directory      "~/.config/mpd/playlists"
+        playlist_directory      "/mnt/qnas/media/playlists/"
     """
 
-    mpdport = 6600
+    def get_parameter(line, parameter):
 
-    with open(f'{UHOME}/.mpdconf', 'r') as f:
-        lines = f.readlines()
+        return line.split(parameter)[1]              \
+                   .strip().split()[0]               \
+                   .replace('"','').replace("'", "")
 
-    for l in lines:
 
-        if 'port' in l and l.strip()[0] != '#':
+    c = {'port': 6600, 'playlist_directory': UHOME}
 
-            print(l)
+    try:
+        with open(f'{UHOME}/.mpdconf', 'r') as f:
+            lines = f.read().split('\n')
+    except:
+        return c
 
-            try:
-                mpdport = int([x for x in l.replace('"', '').split()
-                                     if x.isdigit() ][0])
-                break
+    for line in lines:
 
-            except:
-                pass
+        if line and line.strip()[0] != '#':
 
-    return mpdport
+            if 'playlist_directory' in line:
+
+                tmp = get_parameter(line, 'playlist_directory')
+                if tmp.endswith('/'):
+                    tmp = tmp[:-1]
+
+                c["playlist_directory"] = tmp
+
+            if line.strip()[:4] == 'port':
+
+                try:
+                    c["port"] = int( get_parameter(line, 'port') )
+                except:
+                    c["error"] = 'Error reading MPD port'
+
+    return c
 
 
 def read_bf_config_port():
@@ -765,7 +787,14 @@ def read_cdda_info_from_disk():
     """ wrapper for reading the cdda info dict
         (dictionary)
     """
-    return read_json_from_file(CDDA_INFO_PATH)
+
+    result = read_json_from_file( CDDA_INFO_PATH )
+
+    if not result:
+        result = CDDA_INFO_TEMPLATE
+
+    return result
+
 
 
 def read_json_from_file(fpath, timeout=2):
@@ -801,7 +830,21 @@ def read_json_from_file(fpath, timeout=2):
 
 # --- Generic purpose functions:
 
-def process_is_running(pattern):
+def process_is_running(process_name):
+    # Iterate through all running processes
+    for proc in psutil.process_iter(['cmdline']):
+        try:
+            # (i) proc.info['cmdline']) is a list of command line args
+            cmdline = ' '.join( proc.info['cmdline'] )
+            # Match process name (case-insensitive)
+            if process_name.lower() in cmdline.lower():
+                return True
+        except:
+            pass
+    return False
+
+
+def OLD_process_is_running(pattern):
     """ check for a system process to be running by a given pattern
         (bool)
     """
@@ -1000,6 +1043,23 @@ def get_my_ip():
         return ''
 
 
+def time_diff(t1, t2):
+    """ input:   <strings> 'MM:SS'
+        returns: <int>  the difference in seconds or <string> Error
+    """
+    try:
+        s1 = int(t1[:2]) * 60 + int(t1[-2:])
+    except Exception as e:
+        return str(e)
+
+    try:
+        s2 = int(t2[:2]) * 60 + int(t2[-2:])
+    except Exception as e:
+        return str(e)
+
+    return s2 - s1
+
+
 def sec2min(s, mode=''):
     """ Format a given float (seconds) to "MMmSSs"
         or to "MM:SS" if mode == ':'
@@ -1025,3 +1085,33 @@ def timesec2string(x):
     m = int( x / 60 )           # minutes from the new x
     s = int( round(x % 60) )    # and seconds
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
+
+
+def msec2str(msec=0, string=''):
+    """ Convert milliseconds <--> string MM:SS.CC
+
+        Give me only one parameter: number or string
+    """
+
+    if msec and string:
+        return 'Error converting msec'
+
+    elif msec:
+
+        sec  = msec / 1e3
+        mm   = f'{sec // 60:.0f}'.zfill(2)
+        ss   = f'{sec %  60:.2f}'.zfill(5)
+
+        return f'{mm}:{ss}'
+
+    elif string:
+
+        mm   = int( string.split(':')[0] )
+        sscc =      string.split(':')[1]
+        ss   = int( sscc.split('.')[0]   )
+        cc   = int( sscc.split('.')[1]   )
+
+        millisec = mm * 60 * 1000 + ss * 1000 + cc * 10
+
+        return millisec
+

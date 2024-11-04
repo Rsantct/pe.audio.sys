@@ -5,6 +5,8 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
+    *** OBSOLETE ***  2024-11 cdda playback was replaced by MPD
+
     Start or stop Mplayer for CDDA playback.
 
     Also used to CD play control and disk eject.

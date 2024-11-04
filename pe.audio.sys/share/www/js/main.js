@@ -503,7 +503,7 @@ function page_update() {
         function fill_in_track_selector() {
             // getting tracks
             try{
-                var tracks = JSON.parse( control_cmd( 'player list_playlist' ) );
+                var tracks = JSON.parse( control_cmd( 'player get_playlist' ) );
             }catch(e){
                 console.log( e.name, e.message );
                 return;
@@ -550,9 +550,11 @@ function page_update() {
         // Displays the track selector if input == 'cd'
         if ( state.input == "cd") {
             document.getElementById( "track_selector").style.display = "inline";
+            document.getElementById( "playlist_selector").style.display = "none";
         }
         else {
             document.getElementById( "track_selector").style.display = "none";
+            document.getElementById( "playlist_selector").style.display = "inline";
         }
 
         // Clears the CD track selector when expired
@@ -609,9 +611,27 @@ function page_update() {
         let sysmon = '';
         const temp = aux_info.sysmon.temp
         const wifi = aux_info.sysmon.wifi
+        const fan1 = aux_info.sysmon.fans.fan1
+        const fan2 = aux_info.sysmon.fans.fan2
+        const fan3 = aux_info.sysmon.fans.fan3
+
+        let fans = ''
+        if (fan1){
+            fans += fan1
+        }
+        if (fan2){
+            fans += ',' + fan2
+        }
+        if (fan3){
+            fans += ',' + fan3
+        }
 
         if (temp){
             sysmon += 'temp: ' + temp + 'º';
+        }
+
+        if (fans){
+            sysmon += ' | fan: ' + fans + ' rpm';
         }
 
         if (! isEmpty(wifi)){
