@@ -178,6 +178,12 @@ sources:
         gain:           0.0
         xo:
 
+    cd:
+        gain:           0.0
+        jack_pname:     mpd_loop
+        lu_offset:      3.0
+        xo:
+
     istreams:
         jack_pname:     mplayer_istreams    # (i) same in ~/.mplayer/config
         gain:           0.0
@@ -243,9 +249,6 @@ plugins:
 
     ## DVB-T player based on Mplayer, useful for DVB-T radio stations:
     #- DVB-T.py
-
-    ## A Mplayer based CDDA player:
-    #- CDDA.py
 
     ## A daemon to autoplay a CD-Audio when inserted
     #- autoplay_cdda.py
