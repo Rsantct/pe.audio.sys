@@ -11,6 +11,7 @@ import  musicbrainzngs as mz
 import  json
 import  sys
 import  os
+from    socket import gethostname
 from    miscel import CONFIG, CDDA_INFO_PATH, CDDA_INFO_TEMPLATE, \
                       Fmt, msec2str, read_mpd_config
 
@@ -262,11 +263,11 @@ def _save_cdda_playlist(md={}, mode='m3u'):
 
     if mode == 'm3u':
         tmp = make_m3u( md )
-        fname = f'{ read_mpd_config()["playlist_directory"] }/cdda.m3u'
+        fname = f'{ read_mpd_config()["playlist_directory"] }/cdda_{gethostname()}.m3u'
 
     elif mode == 'pls':
         tmp = make_pls( md )
-        fname = f'{ read_mpd_config()["playlist_directory"] }/cdda.pls'
+        fname = f'{ read_mpd_config()["playlist_directory"] }/cdda_{gethostname()}.pls'
 
     else:
         return
