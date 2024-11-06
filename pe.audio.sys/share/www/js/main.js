@@ -376,7 +376,7 @@ function init(){
 
     fill_in_macro_buttons();
 
-    fill_in_playlists_selector();
+    fill_in_playlists_selector( get_playlists() );
 
     show_hide_LU_frame();
 
@@ -500,32 +500,6 @@ function page_update() {
         }
 
 
-        function fill_in_track_selector() {
-            // getting tracks
-            try{
-                var tracks = JSON.parse( control_cmd( 'player get_playlist' ) );
-            }catch(e){
-                console.log( e.name, e.message );
-                return;
-            }
-            // clearing selector options
-            select_clear_options("track_selector");
-            // Filling in options in a selector
-            // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
-            var mySel = document.getElementById("track_selector");
-            var option = document.createElement("option");
-            option.text = '--';
-            mySel.add(option);
-            for ( const i in tracks) {
-                var option = document.createElement("option");
-                option.text = tracks[i];
-                mySel.add(option);
-            }
-            mySel.add(option);
-        }
-
-
-
         player_controls_update(     player_info.state       );
         player_metadata_update(     player_info.metadata    );
         player_random_mode_update(  player_info.random_mode );
@@ -538,8 +512,9 @@ function page_update() {
 
         // Updates the playlist loader when input source changed, keep hidden if empty.
         if (last_input != state.input){
-            const plists = fill_in_playlists_selector();
+            const plists = get_playlists();
             if ( plists.length > 0 ) {
+                fill_in_playlists_selector( plists );
                 document.getElementById( "playlist_selector").style.display = "inline";
             }else{
                 document.getElementById( "playlist_selector").style.display = "none";
@@ -1267,16 +1242,31 @@ function state_get() {
 }
 
 
-function fill_in_playlists_selector() {
+function get_playlists() {
 
-    // getting playlists
     var plists = [];
     try{
         plists = JSON.parse( control_cmd( 'player get_playlists' ) );
     }catch(e){
         console.log( 'response error to \'get_playlists\'', e.message );
-        return plists;
     }
+    return plists;
+}
+
+
+function get_tracks() {
+
+    var tracks = [];
+    try{
+        var tracks = JSON.parse( control_cmd( 'player get_playlist' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+    }
+    return tracks
+}
+
+
+function fill_in_playlists_selector(plists) {
 
     // clearing selector options
     select_clear_options("playlist_selector");
@@ -1295,8 +1285,27 @@ function fill_in_playlists_selector() {
     var option = document.createElement("option");
     option.text = '-CLEAR-';
     mySel.add(option);
+}
 
-    return plists
+
+function fill_in_track_selector() {
+
+    const tracks = get_tracks();
+
+    // clearing selector options
+    select_clear_options("track_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("track_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( const i in tracks) {
+        var option = document.createElement("option");
+        option.text = tracks[i];
+        mySel.add(option);
+    }
+    mySel.add(option);
 }
 
 
