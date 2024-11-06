@@ -160,41 +160,56 @@ def _get_disc_metadata(device=CDROM_DEVICE):
         else:
             track_list   = []
 
-    # Lets complete our track list structure inside the 'md' template
-    for pos, track in enumerate( track_list ):
 
-        # Retrieve track length
+    # Lets complete our track list structure inside the 'md' template
+    for n, track in enumerate( track_list ):
+
+        # Retrieve the track length MM:SS.CC
 
         # from normal 'disc':
         if 'recording' in track and 'length' in track['recording']:
-            lengthStr = msec2str( float(track['recording']['length']) )
+            t_len = msec2str( float(track['recording']['length']) )
 
         # from some 'cdstub':
         elif 'length' in track:
-            lengthStr = msec2str( float(track['length']) )
+            t_len = msec2str( float(track['length']) )
 
         # from some 'cdstub':
         elif 'track_or_recording_length' in track:
-            lengthStr = msec2str( float(track['track_or_recording_length']) )
-        else:
-            lengthStr = msec2str( 0.0 )
+            t_len = msec2str( float(track['track_or_recording_length']) )
 
-        # Retrieve track title
+        else:
+            t_len = msec2str( 0.0 )
+
+        #  Retrieve the track title
         if 'recording' in track and 'title' in track['recording']:
-            track_title = track['recording']['title']
+            t_tit = track['recording']['title']
 
         elif 'title' in track:
-            track_title = track['title']
+            t_tit = track['title']
 
-        # Some track names can contain the album title, this is redundant
-        if md["album"] in track_title:
-            track_title = track_title.replace(md["album"], '')
-            if track_title[0] in (':', ',', '.'):
-                track_title = track_title[1:].strip()
+        # some track names can be prefixed with the album title, this is redundant
+        if md["album"] in t_tit:
 
-        # adding to our metadata disc structure
-        md["tracks"][ str(pos + 1) ] = { 'title':  track_title,
-                               'length': lengthStr }
+            new_t_tit = t_tit.replace(md["album"], '').strip()
+
+            # avoid leaving blank if the track and the album titles are equals
+            if new_t_tit:
+                t_tit = new_t_tit
+
+            # removing some possible prefix separators
+            if t_tit[0] in (':', ',', '.'):
+                t_tit = t_tit[1:].strip()
+
+        # Retrieve the track position
+        if 'position' in track and track["position"]:
+            t_pos = str(track["position"])
+        else:
+            t_pos = str(n + 1)
+
+        # Adding to our metadata disc structure
+        md["tracks"][ t_pos ] = { 'title':  t_tit,
+                                 'length': t_len }
 
     return md
 
