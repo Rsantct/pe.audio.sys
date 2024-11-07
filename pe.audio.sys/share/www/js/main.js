@@ -1254,11 +1254,23 @@ function get_playlists() {
 }
 
 
-function get_tracks() {
+function get_playlist() {
+
+    var playlist = [];
+    try{
+        playlist = JSON.parse( control_cmd( 'player get_playlist' ) );
+    }catch(e){
+        console.log( e.name, e.message );
+    }
+    return playlist
+}
+
+
+function get_cd_track_nums() {
 
     var tracks = [];
     try{
-        var tracks = JSON.parse( control_cmd( 'player get_playlist' ) );
+        tracks = JSON.parse( control_cmd( 'player get_cd_track_nums' ) );
     }catch(e){
         console.log( e.name, e.message );
     }
@@ -1290,7 +1302,11 @@ function fill_in_playlists_selector(plists) {
 
 function fill_in_track_selector() {
 
-    const tracks = get_tracks();
+    // This get the track numbers
+    //const tracks = get_cd_track_nums();
+
+    // This gets the track numbers and titles
+    const tracks = get_playlist();
 
     // clearing selector options
     select_clear_options("track_selector");
