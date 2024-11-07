@@ -61,12 +61,11 @@ PLAYER_METATEMPLATE = { 'player':       '',
                         'tracks_tot':   ''
                       }
 
+
 CDDA_MUSICBRAINZ_PATH = f'{UHOME}/pe.audio.sys/.cdda_musicbrainz'
 CDDA_META_PATH        = f'{MAINFOLDER}/.cdda_metadata'
-# needs a fake track #1
 CDDA_META_TEMPLATE    = { 'discid': '', 'artist': '', 'album': '',
-                          'tracks': { '1': {'title': '', 'length': '00:00.00'}
-                                    }
+                          'tracks': { }
                         }
 
 
