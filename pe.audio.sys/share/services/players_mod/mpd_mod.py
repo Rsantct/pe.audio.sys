@@ -45,7 +45,7 @@ def ping_mpd():
 
         try:
             print(f'{Fmt.GRAY}(mpd_mod.py) Trying to connect ... .. .{Fmt.END}')
-            c.connect('localhost', MPD_PORT, timeout=3)
+            c.connect('localhost', MPD_PORT, timeout=30)
             print(f'{Fmt.BLUE}(mpd_mod.py) Connected to MPD{Fmt.END}')
             sleep(.1)
             return True
