@@ -17,7 +17,7 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 sys.path.append( os.path.dirname(__file__) )
 
-from miscel import timesec2string as timeFmt, sec2min, Fmt,     \
+from miscel import time_sec2hhmmss, time_sec2mmss, Fmt,     \
                    read_mpd_config, read_cdda_meta_from_disk,   \
                    PLAYER_METATEMPLATE
 
@@ -341,8 +341,8 @@ def mpd_meta( md=PLAYER_METATEMPLATE.copy() ):
 
     if 'time' in st:
         # time is given as a string 'current:total', each part in seconds
-        md["time_pos"] = sec2min( int( st["time"].split(':')[0] ), mode=':')
-        md["time_tot"] = sec2min( int( st["time"].split(':')[1] ), mode=':')
+        md["time_pos"] = time_sec2mmss( int( st["time"].split(':')[0] ))
+        md["time_tot"] = time_sec2mmss( int( st["time"].split(':')[1] ))
 
 
     # Special case CD audio we need to read artist and album
