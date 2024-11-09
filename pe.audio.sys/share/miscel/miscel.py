@@ -1060,9 +1060,12 @@ def time_diff(t1, t2):
     return s2 - s1
 
 
-def sec2min(s, mode=''):
-    """ Format a given float (seconds) to "MMmSSs"
-        or to "MM:SS" if mode == ':'
+def time_sec2mmss(s, mode=':'):
+    """ Format a given float (seconds)
+
+        to      "MM:SS"
+        or to   "MMmSSs"    if mode != ':'
+
         (string)
     """
     m = int(s // 60)
@@ -1075,7 +1078,7 @@ def sec2min(s, mode=''):
         return f'{str(m).rjust(2,"0")}m{str(s).rjust(2,"0")}s'
 
 
-def timesec2string(x):
+def time_sec2hhmmss(x):
     """ Format a given float (seconds) to "hh:mm:ss"
         (string)
     """
@@ -1087,7 +1090,7 @@ def timesec2string(x):
     return f'{h:0>2}:{m:0>2}:{s:0>2}'
 
 
-def msec2str(msec=0, string=''):
+def time_msec2mmsscc(msec=0, string=''):
     """ Convert milliseconds <--> string MM:SS.CC
 
         Give me only one parameter: number or string
