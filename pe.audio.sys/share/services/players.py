@@ -121,10 +121,13 @@ def get_meta():
     source_port = read_state_from_disk()['input_port']
 
     if 'librespot' in source or 'spotify' in source.lower():
+
         if SPOTIFY_CLIENT == 'desktop':
             md = spotify_meta(md)
+
         elif SPOTIFY_CLIENT == 'librespot':
             md = librespot_meta(md)
+
         # source is spotify like but no client running has been detected:
         else:
             md['player'] = 'Spotify'
@@ -143,6 +146,7 @@ def get_meta():
         md = mpd_meta(md)
 
     elif source.startswith('remote'):
+
         # For a 'remote.....' named source, it is expected to have
         # an IP address kind of in its jack_pname field:
         #   jack_pname:  X.X.X.X:PPPP
@@ -284,18 +288,23 @@ def get_all_info():
 
 
 # Autoexec when loading this module
-def init():
+def loop_getting_metadata():
     """ This init function will thread the storing metadata LOOP FOREVER
     """
 
     def store_meta_loop(period=2):
+
         global CURRENT_MD
+
         while True:
+
             # Update the global runtime variable CURRENT_MD
             CURRENT_MD = get_meta()
+
             # Save metadata to disk file.
             with open(PLAYER_META_PATH, 'w') as f:
                 f.write( json.dumps( CURRENT_MD ) )
+
             # Wait for period
             sleep(period)
 
@@ -352,4 +361,4 @@ def do(cmd, arg):
 
 
 # Autoexec when loading this module
-init()
+loop_getting_metadata()
