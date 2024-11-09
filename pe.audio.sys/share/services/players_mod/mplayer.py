@@ -57,7 +57,7 @@ UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config import   MAINFOLDER
-from    miscel import   timesec2string, read_last_lines, \
+from    miscel import   time_sec2hhmmss, read_last_lines, \
                         process_is_running, read_cdda_meta_from_disk
 import  cdda
 
@@ -424,7 +424,7 @@ def mplayer_get_meta(md, service):
         # Updating md fields:
         md['track_num'] = '1'
         md['bitrate'] = '1411'
-        md['track_num'], md['time_pos'] = str(curr_track), timesec2string(trackPos)
+        md['track_num'], md['time_pos'] = str(curr_track), time_sec2hhmmss(trackPos)
         md['artist'] = cd_info['artist']
         md['album'] = cd_info['album']
         if md['track_num'] in cd_info.keys():
