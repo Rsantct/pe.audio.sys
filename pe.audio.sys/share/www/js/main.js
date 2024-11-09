@@ -484,7 +484,11 @@ function page_update() {
             if (d['time_pos']) {
                 document.getElementById("time").innerText    = d['time_pos'] + "\n" + d['time_tot'];
             } else {
-                document.getElementById("time").innerText = "-"
+                if (d['time_tot']){
+                    document.getElementById("time").innerText    = "-\n" + d['time_tot'];
+                } else {
+                    document.getElementById("time").innerText = "-"
+                }
             }
             if (d['album']) {
                 document.getElementById("album").innerText   = d['album'];
