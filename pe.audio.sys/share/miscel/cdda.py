@@ -14,7 +14,7 @@ import  os
 from    socket import gethostname
 from    miscel import CONFIG, CDDA_META_PATH, CDDA_META_TEMPLATE,   \
                       CDDA_MUSICBRAINZ_PATH,                        \
-                      Fmt, msec2str, read_mpd_config
+                      Fmt, time_msec2mmsscc, read_mpd_config
 
 try:
     import  discid
@@ -94,7 +94,7 @@ def _get_disc_metadata(device=CDROM_DEVICE):
             trackLen = ( track_sectors[i] - track_sectors[i - 1] ) / 75
 
             smd["tracks"][str(trackNum)] = {'title': 'track ' + f'{trackNum}'.zfill(2),
-                                 'length': msec2str(trackLen * 1e3)}
+                                 'length': time_msec2mmsscc(trackLen * 1e3)}
 
         return smd
 
@@ -160,18 +160,18 @@ def _get_disc_metadata(device=CDROM_DEVICE):
 
         # from normal 'disc':
         if 'recording' in track and 'length' in track['recording']:
-            t_len = msec2str( float(track['recording']['length']) )
+            t_len = time_msec2mmsscc( float(track['recording']['length']) )
 
         # from some 'cdstub':
         elif 'length' in track:
-            t_len = msec2str( float(track['length']) )
+            t_len = time_msec2mmsscc( float(track['length']) )
 
         # from some 'cdstub':
         elif 'track_or_recording_length' in track:
-            t_len = msec2str( float(track['track_or_recording_length']) )
+            t_len = time_msec2mmsscc( float(track['track_or_recording_length']) )
 
         else:
-            t_len = msec2str( 0.0 )
+            t_len = time_msec2mmsscc( 0.0 )
 
         #  Retrieve the track title
         if 'recording' in track and 'title' in track['recording']:
@@ -217,7 +217,7 @@ def _save_cdda_playlist( md={} ):
 
         for k, v in md["tracks"].items():
 
-            durationms = msec2str( string=v["length"] )
+            durationms = time_msec2mmsscc( string=v["length"] )
             durationsec = str( int(round( durationms / 1e3, 0)) )
 
             m3u += '#EXTINF:'
@@ -236,7 +236,7 @@ def _save_cdda_playlist( md={} ):
 
         for k, v in md["tracks"].items():
 
-            duration = msec2str( string=v["length"] )
+            duration = time_msec2mmsscc( string=v["length"] )
 
             pls +=  '    <track>\n'
             pls += f'      <location>cdda:///{k}</location>\n'
