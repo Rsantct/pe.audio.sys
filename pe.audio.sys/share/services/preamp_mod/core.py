@@ -121,7 +121,7 @@ def powersave_loop( convolver_off_driver, convolver_on_driver,
         # No level detected
         if dBFS < NOISE_FLOOR and lowSigElapsed >= MAX_WAIT:
             if bf.is_running():
-                print(f'(powersave) low level during {time_sec2mmss(MAX_WAIT)}, '
+                print(f'(powersave) low level during {time_sec2mmss(MAX_WAIT, mode="__m__s")}, '
                        'requesting to stop Brutefir' )
                 convolver_off_driver.set()
 
