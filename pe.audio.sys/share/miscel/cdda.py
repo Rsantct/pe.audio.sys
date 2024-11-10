@@ -150,7 +150,7 @@ def _get_disc_metadata(device=CDROM_DEVICE):
         mz_md = mz_result['cdstub']
 
         # JUST MAKE A SIMPLE MD
-        return simple_md(disc_obj)
+        return simple_md(disc)
 
 
     # Lets complete our track list structure inside the 'md' template
