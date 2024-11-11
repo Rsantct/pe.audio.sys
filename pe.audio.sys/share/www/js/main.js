@@ -232,7 +232,7 @@ function manage_main_cside(){
     if (aux_info.warning !== ''){
         main_cside_msg = aux_info.warning;
     }else if (state.convolver_runs==false){
-        main_cside_msg = '( sleeping )';
+        main_cside_msg = state.loudspeaker + ' ( sleeping )';
     }else{
         if (hold_cside_msg > 0){
             hold_cside_msg -= 1;
