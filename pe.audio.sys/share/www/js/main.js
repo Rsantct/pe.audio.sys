@@ -1149,6 +1149,7 @@ function ck_display_advanced(mode) {
         document.getElementById("format_file").style.display = "table-row";
         document.getElementById("div_advanced_controls").style.display = "block";
         document.getElementById("main_lside").style.display = "table-cell";
+        document.getElementById("landscape").style.display = "table-cell";
         document.getElementById("sysmon").style.display = "table-cell";
         document.getElementById("SoloInfo").style.display = "table-cell";
         document.getElementById("PolarityInfo").style.display = "table-cell";
@@ -1161,6 +1162,7 @@ function ck_display_advanced(mode) {
         document.getElementById("format_file").style.display = "none";
         document.getElementById("div_advanced_controls").style.display = "none";
         document.getElementById("main_lside").style.display = "none";
+        document.getElementById("landscape").style.display = "none";
         document.getElementById("sysmon").style.display = "none";
         document.getElementById("SoloInfo").style.display = "none";
         document.getElementById("PolarityInfo").style.display = "none";
