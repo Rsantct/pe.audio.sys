@@ -173,6 +173,11 @@ def get_web_config():
 
 def run_macro(mname):
 
+    if not mname or 'clear_last' in mname:
+
+        AUX_INFO["last_macro"] = ''
+        return 'last_macro cleared'
+
     if mname in get_macros():
 
         print( f'(aux) running macro: {mname}' )
