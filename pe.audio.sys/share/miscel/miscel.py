@@ -338,11 +338,19 @@ def manage_amp_switch(mode):
     else:
         result = '(aux) bad amp_switch option'
 
+
     if new_state:
+
+        # Clear last_macro info whenever the amp is switched
+        send_cmd('aux run_macro clear_last_macro')
+
+        # Set the new amp switch mode
         result = set_amp_state( new_state )
 
-    # Wake up the convolver if sleeping:
+
     if new_state == 'on':
+
+        # Wake up the convolver if sleeping:
         send_cmd('aux warning set ( waking up ... )', timeout=1)
         sleep(1)
         send_cmd('preamp convolver on', timeout=1)
