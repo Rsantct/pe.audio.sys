@@ -26,34 +26,14 @@ from    time import sleep
 import  datetime
 
 UHOME = os.path.expanduser("~")
+sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
+
+from miscel import kill_bill
 
 MPD_PORT = 6600
 LOG_PATH = f'{UHOME}/pe.audio.sys/log/play_m3u8.log'
 
 mpdcli = mpd.MPDClient()
-
-
-def kill_me():
-    """ Kill any previous instance of this"""
-
-    me = os.path.basename(sys.argv[0])
-
-    for proc in psutil.process_iter():
-
-        try:
-            if proc.name() == "python.exe" or proc.name() == "python3":
-
-                for cmdline in proc.cmdline():
-
-                    if me in cmdline:
-                        # Avoids harakiri
-                        if proc.pid != os.getpid():
-                            do_log(f"Killing {me} PID: {proc.pid}")
-                            proc.kill()
-
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            # If process does not exist
-            pass
 
 
 def mpd_connect(port=MPD_PORT):
@@ -134,7 +114,8 @@ def do_log(msg, to_console=True):
 
 if __name__ == "__main__":
 
-    kill_me()
+    # Kills any previous instance of this loop
+    kill_bill( os.getpid() )
 
     print()
 
