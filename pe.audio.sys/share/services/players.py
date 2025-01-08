@@ -14,7 +14,7 @@
 # .player_metadata  'w'     Stores the current player metadata
 #
 
-from    os.path     import expanduser
+import  os
 import  sys
 import  threading
 from    socket      import gethostname
@@ -23,7 +23,7 @@ import  json
 from    subprocess  import Popen, run
 
 
-UHOME = expanduser("~")
+UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 
@@ -84,9 +84,18 @@ def clear_cdda_stuff():
             f.write( json.dumps(CDDA_META_TEMPLATE.copy()) )
 
         # delete MPD cdda playlist files (M3U/PLS)
-        fname = f'{ read_mpd_config()["playlist_directory"] }/cdda_*'
-        print(f'{Fmt.MAGENTA}(players.py) clearing {fname}{Fmt.END}')
-        Popen( f'rm -f {fname}', shell=True )
+        cd_pl_dir  = read_mpd_config()["playlist_directory"]
+        cd_pl_path = f'{cd_pl_dir}/cdda_*'
+
+        if os.path.isdir( cd_pl_dir ):
+            print(f'{Fmt.MAGENTA}(players.py) clearing {cd_pl_path}{Fmt.END}')
+            Popen( f'rm -f {pl_path}', shell=True )
+
+        else:
+            msg = f'directory NOT available {cd_pl_dir}'
+            print(f'{Fmt.BOLD}(players.py) {msg}{Fmt.END}')
+            send_cmd(f'aux warning clear', verbose=True, timeout=1)
+            send_cmd(f'aux warning set {msg}', verbose=True, timeout=1)
 
 
 def remote_get_meta(host, port=9990):
