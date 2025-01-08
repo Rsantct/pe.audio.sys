@@ -16,6 +16,7 @@ import  configparser
 import  os
 import  threading
 import  psutil
+import  inspect
 
 from    config      import *
 from    fmt         import Fmt
@@ -262,21 +263,48 @@ def jackd_response(cname=''):
     return result
 
 
-def server_is_running(who_asks='miscel'):
+def peaudiosys_server_is_running(timeout=30):
     """ (bool)
     """
-    print(f'{Fmt.BLUE}({who_asks}) waiting for the server to be alive ...{Fmt.END}')
-    tries = 60  # up to 30 seconds
+
+    stack = inspect.stack()
+
+    caller = ''
+
+    # We need at least 2 frames in the stack
+    if len(stack) >= 2:
+
+        # The caller is the 2nd index
+        caller_frame = stack[1]
+        tmp_modu = os.path.basename(caller_frame.filename)
+        tmp_func = caller_frame.function
+
+        if tmp_modu:
+            caller += tmp_modu.replace('.py', '')
+
+        if caller and tmp_func != '<module>':
+            caller += '.' + tmp_func
+
+
+    print(f'{Fmt.BLUE}({caller}) waiting for the server to be alive ...{Fmt.END}')
+
+    period = 0.5
+    tries = int(timeout / period)
     while tries:
+
+        # Expected response from server.py peaudiosys
         if 'loudspeaker' in send_cmd('state'):
             break
+
         sleep(.5)
         tries -= 1
+
     if tries:
-        print(f'{Fmt.BLUE}({who_asks}) server.py is RUNNING{Fmt.END}')
+        print(f'{Fmt.BLUE}({caller}) server.py peaudiosys is RUNNING{Fmt.END}')
         return True
+
     else:
-        print(f'{Fmt.BOLD}({who_asks}) server.py NOT RUNNING{Fmt.END}')
+        print(f'{Fmt.BOLD}({caller}) server.py peaudiosys NOT RUNNING{Fmt.END}')
         return False
 
 

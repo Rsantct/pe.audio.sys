@@ -116,8 +116,12 @@ def _get_disc_metadata(device=CDROM_DEVICE):
         mz_result = mz.get_releases_by_discid( disc_obj.id,
                                                includes=['artists', 'recordings']
                                              )
-        with open(CDDA_MUSICBRAINZ_PATH, 'w') as f:
-            f.write( json.dumps( mz_result ) )
+        try:
+            with open(CDDA_MUSICBRAINZ_PATH, 'w') as f:
+                f.write( json.dumps( mz_result ) )
+        except:
+            print(f'{Fmt.RED}(cdda.py) cannot write to {CDDA_MUSICBRAINZ_PATH}{Fmt.END}')
+
         print(f'{Fmt.GRAY}(cdda.py) Full musicbrainz CD data saved to {CDDA_MUSICBRAINZ_PATH}{Fmt.END}')
 
     except Exception as e:
@@ -251,14 +255,19 @@ def _save_cdda_playlist( md={} ):
 
         return pls
 
+    try:
+        with open(f'{MPD_M3U_PATH}', 'w') as f:
+            f.write( make_m3u( md ) )
+        print(f'{Fmt.BLUE}(cdda.py) MPD CD playlist saved to {MPD_M3U_PATH}{Fmt.END}')
+    except:
+        print(f'{Fmt.RED}(cdda.py) cannot write to {MPD_M3U_PATH}{Fmt.END}')
 
-    with open(f'{MPD_M3U_PATH}', 'w') as f:
-        f.write( make_m3u( md ) )
-    print(f'{Fmt.BLUE}(cdda.py) MPD CD playlist saved to {MPD_M3U_PATH}{Fmt.END}')
-
-    with open(f'{MPD_PLS_PATH}', 'w') as f:
-        f.write( make_pls( md ) )
-    print(f'{Fmt.BLUE}(cdda.py) MPD CD playlist saved to {MPD_PLS_PATH}{Fmt.END}')
+    try:
+        with open(f'{MPD_PLS_PATH}', 'w') as f:
+            f.write( make_pls( md ) )
+        print(f'{Fmt.BLUE}(cdda.py) MPD CD playlist saved to {MPD_PLS_PATH}{Fmt.END}')
+    except:
+        print(f'{Fmt.RED}(cdda.py) cannot write to {MPD_PLS_PATH}{Fmt.END}')
 
 
 
@@ -272,8 +281,11 @@ def dump_cdda_metadata(device=CDROM_DEVICE):
 
     md = _get_disc_metadata(device)
 
-    with open(CDDA_META_PATH, 'w') as f:
-        f.write( json.dumps( md ) )
+    try:
+        with open(CDDA_META_PATH, 'w') as f:
+            f.write( json.dumps( md ) )
+    except:
+        print(f'{Fmt.RED}(cdda.py) cannot write to {CDDA_META_PATH}{Fmt.END}')
 
     if md["discid"]:
 
