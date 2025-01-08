@@ -17,6 +17,7 @@ import  os
 import  threading
 import  psutil
 import  inspect
+import  shlex
 
 from    config      import *
 from    fmt         import Fmt
@@ -437,51 +438,62 @@ def get_loudness_monitor():
         return result
 
 
-def read_mpd_config():
-    """ Currently only the port and the playlists directory
+def read_mpd_config(filepath=f'{UHOME}/.mpdconf'):
 
-        Example .mpdconf
+    def strip(x):
+        """ removes " for config values
+        """
 
-        port                    "6600"
-        #playlist_directory      "~/.config/mpd/playlists"
-        playlist_directory      "/mnt/qnas/media/playlists/"
-    """
+        if type(x) != str:
+            return x
 
-    def get_parameter(line, parameter):
-
-        return line.split(parameter)[1]              \
-                   .strip().split()[0]               \
-                   .replace('"','').replace("'", "")
+        if x[0] == '"' and x[-1] == '"':
+            return x[1:-1]
 
 
-    c = {'port': 6600, 'playlist_directory': UHOME}
+    config = {'port': 6600, 'playlist_directory': f'{UHOME}/.config/mpd/playlists'}
 
-    try:
-        with open(f'{UHOME}/.mpdconf', 'r') as f:
-            lines = f.read().split('\n')
-    except:
-        return c
+    with open(filepath, 'r') as f:
 
-    for line in lines:
+        lexer = shlex.shlex(f)
+        lexer.wordchars += ".-/" # Important for file paths etc.
 
-        if line and line.strip()[0] != '#':
+        section = None
 
-            if 'playlist_directory' in line:
+        while True:
 
-                tmp = get_parameter(line, 'playlist_directory')
-                if tmp.endswith('/'):
-                    tmp = tmp[:-1]
+            try:
+                token = lexer.get_token()
+                if not token:
+                    break  # End of file
+                if token == '{':
+                    continue
+                if token == '}':
+                    section = None
+                    continue
+                next_token = lexer.get_token()
+                if next_token == '{':
+                    section = token
+                    config.setdefault(section, {})
+                    continue
+                if next_token:
+                    if next_token.lower() in ("yes", "true", "1"):
+                        next_token = True
+                    elif next_token.lower() in ("no", "false", "0"):
+                        next_token = False
+                    if section:
+                        config[section][token] = strip(next_token)
+                    else:
+                        config[token] = strip(next_token)
 
-                c["playlist_directory"] = tmp
+            except ValueError:
+                print(f"Error parsing line {lexer.lineno}: {lexer.error_leader()}")
+                return {}
 
-            if line.strip()[:4] == 'port':
+            except EOFError: # shlex sometimes raises EOFError
+                break
 
-                try:
-                    c["port"] = int( get_parameter(line, 'port') )
-                except:
-                    c["error"] = 'Error reading MPD port'
-
-    return c
+    return config
 
 
 def read_bf_config_port():
@@ -716,8 +728,8 @@ def wait4ports( pattern, timeout=10 ):
 
 
 def send_cmd( cmd, sender='', verbose=False,
-              timeout=60,
-              host=CONFIG['peaudiosys_address'],
+              timeout=1,
+              host='127.0.0.1',
               port=CONFIG['peaudiosys_port'] ):
 
     """ Sends a command to a pe.audio.sys server.
@@ -735,22 +747,33 @@ def send_cmd( cmd, sender='', verbose=False,
     # (i) We prefer high-level socket function 'create_connection()',
     #     rather than low level 'settimeout() + connect()'
     try:
+
         with socket.create_connection( (host, port), timeout=timeout ) as s:
+
             s.send( cmd.encode() )
+
             if verbose:
                 print( f'{Fmt.BLUE}(send_cmd) ({sender}) Tx: \'{cmd}\'{Fmt.END}' )
+
             ans = ''
+
             while True:
-                tmp = s.recv(1024).decode()
+
+                tmp = s.recv(1024)
+
                 if not tmp:
                     break
                 ans += tmp
+
             if verbose:
                 print( f'{Fmt.BLUE}(send_cmd) ({sender}) Rx: \'{ans}\'{Fmt.END}' )
+
             s.close()
 
     except Exception as e:
+
         ans = str(e)
+
         if verbose:
             print( f'{Fmt.RED}(send_cmd) ({sender}) {host}:{port} \'{ans}\' {Fmt.END}' )
 
@@ -830,7 +853,6 @@ def read_cdda_meta_from_disk():
         result = CDDA_META_TEMPLATE.copy()
 
     return result
-
 
 
 def read_json_from_file(fpath, timeout=2):
