@@ -294,7 +294,6 @@ def peaudiosys_server_is_running(timeout=30):
 
         # Expected response from server.py peaudiosys
         ans = send_cmd('state')
-        print(1111, ans)
         if 'loudspeaker' in ans:
             break
 
