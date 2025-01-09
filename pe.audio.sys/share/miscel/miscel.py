@@ -129,8 +129,7 @@ def start_jack_stuff(config=CONFIG):
         sleep(2)
 
     # Pulseaudio
-    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
-                                       shell=True).decode():
+    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
         release_cards_from_pulseaudio()
 
     # Launch JACKD process
@@ -294,7 +293,9 @@ def peaudiosys_server_is_running(timeout=30):
     while tries:
 
         # Expected response from server.py peaudiosys
-        if 'loudspeaker' in send_cmd('state'):
+        ans = send_cmd('state')
+        print(1111, ans)
+        if 'loudspeaker' in ans:
             break
 
         sleep(.5)
@@ -727,12 +728,10 @@ def wait4ports( pattern, timeout=10 ):
         return False
 
 
-def send_cmd( cmd, sender='', verbose=False,
-              timeout=1,
-              host='127.0.0.1',
-              port=CONFIG['peaudiosys_port'] ):
-
-    """ Sends a command to a pe.audio.sys server.
+def send_cmd( cmd, sender='', verbose=False, timeout=60,
+              host='127.0.0.1', port=CONFIG['peaudiosys_port'] ):
+    """
+        Sends a command to a pe.audio.sys server.
         Returns a string about the execution response or an error if so.
     """
     # (i) socket timeout 60 because Brutefir can need some time
@@ -763,7 +762,8 @@ def send_cmd( cmd, sender='', verbose=False,
 
                 if not tmp:
                     break
-                ans += tmp
+
+                ans += tmp.decode()
 
             if verbose:
                 print( f'{Fmt.BLUE}(send_cmd) ({sender}) Rx: \'{ans}\'{Fmt.END}' )
