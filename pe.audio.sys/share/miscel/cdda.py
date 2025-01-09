@@ -252,17 +252,10 @@ def _save_cdda_playlist( md={} ):
         return pls
 
 
-    # CDDA playlist files are based on MPD playlists directory, that can point to a LAN mounted filesystem
     MPD_PL_DIR   = read_mpd_config()["playlist_directory"]
 
-    if os.path.isdir( MPD_PL_DIR ):
-        CDDA_M3U_PATH = f'{MPD_PL_DIR}/cdda_{gethostname()}.m3u'
-        CDDA_PLS_PATH = f'{MPD_PL_DIR}/cdda_{gethostname()}.pls'
-
-    else:
-        CDDA_M3U_PATH = f'{MAINFOLDER}/cdda_{gethostname()}.m3u'
-        CDDA_PLS_PATH = f'{MAINFOLDER}/cdda_{gethostname()}.pls'
-
+    CDDA_M3U_PATH = f'{MPD_PL_DIR}/cdda_{gethostname()}.m3u'
+    CDDA_PLS_PATH = f'{MPD_PL_DIR}/cdda_{gethostname()}.pls'
 
     with open(f'{CDDA_M3U_PATH}', 'w') as f:
         f.write( make_m3u( md ) )
