@@ -23,6 +23,96 @@ from    config      import *
 from    fmt         import Fmt
 from    sound_cards import release_cards_from_pulseaudio
 
+# --- MPD auxiliary
+
+def get_running_mpd_config_path():
+
+    # Example: [{'pid': 12430, 'cmdline': ['mpd', '/home/paudio/.mpdconf.local']}]
+    mpd_processes = get_pid_cmdline('mpd')
+
+    # If more tan one, raise an Exception
+    if len(mpd_processes) > 1:
+        raise Exception('More than ONE mpd process is running')
+
+    cmdline = mpd_processes[0]['cmdline'][1]
+
+    result = f'{UHOME}/.mpdconf'
+
+    if 'mpdconf' in cmdline:
+        result = cmdline
+
+    return result
+
+
+def read_mpd_config(mpd_config_path=''):
+    """ mpd clients CANNOT access to MPD.config(),
+        so them needs to rely in reading the mpd config file
+
+        If no `mpd_config_path` is given, then will look for
+        the one used by the running MPD process.
+    """
+
+    def strip(x):
+        """ removes " for config values
+        """
+
+        if type(x) != str:
+            return x
+
+        if x[0] == '"' and x[-1] == '"':
+            return x[1:-1]
+
+
+    config = {'port': 6600, 'playlist_directory': f'{UHOME}/.config/mpd/playlists'}
+
+
+    if not mpd_config_path:
+        mpd_config_path = get_running_mpd_config_path()
+
+
+    with open(mpd_config_path, 'r') as f:
+
+        lexer = shlex.shlex(f)
+        lexer.wordchars += ".-/" # Important for file paths etc.
+
+        section = None
+
+        while True:
+
+            try:
+                token = lexer.get_token()
+                if not token:
+                    break  # End of file
+                if token == '{':
+                    continue
+                if token == '}':
+                    section = None
+                    continue
+                next_token = lexer.get_token()
+                if next_token == '{':
+                    section = token
+                    config.setdefault(section, {})
+                    continue
+                if next_token:
+                    if next_token.lower() in ("yes", "true", "1"):
+                        next_token = True
+                    elif next_token.lower() in ("no", "false", "0"):
+                        next_token = False
+                    if section:
+                        config[section][token] = strip(next_token)
+                    else:
+                        config[token] = strip(next_token)
+
+            except ValueError:
+                print(f"Error parsing line {lexer.lineno}: {lexer.error_leader()}")
+                return {}
+
+            except EOFError: # shlex sometimes raises EOFError
+                break
+
+    return config
+
+
 # --- pe.audio.sys common usage functions:
 
 def detect_USB_DAC(cname):
@@ -438,64 +528,6 @@ def get_loudness_monitor():
         return result
 
 
-def read_mpd_config(filepath=f'{UHOME}/.mpdconf'):
-
-    def strip(x):
-        """ removes " for config values
-        """
-
-        if type(x) != str:
-            return x
-
-        if x[0] == '"' and x[-1] == '"':
-            return x[1:-1]
-
-
-    config = {'port': 6600, 'playlist_directory': f'{UHOME}/.config/mpd/playlists'}
-
-    with open(filepath, 'r') as f:
-
-        lexer = shlex.shlex(f)
-        lexer.wordchars += ".-/" # Important for file paths etc.
-
-        section = None
-
-        while True:
-
-            try:
-                token = lexer.get_token()
-                if not token:
-                    break  # End of file
-                if token == '{':
-                    continue
-                if token == '}':
-                    section = None
-                    continue
-                next_token = lexer.get_token()
-                if next_token == '{':
-                    section = token
-                    config.setdefault(section, {})
-                    continue
-                if next_token:
-                    if next_token.lower() in ("yes", "true", "1"):
-                        next_token = True
-                    elif next_token.lower() in ("no", "false", "0"):
-                        next_token = False
-                    if section:
-                        config[section][token] = strip(next_token)
-                    else:
-                        config[token] = strip(next_token)
-
-            except ValueError:
-                print(f"Error parsing line {lexer.lineno}: {lexer.error_leader()}")
-                return {}
-
-            except EOFError: # shlex sometimes raises EOFError
-                break
-
-    return config
-
-
 def read_bf_config_port():
     """ Default port: 3000
     """
@@ -887,6 +919,22 @@ def read_json_from_file(fpath, timeout=2):
 
 # --- Generic purpose functions:
 
+def get_pid_cmdline(process_name=''):
+    """ gets all the pid and cmdline of the given process name
+    """
+
+    pids = []
+
+    for proc in psutil.process_iter():
+        try:
+            if proc.name() == process_name:
+                pids.append( {'pid': proc.pid, 'cmdline': proc.cmdline() } )
+        except:
+            pass
+
+    return pids
+
+
 def process_is_running(process_name):
     # Iterate through all running processes
     for proc in psutil.process_iter(['cmdline']):
@@ -898,21 +946,6 @@ def process_is_running(process_name):
                 return True
         except:
             pass
-    return False
-
-
-def OLD_process_is_running(pattern):
-    """ check for a system process to be running by a given pattern
-        (bool)
-    """
-    try:
-        # do NOT use shell=True because pgrep ...  will appear it self.
-        plist = sp.check_output(['pgrep', '-u', USER, '-fla', pattern]).decode().split('\n')
-    except:
-        return False
-    for p in plist:
-        if pattern in p:
-            return True
     return False
 
 
