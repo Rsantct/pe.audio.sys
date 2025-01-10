@@ -11,6 +11,7 @@ import  socket
 import  ipaddress
 from    json import loads as json_loads, dumps as json_dumps
 from    time import sleep
+from    datetime import datetime
 import  subprocess as sp
 import  configparser
 import  os
@@ -23,6 +24,7 @@ from    config      import *
 from    fmt         import Fmt
 from    sound_cards import release_cards_from_pulseaudio
 
+
 # --- MPD auxiliary
 
 def get_running_mpd_config_path():
@@ -32,14 +34,24 @@ def get_running_mpd_config_path():
 
     # If more tan one, raise an Exception
     if len(mpd_processes) > 1:
-        raise Exception('More than ONE mpd process is running')
 
-    cmdline = mpd_processes[0]['cmdline'][1]
+        msg = 'More than ONE mpd process is running'
+        print(f'{Fmt.BOLD}(start) msg{Fmt.END}')
+        raise Exception(msg)
 
-    result = f'{UHOME}/.mpdconf'
+    elif len(mpd_processes) == 1:
 
-    if 'mpdconf' in cmdline:
-        result = cmdline
+        cmdline = mpd_processes[0]['cmdline'][1]
+
+        result = f'{UHOME}/.mpdconf'
+
+        if 'mpdconf' in cmdline:
+            result = cmdline
+
+    else:
+        msg = 'mpd process NOT detected'
+        print(f'{Fmt.RED}(start) msg{Fmt.END}')
+
 
     return result
 
@@ -1112,6 +1124,12 @@ def get_my_ip():
         return tmp.split()[0]
     except:
         return ''
+
+
+def get_timestamp():
+    """ the timestamp string, example: '2025-01-02T08:58:59'
+    """
+    return datetime.now().isoformat(timespec='seconds')
 
 
 def time_diff(t1, t2):
