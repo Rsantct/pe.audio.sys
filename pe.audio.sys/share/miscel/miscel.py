@@ -29,30 +29,27 @@ from    sound_cards import release_cards_from_pulseaudio
 
 def get_running_mpd_config_path():
 
+    result = f'{UHOME}/.mpdconf'
+
     # Example: [{'pid': 12430, 'cmdline': ['mpd', '/home/paudio/.mpdconf.local']}]
     mpd_processes = get_pid_cmdline('mpd')
 
     # If more tan one, raise an Exception
     if len(mpd_processes) > 1:
 
-        msg = 'More than ONE mpd process is running'
+        msg = 'More than ONE `mpd` process is running'
         print(f'{Fmt.BOLD}(start) msg{Fmt.END}')
         raise Exception(msg)
 
     elif len(mpd_processes) == 1:
 
-        # mpd [options] [CONF_FILE]
-        cmdline = mpd_processes[0]['cmdline'][-1]
-
-        result = f'{UHOME}/.mpdconf'
-
-        if 'mpdconf' in cmdline:
-            result = cmdline
+        # mpd [options] [conf_file]: it is always the last parameter
+        if len( mpd_processes[0]['cmdline'] ) > 1:
+            result = mpd_processes[0]['cmdline'][-1]
 
     else:
         msg = 'mpd process NOT detected'
         print(f'{Fmt.RED}(start) msg{Fmt.END}')
-
 
     return result
 
