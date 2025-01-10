@@ -41,7 +41,8 @@ def get_running_mpd_config_path():
 
     elif len(mpd_processes) == 1:
 
-        cmdline = mpd_processes[0]['cmdline'][1]
+        # mpd [options] [CONF_FILE]
+        cmdline = mpd_processes[0]['cmdline'][-1]
 
         result = f'{UHOME}/.mpdconf'
 
