@@ -88,12 +88,17 @@ function camilla_release {
 
     j_partner_name=$1
 
-    for PORT in "out_0" "out_1"; do
 
-        loop_until_result "jack_lsp -c cpal_client_out:""$PORT" "$j_partner_name"
-        RESULT="${RESULT//$'\n'}"
+    for INOUT in "out" "in"; do
 
-        loop_until_ok "jack_disconnect $RESULT"
+        for PORT in "0" "1"; do
+
+            loop_until_result "jack_lsp -c cpal_client_"$INOUT":"$INOUT"_""$PORT" "$j_partner_name"
+            RESULT="${RESULT//$'\n'}"
+
+            loop_until_ok "jack_disconnect $RESULT"
+
+        done
 
     done
 }
@@ -114,9 +119,9 @@ function insert_camilla {
 
         jack_disconnect $PRE_WIRE                                                       2>/dev/null
 
-        jack_connect "$PRE_SRC"                         cpal_client_in:in_"$CPAL_PORT"  2>/dev/null
-
         jack_connect cpal_client_out:out_"$CPAL_PORT"   pre_in_loop:input_"$PRE_PORT"   2>/dev/null
+
+        jack_connect "$PRE_SRC"                         cpal_client_in:in_"$CPAL_PORT"  2>/dev/null
 
     done
 }
@@ -143,6 +148,7 @@ LOG_PATH="$HOME"/pe.audio.sys/log/camilladsp.log
 
 # Restarting CamillaDSP
 killall camilladsp 2>/dev/null
+sleep 1
 camilladsp  -r $RATE \
             --wait -a 127.0.0.1 -p 1234 \
             --logfile "$LOG_PATH" \
