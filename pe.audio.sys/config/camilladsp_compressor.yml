@@ -23,7 +23,7 @@ processors:
       release: 1.0
       threshold: -25
       factor: 5.0
-      makeup_gain: 0
+      makeup_gain: 12.0
       clip_limit: 0.0
       soft_clip: true
 
