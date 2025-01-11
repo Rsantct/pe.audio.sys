@@ -136,7 +136,7 @@ fi
 
 
 # CamillaDSP config file path
-CFG_PATH=pe.audio.sys/config/camilla_compressor.yml
+CFG_PATH=pe.audio.sys/config/camilladsp_compressor.yml
 
 # CamillaDSP log file
 LOG_PATH="$HOME"/pe.audio.sys/log/camilladsp.log
