@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Try running a COMMAND ($1) up to 5 times until there are no execution errors
 function loop_until_ok {
 
     CMD=$1
@@ -20,6 +21,7 @@ function loop_until_ok {
 }
 
 
+# Try running a COMMAND ($1) up to 5 times until the result includes a PATTERN ($2)
 function loop_until_result {
 
     CMD=$1
@@ -48,7 +50,7 @@ function loop_until_result {
     return 0
 }
 
-
+# Release all IN/OUT connections in camilla `cpal_client`jack ports
 function camilla_release {
 
     j_partner_name=$1
@@ -88,7 +90,8 @@ function camilla_insert {
     done
 }
 
-
+# Returns the argument $JACK_ARG from the given alsa backend parameter ($1),
+# e.g. '--rate' from the running JACK command line
 function get_jack_alsa_param {
 
     if [[ ! $1 ]]; then
@@ -100,9 +103,11 @@ function get_jack_alsa_param {
 
     pid=$(pidof jackd)
 
+    # Example: `jackd -R -d alsa -d hw:DX,0 -p 512 -n 2 -r 44100 --softmode`
     cmdline=$(ps -p "$pid" -o command=)
 
-    # Leaving only the alsa parameters
+
+    # Leaving only the alsa parameters: `-d hw:DX,0 -p 512 -n 2 -r 44100 --softmode`
     alsa_pos=$(echo "$cmdline" | awk -v what="alsa " '{print index($0, what)}')
     (( alsa_pos += 4 ))
     cmdline="${cmdline:$alsa_pos}"
@@ -125,47 +130,49 @@ function get_jack_alsa_param {
         fi
     done
 
-    JACK_PARAM=$arg_value
+    JACK_ARG=$arg_value
 }
 
 
+# Returns the alsa device $ALSA_DEV from the running JACK command line
 function get_jack_alsa_device {
 
     get_jack_alsa_param "--device"
 
-    if [[ ! $JACK_PARAM ]]; then
+    if [[ ! $JACK_ARG ]]; then
         get_jack_alsa_param "-d"
     fi
 
-    if [[ ! $JACK_PARAM ]]; then
+    if [[ ! $JACK_ARG ]]; then
         echo "Unable to find the jack ALSA device."
         exit 1
     fi
 
-    ALSA_DEV="$JACK_PARAM"
+    ALSA_DEV="$JACK_ARG"
 }
 
 
+# Returns the sample rate $RATE from the running JACK command line
 function get_jack_samplerate {
 
     get_jack_alsa_param "-rate"
 
-    if [[ ! $JACK_PARAM ]]; then
+    if [[ ! $JACK_ARG ]]; then
         get_jack_alsa_param "-r"
     fi
 
-    if [[ ! $JACK_PARAM ]]; then
+    if [[ ! $JACK_ARG ]]; then
         echo "Unable to find the jack sample rate."
         exit 1
     fi
 
-    RATE="$JACK_PARAM"
+    RATE="$JACK_ARG"
 }
 
-# JACK ALSA device
-get_jack_alsa_device
+# JACK ALSA device $ALSA_DEV --not used--
+#get_jack_alsa_device
 
-# JACK sample rate
+# JACK sample rate $RATE
 get_jack_samplerate
 
 # CamillaDSP config file path
@@ -174,7 +181,7 @@ CFG_PATH=pe.audio.sys/config/camilladsp_compressor.yml
 # CamillaDSP log file
 LOG_PATH="$HOME"/pe.audio.sys/log/camilladsp.log
 
-# MUTING
+# MUTING pe.audio.sys
 control mute on 1>/dev/null
 
 # Running CamillaDSP
@@ -183,7 +190,7 @@ control mute on 1>/dev/null
 if [[ ! $(pidof camilladsp) ]]; then
 
     camilladsp  -r $RATE \
-                --wait -a 127.0.0.1 -p 1234 \
+                --mute --wait -a 127.0.0.1 -p 1234 \
                 --logfile "$LOG_PATH" \
                 $CFG_PATH &
 fi
@@ -194,7 +201,7 @@ camilla_release "system"
 # Inserting
 camilla_insert
 
-# UNMUTING
+# UNMUTING pe.audio.sys
 control mute off 1>/dev/null
 
 exit 0
