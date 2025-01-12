@@ -12,7 +12,7 @@ function loop_until_ok {
     done
 
     if [[ $count -ge $retries ]]; then
-        echo "Problems with: ""$CMD"
+        echo "Problems running: ""$CMD"
         return 1
     fi
 
@@ -41,7 +41,7 @@ function loop_until_result {
     done
 
     if [[ $count -ge $retries ]]; then
-        echo "Problems with: ""$CMD"
+        echo "Void: ""$CMD"
         return 1
     fi
 
@@ -58,7 +58,9 @@ function camilla_release {
         loop_until_result "jack_lsp -c cpal_client_out:""$PORT" "$j_partner_name"
         RESULT="${RESULT//$'\n'}"
 
-        loop_until_ok "jack_disconnect $RESULT"
+        if [[ $RESULT ]]; then
+            loop_until_ok "jack_disconnect $RESULT"
+        fi
 
     done
 }
@@ -175,12 +177,16 @@ LOG_PATH="$HOME"/pe.audio.sys/log/camilladsp.log
 # MUTING
 control mute on 1>/dev/null
 
-# Restarting CamillaDSP
-killall camilladsp 2>/dev/null
-camilladsp  -r $RATE \
-            --wait -a 127.0.0.1 -p 1234 \
-            --logfile "$LOG_PATH" \
-            $CFG_PATH &
+# Running CamillaDSP
+#killall camilladsp 2>/dev/null
+
+if [[ ! $(pidof camilladsp) ]]; then
+
+    camilladsp  -r $RATE \
+                --wait -a 127.0.0.1 -p 1234 \
+                --logfile "$LOG_PATH" \
+                $CFG_PATH &
+fi
 
 # Disconnecting auto connected jack ports
 camilla_release "system"
