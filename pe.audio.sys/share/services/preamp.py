@@ -28,9 +28,10 @@ preamp.save_state()
 # INITIATE A CONVOLVER INSTANCE (XO and DRC management)
 convolver = Convolver()
 
-# INITIATE CamillaDSP
+# INITIATE CamillaDSP (currently only for compressor)
 if 'use_compressor' in CONFIG and CONFIG["use_compressor"]:
     cdsp._init()
+    preamp.state["compressor"] = cdsp.compressor('off')
 
 
 # Interface function for this module
@@ -120,13 +121,12 @@ def do( cmd, argstring ):
     def set_compressor(mode, *dummy):
 
         if not mode:
-
             if not 'compressor' in preamp.state:
                 preamp.state["compressor"] = 'off'
-
             return preamp.state["compressor"]
 
         res = cdsp.compressor(mode)
+
         preamp.state["compressor"] = res
 
         return res
