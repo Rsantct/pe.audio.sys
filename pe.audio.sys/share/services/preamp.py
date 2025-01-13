@@ -13,10 +13,11 @@ from    os.path             import expanduser
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config              import  CONFIG
-from    preamp_mod.core     import  Preamp, Convolver
-from    miscel              import  get_remote_zita_params, \
-                                    remote_zita_restart
+from    config                  import  CONFIG
+from    miscel                  import  get_remote_zita_params, \
+                                        remote_zita_restart
+from    preamp_mod.core         import  Preamp, Convolver
+import  camilla_dsp             as      cdsp
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -26,6 +27,10 @@ preamp.save_state()
 
 # INITIATE A CONVOLVER INSTANCE (XO and DRC management)
 convolver = Convolver()
+
+# INITIATE CamillaDSP
+if 'use_compressor' in CONFIG and CONFIG["use_compressor"]:
+    cdsp._init()
 
 
 # Interface function for this module
@@ -112,6 +117,21 @@ def do( cmd, argstring ):
         return result
 
 
+    def set_compressor(mode, *dummy):
+
+        if not mode:
+
+            if not 'compressor' in preamp.state:
+                preamp.state["compressor"] = 'off'
+
+            return preamp.state["compressor"]
+
+        res = cdsp.compressor(mode)
+        preamp.state["compressor"] = res
+
+        return res
+
+
     def print_help(*dummy):
         return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
 
@@ -160,6 +180,8 @@ def do( cmd, argstring ):
             'set_xo':           set_xo,
             'xo':               set_xo,
             'add_delay':        add_delay,
+
+            'compressor':       set_compressor,
 
             'convolver':        preamp.switch_convolver,
             'powersave':        preamp.powersave,
