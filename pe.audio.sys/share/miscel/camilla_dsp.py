@@ -128,12 +128,50 @@ def _init():
     run_cdsp(COMPRESSOR_YML)
 
 
-def compressor(mode):
+def mute(mode='state'):
 
-    if mode in ('on', '1'):
-        res = 'wip'
+    if mode in (True, 'true', 'on', 1):
+        PC.mute.set_main(True)
 
-    elif mode in ('off', '0'):
-        res = 'wip'
+    if mode in (False, 'false', 'off', 0):
+        PC.mute.set_main(False)
 
-    return res
+    if mode == 'toggle':
+        new_mode = {True: False, False: True} [PC.mute.main() ]
+        PC.mute.set_main(new_mode)
+
+    return PC.mute.main()
+
+
+def bypass(step='', mode='state'):
+
+    cfg_active = PC.config.active()
+    cfg_new    = cfg_active.copy()
+
+    if 'compressor' in step:
+
+        for i, s in enumerate( cfg_active["pipeline"] ):
+
+            if 'compressor' in s["name"]:
+
+                if mode in (True, 'true', 1, 'on'):
+                    cfg_new["pipeline"][i]["bypassed"] = True
+
+                elif mode in (False, 'false', 0, 'off'):
+                    cfg_new["pipeline"][i]["bypassed"] = False
+
+                PC.config.set_active(cfg_new)
+
+                return PC.config.active()["pipeline"][i]["bypassed"]
+
+
+def compressor(mode=''):
+
+    if mode in (True, 'true', 1, 'on'):
+        bypass('compressor', False)
+
+    elif mode in (False, 'false', 0, 'off'):
+        bypass('compressor', True)
+
+    return  not bypass('compressor', 'state')
+
