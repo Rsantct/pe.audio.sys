@@ -19,10 +19,11 @@ import  threading
 import  psutil
 import  inspect
 import  shlex
+import  jack
 
-from    config      import *
-from    fmt         import Fmt
-from    sound_cards import release_cards_from_pulseaudio
+from    config      import  *
+from    fmt         import  Fmt
+from    sound_cards import  release_cards_from_pulseaudio
 
 
 # --- MPD auxiliary
@@ -279,11 +280,9 @@ def run_jloops():
 
 
 def check_jloops(config=CONFIG):
-    """ Jack loops checking
+    """ Jack loops check
         (bool)
     """
-    # The configured loops
-    cfg_loops = []
 
     loop_names = ['pre_in_loop']
 
@@ -291,6 +290,8 @@ def check_jloops(config=CONFIG):
         pname = config['sources'][source]['jack_pname']
         if 'loop' in pname and pname not in loop_names:  # avoids duplicates
             loop_names.append( pname )
+
+    cfg_loops = []
 
     for loop_name in loop_names:
             cfg_loops.append( f'{loop_name}:input_1' )
@@ -301,15 +302,19 @@ def check_jloops(config=CONFIG):
     if not cfg_loops:
         return True
 
-    # Waiting for all loops to be spawned
-    tries = 10
-    while tries:
-        # The running ones
-        run_loops = sp.check_output(['jack_lsp', 'loop']).decode().split()
-        if sorted(cfg_loops) == sorted(run_loops):
-            break
-        sleep(1)
-        tries -= 1
+    # Waiting 5 s for all loops to be spawned
+    tries = 25
+    with jack.Client(name='tmp', no_start_server=True) as jc:
+
+        while tries:
+            j_loops = jc.get_ports('loop')
+            if len(j_loops) == len(cfg_loops):
+                break
+            tries -= 1
+            sleep(.2)
+
+    sleep(.1)   # safest
+
     if tries:
         print(f'{Fmt.BLUE}JACK LOOPS RUNNING{Fmt.END}')
         return True
