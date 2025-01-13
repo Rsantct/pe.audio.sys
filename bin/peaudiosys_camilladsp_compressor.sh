@@ -185,12 +185,12 @@ LOG_PATH="$HOME"/pe.audio.sys/log/camilladsp.log
 control mute on 1>/dev/null
 
 # Running CamillaDSP
-#killall camilladsp 2>/dev/null
+killall camilladsp 2>/dev/null
 
 if [[ ! $(pidof camilladsp) ]]; then
 
     camilladsp  -r $RATE \
-                --mute --wait -a 127.0.0.1 -p 1234 \
+                --wait -a 127.0.0.1 -p 1234 \
                 --logfile "$LOG_PATH" \
                 $CFG_PATH &
 fi
