@@ -173,5 +173,9 @@ def compressor(mode=''):
     elif mode in (False, 'false', 0, 'off'):
         bypass('compressor', True)
 
-    return  not bypass('compressor', 'state')
+    elif mode == 'toggle':
+        new_mode = {True: False, False: True} [ bypass('compressor') ]
+        bypass('compressor', new_mode)
+
+    return  not bypass('compressor')
 
