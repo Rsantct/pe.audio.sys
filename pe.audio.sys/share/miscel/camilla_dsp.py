@@ -128,6 +128,36 @@ def _init():
     run_cdsp(COMPRESSOR_YML)
 
 
+def _bypass(step='', mode='state'):
+    """ Bypass a pipeline step
+        (only works for a `compressor` processor step)
+    """
+
+    def get_step_pipeline_index(cfg, step_id):
+        index = -1
+        for i, s in enumerate( cfg["pipeline"] ):
+            if step_id in s["name"]:
+                index = i
+        return index
+
+
+    cfg = PC.config.active()
+
+    if 'compressor' in step:
+
+        i = get_step_pipeline_index(cfg, step)
+
+        if mode in (True, 'true', 1, 'on'):
+            cfg["pipeline"][i]["bypassed"] = True
+
+        elif mode in (False, 'false', 0, 'off'):
+            cfg["pipeline"][i]["bypassed"] = False
+
+        PC.config.set_active(cfg)
+
+        return PC.config.active()["pipeline"][i]["bypassed"]
+
+
 def mute(mode='state'):
 
     if mode in (True, 'true', 'on', 1):
@@ -140,42 +170,54 @@ def mute(mode='state'):
         new_mode = {True: False, False: True} [PC.mute.main() ]
         PC.mute.set_main(new_mode)
 
+
     return PC.mute.main()
 
 
-def bypass(step='', mode='state'):
+def compressor(mode='', ratio=''):
 
-    cfg_active = PC.config.active()
-    cfg_new    = cfg_active.copy()
+    def set_compressor(ratio):
 
-    if 'compressor' in step:
+        def calc_makeup_gain(fac, th=60):
+            """ Estimates the make up gain for a given compression factor, that is
+                a compressor ratio of "fac:1", assuming a "quasi full scale compressor"
+                (threshold = -60 dB)
+            """
 
-        for i, s in enumerate( cfg_active["pipeline"] ):
+            experimetal_divider = 1.5
 
-            if 'compressor' in s["name"]:
-
-                if mode in (True, 'true', 1, 'on'):
-                    cfg_new["pipeline"][i]["bypassed"] = True
-
-                elif mode in (False, 'false', 0, 'off'):
-                    cfg_new["pipeline"][i]["bypassed"] = False
-
-                PC.config.set_active(cfg_new)
-
-                return PC.config.active()["pipeline"][i]["bypassed"]
+            return round( -(th - th / fac) / experimetal_divider, 1)
 
 
-def compressor(mode=''):
+        threshold   = -60
+        factor      = round(float( ratio.split(':')[0] ), 1)
+        makeup_gain = calc_makeup_gain(factor, threshold)
+
+        cfg = PC.config.active()
+        pms = cfg["processors"]["tv_compressor"]["parameters"]
+        pms["threshold"]   = threshold
+        pms["factor"]      = factor
+        pms["makeup_gain"] = makeup_gain
+
+        PC.config.set_active(cfg)
+
+        return {'threshold':threshold, 'ratio': ratio, 'makeup_gain': makeup_gain}
+
 
     if mode in (True, 'true', 1, 'on'):
-        bypass('compressor', False)
+        _bypass('compressor', False)
 
     elif mode in (False, 'false', 0, 'off'):
-        bypass('compressor', True)
+        _bypass('compressor', True)
 
     elif mode == 'toggle':
-        new_mode = {True: False, False: True} [ bypass('compressor') ]
-        bypass('compressor', new_mode)
+        new_mode = {True: False, False: True} [ _bypass('compressor') ]
+        _bypass('compressor', new_mode)
 
-    return  not bypass('compressor')
+    elif mode == 'set':
+        return set_compressor(ratio)
+
+    return  not _bypass('compressor', 'state')
+
+
 
