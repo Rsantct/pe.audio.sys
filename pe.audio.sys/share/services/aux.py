@@ -168,6 +168,9 @@ def get_web_config():
     wconfig['LU_monitor_enabled'] = True if 'loudness_monitor.py' \
                                               in CONFIG['plugins'] else False
 
+    # Optional compressor
+    wconfig["use_compressor"] = True if CONFIG["use_compressor"] else False
+
     return wconfig
 
 
