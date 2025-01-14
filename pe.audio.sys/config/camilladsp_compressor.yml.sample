@@ -21,9 +21,9 @@ processors:
       channels: 2
       attack: 0.025
       release: 1.0
-      threshold: -25
+      threshold: -60
       factor: 5.0
-      makeup_gain: 12.0
+      makeup_gain: 32.0
       clip_limit: 0.0
       soft_clip: true
 
