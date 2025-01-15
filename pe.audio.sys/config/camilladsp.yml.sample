@@ -22,8 +22,8 @@ processors:
       attack: 0.025
       release: 1.0
       threshold: -60
-      factor: 5.0
-      makeup_gain: 32.0
+      factor: 3.0
+      makeup_gain: 26.7
       clip_limit: 0.0
       soft_clip: true
 
@@ -49,3 +49,4 @@ pipeline:
     name: stereo
   - type: Processor
     name: tv_compressor
+    bypassed: true
