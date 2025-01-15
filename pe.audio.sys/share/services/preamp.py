@@ -31,7 +31,10 @@ convolver = Convolver()
 # INITIATE CamillaDSP (currently only for compressor)
 if 'use_compressor' in CONFIG and CONFIG["use_compressor"]:
     cdsp._init()
-    preamp.state["compressor"] = cdsp.compressor('off')
+    if cdsp.compressor('get')["active"]:
+        preamp.state["compressor"] = cdsp.compressor('get')["parameters"]["ratio"]
+    else:
+        preamp.state["compressor"] = 'off'
 
 
 # Interface function for this module
@@ -118,16 +121,25 @@ def do( cmd, argstring ):
         return result
 
 
-    def set_compressor(mode, *dummy):
+    def manage_compressor(mode, *dummy):
 
         if not mode:
             if not 'compressor' in preamp.state:
                 preamp.state["compressor"] = 'off'
             return preamp.state["compressor"]
 
-        res = cdsp.compressor(mode)
+        # Proceed:
+        tmp = cdsp.compressor(mode)
 
-        preamp.state["compressor"] = res
+        active     = tmp["active"]
+        parameters = tmp["parameters"]
+
+        if active:
+            res = parameters["ratio"]
+            preamp.state["compressor"] = res
+        else:
+            res = 'off'
+            preamp.state["compressor"] = res
 
         return res
 
@@ -181,7 +193,7 @@ def do( cmd, argstring ):
             'xo':               set_xo,
             'add_delay':        add_delay,
 
-            'compressor':       set_compressor,
+            'compressor':       manage_compressor,
 
             'convolver':        preamp.switch_convolver,
             'powersave':        preamp.powersave,
