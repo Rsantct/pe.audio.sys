@@ -16,12 +16,13 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from   miscel   import process_is_running, LOG_FOLDER, Fmt
 import jack_mod as jack
 
+COMPRESSOR_CYCLE = ['off', '3.0:1', '6.0:1', '9.0:1']
 
 HOST        = '127.0.0.1'
 PORT        = 1234
 
-# Compressor config file path
-COMPRESSOR_YML = f'{UHOME}/pe.audio.sys/config/camilladsp_compressor.yml'
+# CamillaDSP config file path
+CAMILLA_YML = f'{UHOME}/pe.audio.sys/config/camilladsp.yml'
 
 # The CamillaDSP connection
 PC = CamillaClient(HOST, PORT)
@@ -125,12 +126,18 @@ def _init():
     if process_is_running('camilladsp'):
         stop_cdsp()
 
-    run_cdsp(COMPRESSOR_YML)
+    # Running
+    run_cdsp(CAMILLA_YML)
+
+    # Deactivate compressor
+    _bypass('compressor', True)
 
 
 def _bypass(step='', mode='state'):
     """ Bypass a pipeline step
         (only works for a `compressor` processor step)
+
+        returns: the bypassed state (boolean)
     """
 
     def get_step_pipeline_index(cfg, step_id):
@@ -159,6 +166,10 @@ def _bypass(step='', mode='state'):
 
 
 def mute(mode='state'):
+    """ Mute camillaDSP
+
+        returns: the mute state (boolean)
+    """
 
     if mode in (True, 'true', 'on', 1):
         PC.mute.set_main(True)
@@ -174,7 +185,55 @@ def mute(mode='state'):
     return PC.mute.main()
 
 
-def compressor(mode='', ratio=''):
+def state():
+    return PC.general.state().name
+
+
+def config():
+    return PC.config.active()
+
+
+def compressor(oper='', ratio=''):
+    """ Modifies both:
+            - the compressor pipeline bypass
+            - the compressor processor parameters
+
+        Returns a json string with the compressor state and parameters, example:
+
+            '{"active": True, "threshold": -60.0, "ratio": "3.0:1", "makeup_gain": 26.7}'
+    """
+
+    def get_parameters():
+
+        cfg = PC.config.active()
+        pms = cfg["processors"]["tv_compressor"]["parameters"]
+        threshold   = pms["threshold"]
+        factor      = pms["factor"]
+        makeup_gain = pms["makeup_gain"]
+
+        return {'threshold':threshold, 'ratio': f'{factor}:1', 'makeup_gain': makeup_gain}
+
+
+    def rotate_compressor():
+
+        if not _bypass('compressor'):
+            current = get_parameters()["ratio"]
+        else:
+            current = 'off'
+
+        cur_index   = COMPRESSOR_CYCLE.index(current)
+
+        next_index  = (cur_index + 1) % len(COMPRESSOR_CYCLE)
+
+        new = COMPRESSOR_CYCLE[next_index]
+
+        if new == 'off':
+            _bypass('compressor', True)
+
+        else:
+            _bypass('compressor', False)
+            set_compressor(new)
+
 
     def set_compressor(ratio):
 
@@ -188,7 +247,6 @@ def compressor(mode='', ratio=''):
 
             return round( -(th - th / fac) / experimetal_divider, 1)
 
-
         threshold   = -60
         factor      = round(float( ratio.split(':')[0] ), 1)
         makeup_gain = calc_makeup_gain(factor, threshold)
@@ -201,23 +259,34 @@ def compressor(mode='', ratio=''):
 
         PC.config.set_active(cfg)
 
-        return {'threshold':threshold, 'ratio': ratio, 'makeup_gain': makeup_gain}
 
-
-    if mode in (True, 'true', 1, 'on'):
+    # Activate commands
+    if oper in ('on', True, 'true'):
         _bypass('compressor', False)
 
-    elif mode in (False, 'false', 0, 'off'):
+    elif oper in ('off', False, 'false'):
         _bypass('compressor', True)
 
-    elif mode == 'toggle':
+    elif oper == 'toggle':
         new_mode = {True: False, False: True} [ _bypass('compressor') ]
         _bypass('compressor', new_mode)
 
-    elif mode == 'set':
-        return set_compressor(ratio)
+    # State command
+    elif oper == 'get':
+        pass
 
-    return  not _bypass('compressor', 'state')
+    # Change ratio commands
+    elif oper == 'set':
+        set_compressor(ratio)
 
+    elif oper == 'rotate':
+        rotate_compressor()
 
+    else:
+        return 'unknown command'
+
+    parameters  = get_parameters()
+    active      = not _bypass('compressor', 'state')
+
+    return  {'active': active, 'parameters': parameters}
 
