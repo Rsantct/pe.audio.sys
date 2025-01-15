@@ -1181,9 +1181,7 @@ function ck_display_advanced(mode) {
         }
         document.getElementById("bt_subsonic").style.display = "none";
         document.getElementById("bt_tone_defeat").style.display = "none";
-        if (web_config.use_compressor){
-            document.getElementById("bt_compressor").style.display = "none";
-        }
+        document.getElementById("bt_compressor").style.display = "none";
     }
 }
 
@@ -1553,13 +1551,13 @@ function buttonSwapLRHighlight(){
 
 
 function buttonCompressorHighlight(){
-    if ( state.compressor === false ) {
-        document.getElementById("bt_compressor").innerHTML = "COMP.";
+    if ( state.compressor === 'off' ) {
+        document.getElementById("bt_compressor").innerHTML = 'comp.<br>OFF';
         document.getElementById("bt_compressor").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("bt_compressor").style.background = "rgb(100, 100, 100)";
         document.getElementById("bt_compressor").style.color = "rgb(180, 180, 180)";
     } else {
-        document.getElementById("bt_compressor").innerHTML = "COMP.";
+        document.getElementById("bt_compressor").innerHTML = 'COMP.<br>' + state.compressor;
         document.getElementById("bt_compressor").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("bt_compressor").style.background = "rgb(100, 0, 0)";
         document.getElementById("bt_compressor").style.color = "rgb(255, 200, 200)";
