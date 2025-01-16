@@ -266,7 +266,7 @@ def compressor(oper='', ratio=''):
         PC.config.set_active(cfg)
 
 
-    # Activate commands
+    # Compressor enable / disable commands
     if oper in ('on', True, 'true'):
         _bypass('compressor', False)
 
