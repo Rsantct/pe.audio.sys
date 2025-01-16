@@ -5,8 +5,8 @@ From version 2.0, we can use CamillaDSP, by now only used to provide an optional
 The compressor is designed to facilitate the intelligibility of movies with difficult to hear  dialogues at low listening levels.
 
 You'll need to prepare 2 packages:
-- 1. The [CamillaDSP](https://github.com/HEnquist/camilladsp) itself
-- 2. The Python library [PyCamillaDSP](https://github.com/HEnquist/pycamilladsp)
+1. The [CamillaDSP](https://github.com/HEnquist/camilladsp) itself
+2. The Python library [PyCamillaDSP](https://github.com/HEnquist/pycamilladsp)
 
 ### 1. Install CamillaDSP with the JACK backend
 
