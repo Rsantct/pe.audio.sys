@@ -58,10 +58,12 @@ def _remove_jack_camilla_from_system_card():
 
 def _insert_cdsp():
 
-    # disconnect pre_in_loop --> brutefir
-    jack.connect('pre_in_loop:output_1', 'brutefir:in.L', 'disconnect')
-    jack.connect('pre_in_loop:output_2', 'brutefir:in.R', 'disconnect')
-
+    # disconnect pre_in_loop --> brutefir (if so)
+    for pre_out in ('pre_in_loop:output_1', 'pre_in_loop:output_2'):
+        pre_out_clients = jack.get_all_connections(pre_out)
+        pre_out_clients = [x.name for x in pre_out_clients]
+        for pre_out_client in [c for c in pre_out_clients if 'brutefir' in c.lower()]:
+            jack.connect(pre_out, pre_out_client, 'disconnect')
 
     # connect pre_in_loop --> cpal
     jack.connect('pre_in_loop:output_1', 'cpal_client_in:in_0')
@@ -221,7 +223,11 @@ def compressor(oper='', ratio=''):
         else:
             current = 'off'
 
-        cur_index   = COMPRESSOR_CYCLE.index(current)
+        # If current ratio is not included in COMPRESSOR_CYCLE
+        try:
+            cur_index   = COMPRESSOR_CYCLE.index(current)
+        except:
+            cur_index = -1
 
         next_index  = (cur_index + 1) % len(COMPRESSOR_CYCLE)
 
@@ -243,7 +249,7 @@ def compressor(oper='', ratio=''):
                 (threshold = -60 dB)
             """
 
-            experimetal_divider = 1.5
+            experimetal_divider = 1.33
 
             return round( -(th - th / fac) / experimetal_divider, 1)
 
