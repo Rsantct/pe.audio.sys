@@ -29,7 +29,7 @@ from    getpass import getuser
 USER                = getuser()
 UHOME               = os.path.expanduser("~")
 MAINFOLDER          = f'{UHOME}/pe.audio.sys'
-CONFIG              = {'compressor': False}
+CONFIG              = {'use_compressor': False}
 LOUDSPEAKER         = ''
 EQ_CURVES           = {}
 LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
