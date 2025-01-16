@@ -121,15 +121,22 @@ def do( cmd, argstring ):
         return result
 
 
-    def manage_compressor(mode, *dummy):
+    def manage_compressor(x, *dummy):
 
-        if not mode:
+        x = x.split()
+        oper = arg = ''
+        if x:
+            oper = x[0]
+            if x[1:]:
+                arg = x[1]
+
+        if not oper:
             if not 'compressor' in preamp.state:
                 preamp.state["compressor"] = 'off'
             return preamp.state["compressor"]
 
         # Proceed:
-        tmp = cdsp.compressor(mode)
+        tmp = cdsp.compressor(oper, arg)
 
         active     = tmp["active"]
         parameters = tmp["parameters"]
@@ -137,6 +144,7 @@ def do( cmd, argstring ):
         if active:
             res = parameters["ratio"]
             preamp.state["compressor"] = res
+
         else:
             res = 'off'
             preamp.state["compressor"] = res
