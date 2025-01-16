@@ -28,8 +28,8 @@ preamp.save_state()
 # INITIATE A CONVOLVER INSTANCE (XO and DRC management)
 convolver = Convolver()
 
-# INITIATE CamillaDSP (currently only for compressor)
-if 'use_compressor' in CONFIG and CONFIG["use_compressor"]:
+# INITIATE CamillaDSP (currently only used for an optional compressor)
+if CONFIG["use_compressor"]:
     cdsp._init()
     if cdsp.compressor('get')["active"]:
         preamp.state["compressor"] = cdsp.compressor('get')["parameters"]["ratio"]
