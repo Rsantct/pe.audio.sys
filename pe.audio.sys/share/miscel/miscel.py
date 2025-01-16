@@ -11,16 +11,118 @@ import  socket
 import  ipaddress
 from    json import loads as json_loads, dumps as json_dumps
 from    time import sleep
+from    datetime import datetime
 import  subprocess as sp
 import  configparser
 import  os
 import  threading
 import  psutil
 import  inspect
+import  shlex
+import  jack
 
-from    config      import *
-from    fmt         import Fmt
-from    sound_cards import release_cards_from_pulseaudio
+from    config      import  *
+from    fmt         import  Fmt
+from    sound_cards import  release_cards_from_pulseaudio
+
+
+# --- MPD auxiliary
+
+def get_running_mpd_config_path():
+
+    result = f'{UHOME}/.mpdconf'
+
+    # Example: [{'pid': 12430, 'cmdline': ['mpd', '/home/paudio/.mpdconf.local']}]
+    mpd_processes = get_pid_cmdline('mpd')
+
+    # If more tan one, raise an Exception
+    if len(mpd_processes) > 1:
+
+        msg = 'More than ONE `mpd` process is running'
+        print(f'{Fmt.BOLD}(start) msg{Fmt.END}')
+        raise Exception(msg)
+
+    elif len(mpd_processes) == 1:
+
+        # mpd [options] [conf_file]: it is always the last parameter
+        if len( mpd_processes[0]['cmdline'] ) > 1:
+            result = mpd_processes[0]['cmdline'][-1]
+
+    else:
+        msg = 'mpd process NOT detected'
+        print(f'{Fmt.RED}(start) msg{Fmt.END}')
+
+    return result
+
+
+def read_mpd_config(mpd_config_path=''):
+    """ mpd clients CANNOT access to MPD.config(),
+        so them needs to rely in reading the mpd config file
+
+        If no `mpd_config_path` is given, then will look for
+        the one used by the running MPD process.
+    """
+
+    def strip(x):
+        """ removes " for config values
+        """
+
+        if type(x) != str:
+            return x
+
+        if x[0] == '"' and x[-1] == '"':
+            return x[1:-1]
+
+
+    config = {'port': 6600, 'playlist_directory': f'{UHOME}/.config/mpd/playlists'}
+
+
+    if not mpd_config_path:
+        mpd_config_path = get_running_mpd_config_path()
+
+
+    with open(mpd_config_path, 'r') as f:
+
+        lexer = shlex.shlex(f)
+        lexer.wordchars += ".-/" # Important for file paths etc.
+
+        section = None
+
+        while True:
+
+            try:
+                token = lexer.get_token()
+                if not token:
+                    break  # End of file
+                if token == '{':
+                    continue
+                if token == '}':
+                    section = None
+                    continue
+                next_token = lexer.get_token()
+                if next_token == '{':
+                    section = token
+                    config.setdefault(section, {})
+                    continue
+                if next_token:
+                    if next_token.lower() in ("yes", "true", "1"):
+                        next_token = True
+                    elif next_token.lower() in ("no", "false", "0"):
+                        next_token = False
+                    if section:
+                        config[section][token] = strip(next_token)
+                    else:
+                        config[token] = strip(next_token)
+
+            except ValueError:
+                print(f"Error parsing line {lexer.lineno}: {lexer.error_leader()}")
+                return {}
+
+            except EOFError: # shlex sometimes raises EOFError
+                break
+
+    return config
+
 
 # --- pe.audio.sys common usage functions:
 
@@ -128,8 +230,7 @@ def start_jack_stuff(config=CONFIG):
         sleep(2)
 
     # Pulseaudio
-    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio",
-                                       shell=True).decode():
+    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
         release_cards_from_pulseaudio()
 
     # Launch JACKD process
@@ -179,11 +280,9 @@ def run_jloops():
 
 
 def check_jloops(config=CONFIG):
-    """ Jack loops checking
+    """ Jack loops check
         (bool)
     """
-    # The configured loops
-    cfg_loops = []
 
     loop_names = ['pre_in_loop']
 
@@ -191,6 +290,8 @@ def check_jloops(config=CONFIG):
         pname = config['sources'][source]['jack_pname']
         if 'loop' in pname and pname not in loop_names:  # avoids duplicates
             loop_names.append( pname )
+
+    cfg_loops = []
 
     for loop_name in loop_names:
             cfg_loops.append( f'{loop_name}:input_1' )
@@ -201,15 +302,19 @@ def check_jloops(config=CONFIG):
     if not cfg_loops:
         return True
 
-    # Waiting for all loops to be spawned
-    tries = 10
-    while tries:
-        # The running ones
-        run_loops = sp.check_output(['jack_lsp', 'loop']).decode().split()
-        if sorted(cfg_loops) == sorted(run_loops):
-            break
-        sleep(1)
-        tries -= 1
+    # Waiting 5 s for all loops to be spawned
+    tries = 25
+    with jack.Client(name='tmp', no_start_server=True) as jc:
+
+        while tries:
+            j_loops = jc.get_ports('loop')
+            if len(j_loops) == len(cfg_loops):
+                break
+            tries -= 1
+            sleep(.2)
+
+    sleep(.1)   # safest
+
     if tries:
         print(f'{Fmt.BLUE}JACK LOOPS RUNNING{Fmt.END}')
         return True
@@ -293,7 +398,8 @@ def peaudiosys_server_is_running(timeout=30):
     while tries:
 
         # Expected response from server.py peaudiosys
-        if 'loudspeaker' in send_cmd('state'):
+        ans = send_cmd('state')
+        if 'loudspeaker' in ans:
             break
 
         sleep(.5)
@@ -435,53 +541,6 @@ def get_loudness_monitor():
                           'scope': 'album'}
 
         return result
-
-
-def read_mpd_config():
-    """ Currently only the port and the playlists directory
-
-        Example .mpdconf
-
-        port                    "6600"
-        #playlist_directory      "~/.config/mpd/playlists"
-        playlist_directory      "/mnt/qnas/media/playlists/"
-    """
-
-    def get_parameter(line, parameter):
-
-        return line.split(parameter)[1]              \
-                   .strip().split()[0]               \
-                   .replace('"','').replace("'", "")
-
-
-    c = {'port': 6600, 'playlist_directory': UHOME}
-
-    try:
-        with open(f'{UHOME}/.mpdconf', 'r') as f:
-            lines = f.read().split('\n')
-    except:
-        return c
-
-    for line in lines:
-
-        if line and line.strip()[0] != '#':
-
-            if 'playlist_directory' in line:
-
-                tmp = get_parameter(line, 'playlist_directory')
-                if tmp.endswith('/'):
-                    tmp = tmp[:-1]
-
-                c["playlist_directory"] = tmp
-
-            if line.strip()[:4] == 'port':
-
-                try:
-                    c["port"] = int( get_parameter(line, 'port') )
-                except:
-                    c["error"] = 'Error reading MPD port'
-
-    return c
 
 
 def read_bf_config_port():
@@ -715,12 +774,10 @@ def wait4ports( pattern, timeout=10 ):
         return False
 
 
-def send_cmd( cmd, sender='', verbose=False,
-              timeout=60,
-              host=CONFIG['peaudiosys_address'],
-              port=CONFIG['peaudiosys_port'] ):
-
-    """ Sends a command to a pe.audio.sys server.
+def send_cmd( cmd, sender='', verbose=False, timeout=60,
+              host='127.0.0.1', port=CONFIG['peaudiosys_port'] ):
+    """
+        Sends a command to a pe.audio.sys server.
         Returns a string about the execution response or an error if so.
     """
     # (i) socket timeout 60 because Brutefir can need some time
@@ -735,22 +792,34 @@ def send_cmd( cmd, sender='', verbose=False,
     # (i) We prefer high-level socket function 'create_connection()',
     #     rather than low level 'settimeout() + connect()'
     try:
+
         with socket.create_connection( (host, port), timeout=timeout ) as s:
+
             s.send( cmd.encode() )
+
             if verbose:
                 print( f'{Fmt.BLUE}(send_cmd) ({sender}) Tx: \'{cmd}\'{Fmt.END}' )
+
             ans = ''
+
             while True:
-                tmp = s.recv(1024).decode()
+
+                tmp = s.recv(1024)
+
                 if not tmp:
                     break
-                ans += tmp
+
+                ans += tmp.decode()
+
             if verbose:
                 print( f'{Fmt.BLUE}(send_cmd) ({sender}) Rx: \'{ans}\'{Fmt.END}' )
+
             s.close()
 
     except Exception as e:
+
         ans = str(e)
+
         if verbose:
             print( f'{Fmt.RED}(send_cmd) ({sender}) {host}:{port} \'{ans}\' {Fmt.END}' )
 
@@ -832,7 +901,6 @@ def read_cdda_meta_from_disk():
     return result
 
 
-
 def read_json_from_file(fpath, timeout=2):
     """ Some json files cannot be ready to read in first run,
         so let's retry
@@ -866,6 +934,22 @@ def read_json_from_file(fpath, timeout=2):
 
 # --- Generic purpose functions:
 
+def get_pid_cmdline(process_name=''):
+    """ gets all the pid and cmdline of the given process name
+    """
+
+    pids = []
+
+    for proc in psutil.process_iter():
+        try:
+            if proc.name() == process_name:
+                pids.append( {'pid': proc.pid, 'cmdline': proc.cmdline() } )
+        except:
+            pass
+
+    return pids
+
+
 def process_is_running(process_name):
     # Iterate through all running processes
     for proc in psutil.process_iter(['cmdline']):
@@ -877,21 +961,6 @@ def process_is_running(process_name):
                 return True
         except:
             pass
-    return False
-
-
-def OLD_process_is_running(pattern):
-    """ check for a system process to be running by a given pattern
-        (bool)
-    """
-    try:
-        # do NOT use shell=True because pgrep ...  will appear it self.
-        plist = sp.check_output(['pgrep', '-u', USER, '-fla', pattern]).decode().split('\n')
-    except:
-        return False
-    for p in plist:
-        if pattern in p:
-            return True
     return False
 
 
@@ -1058,6 +1127,12 @@ def get_my_ip():
         return tmp.split()[0]
     except:
         return ''
+
+
+def get_timestamp():
+    """ the timestamp string, example: '2025-01-02T08:58:59'
+    """
+    return datetime.now().isoformat(timespec='seconds')
 
 
 def time_diff(t1, t2):
