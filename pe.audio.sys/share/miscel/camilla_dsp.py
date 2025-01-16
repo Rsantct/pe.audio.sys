@@ -162,7 +162,14 @@ def _bypass(step='', mode='state'):
         elif mode in (False, 'false', 0, 'off'):
             cfg["pipeline"][i]["bypassed"] = False
 
+        else:
+            return cfg["pipeline"][i]["bypassed"]
+
+        # mute / unmute to avoid pops
+        mute(True)
         PC.config.set_active(cfg)
+        sleep(.1)
+        mute(False)
 
         return PC.config.active()["pipeline"][i]["bypassed"]
 
@@ -249,7 +256,7 @@ def compressor(oper='', ratio=''):
                 (threshold = -60 dB)
             """
 
-            experimetal_divider = 1.33
+            experimetal_divider = 1.5
 
             return round( -(th - th / fac) / experimetal_divider, 1)
 
@@ -289,7 +296,7 @@ def compressor(oper='', ratio=''):
         rotate_compressor()
 
     else:
-        return 'unknown command'
+        return 'not valid'
 
     parameters  = get_parameters()
     active      = not _bypass('compressor', 'state')
