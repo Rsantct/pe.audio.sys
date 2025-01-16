@@ -135,19 +135,25 @@ def do( cmd, argstring ):
                 preamp.state["compressor"] = 'off'
             return preamp.state["compressor"]
 
-        # Proceed:
+        # Proceed and get the result
         tmp = cdsp.compressor(oper, arg)
 
-        active     = tmp["active"]
-        parameters = tmp["parameters"]
+        # Not a valid result
+        if type(tmp) == str:
+            res = tmp
 
-        if active:
-            res = parameters["ratio"]
-            preamp.state["compressor"] = res
-
+        # a valid result
         else:
-            res = 'off'
-            preamp.state["compressor"] = res
+            active     = tmp["active"]
+            parameters = tmp["parameters"]
+
+            if active:
+                res = parameters["ratio"]
+                preamp.state["compressor"] = res
+
+            else:
+                res = 'off'
+                preamp.state["compressor"] = res
 
         return res
 
