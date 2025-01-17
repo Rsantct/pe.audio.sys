@@ -201,16 +201,25 @@ def stop_processes(mode):
         run_plugins(mode='stop')
 
     if mode in ('all', 'stop'):
+
+        # Stop CamillaDSP
+        if CONFIG["use_compressor"]:
+            print(f'(start) STOPPING CamillaDSP')
+            sp.Popen(f'pkill -KILL -u {USER} -f camilladsp >/dev/null 2>&1', shell=True)
+
         # Stop Jack Loops Daemon
         print(f'(start) STOPPING JACK LOOPS')
         sp.Popen(f'pkill -KILL -u {USER} -f jloops_daemon.py >/dev/null 2>&1', shell=True)
+
         # Stop Brutefir
         print(f'(start) STOPPING BRUTEFIR')
         sp.Popen(f'pkill -KILL -u {USER} -f brutefir >/dev/null 2>&1', shell=True)
+
         # Stop Zita_Link
         if REMOTES:
             print(f'(start) STOPPING ZITA_LINK')
             stop_zita_link()
+
         # Stop Jack
         print(f'(start) STOPPING JACKD')
         sp.Popen(f'pkill -KILL -u {USER} -f jackd >/dev/null 2>&1', shell=True)
