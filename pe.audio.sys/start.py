@@ -147,7 +147,7 @@ def manage_server( mode='', service='peaudiosys'):
         print(f'{Fmt.RED}(start) stopping \'server.py {service}\'{Fmt.END}')
         # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
         #              to avoid confusion with 'peaudiosys_ctrl'
-        sp.Popen( f'pkill -KILL -u {USER} -f "server.py {service} " \
+        sp.call( f'pkill -KILL -u {USER} -f "server.py {service} " \
                    >/dev/null 2>&1', shell=True, stdout=sys.stdout,
                                                  stderr=sys.stderr)
 
@@ -159,7 +159,7 @@ def manage_server( mode='', service='peaudiosys'):
               f'{service} {SRV_ADDR}:{SRV_PORT}\'{Fmt.END}')
         cmd = f'python3 {MAINFOLDER}/share/miscel/server.py ' \
               f'{service} {SRV_ADDR} {SRV_PORT}'
-        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     else:
         raise Exception(f'bad manage_server call')
@@ -379,7 +379,7 @@ def prepare_log_header():
 def usb_dac_watchdog(mode='stop'):
 
     if mode == 'stop':
-        sp.Popen(f'pkill -KILL -u {USER} -f "usb_dac_watchdog.py"', shell=True)
+        sp.call(f'pkill -KILL -u {USER} -f "usb_dac_watchdog.py"', shell=True)
 
     elif mode=='start':
 
