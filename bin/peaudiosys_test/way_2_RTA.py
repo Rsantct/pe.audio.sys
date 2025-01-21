@@ -69,7 +69,7 @@ def clear_rta():
 
 def restore_rta():
 
-    print('restoring RTA to pre-amp')
+    print(f'restoring RTA `{RTA}` to pre-amp')
 
     clear_rta()
 
