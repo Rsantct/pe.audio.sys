@@ -6,6 +6,10 @@
     'pe.audio.sys', a PC based personal audio system.
     */
 
+    /*
+     *  Needs `php-yaml` to be installed
+     */
+
     $UHOME = get_home();
     // echo "UHOME: ".$UHOME."\n"; // cmdline debugging
 
@@ -17,28 +21,17 @@
         return $uhome;
     }
 
-    // Gets single line configured items from pe.audio.sys 'config.yml' file
+
+    // Reads an item's value from pe.audio.sys 'config.yml' file
     function get_config($item) {
-        // to have access to variables from outside
+
         global $UHOME;
 
-        $tmp = "";
-        $cfile = fopen( $UHOME."/pe.audio.sys/config/config.yml", "r" )
-                  or die("Unable to open file!");
-        while( !feof($cfile) ) {
-            $line = fgets($cfile);
-            // Ignore yaml commented out lines
-            if ( strpos($line, '#') === false ) {
-                if ( strpos( $line, $item) !== false ) {
-                    $tmp = str_replace( "\n", "", $line);
-                    $tmp = str_replace( $item, "", $tmp);
-                    $tmp = str_replace( ":", "", $tmp);
-                    $tmp = trim($tmp);
-                }
-            }
-        }
-        fclose($cfile);
-        return $tmp;
+        $config_path =  $UHOME."/pe.audio.sys/config/config.yml";
+
+        $config = yaml_parse_file($config_path);
+
+        return $config[$item];
     }
 
 
