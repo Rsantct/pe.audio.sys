@@ -6,9 +6,7 @@
     'pe.audio.sys', a PC based personal audio system.
     */
 
-    /*
-     *  Needs `php-yaml` to be installed
-     */
+    /* (i) needs php-yaml (available as a Debian APT package */
 
     $UHOME = get_home();
     // echo "UHOME: ".$UHOME."\n"; // cmdline debugging
