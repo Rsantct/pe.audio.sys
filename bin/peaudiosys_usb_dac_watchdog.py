@@ -34,8 +34,7 @@ from    datetime import datetime
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import  detect_USB_DAC, jackd_process, jackd_response, \
-                    CONFIG, LOG_FOLDER
+from miscel import  detect_USB_DAC, jack_lsp, CONFIG, LOG_FOLDER
 
 
 CARD_NAME = CONFIG["jack"]["device"].split(':')[-1].split(',')[0]
@@ -67,7 +66,34 @@ def peaudiosys_stop():
 
 def main_loop():
 
-    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    def jack_process(card_name):
+
+        try:
+            tmp = sp.check_output(f'pgrep -u {USER} -fla jackd'.split()).decode().strip()
+
+        except:
+            tmp = ''
+
+        if card_name in tmp:
+            return True
+
+        else:
+            return False
+
+
+    def jack_response(card_name):
+
+        result = False
+
+        if jackd_process(card_name):
+
+            if jack_lsp():
+                result = True
+
+        return result
+
+
+    now = datetime.now().strftime("Y%m%d_%H%M%S")
 
     with open(LOGPATH, 'w') as flog:
         flog.write(f'{now} (usb_dac_watchdog.py) WATCHDOG STARTED.\n')
@@ -76,12 +102,12 @@ def main_loop():
 
         if detect_USB_DAC(CARD_NAME):
 
-            if not jackd_response(CARD_NAME):
+            if not jack_response(CARD_NAME):
                 peaudiosys_restart()
 
         else:
 
-            if jackd_process(CARD_NAME):
+            if jack_process(CARD_NAME):
                 peaudiosys_stop()
 
         sleep(10)
