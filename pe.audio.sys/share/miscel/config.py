@@ -135,7 +135,7 @@ def _init():
         print(f'(config) ERROR reading \'config.yml\'')
         sys.exit()
 
-    FS                  = CONFIG['jack']['rate']
+    FS                  = CONFIG['sample_rate']
     LOUDSPEAKER         = CONFIG['loudspeaker']
     LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{FS}'
     BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
