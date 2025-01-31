@@ -32,8 +32,8 @@ MAINFOLDER          = f'{UHOME}/pe.audio.sys'
 CONFIG              = {}
 LOUDSPEAKER         = ''
 EQ_CURVES           = {}
-LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
-BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
+LSPK_FOLDER         = ''
+BFCFG_PATH          = ''
 
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 STATE_PATH          = f'{MAINFOLDER}/.state'
@@ -135,8 +135,9 @@ def _init():
         print(f'(config) ERROR reading \'config.yml\'')
         sys.exit()
 
+    FS                  = CONFIG['jack']['rate']
     LOUDSPEAKER         = CONFIG['loudspeaker']
-    LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+    LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{FS}'
     BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 
     EQ_CURVES = find_eq_curves()
