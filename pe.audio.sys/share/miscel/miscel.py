@@ -207,7 +207,7 @@ def start_jack_stuff(config=CONFIG):
         jBkndOpts  = f'-p {jc["period"]}'
 
     # set FS
-    jBkndOpts += f' -r {read_bf_config_fs()}'
+    jBkndOpts += f' -r {jc["rate"]}'
 
     # other backend options (config.yml)
     if ('miscel' in jc) and (jc["miscel"]):
