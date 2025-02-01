@@ -15,7 +15,7 @@
     Then, this watchdog will stop pe.audio.sys. Also, as soon the USB DAC
     becomes available again, will restart pe.audio.sys.
 
-    Usage:      usb_dac_watchdog.py  start   1>/dev/null 2>&1 &
+    Usage:      peaudiosys_usb_dac_watchdog.py  start   1>/dev/null 2>&1 &
 
     (Use the above redirection to disconnect it from the console)
 
