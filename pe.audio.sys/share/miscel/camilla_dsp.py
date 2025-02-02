@@ -16,7 +16,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from   miscel   import process_is_running, LOG_FOLDER, Fmt
 import jack_mod as jack
 
-COMPRESSOR_CYCLE = ['off', '3.0:1', '6.0:1', '9.0:1']
+COMPRESSOR_CYCLE = ['off', '1.0:1', '2.0:1', '3.0:1']
 
 HOST        = '127.0.0.1'
 PORT        = 1234
