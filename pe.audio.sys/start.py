@@ -467,7 +467,7 @@ if __name__ == "__main__":
             print(f'({Fmt.BOLD}start) Problems starting BRUTEFIR: {bfstart}')
             sys.exit()
 
-        # INIT CamillaDSP (currently only used for an optional compressor)
+        # - CamillaDSP (currently it is used only for an optional compressor)
         if CONFIG["use_compressor"]:
             import  camilla_dsp
             # Inits CamillaDSP with the compressor bypassed, standalone process (Popen)
