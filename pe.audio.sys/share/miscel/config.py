@@ -37,9 +37,11 @@ BFCFG_PATH          = ''
 
 BFDEF_PATH          = f'{UHOME}/.brutefir_defaults'
 STATE_PATH          = f'{MAINFOLDER}/.state'
-TONE_MEMO_PATH      = f'{MAINFOLDER}/.tone_memo'    # a tone_defeat helper
+TONE_MEMO_PATH      = f'{MAINFOLDER}/.tone_memo'            # a tone_defeat helper
 LOG_FOLDER          = f'{MAINFOLDER}/log'
 EQ_FOLDER           = f'{MAINFOLDER}/share/eq'
+
+CAMILLA_CFG_PATH    = f'{MAINFOLDER}/config/camilladsp.yml'
 
 MACROS_FOLDER       = f'{MAINFOLDER}/macros'
 LDCTRL_PATH         = f'{MAINFOLDER}/.loudness_control'
