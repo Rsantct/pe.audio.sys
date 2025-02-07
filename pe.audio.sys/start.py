@@ -471,7 +471,7 @@ if __name__ == "__main__":
         if CONFIG["use_compressor"]:
             import  camilla_dsp
             # Inits CamillaDSP with the compressor bypassed, standalone process (Popen)
-            camilla_dsp._init(compressor=False)
+            camilla_dsp._init(compressor='off')
 
         # Optional REMOTE SOURCES
         if REMOTES:
