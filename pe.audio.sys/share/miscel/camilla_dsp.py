@@ -74,7 +74,9 @@ def _insert_cdsp():
     jack.connect('cpal_client_out:out_1', 'brutefir:in.R')
 
 
-def _init():
+def _init(compressor='off'):
+    """ defaults to bypass the compressor stage
+    """
 
     def stop_cdsp():
 
@@ -131,8 +133,8 @@ def _init():
     # Running
     run_cdsp(CAMILLA_YML)
 
-    # Deactivate compressor
-    _bypass('compressor', True)
+    # Set the compressor (default is bypassed)
+    _bypass('compressor', not compressor != 'off')
 
 
 def _bypass(step='', mode='state'):
