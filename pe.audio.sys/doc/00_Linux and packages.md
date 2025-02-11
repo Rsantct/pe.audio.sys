@@ -92,7 +92,7 @@ sudo apt install jackd2 brutefir alsa-utils libasound2-dev libasound2-plugins \
                  libjack-jackd2-dev libsamplerate0 libsamplerate0-dev \
                  mpd mpc gmpc ncmpcpp mplayer cdtool zita-ajbridge zita-njbridge \
                  apache2 libapache2-mod-php php-yaml mc jq anacron netcat-traditional \
-                 source-highlight
+                 source-highlight git
 ```
 
 Obsolete (only if you plan to use PEQ based in Ecasound:
