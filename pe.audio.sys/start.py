@@ -157,9 +157,11 @@ def manage_server( mode='', service='peaudiosys'):
             SRV_PORT += 1
         print(f'{Fmt.BLUE}(start) starting \'server.py ' \
               f'{service} {SRV_ADDR}:{SRV_PORT}\'{Fmt.END}')
+
         cmd = f'python3 {MAINFOLDER}/share/miscel/server.py ' \
               f'{service} {SRV_ADDR} {SRV_PORT}'
-        sp.call(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+
+        sp.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
     else:
         raise Exception(f'bad manage_server call')
