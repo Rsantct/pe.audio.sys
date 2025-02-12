@@ -13,6 +13,9 @@
 
     usage:   spotify_monitor.py   start | stop
 """
+#
+# THIS needs: apt install playerctl
+#
 # For playerctl v0.x will run spotify_monitor_daemon_v1.py
 # For playerctl v2.x will run spotify_monitor_daemon_v2.py
 
@@ -32,7 +35,7 @@ def get_playerctl_version():
         tmp = tmp.lower().replace('v', '')
         return tmp[0]
     except:
-        return -1
+        return 'error'
 
 
 def check_Spotify_Desktop_process():
@@ -50,17 +53,20 @@ def check_Spotify_Desktop_process():
 
 
 def start():
+
     if not check_Spotify_Desktop_process():
         print('(spotify_monitor) Unable to detect Spotify Desktop running')
-        exit()
+        sys.exit()
+
     v = get_playerctl_version()
-    if v != '-1':
+
+    if v in ('0', '1', '2'):
         if v in ('0', '1'):
             v = 1
         Popen( f'{PLUGINSFOLDER}/spotify_monitor/spotify_monitor_daemon_v{v}.py' )
         print( f'(spotify_monitor) Starting \'spotify_monitor_daemon_v{v}.py\'' )
     else:
-        print( '(spotify_monitor) Unable to find playerctl --version)' )
+        print( '(spotify_monitor) Unable to find playerctl --version' )
 
 
 def stop():
