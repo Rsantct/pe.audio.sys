@@ -101,9 +101,9 @@ You **MUST** be vigilant during the installation to answer YES when asked for en
 
 (i) We have chosen to install Midnight Commander `mc` because it is a helpful console based file browser. The comand line tool `jq` can be useful to read json files from command line. `anacron` supports daily automatic updates of pe.audio.sys.
 
-Obsolete (only if you plan to use PEQ based in Ecasound, but we are planing to use CamillaDSP for this (work in progress)
+Obsolete (only if you plan to use PEQ based in Ecasound), but we are planing to use CamillaDSP for this (work in progress)
 ```
-sudo apt install ecasound ecatools python3-ecasound ladspa-sdk fil-plugins 
+    sudo apt install ecasound ecatools python3-ecasound ladspa-sdk fil-plugins 
 ```
 
 **Disable default MPD setup:**
