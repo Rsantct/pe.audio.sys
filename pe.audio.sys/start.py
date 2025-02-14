@@ -457,6 +457,15 @@ if __name__ == "__main__":
             print(f'{Fmt.BOLD}(start) Problems starting JACK: {jack_stuff}{Fmt.END}')
             sys.exit()
 
+        # PIPEWIRE needs to reconnect to this new JACK
+        if process_is_running('pipewire'):
+            try:
+                sp.call( 'systemctl --user restart pipewire pipewire-pulse', shell=True)
+                print(f'{Fmt.BLUE}(start) Reloading PipeWire for jack-sink ...{Fmt.END}')
+            except Exception as e:
+                print(f'{Fmt.BOLD}(start) Problems restarting PipeWire: {str(e)}{Fmt.END}')
+                sys.exit()
+
         # INIT AUDIO by importing 'core' temporally (needs JACK to be running)
         import share.services.preamp_mod.core as core
         print(f'{Fmt.MAGENTA}(start) Managing a temporary \'core\' instance.{Fmt.END}')
