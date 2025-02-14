@@ -229,9 +229,8 @@ def start_jack_stuff(config=CONFIG):
         sp.Popen('ffado-dbus-server 1>/dev/null 2>&1', shell=True)
         sleep(2)
 
-    # Pulseaudio
-    if 'pulseaudio' in sp.check_output("pgrep -fl pulseaudio", shell=True).decode():
-        release_cards_from_pulseaudio()
+    # Pulseaudio / Pipewire
+    release_cards_from_pulseaudio()
 
     # Launch JACKD process
     with open(f'{LOG_FOLDER}/jackd.log', 'w') as jlog:
