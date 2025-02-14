@@ -5,13 +5,13 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
-    Launch the spotify_monitor_daemon_vX.py daemon that will:
+    Launch the Spotify Desktop App alongside an spotify_monitor_daemon.py that will:
 
-    - listen for events from Spotify Desktop
+        - listen for events from Spotify Desktop
 
-    - and writes down the metadata into a file for others to read it.
+        - and writes down the metadata into a file for others to read it.
 
-    usage:   spotify_monitor.py   start | stop
+    usage:   spotify_desktop.py   start | stop
 """
 #
 # THIS needs: apt install playerctl
@@ -54,6 +54,8 @@ def check_Spotify_Desktop_process():
 
 def start():
 
+    Popen('spotify', shell=True)
+
     if not check_Spotify_Desktop_process():
         print('(spotify_monitor) Unable to detect Spotify Desktop running')
         sys.exit()
@@ -70,15 +72,22 @@ def start():
 
 
 def stop():
+
     call( f'pkill -u {getuser()} -f spotify_monitor_daemon', shell=True )
+
+    Popen('killall spotify', shell=True)
 
 
 if sys.argv[1:]:
+
     if sys.argv[1] == 'stop':
         stop()
+
     elif sys.argv[1] == 'start':
         start()
+
     else:
         print(__doc__)
+
 else:
     print(__doc__)
