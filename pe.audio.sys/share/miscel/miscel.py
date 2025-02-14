@@ -23,7 +23,7 @@ import  jack
 
 from    config      import  *
 from    fmt         import  Fmt
-from    sound_cards import  release_cards_from_pulseaudio
+from    sound_cards import  remove_cards_in_pulseaudio
 
 
 # --- MPD auxiliary
@@ -230,7 +230,7 @@ def start_jack_stuff(config=CONFIG):
         sleep(2)
 
     # Pulseaudio / Pipewire
-    release_cards_from_pulseaudio()
+    remove_cards_in_pulseaudio()
 
     # Launch JACKD process
     with open(f'{LOG_FOLDER}/jackd.log', 'w') as jlog:
