@@ -460,7 +460,7 @@ if __name__ == "__main__":
         # PIPEWIRE needs to reconnect to this new JACK
         if process_is_running('pipewire'):
             try:
-                sp.call( 'systemctl --user restart pipewire pipewire-pulse', shell=True)
+                sp.call( 'systemctl --user restart pipewire', shell=True)
                 print(f'{Fmt.BLUE}(start) Reloading PipeWire for jack-sink ...{Fmt.END}')
             except Exception as e:
                 print(f'{Fmt.BOLD}(start) Problems restarting PipeWire: {str(e)}{Fmt.END}')
