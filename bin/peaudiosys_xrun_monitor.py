@@ -13,7 +13,7 @@ from time import sleep
 import jack
 
 
-WANTED = ['jack_sink', 'spotify']
+PWTOP_WANTED = ['jack_sink', 'spotify']
 PWTOP_PERIOD = 3
 
 pw_xruns   = 0
@@ -53,7 +53,7 @@ def get_pw_top_errors():
         if 'W/Q' in line and 'B/Q' in line:
             res = []
 
-        for w in WANTED:
+        for w in PWTOP_WANTED:
 
             if line.endswith(w):
 
