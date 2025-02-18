@@ -4,7 +4,11 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
-"""
+""" A monitor for PipeWire or Jack XRUNS
+
+    For Pipewire, will poll periodically 'pw-top' utility
+
+    For Jack, will set a python-jack callback
 """
 
 import subprocess as sp
@@ -66,10 +70,6 @@ def get_pw_top_errors():
     return res
 
 
-def jack_xrun_handler(x):
-    print(f'jackd XRUNS: {str(x)}')
-
-
 def do_pw_top_loop():
 
     pw_top_failures = 0
@@ -98,14 +98,51 @@ def do_pw_top_loop():
         sleep(PWTOP_PERIOD)
 
 
+def pw_is_running():
+
+    try:
+        sp.check_output('pgrep pipewire'.split())
+        return True
+    except:
+        return False
+
+
+def jack_xrun_handler(x):
+    print(f'jackd XRUNS: {str(x)}')
+
+
 if __name__ == "__main__":
 
-    pw_top_job = threading.Thread(target=do_pw_top_loop)
-    pw_top_job.start()
+    # Pipewire monitoring is optional
+
+    if pw_is_running():
+        pw_top_job = threading.Thread(target=do_pw_top_loop)
+        pw_top_job.start()
+        tmp = "pw-top or "
+    else:
+        tmp = ''
 
 
-    jc = jack.Client('tmp', no_start_server=True)
-    jc.set_xrun_callback(jack_xrun_handler)
-    jc.activate()
+    print(f'waiting for xruns in {tmp}jackd ...')
 
-    print('waiting for xruns in pw-top or jackd ...')
+    # Jack monitoring
+    jcli = jack.Client('tmp', no_start_server=True)
+    jcli.set_xrun_callback(jack_xrun_handler)
+
+    with jcli:
+        jcli.activate()
+
+        try:
+            while True:
+                sleep(1)
+
+        except KeyboardInterrupt:
+            print("Exiting Jack client...")
+
+        finally:
+            jcli.deactivate()
+            jcli.close()
+            print("Jack client exited.")
+
+
+
