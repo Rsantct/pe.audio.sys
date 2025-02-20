@@ -12,7 +12,7 @@ We will configure PipeWire in order to auto magically emerge a couple of jack po
 
 ## Pipewire configuration
 
-Install the JACK sink: **`sudo apt install pipewire-jack`**
+Install the JACK bridge: **`sudo apt install pipewire-jack`**
 
 Prepare the following user session PipeWire setting files. You'll find a copy of these files under the `.install/` directory in this repository. These files overrides the same general settings of the base configuration `/usr/share/pipewire/pipewire.conf`
 
