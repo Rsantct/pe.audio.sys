@@ -816,6 +816,20 @@ def check_Mplayer_config_file(profile='istreams'):
         return f'ERROR bad Mplayer profile \'{profile}\''
 
 
+def get_spotify_plugin():
+    """ Get the configured Spotify Client plugin
+        return: 'desktop', 'librespot' or ''
+    """
+    if 'spotify_desktop.py' in CONFIG["plugins"]:
+        return 'desktop'
+
+    elif 'librespot.py' in CONFIG["plugins"]:
+        return 'librespot'
+
+    else:
+        return ''
+
+
 def detect_spotify_client():
     """ Detection of the Spotify Client in use.
         return: 'desktop', 'librespot' or ''
