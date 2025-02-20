@@ -817,26 +817,28 @@ def check_Mplayer_config_file(profile='istreams'):
 
 
 def detect_spotify_client():
-    """ Detects the Spotify Client in use: 'desktop' or 'librespot'
-        (string)
+    """ Detection of the Spotify Client in use.
+        return: 'desktop', 'librespot' or ''
     """
-    result = ''
 
-    # If using librespot
-    try:
-        sp.check_output( f'pgrep -u {USER} -f librespot'.split() )
-        result = 'librespot'
-    except:
-        pass
+    # Iterate through all running processes
+    for proc in psutil.process_iter(['cmdline']):
 
-    # If using plugins/spotify_monitor.py while running a Spotify Desktop client
-    try:
-        sp.check_output( f'pgrep -u {USER} -f spotify_monitor'.split() )
-        result = 'desktop'
-    except:
-        pass
+        try:
 
-    return result
+            # (i) proc.info['cmdline']) is a list of command line args
+            cmdline = ' '.join( proc.info['cmdline'] )
+
+            if 'spotify/spotify' in cmdline.lower():
+                return 'desktop'
+
+            elif 'librespot' in cmdline.lower():
+                return 'librespot'
+
+        except:
+            pass
+
+    return ''
 
 
 def read_state_from_disk():
