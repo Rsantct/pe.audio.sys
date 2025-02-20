@@ -246,7 +246,7 @@ plugins:
     ## Internet url audio streams player based on Mplayer:
     #- istreams.py
 
-    ## Set Pulseaudio apps to sound through by JACK:
+    ## Set Pulseaudio apps to sound through by JACK (Do NOT use with PipeWire):
     #- pulseaudio-jack-sink.py
 
     ## DVB-T player based on Mplayer, useful for DVB-T radio stations:
