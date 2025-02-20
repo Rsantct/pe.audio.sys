@@ -12,6 +12,10 @@
         - and writes down the metadata into a file for others to read it.
 
     usage:   spotify_desktop.py   start | stop
+
+    NOTICE: In recent desktops running PipeWire, we need here to restart
+            the Sopotify Desktop process, in order to link properly to the
+            PipeWire-Jack sink after restarting the pe.audio.sys Jack process.
 """
 #
 # THIS needs: apt install playerctl
