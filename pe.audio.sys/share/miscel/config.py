@@ -137,9 +137,8 @@ def _init():
         print(f'(config) ERROR reading \'config.yml\'')
         sys.exit()
 
-    FS                  = CONFIG['sample_rate']
     LOUDSPEAKER         = CONFIG['loudspeaker']
-    LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{FS}'
+    LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{CONFIG['sample_rate']}'
     BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 
     EQ_CURVES = find_eq_curves()

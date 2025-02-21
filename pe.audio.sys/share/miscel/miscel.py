@@ -206,7 +206,7 @@ def start_jack_stuff(config=CONFIG):
     else:
         jBkndOpts  = f'-p {jc["period"]}'
 
-    # set FS
+    # set sample_rate
     jBkndOpts += f' -r {CONFIG["sample_rate"]}'
 
     # other backend options (config.yml)
@@ -534,7 +534,7 @@ def read_bf_config_fs():
             - or from   ~/.brutefir_defaults  (the default config file).
         (int)
     """
-    FS = 0
+    fs = 0
 
     for fname in ( BFCFG_PATH, BFDEF_PATH ):
         with open(fname, 'r') as f:
@@ -542,15 +542,15 @@ def read_bf_config_fs():
         for l in lines:
             if 'sampling_rate:' in l and l.strip()[0] != '#':
                 try:
-                    FS = int([x for x in l.replace(';', '').split()
+                    fs = int([x for x in l.replace(';', '').split()
                                          if x.isdigit() ][0])
                 except:
                     pass
-        if FS:
+        if fs:
             break   # stops searching if found under lskp folder
 
 
-    if not FS:
+    if not fs:
         raise ValueError('unable to find Brutefir sample_rate')
 
     if 'brutefir_defaults' in fname:
@@ -558,7 +558,7 @@ def read_bf_config_fs():
               f'(miscel.py) (i) USING .brutefir_defaults SAMPLE RATE'
               f'{Fmt.END}')
 
-    return FS
+    return fs
 
 
 def get_peq_in_use():
