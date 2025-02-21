@@ -56,6 +56,11 @@ If you came from a `pe.audio.sys/config/config.yml` based in PulseAudio, **YOU S
 
 ## Spotify users
 
-After restarting **pe.audio.sys**, you need to restart the Spotfy Desktop App in order to reconnect to the new PipeWire-Jack instance.
+After restarting **pe.audio.sys**, you'll need to restart the Spotfy Desktop App in order to reconnect to the new PipeWire-Jack instance.
 
-This is done when using `plugins/spotify_desktop.py`
+We also RECOMMEND to **minimize Spotify** in order to stop Spotify main window to load lots of widgets with high CPU spense. 
+
+This is done when using **`plugins/spotify_desktop.py`**, this plugin needs the folowing Debian packages:
+
+    apt install playerctl xdotool
+    
