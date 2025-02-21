@@ -29,6 +29,9 @@ from    getpass import getuser
 USER                = getuser()
 UHOME               = os.path.expanduser("~")
 MAINFOLDER          = f'{UHOME}/pe.audio.sys'
+
+VALID_SAMPLE_RATES  = [44100, 48000, 88200, 96000, 192000]
+
 CONFIG              = {}
 LOUDSPEAKER         = ''
 EQ_CURVES           = {}
@@ -137,8 +140,9 @@ def _init():
         print(f'(config) ERROR reading \'config.yml\'')
         sys.exit()
 
+    FS                  = CONFIG['sample_rate']
     LOUDSPEAKER         = CONFIG['loudspeaker']
-    LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{CONFIG['sample_rate']}'
+    LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{FS}'
     BFCFG_PATH          = f'{LSPK_FOLDER}/brutefir_config'
 
     EQ_CURVES = find_eq_curves()
