@@ -821,7 +821,7 @@ function page_update() {
     state_get();
 
     //  Cancel updating if not connected
-    if (!server_available){
+    if (! server_available){
         document.getElementById("levelInfo").innerHTML  = '--';
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: not connected';
         player_info_clear();
