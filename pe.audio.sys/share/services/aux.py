@@ -31,7 +31,7 @@ from    peq_mod     import eca_bypass, eca_load_peq
 
 def restart_to_sample_rate(value):
     sp.Popen(f'{UHOME}/bin/peaudiosys_restart.sh {value}', shell=True)
-    return 'ordered'
+    return 'ordered ... ..\nPLEASE RELOAD THIS PAGE WHEN\nTHE CONNECTION IS RESTORED'
 
 
 def dump_aux_info():
