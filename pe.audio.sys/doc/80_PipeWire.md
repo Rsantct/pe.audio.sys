@@ -40,25 +40,25 @@ Notice that for safety reasons we want the Desktop user session NOT to use any s
         │
         ├── pipewire.conf.d
         │   │
-        │   │   1) Prepares the PipeWire <--> JACK bridge
+        │   │   2) Prepares the PipeWire <--> JACK bridge
         │   │       
         │   ├── 10-paudio-jack.conf
         │   │
-        │   │   2) Sets the default sink, for BOTH, PipeWire native clients
+        │   │   3) Sets the default sink, for BOTH, PipeWire native clients
         │   │      and Pulseaudio clients
         │   │
         │   └── 50-paudio-default-sink.conf
         │
         ├── client.conf.d
         │   │
-        │   │   3) Resampling settings for PipeWire native clients
+        │   │   4) Resampling settings for PipeWire native clients
         │   │
         │   └── paudio-client.conf
         │
         │
         └── pipewire-pulse.conf.d
             │
-            │   3) Resampling settings for PulseAudio clients
+            │   5) Resampling settings for PulseAudio clients
             │
             └── paudio-pipewire-pulse.conf
 
