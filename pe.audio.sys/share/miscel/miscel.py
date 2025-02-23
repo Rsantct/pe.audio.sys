@@ -138,6 +138,50 @@ def detect_USB_DAC(cname):
     return result
 
 
+def get_loudspeaker_sample_rates():
+    """ Available sample rates for a loudspeaker are related to
+        the loudspeaker folder subdirectories, for example:
+
+            pe.audio.sys/loudspeakers/DynC5
+            ├── 44100
+            │   ├── brutefir_config
+            │   ├── drc.L.equilat.pcm
+            │   ├── drc.R.equilat.pcm
+            │   ├── ...
+            │   └── ...
+            └── 96000
+                ├── brutefir_config
+                ├── ...
+                └── ...
+    """
+
+    lspk_folder = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}'
+
+    subdirs = []
+
+    sample_rates = []
+
+    try:
+        for d in os.listdir( lspk_folder ):
+
+            full_path = os.path.join(lspk_folder, d)
+
+            if os.path.isdir(full_path):
+                subdirs.append(d)
+
+    except FileNotFoundError:
+        print(f"Error:  '{lspk_folder}' not found.")
+
+    for sd in subdirs:
+
+        if sd.isdigit() and int(sd) in VALID_SAMPLE_RATES:
+            sample_rates.append(int(sd))
+
+    sample_rates.sort()
+
+    return sample_rates
+
+
 def load_extra_cards(config=CONFIG, channels=2):
     """ This launch resamplers that connects extra sound cards into Jack
         (void)
@@ -882,6 +926,8 @@ def read_cdda_meta_from_disk():
     return result
 
 
+# --- General purpose functions:
+
 def read_json_from_file(fpath, timeout=2):
     """ Some json files cannot be ready to read in first run,
         so let's retry
@@ -912,8 +958,6 @@ def read_json_from_file(fpath, timeout=2):
 
     return d
 
-
-# --- Generic purpose functions:
 
 def get_pid_cmdline(process_name=''):
     """ gets all the pid and cmdline of the given process name
