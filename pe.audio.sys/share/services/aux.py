@@ -274,49 +274,6 @@ def peq_bypass(mode):
     return f'{newmode}'
 
 
-def play_url(arg):
-    """ Aux for playback an url stream
-    """
-    # As per this function is a compound function, I have decided
-    # to hold it here instead of inside the players module
-
-    def istreams_query(url):
-        """ Order the istreams daemon plugin to playback an internet stream url
-        """
-        error = False
-
-        # Tune the radio station (Mplayer jack ports will dissapear for a while)
-        sp.Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'.split() )
-
-        # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
-        sleep(2)
-
-        # Waiting for mplayer ports to re-emerge
-        if not wait4ports( f'mplayer_istreams' ):
-            print(f'(aux) ERROR jack ports \'mplayer_istreams\''
-                   ' not found' )
-            error = True
-
-        if not error:
-            # Switching the preamp input
-            # PATCH: using timeout is needed unless send_cmd was modified
-            send_cmd('preamp input istreams', 'aux play_url ...', True, 1)
-            return True
-
-        else:
-            return False
-
-    if arg.startswith('http://') or arg.startswith('https://'):
-        if istreams_query(arg):
-            result = 'ordered'
-        else:
-            result = 'failed'
-    else:
-        result = f'(aux) bad url: {arg}'
-
-    return result
-
-
 def manage_lu_monitor(string):
     """ Manages the loudness_monitor.py daemon through by its fifo
     """
@@ -621,9 +578,6 @@ def do( cmd, arg=None ):
 
     elif cmd == 'get_macros':
         result = get_macros()
-
-    elif cmd == 'play_url':
-        result = play_url(arg)
 
     elif cmd == 'reset_loudness_monitor' or cmd == 'reset_lu_monitor':
         result = manage_lu_monitor('reset')
