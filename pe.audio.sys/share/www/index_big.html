@@ -338,14 +338,26 @@
     <!-- PLAYBACK CONTROL and MACROS TOGGLE-->
     <div>
       <table id="playback_control">
+        <tr> <!-- row0 -->
+            <td id="playback_control_01">
+            </td>
+            <td id="playback_control_02" >
+                <button type="button" title="- 15 MIN"  id="bt_-15min"  style="font-weight:normal" onmousedown="omd_playerCtrl('rew_15min')" >- 15 m       </button>
+                <button type="button" title="- 5 MIN"   id="bt_-5min"   style="font-weight:normal" onmousedown="omd_playerCtrl('rew_5min')"  >- 5 m        </button>
+                <button type="button" title="- 5 MIN"   id="bt_+5min"   style="font-weight:normal" onmousedown="omd_playerCtrl('ff_5min')"   >+ 5 m        </button>
+                <button type="button" title="+ 15 MIN"  id="bt_+15min"  style="font-weight:normal" onmousedown="omd_playerCtrl('ff_15min')"  >+ 15 m       </button>
+            </td>
+            <td id="playback_control_03" >
+            </td>
+       </tr>
         <tr> <!-- row1 -->
             <td id="playback_control_11">
             </td>
             <td id="playback_control_12" style="font-size:1.5em">
-                <button type="button" id="bt_prev" onmousedown="omd_playerCtrl('previous')" >&lt;|           </button>
-                <button type="button" id="bt_rew"      onmousedown="omd_playerCtrl('rew')"      >&lt;&lt;        </button>
-                <button type="button" id="bt_ff"       onmousedown="omd_playerCtrl('ff')"       >&gt;&gt;        </button>
-                <button type="button" id="bt_next"     onmousedown="omd_playerCtrl('next')"     >|&gt;           </button>
+                <button type="button" title="PREV"      id="bt_prev"    onmousedown="omd_playerCtrl('previous')" >&lt;|           </button>
+                <button type="button" title="- 30 SEC"  id="bt_rew"     onmousedown="omd_playerCtrl('rew')"      >&lt;&lt;        </button>
+                <button type="button" title="+ 30 SEC"  id="bt_ff"      onmousedown="omd_playerCtrl('ff')"       >&gt;&gt;        </button>
+                <button type="button" title="NEXT"      id="bt_next"    onmousedown="omd_playerCtrl('next')"     >|&gt;           </button>
             </td>
             <td id="playback_control_13" >
                 <!-- random playback button -->
@@ -359,10 +371,10 @@
             <td id="playback_control_21" >
             </td>
             <td id="playback_control_22" style="font-size:1.5em">
-                <button type="button" id="bt_eject"    onmousedown="omd_playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
-                <button type="button" id="bt_stop"     onmousedown="omd_playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
-                <button type="button" id="bt_pause"    onmousedown="omd_playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
-                <button type="button" id="bt_play"     onmousedown="omd_playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
+                <button type="button" title="EJECT"     id="bt_eject"   onmousedown="omd_playerCtrl('eject')"    >&nbsp;^&nbsp;   </button>
+                <button type="button" title="STOP"      id="bt_stop"    onmousedown="omd_playerCtrl('stop')"     >&nbsp;[]&nbsp;  </button>
+                <button type="button" title="PAUSE"     id="bt_pause"   onmousedown="omd_playerCtrl('pause')"    >&nbsp;||&nbsp;  </button>
+                <button type="button" title="PLAY"      id="bt_play"    onmousedown="omd_playerCtrl('play')"     >&nbsp;&gt;&nbsp;</button>
             </td>
             <td id="playback_control_23" >
                 <!-- MACROS button toggle-->
