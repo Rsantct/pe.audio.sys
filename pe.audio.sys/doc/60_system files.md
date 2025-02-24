@@ -139,8 +139,8 @@ Here you are an uncommented bare example of `config.yml`:
             jack_pname:     mpd
             gain:           0.0
             xo:             lp
-        istreams:
-            jack_pname:     mplayer_istreams
+        url:
+            jack_pname:     mpd
             gain:           0.0
             xo:             lp
         tv:
@@ -158,7 +158,6 @@ Here you are an uncommented bare example of `config.yml`:
     plugins:
         - sound_cards_prepare.py
         - mpd.py
-        - istreams.py
         - pulseaudio-jack-sink.py
         - librespot.py
 
