@@ -101,7 +101,6 @@ def clear_cdda_stuff():
         Popen( f'rm -f {CD_PL_PATH}', shell=True )
 
 
-
 def remote_get_meta(host, port=9990):
     """ Get metadata from a remote pe.audio.sys system
     """
@@ -148,8 +147,9 @@ def get_meta():
     elif 'mpd' in source.lower():
         md = mpd_meta(md)
 
-    elif source == 'istreams':
-        md = mplayer_get_meta(md, service='istreams')
+    elif source == 'url':
+        #md = mplayer_get_meta(md, service='istreams')
+        md = mpd_meta(md)
 
     elif source == 'tdt' or 'dvb' in source:
         md = mplayer_get_meta(md, service='dvb')
@@ -213,8 +213,8 @@ def playback_control(cmd, arg=''):
     elif 'tdt' in source or 'dvb' in source:
         result = mplayer_control(cmd=cmd, service='dvb')
 
-    elif source in ['istreams', 'iradio']:
-        result = mplayer_control(cmd=cmd, service='istreams')
+    elif source == 'url':
+        result = mpd_control(cmd, arg)
 
     elif source == 'cd':
         check_mpd_playlist_is_cd()
@@ -289,6 +289,38 @@ def random_control(arg):
     return result
 
 
+def play_url(url):
+    """ Play an url stream through by MPD, example:
+
+        play_url https://rtve-mediavod-lote3.rtve.es/resources/TE_SMAESTR/mp3/6/4/1740273526546.mp3
+    """
+
+    def prepare_playlist():
+
+        mpd_pl_dir = read_mpd_config()["playlist_directory"]
+
+        pl_path    = f'{mpd_pl_dir}/play_url.m3u'
+
+        with open(pl_path, 'w') as f:
+            f.write(url)
+
+
+    if not( url.startswith('http://') or url.startswith('https://') ):
+        return 'must be http:// or https://'
+
+    prepare_playlist()
+
+    mpd_playlists('clear_playlist')
+
+    result = mpd_playlists('load_playlist', 'play_url')
+
+    if result.startswith('ordered'):
+        send_cmd('preamp input url', timeout=1)
+        mpd_control('play')
+
+    return result
+
+
 def get_all_info():
     """ A wrapper to get all playback related info at once,
         useful for web control clients querying
@@ -337,9 +369,12 @@ def do(cmd, arg):
 
     result = f'(players.py) error with {cmd} {arg}'
 
-    if cmd in ( 'state', 'stop', 'pause', 'play', 'next', 'previous',
-                'rew', 'ff', 'play_track'):
+    if cmd in ( 'state', 'stop', 'pause', 'play', 'next', 'previous', 'play_track',
+                'rew_15min', 'rew_5min', 'rew', 'ff', 'ff_5min', 'ff_15min'):
         result = playback_control( cmd, arg )
+
+    elif cmd == 'play_url':
+        result = play_url(arg)
 
     elif cmd == 'volume':
         result = playback_control( cmd, arg )
