@@ -45,7 +45,7 @@ def ping_mpd():
 
         try:
             print(f'{Fmt.GRAY}(mpd_mod.py) Trying to connect ... .. .{Fmt.END}')
-            c.connect('localhost', MPD_PORT, timeout=30)
+            c.connect('localhost', MPD_PORT, timeout=5)
             print(f'{Fmt.BLUE}(mpd_mod.py) Connected to MPD{Fmt.END}')
             sleep(.1)
             return True
@@ -206,11 +206,23 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
             case 'previous':
                 c.previous()
 
-            case 'rew':         # for REW and FF will move 30 seconds
+            case 'rew_15min':
+                c.seekcur('-900')
+
+            case 'rew_5min':
+                c.seekcur('-300')
+
+            case 'rew':
                 c.seekcur('-30')
 
             case 'ff':
                 c.seekcur('+30')
+
+            case 'ff_5min':
+                c.seekcur('+300')
+
+            case 'ff_15min':
+                c.seekcur('+900')
 
             case 'random':
 
@@ -355,8 +367,18 @@ def mpd_meta( md=PLAYER_METATEMPLATE.copy() ):
 
     if 'time' in st:
         # time is given as a string 'current:total', each part in seconds
-        md["time_pos"] = time_sec2mmss( int( st["time"].split(':')[0] ))
-        md["time_tot"] = time_sec2mmss( int( st["time"].split(':')[1] ))
+
+        tmp_pos = time_sec2hhmmss( int( st["time"].split(':')[0] ))
+        tmp_tot = time_sec2hhmmss( int( st["time"].split(':')[1] ))
+
+        if tmp_pos.startswith('00:'):
+            tmp_pos = tmp_pos[3:]
+
+        if tmp_tot.startswith('00:'):
+            tmp_tot = tmp_tot[3:]
+
+        md["time_pos"] = tmp_pos
+        md["time_tot"] = tmp_tot
 
 
     # Special case CD audio we need to read artist and album
