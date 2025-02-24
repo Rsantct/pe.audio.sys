@@ -576,16 +576,25 @@ function page_update() {
             document.getElementById( "bt_url").style.display = "none";
         }
 
-        // Hide "15 min / 5 min" buttons if track length < 01:00:00
-        const time_tot = player_info.metadata.time_tot;
+        // Hide "15 min / 5 min" buttons on track length
+        const time_tot = player_info.metadata.time_tot.padStart(8,'00:');
 
-        if ( time_tot.includes(':') && ! time_tot.includes()){
+        if ( time_tot.includes(':') && ! time_tot.includes('-')){
 
-            if ( time_tot.padStart(8,'00:') > '01:00:00' ){
-                document.getElementById( "playback_control_02").style.display = "table-cell";
+            if ( time_tot > '00:30:00' ){
+
+                document.getElementById( "playback_control_02" ).style.display = "table-cell";
+
+                if ( time_tot > '01:00:00' ){
+                    document.getElementById( "bt_-15min" ).style.display = "inline-block";
+                    document.getElementById( "bt_+15min" ).style.display = "inline-block";
+                }else{
+                    document.getElementById( "bt_-15min" ).style.display = "none";
+                    document.getElementById( "bt_+15min" ).style.display = "none";
+                }
 
             }else{
-                document.getElementById( "playback_control_02").style.display = "none";
+                document.getElementById( "playback_control_02" ).style.display = "none";
             }
         }
     }
