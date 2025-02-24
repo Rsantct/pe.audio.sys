@@ -16,6 +16,8 @@
 [dvb]
 ao=jack:name=mplayer_dvb:noconnect
 
+
+# OBSOLETE: before 2025-02 internet streams playback was in charge of Mplayer, currently it works with MPD.
 [istreams]
 ao=jack:name=mplayer_istreams:noconnect
 
