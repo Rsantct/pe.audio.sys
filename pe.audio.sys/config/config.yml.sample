@@ -186,9 +186,9 @@ sources:
         lu_offset:      3.0
         xo:
 
-    istreams:
-        jack_pname:     mplayer_istreams    # (i) same in ~/.mplayer/config
+    url:
         gain:           0.0
+        jack_pname:     mpd_loop
         xo:
 
     dvb:
@@ -242,9 +242,6 @@ plugins:
 
     ## Runs MPD:
     #- mpd.py
-
-    ## Internet url audio streams player based on Mplayer:
-    #- istreams.py
 
     ## Set Pulseaudio apps to sound through by JACK (Do NOT use with PipeWire):
     #- pulseaudio-jack-sink.py
