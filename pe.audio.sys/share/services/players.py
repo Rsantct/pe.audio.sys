@@ -275,10 +275,10 @@ def random_control(arg):
     result = 'n/a'
     source = read_state_from_disk()['input']
 
-    if source == 'mpd':
+    if 'mpd' in source.lower():
         result = mpd_control('random', arg)
 
-    elif source == 'spotify':
+    elif 'spotify' in source.lower():
 
         if   get_spotify_plugin() == 'desktop':
             result = spotify_control('random', arg)
