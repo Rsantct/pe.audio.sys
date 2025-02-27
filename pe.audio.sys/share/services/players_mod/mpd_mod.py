@@ -26,40 +26,60 @@ CDDA_MPD_PLAYLIST_PATH  = f'{UHOME}/pe.audio.sys/.cdda_mpd_playlist'
 LAST_MPD_PLAYLIST_PATH  = f'{UHOME}/pe.audio.sys/.last_mpd_playlist'
 
 c = mpd.MPDClient()
+c.timeout = 3       # network timeout in seconds (floats allowed), default: None
+c.idletimeout = 1   # timeout for fetching the result of the idle command is handled seperately, default: None
 
 
-def ping_mpd():
+# NOTE: each command below will do:
+#           _ping_mpd()
+#           ...somo process...
+#           _release_mpd()
+
+def _ping_mpd():
     """ (i) Do not use ping() because some times crash:
             Got unexpected return value: <...a sringify state...>
 
         Use status() instead.
     """
 
+    result = False
+
     try:
-        c.status()
-        return True
+        c.connect('localhost', MPD_PORT)
+        result = True
 
     except Exception as e:
 
-        print(f'{Fmt.GRAY}(mpd_mod.py) ERROR {str(e)}{Fmt.END}')
+        if str(e) == "Already connected":
+            result = True
 
-        try:
-            print(f'{Fmt.GRAY}(mpd_mod.py) Trying to connect ... .. .{Fmt.END}')
-            c.connect('localhost', MPD_PORT, timeout=5)
-            print(f'{Fmt.BLUE}(mpd_mod.py) Connected to MPD{Fmt.END}')
-            sleep(.1)
-            return True
+        else:
+            print(f'{Fmt.BOLD}(mpd_mod.py) ping_mpd: {str(e)}{Fmt.END}')
 
-        except Exception as e:
-            print(f'{Fmt.BOLD}(mpd_mod.py) {str(e)}{Fmt.END}')
-            return False
+
+    return result
+
+
+def _release_mpd():
+
+    try:
+        c.close()
+        c.disconnect()
+
+    except Exception as e:
+            print(f'{Fmt.BOLD}(mpd_mod.py) Error disconecting from the MPD server: {str(e)}{Fmt.END}')
+
+    return
 
 
 def mpd_cdda_in_playlist(all_or_any='any'):
 
+    # to debug the server
+    #print(f'{Fmt.MAGENTA}mpd_cdda_in_playlist{Fmt.END}')
+
     result = False
 
-    if not ping_mpd():
+    if not _ping_mpd():
         print(f'{Fmt.RED}(mpd_mod.py) mpd_cdda_in_playlist not connected to MPD{Fmt.END}')
         return result
 
@@ -72,18 +92,25 @@ def mpd_cdda_in_playlist(all_or_any='any'):
     #   ... ]
 
     if all_or_any == 'any':
-        return any( [ 'cdda:/' in x for x in pl ] )
+        result = any( [ 'cdda:/' in x for x in pl ] )
     else:
-        return all( [ 'cdda:/' in x for x in pl ] )
+        result = all( [ 'cdda:/' in x for x in pl ] )
+
+    _release_mpd()
+
+    return result
 
 
 def mpd_get_cd_track_nums():
     """ special use for CD
     """
 
+    # to debug the server
+    #print(f'{Fmt.MAGENTA}mpd_get_cd_track_nums{Fmt.END}')
+
     result = []
 
-    if not ping_mpd():
+    if not _ping_mpd():
         print(f'{Fmt.RED}(mpd_mod.py) mpd_get_cd_track_nums not connected to MPD{Fmt.END}')
         return result
 
@@ -97,14 +124,19 @@ def mpd_get_cd_track_nums():
     result = [ x.split('/')[-1] for x in result ]
     # ['1', '2', '3' , ... ]
 
+    _release_mpd()
+
     return result
 
 
 def mpd_playlist():
 
+    # to debug the server
+    #print(f'{Fmt.MAGENTA}mpd_playlist{Fmt.END}')
+
     result = []
 
-    if not ping_mpd():
+    if not _ping_mpd():
         print(f'{Fmt.RED}(mpd_mod.py) mpd_playlist not connected to MPD{Fmt.END}')
         return result
 
@@ -123,14 +155,20 @@ def mpd_playlist():
     except Exception as e:
         print(f'{Fmt.RED}(mpd_mod.py) mpd_playlist {str(e)}{Fmt.END}')
 
+    _release_mpd()
+
     return result
 
 
 def mpd_playlists(cmd, arg=''):
 
+    # to debug the server
+    #print(f'{Fmt.MAGENTA}mpd_playlists{Fmt.END}')
+
+
     result = ''
 
-    if not ping_mpd():
+    if not _ping_mpd():
         print(f'{Fmt.RED}(mpd_mod.py) mpd_playlists: not connected to MPD{Fmt.END}')
         return result
 
@@ -164,6 +202,8 @@ def mpd_playlists(cmd, arg=''):
             result = f'{str(e)}'
 
 
+    _release_mpd()
+
     return result
 
 
@@ -177,11 +217,16 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
                     a random mode (on/off)
     """
 
-    if not ping_mpd():
+    # to debug the server
+    #print(f'{Fmt.MAGENTA}mpd_control{Fmt.END}')
+
+
+    if not _ping_mpd():
         print(f'{Fmt.RED}(mpd_mod.py) mpd_control not connected to MPD{Fmt.END}')
         return 'stop'
 
-    # Do execute the command
+    # Do execute the command:
+
     try:
         match cmd:
 
@@ -243,35 +288,37 @@ def mpd_control( cmd, arg='', port=MPD_PORT ):
         print(f'{Fmt.RED}(mpd_mod.py) {str(e)}{Fmt.END}' )
 
 
+    # After execution, get the new state:
 
-    # (i) Must wait a bit to avoid a weird behavior after ordering a command
-    sleep(.2)
+    if cmd == 'random':
+        result = 'off'
+    else:
+        result = 'stop'
 
     try:
         st = c.status()
+
+        try:
+
+            if cmd == 'random':
+
+                result = {'0':'off', '1':'on'}[ st['random'] ]
+
+            else:
+
+                if 'state' in st:
+                    result = st['state']
+
+        except Exception as e:
+            print(f"{Fmt.RED}(mpd_mod.py) mpd_control {str(e)}{Fmt.END}")
+
     except Exception as e:
         print(f'{Fmt.RED}(mpd_mod.py) `status` no answer from MPD{Fmt.END}')
-        return 'stop'
 
-    try:
 
-        if cmd == 'random':
-            return {'0':'off', '1':'on'}[ st['random'] ]
+    _release_mpd()
 
-        else:
-            if 'state' in st:
-                return st['state']
-            else:
-                return 'stop'
-
-    except Exception as e:
-
-        print(f"{Fmt.RED}(mpd_mod.py) mpd_control {str(e)}{Fmt.END}")
-
-        if cmd == 'random':
-            return 'off'
-        else:
-            return 'stop'
+    return result
 
 
 def mpd_meta( md=PLAYER_METATEMPLATE.copy() ):
@@ -292,10 +339,12 @@ def mpd_meta( md=PLAYER_METATEMPLATE.copy() ):
             print(e)
         return br
 
+    # to debug the server
+    #print(f'{Fmt.MAGENTA}mpd_meta{Fmt.END}')
 
     md['player'] = 'MPD'
 
-    if not ping_mpd():
+    if not _ping_mpd():
         print(f'{Fmt.RED}(mpd_mod.py) mpd_meta not connected to MPD{Fmt.END}')
         return  md
 
@@ -394,6 +443,8 @@ def mpd_meta( md=PLAYER_METATEMPLATE.copy() ):
         md["track_num"] = curr_cd_track
         md["title"]     = cdda_meta["tracks"][curr_cd_track]["title"]
 
+
+    _release_mpd()
 
     return md
 
