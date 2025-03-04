@@ -81,7 +81,7 @@ def _init(compressor='off'):
     def stop_cdsp():
 
         sp.call('killall -KILL camilladsp 1>/dev/null 2>&1', shell=True)
-        sleep(.25) # safest
+        sleep(.1) # safest
 
         tries = 10
         while tries:
@@ -103,14 +103,14 @@ def _init(compressor='off'):
         print(f'{Fmt.MAGENTA}Pleae wait for CamillaDSP to start ...{Fmt.END}')
         p = sp.Popen( cdsp_cmd, shell=True )
 
-        tries = 120
+        tries = 50   # 10 sec
         while tries:
             try:
                 PC.connect()
                 break
             except:
                 tries -= 1
-                sleep(.5)
+                sleep(.2)
 
         if not tries:
             raise Exception('Unable to run CamillaDSP, check log folder.')
