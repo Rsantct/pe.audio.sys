@@ -605,22 +605,22 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
     """
     warnings=''
 
-    # Restarts Brutefir (external process)
+    # Restart Brutefir (external process)
     os.chdir(LSPK_FOLDER)
     with open(BFLOGPATH, 'w') as f:
         Popen(['brutefir', 'brutefir_config'], stdout=f, stderr=f)
     os.chdir(UHOME)
-    sleep(1)  # wait a bit for Brutefir to be running
+    sleep(.5)  # wait a bit for Brutefir to be running
 
     # Wait for Brutefir to autoconnect its :out_X ports to system: ports
-    # (this can take a while in some machines as Raspberry Pi)
-    tries = 120     # ~ 60 sec
+    # (this can take a while in some slow machines as Raspberry Pi)
+    tries = 240     # ~ 60 sec
     while tries:
 
         # Showing progress every 3 sec
-        if tries % 6 == 0:
+        if tries % 12 == 0:
             print(  f'{Fmt.BLUE}(brutefir_mod) waiting for Brutefir ports '
-                    f'{"."*int((120-tries)/6)}{Fmt.END}')
+                    f'{"." * int((240 - tries) / 12)}{Fmt.END}')
 
         # Getting the bf out ports list
         bf_out_ports = jack.get_ports('brutefir', is_output=True)
@@ -628,8 +628,8 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
 
         # Ensuring that ports are available
         if len(bf_out_ports) < 2:
-            sleep(.5)
-            tries -= 1  # do not forget this decrement before 'continue'
+            sleep(.25)
+            tries -= 1
             continue
 
         # Counting if all bf_out_ports are properly bonded to system ports
@@ -642,7 +642,7 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
             break
 
         tries -= 1
-        sleep(.5)
+        sleep(.25)
 
     if not tries:
         warnings += ' PROBLEM RUNNING BRUTEFIR :-('
@@ -650,14 +650,14 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
         print(  f'{Fmt.BLUE}(brutefir_mod) Brutefir ports are alive.{Fmt.END}')
 
     # Wait for brutefir input ports to be available
-    tries = 50      # ~ 10 sec
+    tries = 100      # ~ 10 sec
     while tries:
         bf_in_ports = jack.get_ports('brutefir', is_input=True)
         if len(bf_in_ports) >= 2:
             break
         else:
             tries -= 1
-            sleep(.2)
+            sleep(.1)
     if not tries:
         warnings += ' Brutefir ERROR getting jack ports available.'
 
@@ -666,7 +666,7 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
     add_delay(delay)
 
     # A safe wait to avoid early connections failures
-    sleep(.5)
+    sleep(.2)
 
     # Restore input connections
     for a, b in zip(bf_sources, bf_in_ports):
