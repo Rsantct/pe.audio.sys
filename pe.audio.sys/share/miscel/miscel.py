@@ -283,17 +283,19 @@ def start_jack_stuff(config=CONFIG):
                         stderr=jlog)
 
     # Will check if JACK ports are available
-    sleep(1)
-    tries = 10
+    timeout = 5
+    period = .2
+    tries = int(timeout / period)
     while tries:
         if jack_lsp():
             print(f'{Fmt.BOLD}{Fmt.BLUE}(start) JACKD STARTED{Fmt.END}')
             break
         print(f'(start) waiting for jackd ' + '.' * tries)
-        sleep(.5)
+        sleep(period)
         tries -= 1
-    # Still will wait a few, convenient for fast CPUs
-    sleep(.5)
+
+    # Still will wait a few, convenient for slow CPUs
+    sleep(.2)
 
     if not tries:
         # JACK FAILED :-/
@@ -346,7 +348,10 @@ def check_jloops(config=CONFIG):
         return True
 
     # Waiting 5 s for all loops to be spawned
-    tries = 25
+    timeout = 5
+    period = 0.2
+    tries = int(timeout / period)
+
     with jack.Client(name='tmp', no_start_server=True) as jc:
 
         while tries:
@@ -354,7 +359,7 @@ def check_jloops(config=CONFIG):
             if len(j_loops) == len(cfg_loops):
                 break
             tries -= 1
-            sleep(.2)
+            sleep(period)
 
     sleep(.1)   # safest
 
@@ -402,7 +407,7 @@ def peaudiosys_server_is_running(timeout=30):
 
     print(f'{Fmt.BLUE}({caller}) waiting for the server to be alive ...{Fmt.END}')
 
-    period = 0.5
+    period = 0.2
     tries = int(timeout / period)
     while tries:
 
@@ -411,7 +416,7 @@ def peaudiosys_server_is_running(timeout=30):
         if 'loudspeaker' in ans:
             break
 
-        sleep(.5)
+        sleep(period)
         tries -= 1
 
     if tries:
@@ -445,8 +450,7 @@ def manage_amp_switch(mode):
         else:
             return '(aux) amp_manager not configured'
         print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
-        sp.Popen( f'{AMP_MANAGER} {mode}', shell=True )
-        sleep(1)
+        sp.call( f'{AMP_MANAGER} {mode}', shell=True )
         return get_amp_state()
 
 
@@ -770,14 +774,18 @@ def wait4ports( pattern, timeout=10 ):
         Default timeout 10 s
         (bool)
     """
-    n = timeout * 2
-    while n:
+
+    period = 0.25
+    tries = int(timeout / period)
+
+    while tries:
         tmp = sp.check_output(['jack_lsp', pattern]).decode().split()
         if len( tmp ) >= 2:
             break
-        n -= 1
-        sleep(0.5)
-    if n:
+        tries -= 1
+        sleep(period)
+
+    if tries:
         return True
     else:
         return False
@@ -939,7 +947,7 @@ def read_json_from_file(fpath, timeout=2):
     else:
         d = {}
 
-    period = 0.25
+    period = 0.2
     tries = int(timeout / period)
     while tries:
         try:
