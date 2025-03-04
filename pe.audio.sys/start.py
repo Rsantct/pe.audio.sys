@@ -170,6 +170,7 @@ def manage_server( mode='', service='peaudiosys'):
 def stop_processes(mode):
     """ (void)
     """
+
     def wait4jackdkilled():
 
         print('(start) waiting for jackd to be killed ')
@@ -184,12 +185,12 @@ def stop_processes(mode):
 
             except:
                 print('(start) jackd was killed')
-                sleep(.2)
                 return
 
         # This should never happen
         print(f'{Fmt.BOLD}(start) jackd still running, exiting :-/{Fmt.BOLD}')
         sys.exit()
+
 
     # Stop the server:
     if mode in ('all', 'stop', 'server'):
