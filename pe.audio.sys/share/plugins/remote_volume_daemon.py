@@ -16,7 +16,6 @@
 
 """
 
-import  json
 from    subprocess import Popen
 from    time import time
 import  socket
@@ -30,7 +29,8 @@ sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
 import  server
 from    config  import CONFIG, USER
-from    miscel  import send_cmd, get_remote_selected_source, read_last_line
+from    miscel  import send_cmd, get_remote_selected_source, read_last_line, \
+                       read_state_from_disk
 
 LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
 CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'
@@ -70,7 +70,7 @@ class file_event_handler(FileSystemEventHandler):
 
 
 def get_state():
-    return json.loads( send_cmd('state') )
+    return read_state_from_disk()
 
 
 def detect_remotes():
