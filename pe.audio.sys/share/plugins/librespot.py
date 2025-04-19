@@ -33,11 +33,13 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from miscel import kill_bill
 
 
-# BINARY
+# Current user
+USER = getuser()
+
+# librespot binary
 BINARY = '/usr/bin/librespot'
 
-
-# OPTIONS LIST (do not configure here: bitrate, name, backend, device)
+# libresport options list (do not configure here: bitrate, name, backend, device)
 OTHER_OPTS = [
     #'--disable-audio-cache',
     # https://github.com/librespot-org/librespot/wiki/FAQ
@@ -45,9 +47,6 @@ OTHER_OPTS = [
     '--mixer softvol --volume-ctrl fixed --initial-volume 100',
     '--format F32'
 ]
-
-# Current user
-USER = getuser()
 
 
 def run_watchdog():
@@ -79,7 +78,7 @@ def start():
     moreopt_str = ' '.join(OTHER_OPTS)
 
     cmd = f'{BINARY} --name {gethostname()} ' + \
-          f'--onevent {UHOME}/pe.audio.sys/share/plugins/librespot/bind_ports.sh ' + \
+          f'--onevent {UHOME}/pe.audio.sys/share/plugins/librespot/log_and_bind_ports.sh ' + \
           f'--bitrate 320 {BACKEND_OPTS} {moreopt_str}'
 
     eventsPath = f'{UHOME}/pe.audio.sys/.librespot_events'
