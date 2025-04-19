@@ -34,12 +34,12 @@ dB_gain=9
 
 if [[ $1 == *'-h'* || $1 == *'help'* ]]; then
     echo
-    echo "USAGE:   dvb-t_record.sh  [ --stop  | \"Channel Name\" ]"
+    echo "USAGE:   dvb-t_record.sh  [ \"Channel Name\"  | --stop ]"
     echo
     echo "         If no channel name, will use the default channel inside this script:"
     echo "         ""$channel"
     echo
-    echo "         Files will be stored under ~/radio/"
+    echo "         Files will be stored under ~/dvb-t/"
     echo
     exit 0
 
@@ -66,9 +66,9 @@ if [[ ! $(grep -F "$channel" .mplayer/channels.conf) ]]; then
 fi
 
 
-mkdir -p ~/radio
+mkdir -p ~/dvb-t
 
-fname=radio/radio_"$(date '+%Y%m%d_%H%M%S')".wav
+fname=~/dvb-t/dvb-t_"$(date '+%Y%m%d_%H%M%S')".wav
 
 mplayer "dvb://""$channel" \
         -nolirc -quiet  \
