@@ -66,9 +66,9 @@ if [[ ! $(grep -F "$channel" .mplayer/channels.conf) ]]; then
 fi
 
 
-mkdir -p ~/dvb-t
+mkdir -p ~/music/dvb-t
 
-fname=~/dvb-t/dvb-t_"$(date '+%Y%m%d_%H%M%S')".wav
+fname=~/music/dvb-t/dvb-t_"$(date '+%Y%m%d_%H%M%S')".wav
 
 mplayer "dvb://""$channel" \
         -nolirc -quiet  \
