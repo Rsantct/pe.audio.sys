@@ -509,7 +509,7 @@ def init():
     def wifi_detect():
 
         try:
-            tmp = sp.check_output(f'ifconfig'.split()).decode().split()
+            tmp = sp.check_output(f'ifconfig'.split()).decode()
             if 'wlan' in tmp:
                 print(f'{Fmt.GREEN}(aux.py) wifi detected{Fmt.END}')
                 return True
