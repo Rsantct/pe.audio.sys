@@ -105,7 +105,7 @@ def get_sysmon(w_iface='wlan0'):
                     d[k] = v
 
         except Exception as e:
-            print(f'(aux.py) get_wifi {str(e)}' )
+            print(f'(aux.py) get_wifi ERROR: {str(e)}' )
 
         return d
 
@@ -518,7 +518,7 @@ def init():
                 return False
 
         except Exception as e:
-            print(f'(aux.py) wifi_detect {str(e)}' )
+            print(f'(aux.py) wifi_detect ERROR: {str(e)}' )
             return False
 
 
