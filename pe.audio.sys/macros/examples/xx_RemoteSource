@@ -16,6 +16,7 @@ REM_ADD_DELAY = 180
 from json import loads as json_loads
 import sys
 import os
+from subprocess import Popen
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
@@ -23,6 +24,15 @@ sys.path.append(f'{MAINFOLDER}/share/miscel')
 
 from miscel import *
 
+
+# 0) Pausing local player
+#    Do NOT use this: send_cmd( 'player pause')
+#    because the only local player, if so, is MPD
+try:
+    with open('/dev(null', 'w') as devnull:
+        Popen('mpc pause'.split(), stdout=devnull, stderr=devnull)
+except:
+    pass
 
 # 1) Retrieving remote address
 raddr, rport = get_remote_source_addr_port(REM_SRC_NAME)
@@ -42,7 +52,6 @@ send_cmd(f'add_delay {REM_ADD_DELAY}',  host=raddr, port=rport)
 
 
 # 4) Switching local source
-send_cmd( 'player pause')
 send_cmd(f'preamp input {REM_SRC_NAME}')
 
 
