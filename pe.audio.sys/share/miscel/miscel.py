@@ -428,33 +428,51 @@ def peaudiosys_server_is_running(timeout=30):
         return False
 
 
+def read_amp_state_file():
+
+    try:
+        with open(AMP_STATE_PATH, 'r') as f:
+            tmp = f.read().strip()
+
+            if tmp.lower() in ('on', '1'):
+                return 'on'
+            elif tmp.lower() in ('off', '0'):
+                return 'off'
+            else:
+                print(f'{Fmt.MAGENTA}(miscel.py) amp file weird state value: {tmp}{Fmt.END}' )
+                return tmp
+
+    except Exception as e:
+        print(f'{Fmt.MAGENTA}(miscel.py) error reading amp state file: {str(e)}{Fmt.END}' )
+        return ''
+
+
 def manage_amp_switch(mode):
 
-    def get_amp_state():
-        result = 'n/a'
-        try:
-            with open( f'{AMP_STATE_PATH}', 'r') as f:
-                tmp =  f.read().strip()
-            if tmp.lower() in ('0', 'off'):
-                result = 'off'
-            elif tmp.lower() in ('1', 'on'):
-                result = 'on'
-        except:
-            pass
-        return result
-
-
     def set_amp_state(mode):
+
         if 'amp_manager' in CONFIG:
             AMP_MANAGER     = CONFIG['amp_manager']
+
         else:
             return '(aux) amp_manager not configured'
-        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
-        sp.call( f'{AMP_MANAGER} {mode}', shell=True )
-        return get_amp_state()
+
+        print( f'(miscel) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
+
+        sp.Popen( f'{AMP_MANAGER} {mode}', shell=True )
+        sleep(.5)
+
+        return read_amp_state_file()
 
 
     def wait4_convolver_on():
+        """ use this in a thread
+        """
+
+        send_cmd('aux warning set ( waking up ... )', timeout=1)
+        sleep(1)
+        send_cmd('preamp convolver on', timeout=1)
+
         cmax = 30
         while True:
             conv_on = read_state_from_disk()["convolver_runs"]
@@ -469,17 +487,27 @@ def manage_amp_switch(mode):
             sleep(1)
 
 
+    def clear_last_macro():
+        """ use this in a thread
+        """
+        send_cmd('aux run_macro clear_last_macro')
+
+
     new_state  = '';
 
     if mode == 'state':
-        result = get_amp_state()
+
+        result = read_amp_state_file()
 
     elif mode == 'toggle':
-        cur_state = get_amp_state()
+
+        cur_state = read_amp_state_file()
+
         # if unknown state, this switch defaults to 'on'
         new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
 
     elif mode in ('on', 'off'):
+
         new_state = mode
 
     else:
@@ -489,7 +517,8 @@ def manage_amp_switch(mode):
     if new_state:
 
         # Clear last_macro info whenever the amp is switched
-        send_cmd('aux run_macro clear_last_macro')
+        job = threading.Thread(target=clear_last_macro)
+        job.start()
 
         # Set the new amp switch mode
         result = set_amp_state( new_state )
@@ -498,9 +527,6 @@ def manage_amp_switch(mode):
     if new_state == 'on':
 
         # Wake up the convolver if sleeping:
-        send_cmd('aux warning set ( waking up ... )', timeout=1)
-        sleep(1)
-        send_cmd('preamp convolver on', timeout=1)
         job = threading.Thread(target=wait4_convolver_on)
         job.start()
 
@@ -518,6 +544,7 @@ def manage_amp_switch(mode):
             sp.Popen(f'eject {CONFIG["cdrom_device"]}', shell=True)
             sleep(3)
             sp.Popen('sudo poweroff',  shell=True)
+
 
     return result
 
@@ -735,10 +762,13 @@ def remote_zita_restart(raddr, ctrl_port, zita_port):
 
         (i) The sender will run zita_j2n only when a receiver request it
     """
+
     zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
     remotecmd = f'aux zita_j2n {zargs}'
     result = send_cmd(remotecmd, host=raddr, port=ctrl_port)
+
     print(f'(miscel.py) SENDING TO REMOTE: {remotecmd}')
+
     return result
 
 
