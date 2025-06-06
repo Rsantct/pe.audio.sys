@@ -38,8 +38,9 @@ def dump_aux_info():
     """ A helper to write AUX_INFO dict to a file to be accesible
         by third party processes
     """
+
     # Dynamic updates
-    AUX_INFO['amp']                     = manage_amp_switch( 'state' )
+    AUX_INFO['amp']                     = read_amp_state_file()
     AUX_INFO['loudness_monitor']        = get_loudness_monitor()
     AUX_INFO['sysmon']                  = get_sysmon('wlan0')
 
