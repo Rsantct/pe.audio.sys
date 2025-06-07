@@ -449,6 +449,9 @@ def read_amp_state_file():
 
 def manage_amp_switch(mode):
 
+    def get_amp_state():
+        return read_amp_state_file()
+
     def set_amp_state(mode):
 
         if 'amp_manager' in CONFIG:
@@ -462,7 +465,7 @@ def manage_amp_switch(mode):
         sp.Popen( f'{AMP_MANAGER} {mode}', shell=True )
         sleep(.5)
 
-        return read_amp_state_file()
+        return get_amp_state()
 
 
     def wait4_convolver_on():
@@ -497,11 +500,11 @@ def manage_amp_switch(mode):
 
     if mode == 'state':
 
-        result = read_amp_state_file()
+        result = get_amp_state()
 
     elif mode == 'toggle':
 
-        cur_state = read_amp_state_file()
+        cur_state = get_amp_state()
 
         # if unknown state, this switch defaults to 'on'
         new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
