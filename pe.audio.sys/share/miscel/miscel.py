@@ -449,23 +449,20 @@ def read_amp_state_file():
 
 def manage_amp_switch(mode):
 
-    def get_amp_state():
-        return read_amp_state_file()
-
     def set_amp_state(mode):
 
-        if 'amp_manager' in CONFIG:
-            AMP_MANAGER     = CONFIG['amp_manager']
+        if 'amp_manager' in CONFIG and CONFIG['amp_manager']:
+            AMP_MANAGER = CONFIG['amp_manager']
 
         else:
-            return '(aux) amp_manager not configured'
+            return '(miscel) amp_manager not configured'
 
-        print( f'(miscel) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
+        print( f'(miscel) running \'{AMP_MANAGER} {mode}\'' )
 
         sp.Popen( f'{AMP_MANAGER} {mode}', shell=True )
         sleep(.5)
 
-        return get_amp_state()
+        return read_amp_state_file()
 
 
     def wait4_convolver_on():
@@ -500,11 +497,11 @@ def manage_amp_switch(mode):
 
     if mode == 'state':
 
-        result = get_amp_state()
+        result = read_amp_state_file()
 
     elif mode == 'toggle':
 
-        cur_state = get_amp_state()
+        cur_state = read_amp_state_file()
 
         # if unknown state, this switch defaults to 'on'
         new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
@@ -545,7 +542,7 @@ def manage_amp_switch(mode):
         # SHUTDOWN the COMPUTER:
         if 'amp_off_shutdown' in CONFIG and CONFIG['amp_off_shutdown']:
             sp.Popen(f'eject {CONFIG["cdrom_device"]}', shell=True)
-            sleep(3)
+            sleep(5)
             sp.Popen('sudo poweroff',  shell=True)
 
 
