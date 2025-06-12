@@ -43,7 +43,7 @@ fi
 
 
 # Killing the running service:
-server_is_runnnig=$(pgrep -fla "server.py peaudiosys")
+server_is_runnnig=$(pgrep -fla "server.py peaudiosys ")
 if [[ ! $server_is_runnnig ]]; then
     echo "(i) pe.audio.sys server was not running."
 fi
