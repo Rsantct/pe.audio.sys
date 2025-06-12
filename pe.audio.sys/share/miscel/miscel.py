@@ -495,7 +495,7 @@ def manage_amp_switch(mode):
 
     new_state  = '';
 
-    if mode == 'state':
+    if 'stat' in mode:
 
         result = read_amp_state_file()
 
