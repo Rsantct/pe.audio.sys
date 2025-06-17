@@ -51,8 +51,9 @@ def dump_aux_info():
 
 def get_sysmon(w_iface='wlan0'):
     """ A simple reader of
+            - FAN speed
             - CPU temperature
-            - wireless link stattus
+            - Wireless link stattus
     """
 
     def get_wifi(iface='wlan0'):
@@ -131,28 +132,31 @@ def get_sysmon(w_iface='wlan0'):
         return temp
 
 
-    def get_fans_speed(get_zero_rmp=False):
+    def get_fans_speed():
         """
         """
-        fans = {'fan1':'', 'fan2':'', 'fan3':'', }
+        fans = {}
         hw_dir = '/sys/class/hwmon/hwmon1'
-        for i in 1,2,3:
+
+        for fan in ('fan1', 'fan2', 'fan3'):
+
             try:
-                with open(f'{hw_dir}/fan{i}_input', 'r') as f:
+                with open(f'{hw_dir}/{fan}_input', 'r') as f:
                     x = f.read().strip()
-                    if int(x) or get_zero_rmp:
-                        fans[f"fan{i}"] = x
-            except:
-                pass
+                    if int(x):
+                        fans[fan] = x
+
+            except Exception as e:
+                print(f'{Fmt.RED}(aux) problems reading {fan}: {str(e)}{Fmt.END}')
 
         return fans
 
-
-
-    return  {   'wifi': get_wifi( w_iface),
-                'temp': get_temp(),
+    result =  { 'wifi': get_wifi( w_iface ) ,
+                'temp': get_temp()          ,
                 'fans': get_fans_speed()
-            }
+              }
+
+    return result
 
 
 def get_web_config():
@@ -528,6 +532,7 @@ def init():
     WIFI_DETECTED = wifi_detect()
 
     AUX_INFO = {    'amp':                  'off',
+                    'amp_off_shutdown':     CONFIG["amp_off_shutdown"],
                     'loudness_monitor':     0.0,
                     'last_macro':           '',
                     'warning':              '',
