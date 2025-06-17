@@ -1141,9 +1141,14 @@ function omd_ampli_switch(mode) {
         msg = 'Please confirm to POWER OFF the system';
     }
 
-    if ( confirm(msg) ){
-        const ans = control_cmd( 'amp_switch ' + mode );
+        if ( aux_info.amp.toLowerCase() == 'on' ) {
+
+        if ( ! confirm(msg) ){
+            return;
+        }
     }
+
+    control_cmd( 'amp_switch ' + mode );
 }
 
 
