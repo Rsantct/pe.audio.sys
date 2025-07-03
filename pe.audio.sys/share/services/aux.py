@@ -28,7 +28,6 @@ from    miscel      import  *
 from    peq_mod     import eca_bypass, eca_load_peq
 
 
-
 def restart_to_sample_rate(value):
     sp.Popen(f'{UHOME}/bin/peaudiosys_restart.sh {value}', shell=True)
     return 'ordered ... ..\nPLEASE RELOAD THIS PAGE WHEN\nTHE CONNECTION IS RESTORED'
@@ -133,23 +132,30 @@ def get_sysmon(w_iface='wlan0'):
 
 
     def get_fans_speed():
+        """ returns a dictionary of fan speeds
+            {
+                fanN: speed,
+                ...
+            }
         """
-        """
-        fans = {}
-        hw_dir = '/sys/class/hwmon/hwmon1'
 
-        for fan in ('fan1', 'fan2', 'fan3'):
+        fans = {}
+
+        for fan_path in FANS_DETECTED:
+
+            fanN = fan_path.split('/')[-1][:4]
 
             try:
-                with open(f'{hw_dir}/{fan}_input', 'r') as f:
+                with open(fan_path, 'r') as f:
                     x = f.read().strip()
                     if int(x):
-                        fans[fan] = x
+                        fans[fanN] = x
 
             except Exception as e:
-                print(f'{Fmt.RED}(aux) problems reading {fan}: {str(e)}{Fmt.END}')
+                print(f'{Fmt.RED}(aux) problems reading {fan_path}: {str(e)}{Fmt.END}')
 
         return fans
+
 
     result =  { 'wifi': get_wifi( w_iface ) ,
                 'temp': get_temp()          ,
@@ -512,6 +518,8 @@ class files_event_handler(FileSystemEventHandler):
 def init():
 
     def wifi_detect():
+        """ returns boolean
+        """
 
         try:
             tmp = sp.check_output(f'ifconfig'.split()).decode()
@@ -527,10 +535,43 @@ def init():
             return False
 
 
-    global AUX_INFO, WIFI_DETECTED
+    def fans_detect():
+        """ returns a dictionary of fan file paths and its readed speed
+            {
+                fan_path: speed,
+                ...
+            }
+        """
+
+        fans = {}
+
+        hw_dir = '/sys/class/hwmon/hwmonX'
+
+        for dir_num in ('0', '1'):
+
+            for fan_num in ('1', '2', '3'):
+
+                try:
+                    fan_path = f'{hw_dir.replace("X", dir_num)}/fan{fan_num}_input'
+
+                    with open(fan_path, 'r') as f:
+                        x = f.read().strip()
+                        if int(x):
+                            fans[fan_path] = x
+
+                    print(f'{Fmt.BLUE}(aux)     found: {fan_path}{Fmt.END}')
+
+                except Exception as e:
+                    #print(f'{Fmt.RED}(aux) not found: {fan_path}{Fmt.END}')
+                    pass
+
+        return fans
+
+
+    global AUX_INFO, WIFI_DETECTED, FANS_DETECTED
 
     WIFI_DETECTED = wifi_detect()
-
+    FANS_DETECTED = fans_detect()
     AUX_INFO = {    'amp':                  'off',
                     'amp_off_shutdown':     CONFIG["amp_off_shutdown"],
                     'loudness_monitor':     0.0,
