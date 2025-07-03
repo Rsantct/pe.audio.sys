@@ -21,28 +21,34 @@ COMPRESSOR_CYCLE = ['off', '1.0:1', '2.0:1', '3.0:1']
 HOST        = '127.0.0.1'
 PORT        = 1234
 
-# CamillaDSP config file path
-CAMILLA_YML = f'{UHOME}/pe.audio.sys/config/camilladsp.yml'
+CONFIG_DIR = f'{UHOME}/pe.audio.sys/config'
 
 # The CamillaDSP connection
 PC = CamillaClient(HOST, PORT)
 
 
 def _remove_jack_camilla_from_system_card():
+    """ CPAL jack ports will auto connect to
+        system:capture and system:playback
 
-    tries = 10
+        Return True if disconnection is success, else False
+    """
+
+    # Wait for all 4 camilla CPAL I/O ports to be detected
+    tries = 25
     while tries:
         x = jack.get_ports('cpal_client', is_audio=True)
         if len(x) == 4:
             break
         tries -= 1
-        sleep(.1)
+        sleep(.2)
 
-    sleep(.1)   # safest
+    sleep(.2)   # safest
 
     if not tries:
         raise Exception('Unable to get CamillaDSP ports in JACK, check log folder.')
 
+    # Disconnecting the auto connected ones
     for (is_input, is_output) in ((True, False), (False, True)):
 
         for cpal_port in jack.get_ports('cpal_client', is_input=is_input, is_output=is_output):
@@ -54,6 +60,19 @@ def _remove_jack_camilla_from_system_card():
                     jack.connect(p, cpal_port, 'disconnect')
                 else:
                     jack.connect(cpal_port, p, 'disconnect')
+
+    # Check if any 'system' remains in cpal ports connections
+    cpal_ports = jack.get_ports('cpal_client')
+
+    for cpal_port in cpal_ports:
+
+        conns = jack.get_all_connections( cpal_port )
+
+        for c in conns:
+            if 'system' in c.name:
+                return False
+
+    return True
 
 
 def _insert_cdsp():
@@ -73,10 +92,21 @@ def _insert_cdsp():
     jack.connect('cpal_client_out:out_0', 'brutefir:in.L')
     jack.connect('cpal_client_out:out_1', 'brutefir:in.R')
 
+    return True
+
 
 def _init(compressor='off'):
     """ defaults to bypass the compressor stage
     """
+
+    def prepare_config():
+        """ This merges the BASE YML and the LOUDSPEAKER YML
+        """
+        base_path   = f'{CONFIG_DIR}/camilladsp_base.yml'
+        config_path = f'{CONFIG_DIR}/.camilladsp.yml'
+
+        sp.call(f'cp {base_path} {config_path}', shell=True)
+
 
     def stop_cdsp():
 
@@ -93,12 +123,16 @@ def _init(compressor='off'):
             raise Exception('Unable to stop CamillaDSP.')
 
 
-    def run_cdsp(config_file):
+    def run_cdsp():
+
+        prepare_config()
+
+        config_path = f'{CONFIG_DIR}/.camilladsp.yml'
 
         # Starting CamillaDSP **MUTED**
         RATE     = jack.get_samplerate()
         cdsp_cmd = f'camilladsp --wait --mute -r {RATE} -a {HOST} -p {PORT} ' + \
-                   f'--logfile "{LOG_FOLDER}/camilladsp.log" {config_file}'
+                   f'--logfile "{LOG_FOLDER}/camilladsp.log" {config_path}'
 
         print(f'{Fmt.MAGENTA}Pleae wait for CamillaDSP to start ...{Fmt.END}')
         p = sp.Popen( cdsp_cmd, shell=True )
@@ -118,20 +152,23 @@ def _init(compressor='off'):
         print(f'{Fmt.BLUE}Logging CamillaDSP to log/camilladsp.log ...{Fmt.END}')
 
         # Remove JACK system connections
-        _remove_jack_camilla_from_system_card()
+        if not _remove_jack_camilla_from_system_card():
+            print(f'{Fmt.BOLD}Cannot disconnect CamillaDSP cpal jack ports from system{Fmt.END}')
 
         # Inserting before Brutefir
-        _insert_cdsp()
+        if _insert_cdsp():
+            print(f'{Fmt.BLUE}CamillaDSP has been inserted{Fmt.END}')
 
         # Unmute
         PC.volume.set_main_mute(False)
 
 
+    # Stop if already running
     if process_is_running('camilladsp'):
         stop_cdsp()
 
-    # Running
-    run_cdsp(CAMILLA_YML)
+    # Run CamillaDSP
+    run_cdsp()
 
     # Set the compressor (default is bypassed)
     _bypass('compressor', not compressor != 'off')
