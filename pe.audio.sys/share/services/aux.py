@@ -545,14 +545,14 @@ def init():
 
         fans = {}
 
-        hw_dir = '/sys/class/hwmon/hwmonX'
+        hw_dir = '/sys/class/hwmon'
 
         for dir_num in ('0', '1'):
 
             for fan_num in ('1', '2', '3'):
 
                 try:
-                    fan_path = f'{hw_dir.replace("X", dir_num)}/fan{fan_num}_input'
+                    fan_path = f'{hw_dir}/hwmon{dir_num}/fan{fan_num}_input'
 
                     with open(fan_path, 'r') as f:
                         x = f.read().strip()
@@ -564,6 +564,9 @@ def init():
                 except Exception as e:
                     #print(f'{Fmt.RED}(aux) not found: {fan_path}{Fmt.END}')
                     pass
+
+        if not fans:
+            print(f'{Fmt.RED}(aux) no fans found under {hw_dir}{Fmt.END}')
 
         return fans
 
