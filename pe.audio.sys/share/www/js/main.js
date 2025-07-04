@@ -566,13 +566,36 @@ function page_update() {
             document.getElementById('track_selector').value = '--';
         }
 
-        // Displays the [url] button if input == 'iradio' or 'istreams'
-        if (state.input == "iradio" ||
-            state.input == "istreams") {
+        // Displays the [url] button if input == 'url'
+        if (state.input == "url") {
             document.getElementById( "bt_url").style.display = "inline";
+            document.getElementById( "track_selector").style.display = "none";
+            document.getElementById( "playlist_selector").style.display = "none";
         }
         else {
             document.getElementById( "bt_url").style.display = "none";
+        }
+
+        // Hide "15 min / 5 min" buttons on track length
+        const time_tot = player_info.metadata.time_tot.padStart(8,'00:');
+
+        if ( time_tot.includes(':') && ! time_tot.includes('-')){
+
+            if ( time_tot > '00:30:00' ){
+
+                document.getElementById( "playback_control_02" ).style.display = "table-cell";
+
+                if ( time_tot > '01:00:00' ){
+                    document.getElementById( "bt_-15min" ).style.display = "inline-block";
+                    document.getElementById( "bt_+15min" ).style.display = "inline-block";
+                }else{
+                    document.getElementById( "bt_-15min" ).style.display = "none";
+                    document.getElementById( "bt_+15min" ).style.display = "none";
+                }
+
+            }else{
+                document.getElementById( "playback_control_02" ).style.display = "none";
+            }
         }
     }
 
@@ -1082,7 +1105,7 @@ function oc_play_track_number(N) {
 function ck_play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
-        control_cmd( 'aux play_url ' + url );
+        control_cmd( 'player play_url ' + url );
     }
 }
 
@@ -1111,7 +1134,21 @@ function ck_peaudiosys_restart() {
 
 
 function omd_ampli_switch(mode) {
-    const ans = control_cmd( 'amp_switch ' + mode );
+
+    let msg = 'Please confirm to TURN OFF the amplifier';
+
+    if ( aux_info.amp_off_shutdown ) {
+        msg = 'Please confirm to POWER OFF the system';
+    }
+
+        if ( aux_info.amp.toLowerCase() == 'on' ) {
+
+        if ( ! confirm(msg) ){
+            return;
+        }
+    }
+
+    control_cmd( 'amp_switch ' + mode );
 }
 
 

@@ -25,15 +25,20 @@ PORT=$( grep peaudiosys_port ~/pe.audio.sys/config/config.yml | awk '{print $NF}
 if [[ ! $ADDR || ! PORT ]]; then
     echo ${BOLD}
     echo '(i) Not found control TCP server address/port in `config.yml`,'
-    echo '    using defaults `0.0.0.0:9990`'
+    echo '    using defaults for auxiliary control service `0.0.0.0:9991`'
     echo ${NORMAL}
     ADDR='0.0.0.0'
-    PORT=9990
+    PORT=9991
+else
+    (( PORT++ ))
 fi
 
 
 if [[ $opc == *"-h"* ]]; then
-    echo "usage:    peaudiosys_server_restart.sh  [stop | --verbose]"
+    echo
+    echo "Restarts the peaudiosys_ctrl service"
+    echo
+    echo "usage:    peaudiosys_sctral_erver_restart.sh  [stop | --verbose]"
     echo ""
     echo "          stop            stops the server"
     echo "          -v --verbose    will keep messages to console,"
@@ -43,13 +48,13 @@ fi
 
 
 # Killing the running service:
-server_is_runnnig=$(pgrep -fla "server.py peaudiosys ")
+server_is_runnnig=$(pgrep -fla "server.py peaudiosys_ctrl")
 if [[ ! $server_is_runnnig ]]; then
-    echo "(i) pe.audio.sys server was not running."
+    echo "(i) pe.audio.sys CTRL server was not running."
 fi
 # ***NOTICE*** the -f "srtring " MUST have an ending blank in order
 #              to avoid confusion with 'peaudiosys_ctrl'
-pkill -KILL -u $USER -f "server.py peaudiosys "
+pkill -KILL -u $USER -f "server.py peaudiosys_ctrl "
 if [[ $opc == *'stop'* ]]; then
     exit 0
 fi
@@ -61,10 +66,10 @@ sleep .25
 #     if the launcher session has been closed (e.g. a crontab job),
 #     except if -v --verbose is indicated
 if [[ $opc == *"-v"* ]]; then
-    echo "(i) RESTARTING pe.audio.sys server (VERBOSE MODE)"
-    python3 "$SERVERPATH" "peaudiosys" "$ADDR" "$PORT" -v &
+    echo "(i) RESTARTING pe.audio.sys CTRL server (VERBOSE MODE)"
+    python3 "$SERVERPATH" "peaudiosys_ctrl" "$ADDR" "$PORT" -v &
 
 else
-    echo "(i) RESTARTING pe.audio.sys server (QUIET MODE redirected to /dev/null)"
-    python3 "$SERVERPATH" "peaudiosys" "$ADDR" "$PORT" >/dev/null 2>&1 &
+    echo "(i) RESTARTING pe.audio.sys CTRL server (QUIET MODE redirected to /dev/null)"
+    python3 "$SERVERPATH" "peaudiosys_ctrl" "$ADDR" "$PORT" >/dev/null 2>&1 &
 fi

@@ -158,6 +158,13 @@ def _init():
     if not 'use_compressor' in CONFIG:
         CONFIG['use_compressor'] = False
 
+    # Default amp switch off behavior to shutdown the computer
+    if not 'amp_off_shutdown' in CONFIG:
+        CONFIG["amp_off_shutdown"] = False
+    else:
+        if not CONFIG["amp_off_shutdown"]:
+            CONFIG["amp_off_shutdown"] = False
+
 
 # AUTOEXEC
 _init()

@@ -283,17 +283,19 @@ def start_jack_stuff(config=CONFIG):
                         stderr=jlog)
 
     # Will check if JACK ports are available
-    sleep(1)
-    tries = 10
+    timeout = 5
+    period = .2
+    tries = int(timeout / period)
     while tries:
         if jack_lsp():
             print(f'{Fmt.BOLD}{Fmt.BLUE}(start) JACKD STARTED{Fmt.END}')
             break
         print(f'(start) waiting for jackd ' + '.' * tries)
-        sleep(.5)
+        sleep(period)
         tries -= 1
-    # Still will wait a few, convenient for fast CPUs
-    sleep(.5)
+
+    # Still will wait a few, convenient for slow CPUs
+    sleep(.2)
 
     if not tries:
         # JACK FAILED :-/
@@ -346,7 +348,10 @@ def check_jloops(config=CONFIG):
         return True
 
     # Waiting 5 s for all loops to be spawned
-    tries = 25
+    timeout = 5
+    period = 0.2
+    tries = int(timeout / period)
+
     with jack.Client(name='tmp', no_start_server=True) as jc:
 
         while tries:
@@ -354,7 +359,7 @@ def check_jloops(config=CONFIG):
             if len(j_loops) == len(cfg_loops):
                 break
             tries -= 1
-            sleep(.2)
+            sleep(period)
 
     sleep(.1)   # safest
 
@@ -402,7 +407,7 @@ def peaudiosys_server_is_running(timeout=30):
 
     print(f'{Fmt.BLUE}({caller}) waiting for the server to be alive ...{Fmt.END}')
 
-    period = 0.5
+    period = 0.2
     tries = int(timeout / period)
     while tries:
 
@@ -411,7 +416,7 @@ def peaudiosys_server_is_running(timeout=30):
         if 'loudspeaker' in ans:
             break
 
-        sleep(.5)
+        sleep(period)
         tries -= 1
 
     if tries:
@@ -423,34 +428,51 @@ def peaudiosys_server_is_running(timeout=30):
         return False
 
 
+def read_amp_state_file():
+
+    try:
+        with open(AMP_STATE_PATH, 'r') as f:
+            tmp = f.read().strip()
+
+            if tmp.lower() in ('on', '1'):
+                return 'on'
+            elif tmp.lower() in ('off', '0'):
+                return 'off'
+            else:
+                print(f'{Fmt.MAGENTA}(miscel.py) amp file weird state value: {tmp}{Fmt.END}' )
+                return tmp
+
+    except Exception as e:
+        print(f'{Fmt.MAGENTA}(miscel.py) error reading amp state file: {str(e)}{Fmt.END}' )
+        return ''
+
+
 def manage_amp_switch(mode):
 
-    def get_amp_state():
-        result = 'n/a'
-        try:
-            with open( f'{AMP_STATE_PATH}', 'r') as f:
-                tmp =  f.read().strip()
-            if tmp.lower() in ('0', 'off'):
-                result = 'off'
-            elif tmp.lower() in ('1', 'on'):
-                result = 'on'
-        except:
-            pass
-        return result
-
-
     def set_amp_state(mode):
-        if 'amp_manager' in CONFIG:
-            AMP_MANAGER     = CONFIG['amp_manager']
+
+        if 'amp_manager' in CONFIG and CONFIG['amp_manager']:
+            AMP_MANAGER = CONFIG['amp_manager']
+
         else:
-            return '(aux) amp_manager not configured'
-        print( f'(aux) running \'{AMP_MANAGER.split("/")[-1]} {mode}\'' )
+            return '(miscel) amp_manager not configured'
+
+        print( f'(miscel) running \'{AMP_MANAGER} {mode}\'' )
+
         sp.Popen( f'{AMP_MANAGER} {mode}', shell=True )
-        sleep(1)
-        return get_amp_state()
+        sleep(.5)
+
+        return read_amp_state_file()
 
 
     def wait4_convolver_on():
+        """ use this in a thread
+        """
+
+        send_cmd('aux warning set ( waking up ... )', timeout=1)
+        sleep(1)
+        send_cmd('preamp convolver on', timeout=1)
+
         cmax = 30
         while True:
             conv_on = read_state_from_disk()["convolver_runs"]
@@ -465,17 +487,27 @@ def manage_amp_switch(mode):
             sleep(1)
 
 
+    def clear_last_macro():
+        """ use this in a thread
+        """
+        send_cmd('aux run_macro clear_last_macro')
+
+
     new_state  = '';
 
-    if mode == 'state':
-        result = get_amp_state()
+    if 'stat' in mode:
+
+        result = read_amp_state_file()
 
     elif mode == 'toggle':
-        cur_state = get_amp_state()
+
+        cur_state = read_amp_state_file()
+
         # if unknown state, this switch defaults to 'on'
         new_state = {'on': 'off', 'off': 'on'}.get( cur_state, 'on' )
 
     elif mode in ('on', 'off'):
+
         new_state = mode
 
     else:
@@ -485,7 +517,8 @@ def manage_amp_switch(mode):
     if new_state:
 
         # Clear last_macro info whenever the amp is switched
-        send_cmd('aux run_macro clear_last_macro')
+        job = threading.Thread(target=clear_last_macro)
+        job.start()
 
         # Set the new amp switch mode
         result = set_amp_state( new_state )
@@ -494,9 +527,6 @@ def manage_amp_switch(mode):
     if new_state == 'on':
 
         # Wake up the convolver if sleeping:
-        send_cmd('aux warning set ( waking up ... )', timeout=1)
-        sleep(1)
-        send_cmd('preamp convolver on', timeout=1)
         job = threading.Thread(target=wait4_convolver_on)
         job.start()
 
@@ -512,8 +542,9 @@ def manage_amp_switch(mode):
         # SHUTDOWN the COMPUTER:
         if 'amp_off_shutdown' in CONFIG and CONFIG['amp_off_shutdown']:
             sp.Popen(f'eject {CONFIG["cdrom_device"]}', shell=True)
-            sleep(3)
+            sleep(5)
             sp.Popen('sudo poweroff',  shell=True)
+
 
     return result
 
@@ -731,10 +762,13 @@ def remote_zita_restart(raddr, ctrl_port, zita_port):
 
         (i) The sender will run zita_j2n only when a receiver request it
     """
+
     zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
     remotecmd = f'aux zita_j2n {zargs}'
     result = send_cmd(remotecmd, host=raddr, port=ctrl_port)
+
     print(f'(miscel.py) SENDING TO REMOTE: {remotecmd}')
+
     return result
 
 
@@ -770,14 +804,18 @@ def wait4ports( pattern, timeout=10 ):
         Default timeout 10 s
         (bool)
     """
-    n = timeout * 2
-    while n:
+
+    period = 0.25
+    tries = int(timeout / period)
+
+    while tries:
         tmp = sp.check_output(['jack_lsp', pattern]).decode().split()
         if len( tmp ) >= 2:
             break
-        n -= 1
-        sleep(0.5)
-    if n:
+        tries -= 1
+        sleep(period)
+
+    if tries:
         return True
     else:
         return False
@@ -939,7 +977,7 @@ def read_json_from_file(fpath, timeout=2):
     else:
         d = {}
 
-    period = 0.25
+    period = 0.2
     tries = int(timeout / period)
     while tries:
         try:

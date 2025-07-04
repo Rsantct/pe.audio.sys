@@ -5,6 +5,13 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """
+    ------------ DEPRECATED -------------------
+
+    before 2025-02 internet streams playback was in charge of Mplayer,
+    currently it works with MPD.
+
+    --------------------------------------------
+
     Start or stop Mplayer for internet streams playback such
     as podcasts or internet radio stations.
 

@@ -163,6 +163,9 @@
     td#title            { border: 1px solid grey; border-radius: 10px/10px; font-size: 3.0em;}
 
     table#playback_control{ border-style: none; }
+    td#playback_control_01  { border-style: none; width:10%; display:table-cell; }
+    td#playback_control_02  { border-style: none; width:80%; display:table-cell; }
+    td#playback_control_03  { border-style: none; width:10%; display:table-cell; }
     td#playback_control_11  { border-style: none; width:10%; display:table-cell; }
     td#playback_control_12  { border-style: none; width:80%; display:table-cell; }
     td#playback_control_13  { border-style: none; width:10%; display:table-cell; }

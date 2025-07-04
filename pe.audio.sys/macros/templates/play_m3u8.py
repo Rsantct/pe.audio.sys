@@ -213,3 +213,6 @@ if __name__ == "__main__":
         mpdcli.consume(old_consume)
         mpdcli.random(old_random)
         do_log('\nInterrupted. Bye!')
+
+    except Exception as e:
+        do_log(f'\nException: {str(e)}')

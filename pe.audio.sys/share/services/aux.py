@@ -28,7 +28,6 @@ from    miscel      import  *
 from    peq_mod     import eca_bypass, eca_load_peq
 
 
-
 def restart_to_sample_rate(value):
     sp.Popen(f'{UHOME}/bin/peaudiosys_restart.sh {value}', shell=True)
     return 'ordered ... ..\nPLEASE RELOAD THIS PAGE WHEN\nTHE CONNECTION IS RESTORED'
@@ -38,8 +37,9 @@ def dump_aux_info():
     """ A helper to write AUX_INFO dict to a file to be accesible
         by third party processes
     """
+
     # Dynamic updates
-    AUX_INFO['amp']                     = manage_amp_switch( 'state' )
+    AUX_INFO['amp']                     = read_amp_state_file()
     AUX_INFO['loudness_monitor']        = get_loudness_monitor()
     AUX_INFO['sysmon']                  = get_sysmon('wlan0')
 
@@ -50,8 +50,9 @@ def dump_aux_info():
 
 def get_sysmon(w_iface='wlan0'):
     """ A simple reader of
+            - FAN speed
             - CPU temperature
-            - wireless link stattus
+            - Wireless link stattus
     """
 
     def get_wifi(iface='wlan0'):
@@ -105,7 +106,7 @@ def get_sysmon(w_iface='wlan0'):
                     d[k] = v
 
         except Exception as e:
-            print(f'(aux.py) get_wifi {str(e)}' )
+            print(f'(aux.py) get_wifi ERROR: {str(e)}' )
 
         return d
 
@@ -130,28 +131,38 @@ def get_sysmon(w_iface='wlan0'):
         return temp
 
 
-    def get_fans_speed(get_zero_rmp=False):
+    def get_fans_speed():
+        """ returns a dictionary of fan speeds
+            {
+                fanN: speed,
+                ...
+            }
         """
-        """
-        fans = {'fan1':'', 'fan2':'', 'fan3':'', }
-        hw_dir = '/sys/class/hwmon/hwmon1'
-        for i in 1,2,3:
+
+        fans = {}
+
+        for fan_path in FANS_DETECTED:
+
+            fanN = fan_path.split('/')[-1][:4]
+
             try:
-                with open(f'{hw_dir}/fan{i}_input', 'r') as f:
+                with open(fan_path, 'r') as f:
                     x = f.read().strip()
-                    if int(x) or get_zero_rmp:
-                        fans[f"fan{i}"] = x
-            except:
-                pass
+                    if int(x):
+                        fans[fanN] = x
+
+            except Exception as e:
+                print(f'{Fmt.RED}(aux) problems reading {fan_path}: {str(e)}{Fmt.END}')
 
         return fans
 
 
-
-    return  {   'wifi': get_wifi( w_iface),
-                'temp': get_temp(),
+    result =  { 'wifi': get_wifi( w_iface ) ,
+                'temp': get_temp()          ,
                 'fans': get_fans_speed()
-            }
+              }
+
+    return result
 
 
 def get_web_config():
@@ -272,49 +283,6 @@ def peq_bypass(mode):
     AUX_INFO['peq_bypassed'] = newmode
 
     return f'{newmode}'
-
-
-def play_url(arg):
-    """ Aux for playback an url stream
-    """
-    # As per this function is a compound function, I have decided
-    # to hold it here instead of inside the players module
-
-    def istreams_query(url):
-        """ Order the istreams daemon plugin to playback an internet stream url
-        """
-        error = False
-
-        # Tune the radio station (Mplayer jack ports will dissapear for a while)
-        sp.Popen( f'{MAINFOLDER}/share/plugins/istreams.py url {url}'.split() )
-
-        # Waits a bit to Mplayer ports to dissapear from jack while loading a new stream.
-        sleep(2)
-
-        # Waiting for mplayer ports to re-emerge
-        if not wait4ports( f'mplayer_istreams' ):
-            print(f'(aux) ERROR jack ports \'mplayer_istreams\''
-                   ' not found' )
-            error = True
-
-        if not error:
-            # Switching the preamp input
-            # PATCH: using timeout is needed unless send_cmd was modified
-            send_cmd('preamp input istreams', 'aux play_url ...', True, 1)
-            return True
-
-        else:
-            return False
-
-    if arg.startswith('http://') or arg.startswith('https://'):
-        if istreams_query(arg):
-            result = 'ordered'
-        else:
-            result = 'failed'
-    else:
-        result = f'(aux) bad url: {arg}'
-
-    return result
 
 
 def manage_lu_monitor(string):
@@ -550,9 +518,11 @@ class files_event_handler(FileSystemEventHandler):
 def init():
 
     def wifi_detect():
+        """ returns boolean
+        """
 
         try:
-            tmp = sp.check_output(f'ifconfig'.split()).decode().split()
+            tmp = sp.check_output(f'ifconfig'.split()).decode()
             if 'wlan' in tmp:
                 print(f'{Fmt.GREEN}(aux.py) wifi detected{Fmt.END}')
                 return True
@@ -561,15 +531,52 @@ def init():
                 return False
 
         except Exception as e:
-            print(f'(aux.py) wifi_detect {str(e)}' )
+            print(f'(aux.py) wifi_detect ERROR: {str(e)}' )
             return False
 
 
-    global AUX_INFO, WIFI_DETECTED
+    def fans_detect():
+        """ returns a dictionary of fan file paths and its readed speed
+            {
+                fan_path: speed,
+                ...
+            }
+        """
+
+        fans = {}
+
+        hw_dir = '/sys/class/hwmon'
+
+        for dir_num in ('0', '1'):
+
+            for fan_num in ('1', '2', '3'):
+
+                try:
+                    fan_path = f'{hw_dir}/hwmon{dir_num}/fan{fan_num}_input'
+
+                    with open(fan_path, 'r') as f:
+                        x = f.read().strip()
+                        if int(x):
+                            fans[fan_path] = x
+
+                    print(f'{Fmt.BLUE}(aux)     found: {fan_path}{Fmt.END}')
+
+                except Exception as e:
+                    #print(f'{Fmt.RED}(aux) not found: {fan_path}{Fmt.END}')
+                    pass
+
+        if not fans:
+            print(f'{Fmt.RED}(aux) no fans found under {hw_dir}{Fmt.END}')
+
+        return fans
+
+
+    global AUX_INFO, WIFI_DETECTED, FANS_DETECTED
 
     WIFI_DETECTED = wifi_detect()
-
+    FANS_DETECTED = fans_detect()
     AUX_INFO = {    'amp':                  'off',
+                    'amp_off_shutdown':     CONFIG["amp_off_shutdown"],
                     'loudness_monitor':     0.0,
                     'last_macro':           '',
                     'warning':              '',
@@ -621,9 +628,6 @@ def do( cmd, arg=None ):
 
     elif cmd == 'get_macros':
         result = get_macros()
-
-    elif cmd == 'play_url':
-        result = play_url(arg)
 
     elif cmd == 'reset_loudness_monitor' or cmd == 'reset_lu_monitor':
         result = manage_lu_monitor('reset')
