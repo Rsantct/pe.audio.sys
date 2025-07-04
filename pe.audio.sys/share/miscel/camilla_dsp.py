@@ -7,24 +7,93 @@
 import os
 import sys
 import subprocess as sp
+import yaml
 from   time import sleep
 from   camilladsp import CamillaClient
 
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from   miscel   import process_is_running, LOG_FOLDER, Fmt
 import jack_mod as jack
+from   miscel   import  process_is_running, CONFIG, MAINFOLDER, LOG_FOLDER, Fmt
 
 COMPRESSOR_CYCLE = ['off', '1.0:1', '2.0:1', '3.0:1']
 
 HOST        = '127.0.0.1'
 PORT        = 1234
 
-CONFIG_DIR = f'{UHOME}/pe.audio.sys/config'
+CONFIG_DIR          = f'{MAINFOLDER}/config'
+BASE_YML_PATH       = f'{CONFIG_DIR}/camilladsp_base.yml'
+RUNTIME_YML_PATH    = f'{CONFIG_DIR}/.camilladsp.yml'
 
 # The CamillaDSP connection
 PC = CamillaClient(HOST, PORT)
+
+
+def _check_camilla_connection():
+
+    tries = 50   # 10 sec
+
+    while tries:
+        try:
+            PC.connect()
+            break
+        except:
+            sleep(.2)
+            tries -= 1
+
+    if not tries:
+        print(f'{Fmt.RED}Unable to connect to CamillaDSP, check log folder.{Fmt.END}')
+        return False
+
+    return True
+
+
+def _camilla_ports_available():
+    """ just checks if all I/O cpal ports are available in jack
+    """
+
+    tries = 10
+
+    while tries:
+
+        cpal_ports = jack.get_ports('cpal_client', is_audio=True)
+
+        if len( cpal_ports ) == 4:
+            sleep(.25) # safe
+            return True
+
+        sleep(.2)
+        tries -= 1
+
+    print(f'{Fmt.BOLD}Unable to detect cpal I/O jack ports.{Fmt.END}')
+
+    return False
+
+
+def _cpal_ports_ok():
+    """ Check that ANY cpal ports are connected to system ports
+        AND
+        there are ANY weird cpal port name like `cpal_client_in-01`
+    """
+
+    cpal_ports = jack.get_ports('cpal_client')
+
+    for cpal_port in cpal_ports:
+
+        # Early return if any `cpal_client_in-01` is detected
+        if '-' in cpal_port.name:
+            print(f'{Fmt.BOLD}Weird CamillaDSP behavior having port: {cpal_port.name}{Fmt.END}')
+            return False
+
+        conns = jack.get_all_connections( cpal_port )
+
+        for c in conns:
+            if 'system' in c.name:
+                print(f'{Fmt.BOLD}CPAL <--> SYSTEM detected: {cpal_port.name} {c.name}{Fmt.END}')
+                return False
+
+    return True
 
 
 def _remove_jack_camilla_from_system_card():
@@ -34,19 +103,8 @@ def _remove_jack_camilla_from_system_card():
         Return True if disconnection is success, else False
     """
 
-    # Wait for all 4 camilla CPAL I/O ports to be detected
-    tries = 25
-    while tries:
-        x = jack.get_ports('cpal_client', is_audio=True)
-        if len(x) == 4:
-            break
-        tries -= 1
-        sleep(.2)
-
-    sleep(.2)   # safest
-
-    if not tries:
-        raise Exception('Unable to get CamillaDSP ports in JACK, check log folder.')
+    if not _camilla_ports_available():
+        return False
 
     # Disconnecting the auto connected ones
     for (is_input, is_output) in ((True, False), (False, True)):
@@ -61,18 +119,11 @@ def _remove_jack_camilla_from_system_card():
                 else:
                     jack.connect(cpal_port, p, 'disconnect')
 
-    # Check if any 'system' remains in cpal ports connections
-    cpal_ports = jack.get_ports('cpal_client')
-
-    for cpal_port in cpal_ports:
-
-        conns = jack.get_all_connections( cpal_port )
-
-        for c in conns:
-            if 'system' in c.name:
-                return False
-
-    return True
+    # Double check if any 'system' remains in cpal ports connections
+    if _cpal_ports_ok():
+        return True
+    else:
+        return False
 
 
 def _insert_cdsp():
@@ -95,17 +146,74 @@ def _insert_cdsp():
     return True
 
 
-def _init(compressor='off'):
+def _init(compressor='off', mode='start'):
     """ defaults to bypass the compressor stage
     """
 
-    def prepare_config():
+    def combine_lspk_config():
         """ This merges the BASE YML and the LOUDSPEAKER YML
-        """
-        base_path   = f'{CONFIG_DIR}/camilladsp_base.yml'
-        config_path = f'{CONFIG_DIR}/.camilladsp.yml'
 
-        sp.call(f'cp {base_path} {config_path}', shell=True)
+            returns True if the loudspeaker uses CamillaDSP
+        """
+
+        def get_lspk_config():
+            """ retunrs void {} if not found a loudspeaker's CamillaDSP yml file
+            """
+
+            lspk = CONFIG["loudspeaker"]
+
+            lspk_camilla_yml_path = f'{MAINFOLDER}/loudspeakers/{lspk}/camilladsp_lspk.yml'
+
+            try:
+                with open(lspk_camilla_yml_path, 'r') as f:
+                    cfg = yaml.safe_load( f.read() )
+                print(f'{Fmt.BLUE}Loudspeaker {lspk}/camilladsp.yml was found{Fmt.END}')
+                return cfg
+
+            except:
+                print(f'{Fmt.BLUE}Loudspeaker {lspk}/camilladsp.yml was NOT found{Fmt.END}')
+                return {}
+
+
+        lspk_uses_cdsp = False
+
+        # Loading the base config
+        with open(BASE_YML_PATH, 'r') as f:
+            base_config = yaml.safe_load( f.read() )
+
+        # Prepare the runtime config
+        runtime_config = base_config
+
+        # Getting and merging the loudspeaker config
+        lspk_config = get_lspk_config()
+
+        if 'filters' in lspk_config:
+
+            lspk_uses_cdsp = True
+
+            runtime_config["filters"] = lspk_config["filters"]
+
+            pipeline_step_names = []
+
+            for f in lspk_config["filters"]:
+                pipeline_step_names.append(f)
+
+            pipeline_step = {
+                'type':         'Filter',
+                'description':  CONFIG["loudspeaker"],
+                'channels':     [0, 1],
+                'bypassed':     False,
+                'names':        pipeline_step_names
+            }
+
+            runtime_config["pipeline"].append( pipeline_step )
+
+
+        # Write runtime configuration in the final YAML file for CamillaDSP to start
+        with open(RUNTIME_YML_PATH, 'w') as f:
+            yaml.dump(runtime_config, f, default_flow_style=False)
+
+        return lspk_uses_cdsp
 
 
     def stop_cdsp():
@@ -125,53 +233,66 @@ def _init(compressor='off'):
 
     def run_cdsp():
 
-        prepare_config()
+        # Combines base config and loudspeaker config if any
+        lspk_uses_camilladsp = combine_lspk_config()
 
-        config_path = f'{CONFIG_DIR}/.camilladsp.yml'
+        # Early return if not wanted to load CamillaDSP
+        if not( lspk_uses_camilladsp or CONFIG["use_compressor"]):
+            return False
 
         # Starting CamillaDSP **MUTED**
         RATE     = jack.get_samplerate()
         cdsp_cmd = f'camilladsp --wait --mute -r {RATE} -a {HOST} -p {PORT} ' + \
-                   f'--logfile "{LOG_FOLDER}/camilladsp.log" {config_path}'
+                   f'--logfile "{LOG_FOLDER}/camilladsp.log" {RUNTIME_YML_PATH}'
 
         print(f'{Fmt.MAGENTA}Pleae wait for CamillaDSP to start ...{Fmt.END}')
         p = sp.Popen( cdsp_cmd, shell=True )
 
-        tries = 50   # 10 sec
-        while tries:
-            try:
-                PC.connect()
-                break
-            except:
-                tries -= 1
-                sleep(.2)
+        if not _check_camilla_connection():
+            return False
 
-        if not tries:
-            raise Exception('Unable to run CamillaDSP, check log folder.')
+        if not _camilla_ports_available():
+            return False
 
         print(f'{Fmt.BLUE}Logging CamillaDSP to log/camilladsp.log ...{Fmt.END}')
 
         # Remove JACK system connections
         if not _remove_jack_camilla_from_system_card():
             print(f'{Fmt.BOLD}Cannot disconnect CamillaDSP cpal jack ports from system{Fmt.END}')
+            return False
 
         # Inserting before Brutefir
         if _insert_cdsp():
-            print(f'{Fmt.BLUE}CamillaDSP has been inserted{Fmt.END}')
+            print(f'{Fmt.BLUE}CamillaDSP has been inserted in jack.{Fmt.END}')
+        else:
+            return False
+
+        # Double check
+        if not _cpal_ports_ok():
+            print(f'{Fmt.BOLD}CamillaDSP remains muted, because bad jack ports.{Fmt.END}')
+            return False
 
         # Unmute
         PC.volume.set_main_mute(False)
 
+        return True
 
-    # Stop if already running
+
     if process_is_running('camilladsp'):
         stop_cdsp()
 
-    # Run CamillaDSP
-    run_cdsp()
+    if mode == 'stop':
+        return True
+
+    if not run_cdsp():
+        return False
+
 
     # Set the compressor (default is bypassed)
-    _bypass('compressor', not compressor != 'off')
+    if CONFIG["use_compressor"]:
+        _bypass('compressor', not compressor != 'off')
+
+    return True
 
 
 def _bypass(step='', mode='state'):
@@ -182,10 +303,15 @@ def _bypass(step='', mode='state'):
     """
 
     def get_step_pipeline_index(cfg, step_id):
+
         index = -1
+
         for i, s in enumerate( cfg["pipeline"] ):
-            if step_id in s["name"]:
+
+            # Pipeline steps of type `Filter` has `names` instead of `name`
+            if 'name' in s and step_id in s["name"]:
                 index = i
+
         return index
 
 
