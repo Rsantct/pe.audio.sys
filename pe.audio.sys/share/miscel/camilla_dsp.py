@@ -259,6 +259,11 @@ def _init(compressor='off', mode='start'):
         if not _camilla_ports_available():
             return False
 
+        # Some info
+        chunk_size = config()["devices"]["chunksize"]
+        fs         = config()["devices"]["samplerate"]
+
+        print(f'{Fmt.BLUE}CamillaDSP running with chunk_size {chunk_size} at {fs} Hz{Fmt.END}')
         print(f'{Fmt.BLUE}Logging CamillaDSP to log/camilladsp.log ...{Fmt.END}')
 
         # Remove JACK system connections
