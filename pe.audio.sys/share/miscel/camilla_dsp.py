@@ -57,9 +57,10 @@ def _camilla_ports_available():
 
     while tries:
 
-        cpal_ports = jack.get_ports('cpal_client', is_audio=True)
+        cpal_in_ports  = jack.get_ports('cpal_client', is_audio=True, is_input=True)
+        cpal_out_ports = jack.get_ports('cpal_client', is_audio=True, is_output=True)
 
-        if len( cpal_ports ) == 4:
+        if len( cpal_in_ports ) == 2 and len( cpal_out_ports ) == 2:
             sleep(.25) # safe
             return True
 
@@ -72,9 +73,9 @@ def _camilla_ports_available():
 
 
 def _cpal_ports_ok():
-    """ Check that ANY cpal ports are connected to system ports
+    """ Check that no cpal ports are connected to system ports
         AND
-        there are ANY weird cpal port name like `cpal_client_in-01`
+        there are no weird cpal ports named like `cpal_client_in-01`
     """
 
     cpal_ports = jack.get_ports('cpal_client')
@@ -114,6 +115,10 @@ def _remove_jack_camilla_from_system_card():
             wired_ports = jack.get_all_connections(cpal_port)
 
             for p in wired_ports:
+
+                if not 'system' in p.name:
+                    continue
+
                 if is_input:
                     jack.connect(p, cpal_port, 'disconnect')
                 else:
