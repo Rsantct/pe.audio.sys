@@ -1,8 +1,14 @@
-## CamillaDSP
+# CamillaDSP
 
-From version 2.0, we can use CamillaDSP, by now only used to provide an optional compressor.
+## Introduction
+
+From pe.audio.sys version 2.0, we can use CamillaDSP, by now the only applications are:
+- An optional compressor. Just set `use_compressor: true` inside your `config/config.yml` file.
+- A Loudspeaker global EQ, mainly using biquad filtering. You only need to provide a proper Camilla YAML filtering configuration, see the example config file under the _full_range_example_ loudspeaker folder.
 
 The compressor is designed to facilitate the intelligibility of movies with difficult to hear  dialogues at low listening levels.
+
+## Install
 
 You'll need to prepare 2 packages:
 1. The [CamillaDSP](https://github.com/HEnquist/camilladsp) itself
