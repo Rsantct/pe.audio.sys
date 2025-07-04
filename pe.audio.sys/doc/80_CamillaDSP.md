@@ -8,6 +8,8 @@ From pe.audio.sys version 2.0, we can use CamillaDSP, by now the only applicatio
 
 The compressor is designed to facilitate the intelligibility of movies with difficult to hear  dialogues at low listening levels.
 
+See below for fine-tuning according to the CPU
+
 ## Install
 
 You'll need to prepare 2 packages:
@@ -81,11 +83,11 @@ Once activated you will be able to work normally on your system, VENV is transpa
 
 pe.audio.sys scripts take care of this for you, automatically, so you don't need to manually activate the VENV to run pe.audio.sys.
 
+## Fine-tuning according to the CPU
 
+CamillaDSP is inserted into the pe.audio.sys JACK graph. If you experience some **jack xruns**, try to fine tune the CamillaDSP chunk size inside **`pe.audio.sys/config/camilladsp_base.yml`**
 
+This implies more or less latency depending on the chunk size:
 
-
-
-
-
+    CamillaDSP latency (ms) = chunk_size / samplerate * 1000
 
