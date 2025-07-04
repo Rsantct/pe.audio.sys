@@ -262,8 +262,9 @@ def _init(compressor='off', mode='start'):
         # Some info
         chunk_size = config()["devices"]["chunksize"]
         fs         = config()["devices"]["samplerate"]
+        latency    = int( round(chunk_size / fs * 1e3) )
 
-        print(f'{Fmt.BLUE}CamillaDSP running with chunk_size {chunk_size} at {fs} Hz{Fmt.END}')
+        print(f'{Fmt.BLUE}CamillaDSP running at {fs} Hz with chunk_size {chunk_size} ({latency} ms){Fmt.END}')
         print(f'{Fmt.BLUE}Logging CamillaDSP to log/camilladsp.log ...{Fmt.END}')
 
         # Remove JACK system connections
