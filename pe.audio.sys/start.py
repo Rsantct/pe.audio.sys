@@ -26,8 +26,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import *
-
+from    miscel import *
 
 # Init plugins (to run first)
 INIT_PLUGINS = (
@@ -479,11 +478,9 @@ if __name__ == "__main__":
             print(f'({Fmt.BOLD}start) Problems starting BRUTEFIR: {bfstart}')
             sys.exit()
 
-        # - CamillaDSP (currently used only for an optional compressor)
-        if CONFIG["use_compressor"]:
-            import  camilla_dsp
-            # Inits CamillaDSP with the compressor bypassed, standalone process (Popen)
-            camilla_dsp._init(compressor='off')
+        # - CamillaDSP (import needs Jack, `._init` will only load it if needed)
+        import  camilla_dsp
+        camilla_dsp._init(compressor='off')
 
         # Optional REMOTE SOURCES
         if REMOTES:
