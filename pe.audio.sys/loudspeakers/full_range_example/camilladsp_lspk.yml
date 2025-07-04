@@ -1,0 +1,14 @@
+filters:
+
+    bass_extension:
+
+        type: Biquad
+
+        parameters:
+
+            type:           LinkwitzTransform
+            freq_act:       90
+            q_act:          0.7
+            freq_target:    60
+            q_target:       0.7
+
