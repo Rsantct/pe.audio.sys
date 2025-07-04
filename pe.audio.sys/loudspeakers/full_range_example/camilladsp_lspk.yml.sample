@@ -9,8 +9,8 @@ filters:
         parameters:
 
             type:           LinkwitzTransform
-            freq_act:       90
+            freq_act:       60
             q_act:          0.7
-            freq_target:    60
+            freq_target:    40
             q_target:       0.7
 
