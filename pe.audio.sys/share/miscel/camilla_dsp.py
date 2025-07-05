@@ -202,6 +202,7 @@ def _init(compressor='off', mode='start'):
 
             for f in lspk_config["filters"]:
                 pipeline_step_names.append(f)
+                print(f'{Fmt.BLUE}Adding filter `{f}` for `{CONFIG["loudspeaker"]}` to CamillaDSP pipeline{Fmt.END}')
 
             pipeline_step = {
                 'type':         'Filter',
