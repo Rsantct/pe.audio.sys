@@ -10,7 +10,10 @@ filters:
 
             type:           LinkwitzTransform
             freq_act:       60
-            q_act:          0.7
+            q_act:          1.0
             freq_target:    40
-            q_target:       0.7
+            q_target:       0.707
 
+
+# Use this to compensate for extra gain of filtering if necessary
+safe_gain: -12
