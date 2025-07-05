@@ -1013,17 +1013,29 @@ def get_pid_cmdline(process_name=''):
     return pids
 
 
-def process_is_running(process_name):
+def process_is_running(*patterns):
+    """ all patterns must appear on the command line
+    """
+
     # Iterate through all running processes
     for proc in psutil.process_iter(['cmdline']):
+
         try:
+
             # (i) proc.info['cmdline']) is a list of command line args
             cmdline = ' '.join( proc.info['cmdline'] )
-            # Match process name (case-insensitive)
-            if process_name.lower() in cmdline.lower():
+
+            # Match patterns (case-insensitive)
+            n = 0
+            for pattern in patterns:
+                if pattern.lower() in cmdline.lower():
+                    n += 1
+            if n == len(patterns):
                 return True
+
         except:
             pass
+
     return False
 
 
