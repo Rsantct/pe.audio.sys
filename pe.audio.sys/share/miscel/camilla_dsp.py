@@ -307,48 +307,67 @@ def _init(compressor='off', mode='start'):
     return True
 
 
-def _bypass(step='', mode='state'):
-    """ Bypass a pipeline step
-        (only works for a `compressor` processor step)
+def _bypass(step_pattern='', mode='state', quiet=True):
+    """
+        Bypass a pipeline step as per its
+        `name` field or `names` list field
 
         returns: the bypassed state (boolean)
+                 OR
+                 None if not found
     """
 
-    def get_step_pipeline_index(cfg, step_id):
+    def get_step_pipeline_index(cfg, step_pattern):
 
         index = -1
 
         for i, s in enumerate( cfg["pipeline"] ):
 
-            # Pipeline steps of type `Filter` has `names` instead of `name`
-            if 'name' in s and step_id in s["name"]:
+            if 'name' in s and step_pattern in s["name"]:
                 index = i
 
+            # Pipeline steps of type `Filter` has `names` instead of `name`
+            if 'names' in s:
+                for name in s["names"]:
+                    if step_pattern in name:
+                        index = i
         return index
 
 
     cfg = PC.config.active()
 
-    if 'compressor' in step:
+    i = get_step_pipeline_index(cfg, step_pattern)
 
-        i = get_step_pipeline_index(cfg, step)
+    # Early return if pattern not found
+    if i <= 0:
+        return None
 
-        if mode in (True, 'true', 1, 'on'):
-            cfg["pipeline"][i]["bypassed"] = True
+    if mode in (True, 'true', 1, 'on'):
+        cfg["pipeline"][i]["bypassed"] = True
 
-        elif mode in (False, 'false', 0, 'off'):
-            cfg["pipeline"][i]["bypassed"] = False
+    elif mode in (False, 'false', 0, 'off'):
+        cfg["pipeline"][i]["bypassed"] = False
 
-        else:
-            return cfg["pipeline"][i]["bypassed"]
+    elif mode == 'toggle':
+        cfg["pipeline"][i]["bypassed"] = not cfg["pipeline"][i]["bypassed"]
 
-        # mute / unmute to avoid pops
+    # Return the current bypass status
+    else:
+        return cfg["pipeline"][i]["bypassed"]
+
+    # mute / unmute to avoid pops
+    # (i) always sleep(.1) after the `set_active` command
+    if quiet:
         mute(True)
         PC.config.set_active(cfg)
         sleep(.1)
         mute(False)
 
-        return PC.config.active()["pipeline"][i]["bypassed"]
+    else:
+        PC.config.set_active(cfg)
+        sleep(.1)
+
+    return PC.config.active()["pipeline"][i]["bypassed"]
 
 
 def mute(mode='state'):
