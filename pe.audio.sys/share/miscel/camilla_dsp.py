@@ -4,6 +4,8 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 
+# https://henquist.github.io/pycamilladsp/
+
 import os
 import sys
 import subprocess as sp
@@ -30,9 +32,26 @@ RUNTIME_YML_PATH    = f'{CONFIG_DIR}/.camilladsp.yml'
 PC = CamillaClient(HOST, PORT)
 
 
-def _check_camilla_connection():
+def _stop_cdsp():
 
-    tries = 50   # 10 sec
+    sp.call('killall -KILL camilladsp 1>/dev/null 2>&1', shell=True)
+    sleep(.1) # safest
+
+    tries = 10
+    while tries:
+        if not process_is_running('camilladsp', 'yml'):
+            break
+        tries -= 1
+        sleep(.1)
+    if not tries:
+        raise Exception('Unable to stop CamillaDSP.')
+
+    return True
+
+
+def _connect_to_camilla():
+
+    tries = 15   # 3 sec
 
     while tries:
         try:
@@ -192,6 +211,7 @@ def _init(compressor='off', mode='start'):
         # Getting and merging the loudspeaker config
         lspk_config = get_lspk_config()
 
+        # merging filters
         if 'filters' in lspk_config:
 
             lspk_uses_cdsp = True
@@ -214,33 +234,22 @@ def _init(compressor='off', mode='start'):
 
             runtime_config["pipeline"].append( pipeline_step )
 
+        # Setting the safe gain if required:
+        safe_gain = 0
+        if 'safe_gain' in lspk_config and lspk_config["safe_gain"]:
+            safe_gain = lspk_config["safe_gain"]
 
         # Write runtime configuration in the final YAML file for CamillaDSP to start
         with open(RUNTIME_YML_PATH, 'w') as f:
             yaml.dump(runtime_config, f, default_flow_style=False)
 
-        return lspk_uses_cdsp
-
-
-    def stop_cdsp():
-
-        sp.call('killall -KILL camilladsp 1>/dev/null 2>&1', shell=True)
-        sleep(.1) # safest
-
-        tries = 10
-        while tries:
-            if not process_is_running('camilladsp'):
-                break
-            tries -= 1
-            sleep(.1)
-        if not tries:
-            raise Exception('Unable to stop CamillaDSP.')
+        return lspk_uses_cdsp, safe_gain
 
 
     def run_cdsp():
 
         # Combines base config and loudspeaker config if any
-        lspk_uses_camilladsp = combine_lspk_config()
+        lspk_uses_camilladsp, global_volume = combine_lspk_config()
 
         # Early return if not wanted to load CamillaDSP
         if not( lspk_uses_camilladsp or CONFIG["use_compressor"]):
@@ -254,11 +263,15 @@ def _init(compressor='off', mode='start'):
         print(f'{Fmt.MAGENTA}Pleae wait for CamillaDSP to start ...{Fmt.END}')
         p = sp.Popen( cdsp_cmd, shell=True )
 
-        if not _check_camilla_connection():
+        if not _connect_to_camilla():
             return False
 
         if not _camilla_ports_available():
             return False
+
+
+        # Loudspeaker's safe_gain --> Main fader volume
+        volume(global_volume)
 
         # Some info
         chunk_size = config()["devices"]["chunksize"]
@@ -291,7 +304,7 @@ def _init(compressor='off', mode='start'):
 
 
     if process_is_running('camilladsp'):
-        stop_cdsp()
+        _stop_cdsp()
 
     if mode == 'stop':
         return True
@@ -368,6 +381,25 @@ def _bypass(step_pattern='', mode='state', quiet=True):
         sleep(.1)
 
     return PC.config.active()["pipeline"][i]["bypassed"]
+
+
+def volume(dB=None, mode='abs'):
+    """ get or set the Main fader volume
+
+        mode: 'add' or 'rel' to make relative changes
+    """
+    try:
+
+        if 'rel' in mode or 'add' in mode:
+            dB = PC.volume.volume(0) + dB
+
+        if dB <= 0:
+            PC.volume.set_volume(0, dB)
+
+    except Exception as e:
+        pass
+
+    return PC.volume.volume(0)
 
 
 def mute(mode='state'):
