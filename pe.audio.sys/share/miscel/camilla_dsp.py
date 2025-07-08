@@ -6,6 +6,11 @@
 
 # https://henquist.github.io/pycamilladsp/
 
+################################################################
+# (i) always sleep(.1) after the `config.set_active()` command
+#     in order to ensure the new config to be properly retrieved
+################################################################
+
 import os
 import sys
 import subprocess as sp
@@ -338,14 +343,15 @@ def _init(compressor='off', mode='start'):
     return True
 
 
-def bypass(step_pattern='', mode='state', quiet=True):
+def bypass(step_pattern='', mode='state', quiet=False):
     """
         Bypass a pipeline step as per its
         `name` field or `names` list field
 
         mode:       on | off | True | False | toggle | state (default)
 
-        quiet:      mute before changes, then unmute
+        quiet:      mute before changes, then unmute,
+                    recommended for the compressor processor
 
         returns:    the bypassed state (boolean)
                     OR
@@ -387,8 +393,6 @@ def bypass(step_pattern='', mode='state', quiet=True):
         mode = 'on'
     elif mode in (False, 'false', 0, 'off'):
         mode = 'off'
-    else:
-        mode = 'state'
 
     # Changes
     if mode != 'state':
@@ -404,8 +408,8 @@ def bypass(step_pattern='', mode='state', quiet=True):
             elif mode == 'toggle':
                 cfg["pipeline"][i]["bypassed"] = not cfg["pipeline"][i]["bypassed"]
 
-        # mute / unmute to avoid pops
         # (i) always sleep(.1) after the `set_active` command
+        # mute / unmute to avoid pops
         if quiet:
             mute(True)
             PC.config.set_active(cfg)
@@ -568,19 +572,20 @@ def compressor(oper='', ratio=''):
         pms["factor"]      = factor
         pms["makeup_gain"] = makeup_gain
 
+        # (i) always sleep(.1) after the `set_active` command
         PC.config.set_active(cfg)
-
+        sleep(.1)
 
     # Compressor enable / disable commands
     if oper in ('on', True, 'true'):
-        bypass('compressor', False)
+        bypass('compressor', mode=False, quiet=True)
 
     elif oper in ('off', False, 'false'):
-        bypass('compressor', True)
+        bypass('compressor', mode=True, quiet=True)
 
     elif oper == 'toggle':
-        new_mode = {True: False, False: True} [ bypass('compressor') ]
-        bypass('compressor', new_mode)
+        new_mode = {True: False, False: True} [ get_bypassed() ]
+        bypass('compressor', mode=new_mode, quiet=True)
 
     # State command
     elif oper == 'get':
