@@ -194,8 +194,8 @@ def _init(compressor='off', mode='start'):
                 print(f'{Fmt.BLUE}Loudspeaker {lspk}/camilladsp.yml was found{Fmt.END}')
                 return cfg
 
-            except:
-                print(f'{Fmt.BLUE}Loudspeaker {lspk}/camilladsp.yml was NOT found{Fmt.END}')
+            except Exception as e:
+                print(f'{Fmt.BLUE}Cannot load {lspk}/camilladsp_lspk.yml {str(e)}{Fmt.END}')
                 return {}
 
 
@@ -218,21 +218,39 @@ def _init(compressor='off', mode='start'):
 
             runtime_config["filters"] = lspk_config["filters"]
 
-            pipeline_step_names = []
+            pipeline_0_step_names = []
+            pipeline_1_step_names = []
 
             for f in lspk_config["filters"]:
-                pipeline_step_names.append(f)
-                print(f'{Fmt.BLUE}Adding filter `{f}` for `{CONFIG["loudspeaker"]}` to CamillaDSP pipeline{Fmt.END}')
 
-            pipeline_step = {
+                # drc filters have a channel identifier
+
+                if "drc_L" in f or not f.startswith('drc_'):
+                    pipeline_0_step_names.append(f)
+                    print(f'{Fmt.BLUE}Adding filter `{f}` to CamillaDSP pipeline `{CONFIG["loudspeaker"]} LEFT`{Fmt.END}')
+
+                if "drc_R" in f or not f.startswith('drc_'):
+                    pipeline_1_step_names.append(f)
+                    print(f'{Fmt.BLUE}Adding filter `{f}` to CamillaDSP pipeline `{CONFIG["loudspeaker"]} RIGHT`{Fmt.END}')
+
+            pipeline_0_step = {
                 'type':         'Filter',
-                'description':  CONFIG["loudspeaker"],
-                'channels':     [0, 1],
+                'description':  CONFIG["loudspeaker"] + ' (left)',
+                'channels':     [0],
                 'bypassed':     False,
-                'names':        pipeline_step_names
+                'names':        pipeline_0_step_names
+            }
+            pipeline_1_step = {
+                'type':         'Filter',
+                'description':  CONFIG["loudspeaker"] + ' (right)',
+                'channels':     [1],
+                'bypassed':     False,
+                'names':        pipeline_1_step_names
             }
 
-            runtime_config["pipeline"].append( pipeline_step )
+            runtime_config["pipeline"].append( pipeline_0_step )
+            runtime_config["pipeline"].append( pipeline_1_step )
+
 
         # Setting the safe gain if required:
         safe_gain = 0
@@ -315,72 +333,94 @@ def _init(compressor='off', mode='start'):
 
     # Set the compressor (default is bypassed)
     if CONFIG["use_compressor"]:
-        _bypass('compressor', not compressor != 'off')
+        bypass('compressor', not compressor != 'off')
 
     return True
 
 
-def _bypass(step_pattern='', mode='state', quiet=True):
+def bypass(step_pattern='', mode='state', quiet=True):
     """
         Bypass a pipeline step as per its
         `name` field or `names` list field
 
-        returns: the bypassed state (boolean)
-                 OR
-                 None if not found
+        mode:       on | off | True | False | toggle | state (default)
+
+        quiet:      mute before changes, then unmute
+
+        returns:    the bypassed state (boolean)
+                    OR
+                    None if not found
     """
 
-    def get_step_pipeline_index(cfg, step_pattern):
+    def get_step_pipeline_indexes(cfg, step_pattern):
 
-        index = -1
+        indexes = []
 
         for i, s in enumerate( cfg["pipeline"] ):
 
             if 'name' in s and step_pattern in s["name"]:
-                index = i
+                if not i in indexes:
+                    indexes.append( i )
 
             # Pipeline steps of type `Filter` has `names` instead of `name`
             if 'names' in s:
                 for name in s["names"]:
                     if step_pattern in name:
-                        index = i
-        return index
+                        if not i in indexes:
+                            indexes.append( i )
 
+        return indexes
+
+
+    result = {}
 
     cfg = PC.config.active()
 
-    i = get_step_pipeline_index(cfg, step_pattern)
+    indexes = get_step_pipeline_indexes(cfg, step_pattern)
 
     # Early return if pattern not found
-    if i <= 0:
-        return None
+    if not indexes:
+        return result
 
+    # Translate mode types to <string>
     if mode in (True, 'true', 1, 'on'):
-        cfg["pipeline"][i]["bypassed"] = True
-
+        mode = 'on'
     elif mode in (False, 'false', 0, 'off'):
-        cfg["pipeline"][i]["bypassed"] = False
+        mode = 'off'
+    else:
+        mode = 'state'
 
-    elif mode == 'toggle':
-        cfg["pipeline"][i]["bypassed"] = not cfg["pipeline"][i]["bypassed"]
+    # Changes
+    if mode != 'state':
+
+        for i in indexes:
+
+            if mode in (True, 'true', 1, 'on'):
+                cfg["pipeline"][i]["bypassed"] = True
+
+            elif mode in (False, 'false', 0, 'off'):
+                cfg["pipeline"][i]["bypassed"] = False
+
+            elif mode == 'toggle':
+                cfg["pipeline"][i]["bypassed"] = not cfg["pipeline"][i]["bypassed"]
+
+        # mute / unmute to avoid pops
+        # (i) always sleep(.1) after the `set_active` command
+        if quiet:
+            mute(True)
+            PC.config.set_active(cfg)
+            sleep(.1)
+            mute(False)
+
+        else:
+            PC.config.set_active(cfg)
+            sleep(.1)
 
     # Return the current bypass status
-    else:
-        return cfg["pipeline"][i]["bypassed"]
+    for i in indexes:
+        result[i] = PC.config.active()["pipeline"][i]["bypassed"]
 
-    # mute / unmute to avoid pops
-    # (i) always sleep(.1) after the `set_active` command
-    if quiet:
-        mute(True)
-        PC.config.set_active(cfg)
-        sleep(.1)
-        mute(False)
-
-    else:
-        PC.config.set_active(cfg)
-        sleep(.1)
-
-    return PC.config.active()["pipeline"][i]["bypassed"]
+    return result
 
 
 def volume(dB=None, mode='abs'):
@@ -440,6 +480,24 @@ def compressor(oper='', ratio=''):
             '{"active": True, "threshold": -60.0, "ratio": "3.0:1", "makeup_gain": 26.7}'
     """
 
+    def get_bypassed():
+        """ retrieves if the compressor pipeline bypassed or not
+            (boolean)
+        """
+        # (i)  bypass() returns a dictionary of pipeline status, example:
+        #
+        #      {1: False}  ---> pipeline #1 is not bypassed
+
+        tmp = bypass('compressor', 'state')     # example {1: False}
+
+        # Iterate over all compressor pipelines, although there is only one ;-)
+        pipelines_bypass = []
+        for k, v in tmp.items():
+            pipelines_bypass.append(v)
+
+        return all(pipelines_bypass)
+
+
     def get_parameters():
 
         cfg = PC.config.active()
@@ -453,7 +511,7 @@ def compressor(oper='', ratio=''):
 
     def rotate_compressor():
 
-        if not _bypass('compressor'):
+        if not bypass('compressor'):
             current = get_parameters()["ratio"]
         else:
             current = 'off'
@@ -469,14 +527,16 @@ def compressor(oper='', ratio=''):
         new = COMPRESSOR_CYCLE[next_index]
 
         if new == 'off':
-            _bypass('compressor', True)
+            bypass('compressor', True)
 
         else:
-            _bypass('compressor', False)
+            bypass('compressor', False)
             set_compressor(new)
 
 
     def set_compressor(ratio):
+        """ ratio format must be 'float:1', example:  '3.0:1'
+        """
 
         def calc_makeup_gain(fac, th=60):
             """ Estimates the make up gain for a given compression factor, that is
@@ -488,8 +548,18 @@ def compressor(oper='', ratio=''):
 
             return round( -(th - th / fac) / experimetal_divider, 1)
 
+        # Check ratio format
+        if not ratio.endswith(':1'):
+            return
+
+        factor = ratio.split(':')[0]
+        try:
+            factor = float(factor)
+        except:
+            return
+
         threshold   = -60
-        factor      = round(float( ratio.split(':')[0] ), 1)
+        factor      = round(factor, 1)
         makeup_gain = calc_makeup_gain(factor, threshold)
 
         cfg = PC.config.active()
@@ -503,14 +573,14 @@ def compressor(oper='', ratio=''):
 
     # Compressor enable / disable commands
     if oper in ('on', True, 'true'):
-        _bypass('compressor', False)
+        bypass('compressor', False)
 
     elif oper in ('off', False, 'false'):
-        _bypass('compressor', True)
+        bypass('compressor', True)
 
     elif oper == 'toggle':
-        new_mode = {True: False, False: True} [ _bypass('compressor') ]
-        _bypass('compressor', new_mode)
+        new_mode = {True: False, False: True} [ bypass('compressor') ]
+        bypass('compressor', new_mode)
 
     # State command
     elif oper == 'get':
@@ -527,7 +597,7 @@ def compressor(oper='', ratio=''):
         return 'not valid'
 
     parameters  = get_parameters()
-    active      = not _bypass('compressor', 'state')
+    active      = not get_bypassed()
 
     return  {'active': active, 'parameters': parameters}
 
