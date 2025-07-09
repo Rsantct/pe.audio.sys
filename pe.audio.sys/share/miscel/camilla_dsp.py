@@ -204,6 +204,8 @@ def _init(compressor='off', mode='start'):
                 return {}
 
 
+        lspk = CONFIG["loudspeaker"]
+
         lspk_uses_cdsp = False
 
         # Loading the base config
@@ -223,38 +225,78 @@ def _init(compressor='off', mode='start'):
 
             runtime_config["filters"] = lspk_config["filters"]
 
-            pipeline_0_step_names = []
-            pipeline_1_step_names = []
-
-            for f in lspk_config["filters"]:
-
-                # drc filters have a channel identifier
-
-                if "drc_L" in f or not f.startswith('drc_'):
-                    pipeline_0_step_names.append(f)
-                    print(f'{Fmt.BLUE}Adding filter `{f}` to CamillaDSP pipeline `{CONFIG["loudspeaker"]} LEFT`{Fmt.END}')
-
-                if "drc_R" in f or not f.startswith('drc_'):
-                    pipeline_1_step_names.append(f)
-                    print(f'{Fmt.BLUE}Adding filter `{f}` to CamillaDSP pipeline `{CONFIG["loudspeaker"]} RIGHT`{Fmt.END}')
-
-            pipeline_0_step = {
+            # Pipeline step for loudspeaker EQ filters (will be applied at both channels)
+            pipeline_eq_L_step = {
                 'type':         'Filter',
-                'description':  CONFIG["loudspeaker"] + ' (left)',
+                'description':  f'{lspk} (EQ left)',
                 'channels':     [0],
                 'bypassed':     False,
-                'names':        pipeline_0_step_names
+                'names':        []
             }
-            pipeline_1_step = {
+            pipeline_eq_R_step = {
                 'type':         'Filter',
-                'description':  CONFIG["loudspeaker"] + ' (right)',
+                'description':  f'{lspk} (EQ right)',
                 'channels':     [1],
                 'bypassed':     False,
-                'names':        pipeline_1_step_names
+                'names':        []
             }
+            pipeline_eq_L_step_names = []
+            pipeline_eq_R_step_names = []
 
-            runtime_config["pipeline"].append( pipeline_0_step )
-            runtime_config["pipeline"].append( pipeline_1_step )
+
+            # Pipeline step for loudspeaker DRC filters
+            pipeline_drc_L_step = {
+                'type':         'Filter',
+                'description':  f'{lspk} (DRC left)',
+                'channels':     [0],
+                'bypassed':     False,
+                'names':        []
+            }
+            pipeline_drc_R_step = {
+                'type':         'Filter',
+                'description':  f'{lspk} (DRC right)',
+                'channels':     [1],
+                'bypassed':     False,
+                'names':        []
+            }
+            pipeline_drc_L_step_names = []
+            pipeline_drc_R_step_names = []
+
+            # Iterate over loudspeaker filters
+            for f in lspk_config["filters"]:
+
+                # Filter is loudspeaker EQ
+                if not f.startswith('drc_'):
+
+                    pipeline_eq_L_step_names.append(f)
+                    print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_eq_L_step["description"]}`{Fmt.END}')
+                    pipeline_eq_R_step_names.append(f)
+                    print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_eq_R_step["description"]}`{Fmt.END}')
+
+                # Filter is DRC
+                else:
+
+                    if f.startswith('drc_L'):
+                        pipeline_drc_L_step_names.append(f)
+                        print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_drc_L_step["description"]}`{Fmt.END}')
+
+                    if f.startswith('drc_R'):
+                        pipeline_drc_R_step_names.append(f)
+                        print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_drc_R_step["description"]}`{Fmt.END}')
+
+            pipeline_eq_L_step["names"] = pipeline_eq_L_step_names
+            pipeline_eq_R_step["names"] = pipeline_eq_R_step_names
+
+            pipeline_drc_L_step["names"] = pipeline_drc_L_step_names
+            pipeline_drc_R_step["names"] = pipeline_drc_R_step_names
+
+            if pipeline_eq_L_step["names"] :
+                runtime_config["pipeline"].append( pipeline_eq_L_step )
+                runtime_config["pipeline"].append( pipeline_eq_R_step )
+
+            if pipeline_drc_L_step["names"] :
+                runtime_config["pipeline"].append( pipeline_drc_L_step )
+                runtime_config["pipeline"].append( pipeline_drc_R_step )
 
 
         # Setting the safe gain if required:
