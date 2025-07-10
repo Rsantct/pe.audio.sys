@@ -165,7 +165,7 @@ def get_filter_coeffs(config):
     if VERBOSE:
         print()
         print('-'*100)
-        print('Filter names and its calculated coeffs:')
+        print('Filter available and its calculated coeffs:')
         for k, v in filter_coeffs.items():
             print(k, '(peaking)', v)
         print()
