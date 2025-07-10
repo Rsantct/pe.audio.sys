@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+"""
+    Plot filters used in the CamillaDSP pipeline
+
+    usage: camilladsp_plot.py  <yaml_path>  [filter_pattern]
+
+"""
+
 print('Loading libraries can take a while ...')
 import sys
 import yaml
@@ -8,6 +15,33 @@ import matplotlib.pyplot    as plt
 from   scipy                import signal
 
 VERBOSE = False
+
+
+class Fmt:
+    BLACK           = '\033[30m'
+    RED             = '\033[31m'
+    GREEN           = '\033[32m'
+    YELLOW          = '\033[33m'
+    BLUE            = '\033[34m'
+    MAGENTA         = '\033[35m'
+    CYAN            = '\033[36m'
+    WHITE           = '\033[37m'
+    GRAY            = '\033[90m'
+
+    BRIGHTBLACK     = '\033[90m'
+    BRIGHTRED       = '\033[91m'
+    BRIGHTGREEN     = '\033[92m'
+    BRIGHTYELLOW    = '\033[93m'
+    BRIGHTBLUE      = '\033[94m'
+    BRIGHTMAGENTA   = '\033[95m'
+    BRIGHTCYAN      = '\033[96m'
+    BRIGHTWHITE     = '\033[97m'
+
+    BOLD            = '\033[1m'
+    UNDERLINE       = '\033[4m'
+    BLINK           = '\033[5m'
+    END             = '\033[0m'
+
 
 def load_config(yaml_file_path):
 
@@ -29,7 +63,7 @@ def load_config(yaml_file_path):
     fs = 44100
     if 'devices' in config and 'samplerate' in config['devices']:
         fs = config['devices']['samplerate']
-        print(f"Detected: {fs} Hz")
+        print(f"Detected samplerate: {fs} Hz")
     else:
         print(f"'samplerate' NOT found, using default {fs} Hz")
 
@@ -147,28 +181,21 @@ def get_filter_coeffs(config):
                     try:
                         coefficients = calculate_peaking_biquad_coefficients(freq, gain, q, fs)
                         filter_coeffs[filter_name] = (coefficients[0:3], [1.0, coefficients[3], coefficients[4]])
-                        #print(f"'{filter_name}' (Peaking): {coefficients}")
+                        if VERBOSE:
+                            print(f"'{filter_name}' (Peaking): {coefficients}")
                     except Exception as e:
-                        print(f"Error al calcular coeficientes para '{filter_name}' (Peaking): {e}. Saltando.")
+                        print(f"{Fmt.RED}'{filter_name}' (Peaking): error when calculating coefficients: {e}{Fmt.END}")
                 else:
-                    print(f"Advertencia: Faltan parámetros para el filtro Peaking '{filter_name}'. Saltando.")
+                    print(f"{Fmt.RED}'{filter_name}' (Peaking): bad paramenters{Fmt.END}")
 
             elif param_type == 'LinkwitzTransform':
-                print(f"Skipping '{filter_name}' type: LinkwitzTransform NOT implemented.")
+                print(f"{Fmt.RED}'{filter_name}' ({param_type}): cannot calculate coefficients{Fmt.END}")
 
             else:
-                print(f"Advertencia: Tipo de parámetro de filtro no soportado '{param_type}' para '{filter_name}'. Saltando.")
+                print(f"{Fmt.RED}'{filter_name}' ({param_type}): NOT supported{Fmt.END}")
 
         else:
-            print(f"Advertencia: Saltando el filtro '{filter_name}'. Se esperaba un tipo de nivel superior 'Biquad' y una sección 'parameters'. Tipo encontrado: '{filter_type_top_level}', parámetros: {parameters}")
-
-    if VERBOSE:
-        print()
-        print('-'*100)
-        print('Filter available and its calculated coeffs:')
-        for k, v in filter_coeffs.items():
-            print(k, '(peaking)', v)
-        print()
+            print(f"{Fmt.RED}Warning: Skipping filter '{filter_name}'. Expected top-level type 'Biquad' and section 'parameters'. Found type: '{filter_type_top_level}', parameters: {parameters}{Fmt.END}")
 
     return filter_coeffs
 
@@ -205,7 +232,7 @@ def get_filters_per_channel(config):
     return filters_per_channel
 
 
-def plot_biquad_frequency_response_per_channel(config, filter_pattern='drc'):
+def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
     """
     Reads filter definitions from a CamillaDSP YAML configuration,
     calculates biquad coefficients for supported filter types,
@@ -227,7 +254,7 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern='drc'):
     # Indication of which filters are being combined
     if filter_pattern:
         ax_mag.set_title(f'Filters: {filter_pattern}')
-        print(f"Only filter names matching '{filter_pattern}'")
+        print(f"{Fmt.BOLD}Only filter names matching: '{filter_pattern}'{Fmt.END}")
 
     # Generate an array of base frequencies for all calculations
     # This ensures that all responses are calculated at the same frequency points.
@@ -254,9 +281,14 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern='drc'):
 
         for fname in filter_names:
 
-            b, a = filter_coeffs[fname]
-            _, h_individual = signal.freqz(b, a, worN=8192, fs=fs)
-            h_combined_channel *= h_individual
+            if fname in filter_coeffs:
+
+                b, a = filter_coeffs[fname]
+                _, h_individual = signal.freqz(b, a, worN=8192, fs=fs)
+                h_combined_channel *= h_individual
+
+            else:
+                print(f'{Fmt.RED}Filer name `{fname}`: coefficients not available{Fmt.END}')
 
         combined_magnitude_db  = 20 * np.log10(abs(h_combined_channel))
         combined_phase_degrees = np.unwrap(np.angle(h_combined_channel)) * 180 / np.pi
@@ -282,16 +314,25 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern='drc'):
 if __name__ == "__main__":
 
 
-    yaml_path = 'camilladsp.yml'
+    yaml_path       = 'camilladsp.yml'
+    filter_pattern  = ''
 
     if sys.argv[1:]:
         yaml_path = sys.argv[1]
 
+        if sys.argv[2:]:
+            filter_pattern = sys.argv[2]
 
+    else:
+        print(__doc__)
+        sys.exit()
+
+
+    print(f"trying to load YAML: `{yaml_path}`")
     config, fs = load_config(yaml_path)
 
     if config :
-        plot_biquad_frequency_response_per_channel(config)
+        plot_biquad_frequency_response_per_channel(config, filter_pattern)
     else:
         print('Bye.')
 
