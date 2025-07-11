@@ -167,6 +167,7 @@ mkdir -p $HOME/pe.audio.sys/log
 cp -r $ORIG/pe.audio.sys/       $HOME/              >/dev/null 2>&1
 # SOME UTILS are provided inside ~/bin
 mkdir -p $HOME/bin/peaudiosys_test
+mkdir -p $HOME/bin/camilladsp_plot_mod
 cp    $ORIG/bin/*                       $HOME/bin/                      >/dev/null 2>&1
 cp    $ORIG/bin/peaudiosys_test/*       $HOME/bin/peaudiosys_test/      >/dev/null 2>&1
 cp    $ORIG/bin/camilladsp_plot_mod/*   $HOME/bin/camilladsp_plot_mod/  >/dev/null 2>&1
