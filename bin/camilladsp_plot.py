@@ -3,7 +3,7 @@
 """
     Plot filters used in the CamillaDSP pipeline
 
-    usage: camilladsp_plot.py  <yaml_path>  [filter_pattern]
+    usage: camilladsp_plot.py  <yaml_path>  [filter_pattern] [--verbose]
 
 """
 
@@ -14,33 +14,8 @@ import numpy as np
 import matplotlib.pyplot    as plt
 from   scipy                import signal
 
-VERBOSE = False
-
-
-class Fmt:
-    BLACK           = '\033[30m'
-    RED             = '\033[31m'
-    GREEN           = '\033[32m'
-    YELLOW          = '\033[33m'
-    BLUE            = '\033[34m'
-    MAGENTA         = '\033[35m'
-    CYAN            = '\033[36m'
-    WHITE           = '\033[37m'
-    GRAY            = '\033[90m'
-
-    BRIGHTBLACK     = '\033[90m'
-    BRIGHTRED       = '\033[91m'
-    BRIGHTGREEN     = '\033[92m'
-    BRIGHTYELLOW    = '\033[93m'
-    BRIGHTBLUE      = '\033[94m'
-    BRIGHTMAGENTA   = '\033[95m'
-    BRIGHTCYAN      = '\033[96m'
-    BRIGHTWHITE     = '\033[97m'
-
-    BOLD            = '\033[1m'
-    UNDERLINE       = '\033[4m'
-    BLINK           = '\033[5m'
-    END             = '\033[0m'
+from   camilladsp_plot_mod.fmt                  import Fmt
+import camilladsp_plot_mod.audio_eq_cook_book   as eqbook
 
 
 def load_config(yaml_file_path):
@@ -70,44 +45,6 @@ def load_config(yaml_file_path):
     return config, fs
 
 
-def calculate_peaking_biquad_coefficients(freq, gain_db, q, fs):
-    """
-    Calculate the biquad coefficients for a Peaking EQ filter.
-    Based on "The Audio Equalizer Cookbook" by Robert Bristow-Johnson.
-
-    Args:
-        freq (float):       center freq in Hz
-        gain_db (float):    gain in dB
-        q (float):          Q factor
-        fs (int):           samplerate in Hz
-
-    Returns:
-        [b0, b1, b2, a1, a2] coeficientes biquad (list)
-    """
-
-    # dB --> lineal (for peaking)
-    A = 10**(gain_db / 40.0)
-    omega = 2 * np.pi * freq / fs
-    alpha = np.sin(omega) / (2 * q)
-    cos_omega = np.cos(omega)
-
-    b0 = 1 + alpha * A
-    b1 = -2 * cos_omega
-    b2 = 1 - alpha * A
-    a0 = 1 + alpha / A
-    a1 = -2 * cos_omega
-    a2 = 1 - alpha / A
-
-    # Normalize by a0
-    b0_norm = b0 / a0
-    b1_norm = b1 / a0
-    b2_norm = b2 / a0
-    a1_norm = a1 / a0
-    a2_norm = a2 / a0
-
-    return [b0_norm, b1_norm, b2_norm, a1_norm, a2_norm]
-
-
 def prepare_plot():
 
     # custom Coordinate Formatter for status bar
@@ -131,7 +68,7 @@ def prepare_plot():
     ax_mag.set_ylabel('dB')
     ax_mag.grid(True, which="both", ls="-")
     ax_mag.semilogx()
-    ax_mag.set_ylim(-40, 10)
+    ax_mag.set_ylim(-30, 20)
     ax_mag.set_xlim(20, 20000)
     ax_mag.set_xticks( xticks, xticklabels )
 
@@ -159,9 +96,11 @@ def get_filter_coeffs(config):
 
     filter_coeffs = {}
 
+
     for filter_name, filter_data in config['filters'].items():
+
         if not isinstance(filter_data, dict):
-            print(f"Advertencia: El filtro '{filter_name}' no es un diccionario. Saltando.")
+            print(f"Warning: '{filter_name}' is not a valid dictionary, we discard it.")
             continue
 
         filter_type_top_level = filter_data.get('type')
@@ -173,23 +112,45 @@ def get_filter_coeffs(config):
             coefficients = None
 
             if param_type == 'Peaking':
+
                 freq = parameters.get('freq')
                 gain = parameters.get('gain')
                 q = parameters.get('q')
 
                 if all(v is not None for v in [freq, gain, q]):
+
                     try:
-                        coefficients = calculate_peaking_biquad_coefficients(freq, gain, q, fs)
-                        filter_coeffs[filter_name] = (coefficients[0:3], [1.0, coefficients[3], coefficients[4]])
+                        b, a = eqbook.peaking_biquad_coefficients(freq, gain, q, fs)
+                        filter_coeffs[filter_name] = (b, a)
                         if VERBOSE:
-                            print(f"'{filter_name}' (Peaking): {coefficients}")
+                            print(f"'{filter_name}' (Peaking): {b, a}")
+
                     except Exception as e:
                         print(f"{Fmt.RED}'{filter_name}' (Peaking): error when calculating coefficients: {e}{Fmt.END}")
+
                 else:
                     print(f"{Fmt.RED}'{filter_name}' (Peaking): bad paramenters{Fmt.END}")
 
             elif param_type == 'LinkwitzTransform':
-                print(f"{Fmt.RED}'{filter_name}' ({param_type}): cannot calculate coefficients{Fmt.END}")
+
+                freq_act    = parameters.get('freq_act')
+                q_act       = parameters.get('q_act')
+                freq_target = parameters.get('freq_target')
+                q_target    = parameters.get('q_target')
+
+                if all(v is not None for v in [freq_act, q_act, freq_target, q_target]):
+
+                    try:
+                        b, a = eqbook.linkwitz_transform_coefficients(freq_act, q_act, freq_target, q_target, fs)
+                        filter_coeffs[filter_name] = (b, a)
+                        if VERBOSE:
+                            print(f"'{filter_name}' (LinkwitzTransform): {b, a}")
+
+                    except Exception as e:
+                        print(f"{Fmt.RED}'{filter_name}' (LinkwitzTransform): error when calculating coefficients: {e}{Fmt.END}")
+
+                else:
+                    print(f"{Fmt.RED}'{filter_name}' (LinkwitzTransform): bad paramenters{Fmt.END}")
 
             else:
                 print(f"{Fmt.RED}'{filter_name}' ({param_type}): NOT supported{Fmt.END}")
@@ -313,19 +274,26 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
 
 if __name__ == "__main__":
 
+    VERBOSE = False
 
     yaml_path       = 'camilladsp.yml'
     filter_pattern  = ''
 
-    if sys.argv[1:]:
-        yaml_path = sys.argv[1]
 
-        if sys.argv[2:]:
-            filter_pattern = sys.argv[2]
-
-    else:
+    if not sys.argv[1:]:
         print(__doc__)
         sys.exit()
+
+    for opc in sys.argv[1:]:
+
+        if '-v' in opc:
+            VERBOSE = True
+
+        elif '.yml' in opc:
+            yaml_path = opc
+
+        else:
+            filter_pattern = opc
 
 
     print(f"trying to load YAML: `{yaml_path}`")
