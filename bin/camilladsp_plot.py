@@ -56,36 +56,77 @@ def prepare_plot():
         return f'x={x:.0f}, y={y:.1f}'
 
 
-    xticks      = [20, 50, 100, 200, 300, 500, 700, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 20000]
-    xticklabels = ['20', '50', '100', '200', '300', '500', '700', '1K', '2K', '3K', '4K', '5K', '7K', '10K', '20K']
+    if PLOTSTYLE == 'pe.audio.sys':
 
-    plt.figure(figsize=(9, 8))
+        plt.style.use('dark_background')
+        plt.rcParams.update({'font.size': 6})
+        plt.rcParams['lines.linewidth'] = 3
+
+        FREQ_LIMITS = [20, 20000]
+        FREQ_TICKS  = [20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4]
+        FREQ_LABELS = ['20', '50', '100', '200', '500', '1K', '2K', '5K', '10K', '20K']
+        DB_LIMITS   = [-20, +9]
+        DB_TICKS    = [-18, -12, -6, 0, 6]
+        DB_LABELS   = ['-18', '-12', '-6', '0', '6']
 
 
-    # Subplot for mag
-    ax_mag = plt.subplot(2, 1, 1)
-    #ax_mag.set_xlabel('Hz')
-    ax_mag.set_ylabel('dB')
-    ax_mag.grid(True, which="both", ls="-")
-    ax_mag.semilogx()
-    ax_mag.set_ylim(-30, 20)
-    ax_mag.set_xlim(20, 20000)
-    ax_mag.set_xticks( xticks, xticklabels )
+        fig, ax_mag = plt.subplots()
+        fig.set_figwidth( 5 )   # 5 inches at 100dpi => 500px wide
+        fig.set_figheight( 1.5 )
+        fig.set_facecolor( WEBCOLOR )
+        ax_mag.set_facecolor( WEBCOLOR )
 
-    # Subplot for phase
-    ax_pha = plt.subplot(2, 1, 2)
-    #ax_pha.set_xlabel('Hz')
-    ax_pha.set_ylabel('deg')
-    ax_pha.grid(True, which="both", ls="-")
-    ax_pha.semilogx()
-    ax_pha.set_ylim(-180, 180)
-    ax_pha.set_xlim(20, 20000)
-    ax_pha.set_xticks( xticks, xticklabels )
-    deg_yticks = [-180, -135, -90, -45, 0, 45, 90, 135, 180]
-    ax_pha.set_yticks( deg_yticks )
+        #ax_mag.set_xlabel('Hz')
+        #ax_mag.set_ylabel('dB')
+        ax_mag.grid(False)
+        ax_mag.semilogx()
+        ax_mag.set_ylim(DB_LIMITS)
+        ax_mag.set_xlim(FREQ_LIMITS)
+        ax_mag.set_xticks(FREQ_TICKS, FREQ_LABELS)
+        ax_mag.set_yticks(DB_TICKS, DB_LABELS)
 
-    ax_mag.format_coord = custom_format_coord
-    ax_pha.format_coord = custom_format_coord
+        # Subplot for phase
+        ax_pha = None
+
+        ax_mag.format_coord = custom_format_coord
+
+
+    else:
+        FREQ_LIMITS = [20, 20000]
+        FREQ_TICKS  = [20, 50, 100, 200, 300, 500, 700, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 20000]
+        FREQ_LABELS = ['20', '50', '100', '200', '300', '500', '700', '1K', '2K', '3K', '4K', '5K', '7K', '10K', '20K']
+        DB_LIMITS   = [-30, +20]
+        DB_TICKS    = [-30, -20, -10, 0, 10, 20]
+        DB_LABELS   = ['-30', '-20', '-10', '0', '10', '20']
+
+        plt.figure(figsize=(9, 8))
+
+        # Subplot for mag
+        ax_mag = plt.subplot(2, 1, 1)
+        #ax_mag.set_xlabel('Hz')
+        ax_mag.set_ylabel('dB')
+        ax_mag.grid(True, which="both", ls="-")
+        ax_mag.semilogx()
+        ax_mag.set_ylim(DB_LIMITS)
+        ax_mag.set_xlim(FREQ_LIMITS)
+        ax_mag.set_xticks(FREQ_TICKS, FREQ_LABELS)
+        ax_mag.set_yticks(DB_TICKS, DB_LABELS)
+
+        # Subplot for phase
+        ax_pha = plt.subplot(2, 1, 2)
+        #ax_pha.set_xlabel('Hz')
+        ax_pha.set_ylabel('deg')
+        ax_pha.grid(True, which="both", ls="-")
+        ax_pha.semilogx()
+        ax_pha.set_ylim(-180, 180)
+        ax_pha.set_xlim(FREQ_LIMITS)
+        ax_pha.set_xticks(FREQ_TICKS, FREQ_LABELS)
+        deg_yticks = [-180, -135, -90, -45, 0, 45, 90, 135, 180]
+        ax_pha.set_yticks( deg_yticks )
+
+        ax_mag.format_coord = custom_format_coord
+        ax_pha.format_coord = custom_format_coord
+
 
     return ax_mag, ax_pha
 
@@ -214,7 +255,8 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
 
     # Indication of which filters are being combined
     if filter_pattern:
-        ax_mag.set_title(f'Filters: {filter_pattern}')
+        if PLOTSTYLE == 'normal':
+            ax_mag.set_title(f'Filters: {filter_pattern}')
         print(f"{Fmt.BOLD}Only filter names matching: '{filter_pattern}'{Fmt.END}")
 
     # Generate an array of base frequencies for all calculations
@@ -223,17 +265,18 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
 
     # Colors for each channel
     #colors = plt.cm.get_cmap('tab10', len(filters_per_channel))
-    colors = ['blue', 'red']
-
+    colors = ['steelblue', 'indianred']
 
     lines_count = 0
-
     for channel_key, filter_names in filters_per_channel.items():
 
         # Initialize with ones for multiplication
         h_combined_channel = np.ones_like(w_freqs, dtype=complex)
 
-        channel_label = f"Channel {channel_key}"
+        if PLOTSTYLE == 'pe.audio.sys':
+            channel_label = {0: 'L', 1: 'R'}[lines_count]
+        else:
+            channel_label = f"Channel {channel_key}"
 
         if filter_pattern:
             filter_names = [x for x in filter_names if filter_pattern in x]
@@ -257,14 +300,27 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
         #line_color = colors(lines_count) # syntax if using plt.cm.get_cmap
         line_color = colors[lines_count]
 
-        ax_mag.plot(w_freqs, combined_magnitude_db, label=channel_label, color=line_color, linewidth=2)
-        ax_pha.plot(w_freqs, combined_phase_degrees, label=channel_label, color=line_color, linewidth=2)
+        if PLOTSTYLE == 'pe.audio.sys':
+            ax_mag.plot(w_freqs, combined_magnitude_db, label=channel_label, color=line_color)
+
+        else:
+            ax_mag.plot(w_freqs, combined_magnitude_db, label=channel_label, color=line_color, linewidth=2)
+            ax_pha.plot(w_freqs, combined_phase_degrees, label=channel_label, color=line_color, linewidth=2)
+
 
         lines_count += 1
 
 
     if lines_count > 0:
-        ax_mag.legend(loc='lower right')
+
+        if PLOTSTYLE == 'pe.audio.sys':
+            ax_mag.legend( facecolor=WEBCOLOR, loc='lower right')
+            fpng = f'{IMGFOLDER}/drc_{drc_set}.png'
+            plt.savefig( fpng, facecolor=WEBCOLOR )
+
+        else:
+            ax_mag.legend(loc='lower right')
+
         plt.show()
 
     else:
@@ -275,6 +331,8 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
 if __name__ == "__main__":
 
     VERBOSE = False
+
+    PLOTSTYLE = 'normal'
 
     yaml_path       = 'camilladsp.yml'
     filter_pattern  = ''
@@ -291,6 +349,13 @@ if __name__ == "__main__":
 
         elif '.yml' in opc:
             yaml_path = opc
+
+        elif '-p' in opc:
+            PLOTSTYLE = 'pe.audio.sys'
+            # Same color as pe.audio.sys index.html background-color: rgb(38, 38, 38)
+            WEBCOLOR    = (.15, .15, .15)
+            drc_set = 'CamillaDSP'
+            IMGFOLDER = '.'
 
         else:
             filter_pattern = opc
