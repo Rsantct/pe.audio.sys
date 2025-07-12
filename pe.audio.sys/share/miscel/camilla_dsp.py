@@ -388,35 +388,42 @@ def _init(compressor='off', mode='start'):
     return True
 
 
-def bypass(step_pattern='', mode='state', quiet=False):
+def bypass(what=None, mode='state', quiet=False):
     """
-        Bypass a pipeline step as per its
-        `name` field or `names` list field
+        Bypass a pipeline step as per the `what` parameter:
+
+            <string>    pattern to locate the pipeline step as per its
+                        `name` field or `names` list field
+
+            <list>      several pipeline step indexes to bypass
+
+            <int>       one pipeline step index to bypass
+
 
         mode:       on | off | True | False | toggle | state (default)
 
         quiet:      mute before changes, then unmute,
                     recommended for the compressor processor
 
-        returns:    the bypassed state (boolean)
+        returns:    the bypassed state dict {#idx: boolean, ...}
                     OR
-                    None if not found
+                    {} if not found
     """
 
-    def get_step_pipeline_indexes(cfg, step_pattern):
+    def get_step_pipeline_indexes(cfg, pattern):
 
         indexes = []
 
         for i, s in enumerate( cfg["pipeline"] ):
 
-            if 'name' in s and step_pattern in s["name"]:
+            if 'name' in s and pattern in s["name"]:
                 if not i in indexes:
                     indexes.append( i )
 
             # Pipeline steps of type `Filter` has `names` instead of `name`
             if 'names' in s:
                 for name in s["names"]:
-                    if step_pattern in name:
+                    if pattern in name:
                         if not i in indexes:
                             indexes.append( i )
 
@@ -427,7 +434,26 @@ def bypass(step_pattern='', mode='state', quiet=False):
 
     cfg = PC.config.active()
 
-    indexes = get_step_pipeline_indexes(cfg, step_pattern)
+    try:
+        if type(what) == str:
+            indexes = get_step_pipeline_indexes(cfg, what)
+
+        elif type(what) == list or type(what) == tuple:
+            indexes = what
+
+        elif type(what) == int:
+            indexes = [what]
+
+        else:
+            indexes = []
+
+    except Exception as e:
+        print(f'{Fmt.RED}camilla_dsp.bypass BAD parameter{Fmt.END}')
+        return result
+
+    if not all(isinstance(x, int) for x in indexes):
+        print(f'{Fmt.RED}camilla_dsp.bypass BAD parameter{Fmt.END}')
+        return result
 
     # Early return if pattern not found
     if not indexes:
