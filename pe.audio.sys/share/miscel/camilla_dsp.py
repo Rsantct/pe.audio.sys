@@ -48,8 +48,11 @@ def _stop_cdsp():
             break
         tries -= 1
         sleep(.1)
+
     if not tries:
         raise Exception('Unable to stop CamillaDSP.')
+
+    sleep(.25)
 
     return True
 
