@@ -3,7 +3,9 @@
 """
     Plot filters used in the CamillaDSP pipeline
 
-    usage: camilladsp_plot.py  <yaml_path>  [filter_pattern] [--verbose]
+    usage: camilladsp_plot.py  <yaml_path>  [filter_pattern] [--verbose] [--peaudiosys]
+
+            --peaudiosys:    makes a graph to be used in pe.audio.sys web page
 
 """
 
@@ -85,7 +87,7 @@ def prepare_plot():
         ax_mag.set_xticks(FREQ_TICKS, FREQ_LABELS)
         ax_mag.set_yticks(DB_TICKS, DB_LABELS)
 
-        # Subplot for phase
+        # no subplot for phase
         ax_pha = None
 
         ax_mag.format_coord = custom_format_coord
@@ -127,16 +129,22 @@ def prepare_plot():
         ax_mag.format_coord = custom_format_coord
         ax_pha.format_coord = custom_format_coord
 
-
     return ax_mag, ax_pha
 
 
 def get_filter_coeffs(config):
-    """ Currently only filters of type 'Peaking'
+    """ Currently only filters of type
+        - 'Peaking'
+        - 'LinkwitzTransform'
     """
 
     filter_coeffs = {}
 
+
+    if VERBOSE:
+        print()
+        print('-'*100)
+        print('Filters available:')
 
     for filter_name, filter_data in config['filters'].items():
 
@@ -161,10 +169,16 @@ def get_filter_coeffs(config):
                 if all(v is not None for v in [freq, gain, q]):
 
                     try:
-                        b, a = eqbook.peaking_biquad_coefficients(freq, gain, q, fs)
-                        filter_coeffs[filter_name] = (b, a)
+                        coeffs = eqbook.peaking_biquad_coefficients(freq, gain, q, fs)
+
+                        filter_coeffs[filter_name] = {
+                            'type':     'Peaking',
+                            'freq':     freq,
+                            'coeffs':   coeffs
+                        }
+
                         if VERBOSE:
-                            print(f"'{filter_name}' (Peaking): {b, a}")
+                            print(filter_coeffs[filter_name])
 
                     except Exception as e:
                         print(f"{Fmt.RED}'{filter_name}' (Peaking): error when calculating coefficients: {e}{Fmt.END}")
@@ -182,10 +196,16 @@ def get_filter_coeffs(config):
                 if all(v is not None for v in [freq_act, q_act, freq_target, q_target]):
 
                     try:
-                        b, a = eqbook.linkwitz_transform_coefficients(freq_act, q_act, freq_target, q_target, fs)
-                        filter_coeffs[filter_name] = (b, a)
+                        coeffs = eqbook.linkwitz_transform_coefficients(freq_act, q_act, freq_target, q_target, fs)
+
+                        filter_coeffs[filter_name] = {
+                            'type':     'LinkwitzTransform',
+                            'freq':     freq_target,
+                            'coeffs':   coeffs
+                        }
+
                         if VERBOSE:
-                            print(f"'{filter_name}' (LinkwitzTransform): {b, a}")
+                            print(filter_coeffs[filter_name])
 
                     except Exception as e:
                         print(f"{Fmt.RED}'{filter_name}' (LinkwitzTransform): error when calculating coefficients: {e}{Fmt.END}")
@@ -228,13 +248,12 @@ def get_filters_per_channel(config):
         print('Filters per channel:')
         for k, v in filters_per_channel.items():
             print(f'ch {k}:', v)
-        print()
 
 
     return filters_per_channel
 
 
-def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
+def plot_frequency_response_per_channel(config, filter_pattern=''):
     """
     Reads filter definitions from a CamillaDSP YAML configuration,
     calculates biquad coefficients for supported filter types,
@@ -244,7 +263,7 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
         config (dict): CamillaDSP config dictionary
     """
 
-    # Subplots for magnitude and phase
+    # Subplots for magnitude, phase, group_delay
     ax_mag, ax_pha = prepare_plot()
 
     # Defined filters
@@ -252,6 +271,11 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
 
     # Filters for each channel in the Pipeline
     filters_per_channel = get_filters_per_channel(config)
+
+    if VERBOSE:
+        print()
+        print('-'*100)
+        print('Plotting:')
 
     # Indication of which filters are being combined
     if filter_pattern:
@@ -268,6 +292,9 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
     colors = ['steelblue', 'indianred']
 
     lines_count = 0
+
+    mag_annotations = []
+
     for channel_key, filter_names in filters_per_channel.items():
 
         # Initialize with ones for multiplication
@@ -287,9 +314,18 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
 
             if fname in filter_coeffs:
 
-                b, a = filter_coeffs[fname]
+                b, a = filter_coeffs[fname]["coeffs"]
                 _, h_individual = signal.freqz(b, a, worN=8192, fs=fs)
                 h_combined_channel *= h_individual
+
+                mag_annotations.append(
+                    { 'xpos':       filter_coeffs[fname]["freq"],
+                      'yoffset':    1 + (plt.rcParams["font.size"] * .5)
+                                    - lines_count * (plt.rcParams["font.size"] * .5),
+                      'text':       str(fname) ,
+                      'color':      colors[lines_count]
+                    }
+                )
 
             else:
                 print(f'{Fmt.RED}Filer name `{fname}`: coefficients not available{Fmt.END}')
@@ -304,11 +340,22 @@ def plot_biquad_frequency_response_per_channel(config, filter_pattern=''):
             ax_mag.plot(w_freqs, combined_magnitude_db, label=channel_label, color=line_color)
 
         else:
-            ax_mag.plot(w_freqs, combined_magnitude_db, label=channel_label, color=line_color, linewidth=2)
+            ax_mag.plot(w_freqs, combined_magnitude_db,  label=channel_label, color=line_color, linewidth=2)
             ax_pha.plot(w_freqs, combined_phase_degrees, label=channel_label, color=line_color, linewidth=2)
 
-
         lines_count += 1
+
+    if PLOTSTYLE == 'normal':
+
+        for ann in mag_annotations:
+
+            ax_mag.annotate(text        = ann["text"],
+                            xy          = (ann["xpos"], 20),
+                            rotation    = 45,
+                            xytext      = (ann["xpos"], 20 + ann["yoffset"]),
+                            fontsize    = plt.rcParams["font.size"] * 0.7,
+                            color       = ann["color"]
+            )
 
 
     if lines_count > 0:
@@ -365,7 +412,7 @@ if __name__ == "__main__":
     config, fs = load_config(yaml_path)
 
     if config :
-        plot_biquad_frequency_response_per_channel(config, filter_pattern)
+        plot_frequency_response_per_channel(config, filter_pattern)
     else:
         print('Bye.')
 
