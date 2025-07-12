@@ -268,22 +268,22 @@ def _init(compressor='off', mode='start'):
             # Iterate over loudspeaker filters
             for f in lspk_config["filters"]:
 
-                # Filter is loudspeaker EQ
-                if not f.startswith('drc_'):
+                # Filter is common for both channels
+                if not '_L_' in f and not '_R_' in f:
 
                     pipeline_eq_L_step_names.append(f)
                     print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_eq_L_step["description"]}`{Fmt.END}')
                     pipeline_eq_R_step_names.append(f)
                     print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_eq_R_step["description"]}`{Fmt.END}')
 
-                # Filter is DRC
+                # Filter is for an specific channel (i.e. DRC)
                 else:
 
-                    if f.startswith('drc_L'):
+                    if '_L_' in f:
                         pipeline_drc_L_step_names.append(f)
                         print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_drc_L_step["description"]}`{Fmt.END}')
 
-                    if f.startswith('drc_R'):
+                    if '_R_' in f:
                         pipeline_drc_R_step_names.append(f)
                         print(f'{Fmt.BLUE}Adding filter `{f}` to pipeline `{pipeline_drc_R_step["description"]}`{Fmt.END}')
 
@@ -650,4 +650,3 @@ def compressor(oper='', ratio=''):
     active      = not get_bypassed()
 
     return  {'active': active, 'parameters': parameters}
-
