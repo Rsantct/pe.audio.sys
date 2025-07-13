@@ -101,10 +101,17 @@ def prepare_plot():
         DB_TICKS    = [-30, -20, -10, 0, 10, 20]
         DB_LABELS   = ['-30', '-20', '-10', '0', '10', '20']
 
-        plt.figure(figsize=(9, 8))
+
+        N = 1
+        if PHASE:
+            N = 2
+            plt.figure(figsize=(9, 8))
+        else:
+            plt.figure(figsize=(9, 5))
+            plt.subplots_adjust(top=0.80)
 
         # Subplot for mag
-        ax_mag = plt.subplot(2, 1, 1)
+        ax_mag = plt.subplot(N, 1, 1)
         #ax_mag.set_xlabel('Hz')
         ax_mag.set_ylabel('dB')
         ax_mag.grid(True, which="both", ls="-")
@@ -113,21 +120,24 @@ def prepare_plot():
         ax_mag.set_xlim(FREQ_LIMITS)
         ax_mag.set_xticks(FREQ_TICKS, FREQ_LABELS)
         ax_mag.set_yticks(DB_TICKS, DB_LABELS)
-
-        # Subplot for phase
-        ax_pha = plt.subplot(2, 1, 2)
-        #ax_pha.set_xlabel('Hz')
-        ax_pha.set_ylabel('deg')
-        ax_pha.grid(True, which="both", ls="-")
-        ax_pha.semilogx()
-        ax_pha.set_ylim(-180, 180)
-        ax_pha.set_xlim(FREQ_LIMITS)
-        ax_pha.set_xticks(FREQ_TICKS, FREQ_LABELS)
-        deg_yticks = [-180, -135, -90, -45, 0, 45, 90, 135, 180]
-        ax_pha.set_yticks( deg_yticks )
-
         ax_mag.format_coord = custom_format_coord
-        ax_pha.format_coord = custom_format_coord
+
+        if PHASE:
+            # Subplot for phase
+            ax_pha = plt.subplot(2, 1, 2)
+            #ax_pha.set_xlabel('Hz')
+            ax_pha.set_ylabel('deg')
+            ax_pha.grid(True, which="both", ls="-")
+            ax_pha.semilogx()
+            ax_pha.set_ylim(-180, 180)
+            ax_pha.set_xlim(FREQ_LIMITS)
+            ax_pha.set_xticks(FREQ_TICKS, FREQ_LABELS)
+            deg_yticks = [-180, -135, -90, -45, 0, 45, 90, 135, 180]
+            ax_pha.set_yticks( deg_yticks )
+            ax_pha.format_coord = custom_format_coord
+
+        else:
+            ax_pha = None
 
     return ax_mag, ax_pha
 
@@ -341,7 +351,8 @@ def plot_frequency_response_per_channel(config, filter_pattern=''):
 
         else:
             ax_mag.plot(w_freqs, combined_magnitude_db,  label=channel_label, color=line_color, linewidth=2)
-            ax_pha.plot(w_freqs, combined_phase_degrees, label=channel_label, color=line_color, linewidth=2)
+            if PHASE:
+                ax_pha.plot(w_freqs, combined_phase_degrees, label=channel_label, color=line_color, linewidth=2)
 
         lines_count += 1
 
@@ -378,6 +389,7 @@ def plot_frequency_response_per_channel(config, filter_pattern=''):
 if __name__ == "__main__":
 
     VERBOSE = False
+    PHASE = False
 
     PLOTSTYLE = 'normal'
 
@@ -397,7 +409,10 @@ if __name__ == "__main__":
         elif '.yml' in opc:
             yaml_path = opc
 
-        elif '-p' in opc:
+        elif '-ph' in opc:
+            PHASE = True
+
+        elif '-pe' in opc:
             PLOTSTYLE = 'pe.audio.sys'
             # Same color as pe.audio.sys index.html background-color: rgb(38, 38, 38)
             WEBCOLOR    = (.15, .15, .15)
