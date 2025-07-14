@@ -329,11 +329,10 @@ def plot_frequency_response_per_channel(config, filter_pattern=''):
                 h_combined_channel *= h_individual
 
                 mag_annotations.append(
-                    { 'xpos':       filter_coeffs[fname]["freq"],
-                      'yoffset':    1 + (plt.rcParams["font.size"] * .5)
-                                    - lines_count * (plt.rcParams["font.size"] * .5),
-                      'text':       str(fname) ,
-                      'color':      colors[lines_count]
+                    {   'xpos':     filter_coeffs[fname]["freq"],
+                        'ypos':     19 - lines_count * 8,
+                        'text':     str(fname) ,
+                        'color':    colors[lines_count]
                     }
                 )
 
@@ -358,15 +357,17 @@ def plot_frequency_response_per_channel(config, filter_pattern=''):
 
     if PLOTSTYLE == 'normal':
 
-        for ann in mag_annotations:
+        for i, ann in enumerate(mag_annotations):
 
-            ax_mag.annotate(text        = ann["text"],
-                            xy          = (ann["xpos"], 20),
-                            rotation    = 45,
-                            xytext      = (ann["xpos"], 20 + ann["yoffset"]),
-                            fontsize    = plt.rcParams["font.size"] * 0.7,
-                            color       = ann["color"]
+            ax_mag.annotate(    text        = ann["text"],
+                                xy          = (ann["xpos"], 0),
+                                xytext      = (ann["xpos"] - 2 , ann["ypos"] + 1.5),
+                                rotation    = 40,
+                                fontsize    = plt.rcParams["font.size"] * 0.7,
+                                color       = ann["color"]
             )
+            # Add a dot
+            ax_mag.plot( ann["xpos"], ann["ypos"], marker='o', markersize=3, color=ann["color"] )
 
 
     if lines_count > 0:
