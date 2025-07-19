@@ -88,7 +88,7 @@ def get_remote_selected_source(addr, port=9990):
             remote_source = remote_state.get('source', '')
 
     except Exception as e:
-        print(f'(miscel.get_remote_selected_source) Exception: {str(e)}')
+        print(f'(remote_volume.get_remote_selected_source) Exception: {str(e)}')
 
     return remote_source
 
