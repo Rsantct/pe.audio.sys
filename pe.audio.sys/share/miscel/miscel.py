@@ -678,19 +678,6 @@ def get_macros(only_web_macros=True):
     return macro_files
 
 
-def get_remote_selected_source(addr, port=9990):
-    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
-        (string)
-    """
-    remote_source = ''
-    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
-    try:
-        remote_source = json_loads(remote_state)["input"]
-    except:
-        pass
-    return remote_source
-
-
 def get_remote_source_addr_port(sname):
     """ Gets the IP:CTRLPORT as configured under 'jack_pname' in a
         remoteXXXXX kind of configured source.
