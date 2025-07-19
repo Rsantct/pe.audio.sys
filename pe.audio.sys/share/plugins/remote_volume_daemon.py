@@ -23,14 +23,14 @@ from    watchdog.observers import Observer
 from    watchdog.events import FileSystemEventHandler
 import  sys
 import  os
+import  json
 
 UHOME           = os.path.expanduser("~")
 sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
 import  server
 from    config  import CONFIG, USER
-from    miscel  import send_cmd, get_remote_selected_source, read_last_line, \
-                       read_state_from_disk
+from    miscel  import send_cmd, read_last_line, read_state_from_disk
 
 LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
 CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'
@@ -69,6 +69,30 @@ class file_event_handler(FileSystemEventHandler):
                     globals()[self.action]()
 
 
+def get_remote_selected_source(addr, port=9990):
+    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
+        (string)
+    """
+    remote_source = ''
+    try:
+        tmp  = send_cmd('state', host=addr, port=port, timeout=1)
+
+        if not tmp.startswith('{') or not tmp.endswith('}'):
+            return remote_source
+
+        remote_state  = json.loads(tmp)
+
+        # Update for new pAudio project: 'input' becomes 'source'
+        remote_source = remote_state.get('input', '')
+        if not remote_source:
+            remote_source = remote_state.get('source', '')
+
+    except Exception as e:
+        print(f'(miscel.get_remote_selected_source) Exception: {str(e)}')
+
+    return remote_source
+
+
 def get_state():
     return read_state_from_disk()
 
@@ -93,7 +117,7 @@ def detect_remotes():
     return clients
 
 
-def remote_cmd(cli_addr, cmd):
+def remote_send_cmd(cli_addr, cmd):
     print( f'(remote_volume) remote {cli_addr} sending \'{cmd}\'' )
     send_cmd( cmd, host=cli_addr, verbose=False )
 
@@ -102,9 +126,9 @@ def remote_update_levels(rem_addr):
     level           = get_state()["level"]
     lu_offset       = get_state()["lu_offset"]
     equal_loudness  = get_state()["equal_loudness"]
-    remote_cmd(rem_addr, f'lu_offset {lu_offset}')
-    remote_cmd(rem_addr, f'loudness {equal_loudness}')
-    remote_cmd(rem_addr, f'level {level}')
+    remote_send_cmd(rem_addr, f'lu_offset {lu_offset}')
+    remote_send_cmd(rem_addr, f'loudness {equal_loudness}')
+    remote_send_cmd(rem_addr, f'level {level}')
 
 
 # The action triggered by the observer
@@ -144,7 +168,7 @@ def relay_level_changes():
         # Checking if remote is still listening to us
         # then updates the level event to remote
         if 'remote' in get_remote_selected_source(rem_addr):
-            remote_cmd(rem_addr, wanted_cmd)
+            remote_send_cmd(rem_addr, wanted_cmd)
 
         # else purge from remotes list if not listening anymore
         else:
