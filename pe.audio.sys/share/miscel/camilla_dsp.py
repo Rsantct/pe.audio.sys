@@ -199,11 +199,11 @@ def _init(compressor='off', mode='start'):
             try:
                 with open(lspk_camilla_yml_path, 'r') as f:
                     cfg = yaml.safe_load( f.read() )
-                print(f'{Fmt.BLUE}Loudspeaker {lspk}/camilladsp.yml was found{Fmt.END}')
+                print(f'{Fmt.BLUE}Loudspeaker {lspk}/camilladsp_lspk.yml was found{Fmt.END}')
                 return cfg
 
             except Exception as e:
-                print(f'{Fmt.BLUE}Cannot load {lspk}/camilladsp_lspk.yml {str(e)}{Fmt.END}')
+                print(f'{Fmt.RED}Cannot load {lspk}/camilladsp_lspk.yml {str(e)}{Fmt.END}')
                 return {}
 
 
