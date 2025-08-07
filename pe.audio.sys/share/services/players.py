@@ -399,7 +399,7 @@ def do(cmd, arg):
 
         print(f'{Fmt.MAGENTA}(players.py) ejecting disc...{Fmt.END}')
         clear_cdda_stuff()
-        Popen( 'eject'.split() )
+        Popen( f'eject {CONFIG.get("cdrom_device")}'.split() )
         result = 'ordered'
         sleep(1)
 
