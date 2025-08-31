@@ -39,7 +39,7 @@ def get_running_mpd_config_path():
     if len(mpd_processes) > 1:
 
         msg = 'More than ONE `mpd` process is running'
-        print(f'{Fmt.BOLD}(start) msg{Fmt.END}')
+        print(f'{Fmt.BOLD}(miscel) {msg}{Fmt.END}')
         raise Exception(msg)
 
     elif len(mpd_processes) == 1:
@@ -50,7 +50,7 @@ def get_running_mpd_config_path():
 
     else:
         msg = 'mpd process NOT detected'
-        print(f'{Fmt.RED}(start) msg{Fmt.END}')
+        print(f'{Fmt.RED}(miscel) {msg}{Fmt.END}')
 
     return result
 
