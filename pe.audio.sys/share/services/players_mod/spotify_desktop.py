@@ -228,8 +228,9 @@ def spotify_meta(md):
         # track_num:
         md['track_num'] = tmp["xesam:trackNumber"]
 
-        # time lenght:
+        # time:
         md['time_tot'] = time_sec2mmss( tmp["mpris:length"] / 1e6 )
+        md['time_pos'] = time_sec2mmss( spotibus.Position / 1e6 )
 
         # loaded file
         md["file"] = tmp["mpris:trackid"]
