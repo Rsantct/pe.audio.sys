@@ -382,7 +382,7 @@ def do(cmd, arg):
     elif cmd == 'random_mode':
         result = random_control(arg)
 
-    elif cmd == 'get_meta':
+    elif cmd == 'get_meta' or cmd == 'get_info':
         result = CURRENT_MD
 
     elif cmd == 'get_all_info':
@@ -399,7 +399,7 @@ def do(cmd, arg):
 
         print(f'{Fmt.MAGENTA}(players.py) ejecting disc...{Fmt.END}')
         clear_cdda_stuff()
-        Popen( f'eject {CONFIG.get("cdrom_device")}'.split() )
+        Popen( f'eject { CONFIG.get("cdrom_device", "/dev/cdrom") }'.split() )
         result = 'ordered'
         sleep(1)
 
