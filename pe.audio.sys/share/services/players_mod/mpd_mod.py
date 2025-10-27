@@ -72,6 +72,17 @@ def _release_mpd():
     return
 
 
+def _get_playlist():
+    """ Sometimes getting the playlist crash because a bug in mpd client
+    """
+    try:
+        return c.playlist()
+
+    except Exception as e:
+        print(f'{Fmt.RED}(mpd_mod.py) mpd_cdda_in_playlist ERROR getting playlist: {str(e)}{Fmt.END}')
+        return []
+
+
 def mpd_cdda_in_playlist(all_or_any='any'):
 
     # to debug the server
@@ -83,7 +94,7 @@ def mpd_cdda_in_playlist(all_or_any='any'):
         print(f'{Fmt.RED}(mpd_mod.py) mpd_cdda_in_playlist not connected to MPD{Fmt.END}')
         return result
 
-    pl = c.playlist()
+    pl = _get_playlist()
 
     # example:
     # ['file: cdda://dev/cdrom/1',
@@ -115,7 +126,7 @@ def mpd_get_cd_track_nums():
         return result
 
     if mpd_cdda_in_playlist('all'):
-        result = c.playlist()
+        result = _get_playlist()
 
     # ['file: cdda://dev/cdrom/1',
     #  'file: cdda://dev/cdrom/2',
@@ -164,7 +175,6 @@ def mpd_playlists(cmd, arg=''):
 
     # to debug the server
     #print(f'{Fmt.MAGENTA}mpd_playlists{Fmt.END}')
-
 
     result = ''
 
