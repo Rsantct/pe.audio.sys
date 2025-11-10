@@ -660,7 +660,7 @@ def do( cmd, arg=None ):
         if cmd == 'info':
             result = AUX_INFO
 
-        elif   cmd == 'amp_switch':
+        elif cmd == 'amp_switch':
             result = manage_amp_switch(arg)
 
         elif cmd == 'run_macro':
