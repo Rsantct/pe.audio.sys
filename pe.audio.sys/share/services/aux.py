@@ -638,9 +638,6 @@ def do( cmd, arg=None ):
     elif cmd == 'get_loudness_monitor' or cmd == 'get_lu_monitor':
         result = get_loudness_monitor()
 
-    elif cmd == 'info':
-        result = AUX_INFO
-
     elif cmd == 'zita_j2n':
         result = zita_j2n(arg)
 
@@ -660,7 +657,10 @@ def do( cmd, arg=None ):
     # Dump AUX_INFO is needed
     else:
 
-        if   cmd == 'amp_switch':
+        if cmd == 'info':
+            result = AUX_INFO
+
+        elif   cmd == 'amp_switch':
             result = manage_amp_switch(arg)
 
         elif cmd == 'run_macro':
