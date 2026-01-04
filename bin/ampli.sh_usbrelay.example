@@ -8,8 +8,8 @@
 #       (It is needed to reboot the machine to usbrelay to work)
 #
 #       The 'usbrelay' executable:
-#       - w/o args will show the state (0 or 1) of the relays
-#       - passing arg 'BITFT_N=X' will switch a relay N to new state 0 or 1
+#       - w/o args will show the state (0 or 1) for each relay BITFT_N
+#       - passing arg 'BITFT_N=X' will switch a relay N to new state X (0 or 1)
 #       (!) - the old relay status is writen to stderr,
 #           - additional info is written to stdout
 
