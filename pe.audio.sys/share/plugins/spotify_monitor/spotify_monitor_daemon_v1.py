@@ -80,7 +80,7 @@ def on_metadata(player, metadata):
         d[k] = metadata[k]
 
     with open( events_file, 'w' ) as f:
-        f.write( json.dumps( d ) )
+        f.write( json.dumps( d, indent=2 ) )
 
 
 def on_play(player):
