@@ -80,7 +80,7 @@ def clear_cdda_stuff():
         # blank pe.audio.sys/.cdda_metadata
         print(f'{Fmt.GRAY}(players.py) clearing `{CDDA_META_PATH}`{Fmt.END}')
         with open(CDDA_META_PATH, 'w') as f:
-            f.write( json.dumps(CDDA_META_TEMPLATE.copy()) )
+            f.write( json.dumps(CDDA_META_TEMPLATE.copy(), indent=2) )
 
         # delete MPD cdda playlist files (M3U/PLS)
         MPD_PL_DIR  = read_mpd_config()["playlist_directory"]
@@ -349,7 +349,7 @@ def loop_getting_metadata():
 
             # Save metadata to disk file.
             with open(PLAYER_META_PATH, 'w') as f:
-                f.write( json.dumps( CURRENT_MD ) )
+                f.write( json.dumps( CURRENT_MD, indent=2 ) )
 
             # Wait for period
             sleep(period)
