@@ -45,7 +45,7 @@ def dump_aux_info():
 
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
-        f.write( json_dumps(AUX_INFO) )
+        f.write( json_dumps(AUX_INFO, indent=2) )
 
 
 def get_sysmon(w_iface='wlan0'):
