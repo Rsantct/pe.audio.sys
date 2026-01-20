@@ -556,7 +556,7 @@ def compressor(oper='', ratio=''):
     """
 
     def get_bypassed():
-        """ retrieves if the compressor pipeline bypassed or not
+        """ retrieves if the compressor pipeline is bypassed or not
             (boolean)
         """
         # (i)  bypass() returns a dictionary of pipeline status, example:
@@ -586,15 +586,14 @@ def compressor(oper='', ratio=''):
 
     def rotate_compressor():
 
-        if not bypass('compressor'):
+        if not get_bypassed():
             current = get_parameters()["ratio"]
         else:
             current = 'off'
 
-        # If current ratio is not included in COMPRESSOR_CYCLE
-        try:
+        if current in COMPRESSOR_CYCLE:
             cur_index   = COMPRESSOR_CYCLE.index(current)
-        except:
+        else:
             cur_index = -1
 
         next_index  = (cur_index + 1) % len(COMPRESSOR_CYCLE)
@@ -622,6 +621,7 @@ def compressor(oper='', ratio=''):
             experimetal_divider = 1.5
 
             return round( -(th - th / fac) / experimetal_divider, 1)
+
 
         # Check ratio format
         if not ratio.endswith(':1'):
@@ -675,4 +675,6 @@ def compressor(oper='', ratio=''):
     parameters  = get_parameters()
     active      = not get_bypassed()
 
-    return  {'active': active, 'parameters': parameters}
+    res = {'active': active, 'parameters': parameters}
+
+    return res
