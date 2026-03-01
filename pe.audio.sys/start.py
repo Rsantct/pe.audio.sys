@@ -321,8 +321,8 @@ def prepare_drc_graphs():
     """ used by the control web page
         (void)
     """
-    print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
-    sp.Popen(f'python3 {MAINFOLDER}/share/www/public/scripts/drc2png.py -q', shell=True)
+    print(f'(start) processing drc sets to public/images/{LOUDSPEAKER} in background')
+    sp.Popen(f'python3 {MAINFOLDER}/share/miscel/drc2png.py -q', shell=True)
 
 
 def prepare_log_header():
