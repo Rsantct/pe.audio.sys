@@ -24,7 +24,7 @@ from config import MAINFOLDER, LOUDSPEAKER, LSPK_FOLDER
 from miscel import read_bf_config_fs
 from brutefir_mod import get_config as bf_get_config
 
-IMGFOLDER   = f'{MAINFOLDER}/share/www/images/{LOUDSPEAKER}'
+IMGFOLDER   = f'{MAINFOLDER}/share/www/public/images/{LOUDSPEAKER}'
 
 
 # ----------------------    Plot config      -----------------------------------

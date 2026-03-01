@@ -4,22 +4,13 @@
     'pe.audio.sys', a PC based personal audio system.
 */
 
-/*
-   (i) debug trick: console.log(something);
-       NOTICE: remember do not leaving any console.log active
-*/
+import * as mc from './miscel.js';
 
-//////// CONFIGURABLE ITEMS ////////
-//
-//  (i) Set URL_PREFIX ='/' if you use the provided nodejs/www_server.js script,
-//      or set it '/php/main.php' if you use Apache+PHP at server side.
-//
-const URL_PREFIX = '/php/main.php';
 const AUTO_UPDATE_INTERVAL = 1000;      // Auto-update interval millisec
 
-
 //////// GLOBAL VARIABLES ////////
-var state               = {};       // The preamp-convolver state
+var state               = {};
+var server_available    = false;
 
 var player_info         = {};
 
@@ -58,7 +49,6 @@ var metablank           = {         // A player's metadata blank dict
 };
 
 
-var server_available    = false;
 var show_advanced       = false;    // defaults for display advanced controls
 var hide_graphs         = true;     // defaults for displaying graphs
 
@@ -87,7 +77,7 @@ function fill_in_page_statics(){
 
             // getting input names
             try{
-                var inputs = JSON.parse( control_cmd( 'get_inputs' ) );
+                var inputs = mc.send_cmd( 'get_inputs' );
             }catch(e){
                 console.log( e.name, e.message );
                 return;
@@ -142,9 +132,10 @@ function fill_in_page_statics(){
         }
     }
 
+
     function fill_in_xo_selector() {
         try{
-            var xo_sets = JSON.parse( control_cmd( 'get_xo_sets' ) );
+            var xo_sets = mc.send_cmd( 'get_xo_sets' );
         }catch(e){
             console.log( e.name, e.message );
             return;
@@ -158,9 +149,10 @@ function fill_in_page_statics(){
         }
     }
 
+
     function fill_in_drc_selector() {
         try{
-            var drc_sets = JSON.parse( control_cmd( 'get_drc_sets' ) );
+            var drc_sets = mc.send_cmd( 'get_drc_sets');
         }catch(e){
              console.log( e.name, e.message );
            return;
@@ -177,9 +169,10 @@ function fill_in_page_statics(){
         mySel.add(option);
     }
 
+
     function fill_in_target_selector() {
         try{
-            var target_files = JSON.parse( control_cmd( 'get_target_sets' ) );
+            var target_files = mc.send_cmd( 'get_target_sets' );
         }catch(e){
             console.log( e.name, e.message );
             return;
@@ -192,6 +185,7 @@ function fill_in_page_statics(){
             mySel.add(option);
         }
     }
+
 
     function fill_in_LUscope_selector() {
         select_clear_options("LUscopeSelector");
@@ -242,28 +236,6 @@ function fill_in_page_statics(){
 }
 
 
-function manage_main_cside(){
-
-    // Server warnings have max prioriy
-    if (aux_info.warning !== ''){
-        main_cside_msg = aux_info.warning;
-    }else if (state.convolver_runs==false){
-        main_cside_msg = state.loudspeaker + ' ( sleeping )';
-    }else{
-        if (hold_cside_msg > 0){
-            hold_cside_msg -= 1;
-        }else{
-            if (state.drc_set == 'none'){
-                main_cside_msg = state.loudspeaker;
-            }else{
-                main_cside_msg = state.loudspeaker + ' (' + state.drc_set + ')';
-            }
-        }
-    }
-    document.getElementById("main_cside").innerText = main_cside_msg;
-}
-
-
 function init(){
 
     function download_drc_graphs(){
@@ -271,7 +243,7 @@ function init(){
             return;
         }
         // geat all drc_xxxx.png at once at start, so them will remain in cache.
-        const drc_sets = JSON.parse( control_cmd('preamp get_drc_sets') );
+        const drc_sets = mc.send_cmd('preamp get_drc_sets');
         for (const i in drc_sets){
             document.getElementById("drc_img").src =  'images/'
                                                     + state.loudspeaker
@@ -289,7 +261,7 @@ function init(){
     function get_web_config(){
 
         try{
-            web_config      = JSON.parse( control_cmd('aux get_web_config') );
+            web_config      = mc.send_cmd('aux get_web_config');
 
             if (document.body.getAttribute('data-layout') == 'landscape'){
                 main_sel_mode = 'macros'
@@ -323,14 +295,12 @@ function init(){
 
     function fill_in_macro_buttons() {
 
-        // If empty macros list, do nothing
         if ( mFnames.length == 0 ){
-            console.log( '(i) empty macros array', mFnames)
+            console.log( '(i) empty macros array')
             document.getElementById( "macro_buttons").style.display = 'none';
             return
         }
 
-        // If any macro found, lets show the corresponding button
         document.getElementById( "bt_macros_toggle").style.display = 'inline';
 
 
@@ -343,56 +313,59 @@ function init(){
         var row  = mtable.insertRow(-1); // at index -1
 
         // Iterate over button available cells
-        for (let bPos = 1; bPos <= bTotal; bPos++) {
+        for (let butPos = 1; butPos <= bTotal; butPos++) {
 
-            // Iterate over macro filenames
+            let mFname   = '';
+            let macroPos = '';
+            let mName    = '';
+
+            // Iterate over macro filenames to locate the matching with butPos
             let found = false;
-            for ( const i in mFnames ){
+            for (const i in mFnames) {
                 // Macro file names: 'N_macro_name' where N is the button position
-                var mFname = mFnames[i];
-                var mPos  = mFname.split('_')[0];
-                var mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
-                if ( mPos == bPos ){
+                mFname = mFnames[i];
+                macroPos  = mFname.split('_')[0];
+                mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
+
+                if ( macroPos == butPos ){
                     found = true;
                     break;
                 }
-            }
+            };
+
 
             // Insert a cell
             var cell = row.insertCell(-1); // at index -1
             cell.className = 'macro_cell';
 
             // Create a button Element
-            var btn = document.createElement('button');
+            const btn = document.createElement('button');
             btn.type = "button";
             btn.className = "macro_button";
-            macro_button_list.push(mName);
+
             if ( found == true ){
                 btn.id = mName;
                 btn.innerHTML = mName;
-                // This doesn't work: always pass mFname incorrectly to run_macro()
-                //btn.onclick=function(){run_macro(mFname)}
-                // As a workaround lets set the onclick attribute:
-                btn.setAttribute( "onclick",
-                                  "oc_run_macro(\'" + mFname + "\')" );
+                btn.addEventListener('click', () => oc_run_macro(mFname));
+
             }else{
                 btn.innerHTML = '-';
             }
 
-            // Put the button inside the cell
             cell.appendChild(btn);
 
             // Arrange 3 buttons per row
-            if ( bPos % 3 == 0 ) {
+            if ( butPos % 3 == 0 ) {
                 row  = mtable.insertRow(-1); // at index -1
             }
         }
     }
 
 
+
     get_web_config();
 
-    state_get();
+    server_available = state_get();
 
     download_drc_graphs();
 
@@ -414,7 +387,7 @@ function page_update() {
 
     function player_get(){
         try{
-            const tmp = JSON.parse( control_cmd('player get_all_info') );
+            const tmp = mc.send_cmd('player get_all_info');
             if (tmp != "null"){
                 player_info = tmp;
             }else{
@@ -602,11 +575,11 @@ function page_update() {
 
     function aux_info_get(){
         try{
-            aux_info = JSON.parse( control_cmd('aux info') );
+            aux_info = mc.send_cmd('aux info');
         }catch(e){
             console.log('response error to \'aux info\'', e.message);
             // Backup method to retrieve the amplifier state:
-            aux_info.amp = control_cmd('amp_switch state');
+            aux_info.amp = mc.send_cmd('amp_switch state');
         }
     }
 
@@ -841,7 +814,7 @@ function page_update() {
     aux_info_refresh();
 
     // PREAMP STUFF
-    state_get();
+    server_available = state_get();
 
     //  Cancel updating if not connected
     if (! server_available){
@@ -876,6 +849,162 @@ function page_update() {
 }
 
 
+////////  MISCEL INTERNALS  ////////
+
+function state_get() {
+    try{
+        state = mc.send_cmd('preamp state');
+        server_available = true;
+        document.title = 'pe.audio.sys ' + state.loudspeaker;
+        return true
+
+    }catch(e){
+        server_available = false;
+        document.getElementById("main_cside").innerText = ':: pe.audio.sys :: not connected';
+        return false
+    }
+}
+
+
+function manage_main_cside(){
+
+    // Server warnings have max prioriy
+    if (aux_info.warning !== ''){
+        main_cside_msg = aux_info.warning;
+    }else if (state.convolver_runs==false){
+        main_cside_msg = state.loudspeaker + ' ( sleeping )';
+    }else{
+        if (hold_cside_msg > 0){
+            hold_cside_msg -= 1;
+        }else{
+            if (state.drc_set == 'none'){
+                main_cside_msg = state.loudspeaker;
+            }else{
+                main_cside_msg = state.loudspeaker + ' (' + state.drc_set + ')';
+            }
+        }
+    }
+    document.getElementById("main_cside").innerText = main_cside_msg;
+}
+
+
+function get_playlists() {
+
+    var plists = [];
+    try{
+        plists = mc.send_cmd( 'player get_playlists' );
+    }catch(e){
+        console.log( 'response error to \'get_playlists\'', e.message );
+    }
+    return plists;
+}
+
+
+function get_playlist() {
+
+    var playlist = [];
+    try{
+        playlist = mc.send_cmd( 'player get_playlist' );
+    }catch(e){
+        console.log( e.name, e.message );
+    }
+    return playlist
+}
+
+
+function get_cd_track_nums() {
+
+    var tracks = [];
+    try{
+        tracks = mc.send_cmd( 'player get_cd_track_nums' );
+    }catch(e){
+        console.log( e.name, e.message );
+    }
+    return tracks
+}
+
+
+function fill_in_playlists_selector(plists) {
+
+    // clearing selector options
+    select_clear_options("playlist_selector");
+
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("playlist_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( const i in plists) {
+        var option = document.createElement("option");
+        option.text = plists[i];
+        mySel.add(option);
+    }
+    var option = document.createElement("option");
+    option.text = '-CLEAR-';
+    mySel.add(option);
+}
+
+
+function fill_in_track_selector() {
+
+    // This get the track numbers
+    //const tracks = get_cd_track_nums();
+
+    // This gets the track numbers and titles
+    const tracks = get_playlist();
+
+    // clearing selector options
+    select_clear_options("track_selector");
+    // Filling in options in a selector
+    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
+    var mySel = document.getElementById("track_selector");
+    var option = document.createElement("option");
+    option.text = '--';
+    mySel.add(option);
+    for ( const i in tracks) {
+        var option = document.createElement("option");
+        option.text = tracks[i];
+        mySel.add(option);
+    }
+    mySel.add(option);
+}
+
+
+function select_clear_options(ElementId){
+    // https://www.w3schools.com/jsref/dom_obj_select.asp
+    var mySel = document.getElementById(ElementId);
+    while (mySel.length > 0){
+        mySel.remove( mySel.length-1 );
+    }
+}
+
+
+function clear_highlighteds(){
+    document.getElementById('mainSelector').style.color     = "rgb(200,200,200)";
+    document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
+    document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
+    document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
+}
+
+
+function clear_macro_buttons_highlight(){
+    for (let i = 0; i < macro_button_list.length; i++) {
+        document.getElementById(macro_button_list[i]).className = 'macro_button';
+    }
+}
+
+
+function allAreTrue(arr) {
+  return arr.every(element => element === true);
+}
+
+
+function isEmpty(obj) {
+    // test if some object (say a dict) is empty
+    return Object.keys(obj).length === 0;
+}
+
 //////// HANDLERS: AUDIO 'onchange' 'onmousedown' ////////
 
 function oc_main_select(itemName){
@@ -901,15 +1030,15 @@ function oc_main_select(itemName){
     main_cside_msg = 'Please wait for "' + itemName + '"';
 
     // (i) The arrow syntax '=>' fails on Safari iPad 1 (old version)
-    // setTimeout( () => { control_cmd('input ' + itemName); }, 200 );
+    // setTimeout( () => { mc.send_cmd('input ' + itemName); }, 200 );
     function tmp(itemName){
         // regular behavior managing preamp inputs
         if ( main_sel_mode == 'inputs' ){
-            control_cmd('input ' + itemName);
+            mc.send_cmd('input ' + itemName);
         // alternative behavior managing macros
         }else{
             mName = find_macroName(itemName);
-            control_cmd( 'aux run_macro ' + mName );
+            mc.send_cmd( 'aux run_macro ' + mName );
         }
     }
     setTimeout( tmp, 200, itemName );  // 'itemName' is given as argument for 'tmp'
@@ -921,34 +1050,43 @@ function oc_main_select(itemName){
 
 
 function oc_drc_select(drcName){
-    control_cmd('set_drc ' + drcName);
+    mc.send_cmd('set_drc ' + drcName);
     clear_highlighteds();
     document.getElementById('drcSelector').style.color = "white";
 }
 
 
 function oc_xo_select(xoName){
-    control_cmd('set_xo ' + xoName);
+    mc.send_cmd('set_xo ' + xoName);
     clear_highlighteds();
     document.getElementById('xoSelector').style.color = "white";
 }
 
 
 function oc_target_select(xoName){
-    control_cmd('set_target ' + xoName);
+    mc.send_cmd('set_target ' + xoName);
     clear_highlighteds();
     document.getElementById('targetSelector').style.color = "white";
 }
 
 
+function omd_lu_mon_reset(elem){
+    mc.flash_element( elem );
+    mc.send_cmd('ctrl reset_loudness_monitor');
+}
+
+
 function oc_LU_scope_select(scope){
-    control_cmd('aux set_loudness_monitor_scope ' + scope);
+    mc.send_cmd('aux set_loudness_monitor_scope ' + scope);
     clear_highlighteds();
     document.getElementById('LUscopeSelector').style.color = "white";
 }
 
 
-function omd_audio_change(param, value) {
+function omd_audio_change(element, param, value) {
+
+    mc.flash_element(element, 400);
+
     state[param] += value;
     if ( param == 'level') {
         document.getElementById( 'levelInfo'  ).innerHTML =
@@ -969,19 +1107,20 @@ function omd_audio_change(param, value) {
     else{
         return;
     }
-    control_cmd( param + ' ' + value + ' ' + 'add' );
+    mc.send_cmd( param + ' ' + value + ' ' + 'add' );
 }
 
 
-function omd_mute_toggle() {
-    control_cmd( 'mute toggle' );
+function omd_mute_toggle(elem) {
+    mc.flash_element( elem );
+    mc.send_cmd( 'mute toggle' );
     state.muted = ! state.muted;
     bt_muteHighlight();
 }
 
 
 function omd_equal_loudness_toggle() {
-    control_cmd( 'equal_loudness toggle' );
+    mc.send_cmd( 'equal_loudness toggle' );
     state.equal_loudness = ! state.equal_loudness;
     bt_loudHighlight();
 }
@@ -994,10 +1133,10 @@ function omd_mono_toggle() {
 
         if (state.midside == "mid" || state.midside == "side"){
             state.midside = "off";
-            control_cmd( 'midside off' );
+            mc.send_cmd( 'midside off' );
         }else{
             state.midside = "mid";
-            control_cmd( 'midside mid' );
+            mc.send_cmd( 'midside mid' );
         }
 
     // advanced-controls: rotate stereo/mono/L-R (off/mid/side)
@@ -1005,13 +1144,13 @@ function omd_mono_toggle() {
 
         if (state.midside == "off"){
             state.midside = "mid";
-            control_cmd( 'midside mid' );
+            mc.send_cmd( 'midside mid' );
         }else if (state.midside == "mid"){
             state.midside = "side";
-            control_cmd( 'midside side' );
+            mc.send_cmd( 'midside side' );
         }else if (state.midside == "side"){
             state.midside = "off";
-            control_cmd( 'midside off' );
+            mc.send_cmd( 'midside off' );
         }
     }
 
@@ -1022,11 +1161,11 @@ function omd_mono_toggle() {
 function omd_solo_rotate() {
 
     if (state.solo == "off"){
-        control_cmd( 'solo L' );
+        mc.send_cmd( 'solo L' );
     }else if(state.solo == "l"){
-        control_cmd( 'solo R' );
+        mc.send_cmd( 'solo R' );
     }else if(state.solo == "r"){
-        control_cmd( 'solo off' );
+        mc.send_cmd( 'solo off' );
     }
 
     // Solo highlight falls on the Mono/Stereo Button
@@ -1036,16 +1175,16 @@ function omd_solo_rotate() {
 function omd_polarity_rotate() {
 
     if (state.polarity == "++"){
-        control_cmd( 'polarity +-' );
+        mc.send_cmd( 'polarity +-' );
 
     }else if(state.polarity == "+-"){
-        control_cmd( 'polarity -+' );
+        mc.send_cmd( 'polarity -+' );
 
     }else if(state.polarity == "-+"){
-        control_cmd( 'polarity --' );
+        mc.send_cmd( 'polarity --' );
 
     }else if(state.polarity == "--"){
-        control_cmd( 'polarity ++' );
+        mc.send_cmd( 'polarity ++' );
 
     }
 
@@ -1053,37 +1192,58 @@ function omd_polarity_rotate() {
 }
 
 
-function omd_delay_toggle() {
+function omd_delay_toggle(elem) {
+    mc.flash_element( elem );
     if (state.extra_delay !== 0) {
-        control_cmd('preamp add_delay 0');
+        mc.send_cmd('preamp add_delay 0');
     }else{
-        control_cmd('preamp add_delay ' + last_delay.toString());
+        mc.send_cmd('preamp add_delay ' + last_delay.toString());
     }
 }
 
 
-function omd_swap_lr() {
-    control_cmd('preamp swap_lr');
+function omd_swap_lr(elem) {
+    mc.flash_element( elem );
+    mc.send_cmd('preamp swap_lr');
+}
+
+
+function omd_subsonic(elem){
+    mc.flash_element( elem );
+    mc.send_cmd('preamp subsonic rotate');
+}
+
+
+function omd_tone_defeat(elem){
+    mc.flash_element( elem );
+    mc.send_cmd('preamp tone_defeat toggle');
+}
+
+
+function omd_compressor(elem){
+    mc.flash_element( elem );
+    mc.send_cmd('preamp compressor rotate');
 }
 
 
 //////// HANDLERS: PLAYER 'onchange' 'onmousedown' 'onclick' ////////
 
-function omd_playerCtrl(action) {
+function omd_playerCtrl(element, action) {
+    mc.flash_element(element, 400);
     if (action == 'random_toggle') {
-        control_cmd( 'player random_mode toggle' );
+        mc.send_cmd( 'player random_mode toggle' );
     } else {
-        control_cmd( 'player ' + action );
+        mc.send_cmd( 'player ' + action );
     }
 }
 
 
 function oc_load_playlist(plistname) {
     if (plistname == '-CLEAR-') {
-        control_cmd( 'player clear_playlist ' );
+        mc.send_cmd( 'player clear_playlist ' );
     } else if (plistname != '--') {
-        control_cmd( 'player clear_playlist ' );
-        control_cmd( 'player load_playlist ' + plistname );
+        mc.send_cmd( 'player clear_playlist ' );
+        mc.send_cmd( 'player load_playlist ' + plistname );
     }
 }
 
@@ -1091,13 +1251,13 @@ function oc_load_playlist(plistname) {
 function omd_select_track_number_dialog() {
     var tracknum = prompt('Enter track number to play:');
     if ( true ) {
-        control_cmd( 'player play_track ' + tracknum );
+        mc.send_cmd( 'player play_track ' + tracknum );
     }
 }
 
 
 function oc_play_track_number(N) {
-    control_cmd( 'player play_track ' + N );
+    mc.send_cmd( 'player play_track ' + N );
     hold_selected_track = 10;
 }
 
@@ -1105,7 +1265,7 @@ function oc_play_track_number(N) {
 function ck_play_url() {
     var url = prompt('Enter url to play:');
     if ( url.slice(0,5) == 'http:' || url.slice(0,6) == 'https:' ) {
-        control_cmd( 'player play_url ' + url );
+        mc.send_cmd( 'player play_url ' + url );
     }
 }
 
@@ -1117,7 +1277,7 @@ function oc_restart_samplerate(value){
     const s = document.getElementById("samplerateSelector");
 
     if ( confirm('Are you sure to restart to sampling rate: ' + value) ){
-        const ans = control_cmd('aux restart_to_sample_rate ' + value);
+        const ans = mc.send_cmd('aux restart_to_sample_rate ' + value);
         s.value = null;
         alert(ans);
 
@@ -1126,8 +1286,9 @@ function oc_restart_samplerate(value){
     };
 }
 
+
 function ck_peaudiosys_restart() {
-    control_cmd('restart_peaudiosys');
+    mc.send_cmd('restart_peaudiosys');
     ck_display_advanced('off');
     page_update();
 }
@@ -1148,12 +1309,12 @@ function omd_ampli_switch(mode) {
         }
     }
 
-    control_cmd( 'amp_switch ' + mode );
+    mc.send_cmd( 'amp_switch ' + mode );
 }
 
 
 function oi_LU_slider_action(slider_value){
-    control_cmd( 'lu_offset ' + (15 - parseInt(slider_value) ).toString() )
+    mc.send_cmd( 'lu_offset ' + (15 - parseInt(slider_value) ).toString() )
 }
 
 
@@ -1164,7 +1325,7 @@ function highlight_macro_button(id){
 
 function oc_run_macro(mFname){
 
-    control_cmd( 'aux run_macro ' + mFname );
+    mc.send_cmd( 'aux run_macro ' + mFname );
 
     const mName = mFname.slice(mFname.indexOf('_') + 1, mFname.length);
 
@@ -1276,176 +1437,6 @@ function omd_graphs_toggle() {
     }
 }
 
-
-
-////////  MISCEL INTERNALS  ////////
-
-function control_cmd( cmd ) {
-    // Communicate with the pe.audio.sys server through the php socket
-
-    /*
-    We need synchronous mode (async=false), althougt it is deprecated
-    and not recommended in the main JS thread.
-    https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest
-    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
-    https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Synchronous_and_Asynchronous_Requests
-    */
-
-
-    // Encoding special chars in the value of the 'command' parameter
-    const url = URL_PREFIX + '?command=' + encodeURIComponent(cmd);
-
-    const myREQ = new XMLHttpRequest();
-
-    // open(method, url, async_mode)
-    myREQ.open("GET", url, false);
-    // (i) send() is blocking because async=false, so no handlers
-    //     on myREQ status changes are needed because of this.
-    myREQ.send();
-    let ans = myREQ.responseText;
-
-    //console.log('httpTX: ' + cmd);
-    //console.log('httpRX: ' + ans);
-
-    if ( ans.indexOf('socket_connect\(\) failed' ) == -1 ){
-        server_available = true;
-        return ans;
-    }else{
-        server_available = false;
-        return '';
-    }
-}
-
-
-function state_get() {
-    try{
-        state = JSON.parse( control_cmd('preamp state') );
-        server_available = true;
-        document.title = 'pe.audio.sys ' + state.loudspeaker;
-    }catch(e){
-        server_available = false;
-        document.getElementById("main_cside").innerText =
-                                        ':: pe.audio.sys :: not connected';
-    }
-}
-
-
-function get_playlists() {
-
-    var plists = [];
-    try{
-        plists = JSON.parse( control_cmd( 'player get_playlists' ) );
-    }catch(e){
-        console.log( 'response error to \'get_playlists\'', e.message );
-    }
-    return plists;
-}
-
-
-function get_playlist() {
-
-    var playlist = [];
-    try{
-        playlist = JSON.parse( control_cmd( 'player get_playlist' ) );
-    }catch(e){
-        console.log( e.name, e.message );
-    }
-    return playlist
-}
-
-
-function get_cd_track_nums() {
-
-    var tracks = [];
-    try{
-        tracks = JSON.parse( control_cmd( 'player get_cd_track_nums' ) );
-    }catch(e){
-        console.log( e.name, e.message );
-    }
-    return tracks
-}
-
-
-function fill_in_playlists_selector(plists) {
-
-    // clearing selector options
-    select_clear_options("playlist_selector");
-
-    // Filling in options in a selector
-    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
-    var mySel = document.getElementById("playlist_selector");
-    var option = document.createElement("option");
-    option.text = '--';
-    mySel.add(option);
-    for ( const i in plists) {
-        var option = document.createElement("option");
-        option.text = plists[i];
-        mySel.add(option);
-    }
-    var option = document.createElement("option");
-    option.text = '-CLEAR-';
-    mySel.add(option);
-}
-
-
-function fill_in_track_selector() {
-
-    // This get the track numbers
-    //const tracks = get_cd_track_nums();
-
-    // This gets the track numbers and titles
-    const tracks = get_playlist();
-
-    // clearing selector options
-    select_clear_options("track_selector");
-    // Filling in options in a selector
-    // https://www.w3schools.com/jsref/dom_obx.length-1j_select.asp
-    var mySel = document.getElementById("track_selector");
-    var option = document.createElement("option");
-    option.text = '--';
-    mySel.add(option);
-    for ( const i in tracks) {
-        var option = document.createElement("option");
-        option.text = tracks[i];
-        mySel.add(option);
-    }
-    mySel.add(option);
-}
-
-
-function select_clear_options(ElementId){
-    // https://www.w3schools.com/jsref/dom_obj_select.asp
-    var mySel = document.getElementById(ElementId);
-    while (mySel.length > 0){
-        mySel.remove( mySel.length-1 );
-    }
-}
-
-
-function clear_highlighteds(){
-    document.getElementById('mainSelector').style.color     = "rgb(200,200,200)";
-    document.getElementById('drcSelector').style.color      = "rgb(200,200,200)";
-    document.getElementById('xoSelector').style.color       = "rgb(200,200,200)";
-    document.getElementById('targetSelector').style.color   = "rgb(200,200,200)";
-}
-
-
-function clear_macro_buttons_highlight(){
-    for (let i = 0; i < macro_button_list.length; i++) {
-        document.getElementById(macro_button_list[i]).className = 'macro_button';
-    }
-}
-
-
-function allAreTrue(arr) {
-  return arr.every(element => element === true);
-}
-
-
-function isEmpty(obj) {
-    // test if some object (say a dict) is empty
-    return Object.keys(obj).length === 0;
-}
 
 //////// ELEMENTS HIGHLIGHT ////////
 
@@ -1668,4 +1659,85 @@ function levelInfoHighlight() {
         document.getElementById("levelInfo").style.borderWidth = "thin";
         document.getElementById("levelInfo").style.borderColor = "white";
    }
+}
+
+
+/////// EVENT HANDLERS FOR BUTTONS, SELECTORS AND SLIDERS
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const addLst = (id, event, fn) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(event, fn);
+    };
+
+    addLst('bt_restart_sys', 'click',           () => ck_peaudiosys_restart());
+    addLst('advanced_switch', 'click',          () => ck_display_advanced('toggle'));
+
+    addLst('bt_onoff', 'mousedown',             () => omd_ampli_switch('toggle'));
+    addLst('bt_loud', 'mousedown',              () => omd_equal_loudness_toggle());
+    addLst('bt_solo', 'mousedown',              () => omd_solo_rotate());
+    addLst('bt_mono', 'mousedown',              () => omd_mono_toggle());
+    addLst('bt_polarity', 'mousedown',          () => omd_polarity_rotate());
+
+    addLst('bt_url', 'click',                   () => ck_play_url());
+    addLst('bt_track_num', 'mousedown',         () => omd_select_track_number_dialog());
+    addLst('playlist_selector', 'change',       (e) => oc_load_playlist(e.target.value));
+    addLst('track_selector', 'change',          (e) => oc_play_track_number(e.target.selectedIndex));
+    addLst('mainSelector', 'change',            (e) => oc_main_select(e.target.value));
+    addLst('samplerateSelector', 'change',      (e) => oc_restart_samplerate(e.target.value));
+
+    addLst('bt_mute', 'mousedown',              (e) => omd_mute_toggle(e.target));
+    addLst('bt_swap_lr', 'mousedown',           (e) => omd_swap_lr(e.target));
+    addLst('bt_aod', 'mousedown',               (e) => omd_delay_toggle(e.target));
+    addLst('bt_subsonic', 'mousedown',          (e) => omd_subsonic(e.target));
+    addLst('bt_tone_defeat', 'mousedown',       (e) => omd_tone_defeat(e.target));
+    addLst('bt_compressor', 'mousedown',        (e) => omd_compressor(e.target));
+
+    addLst('LUscopeSelector', 'change',         (e) => oc_LU_scope_select(e.target.value));
+    addLst('LU_slider', 'input',                (e) => oi_LU_slider_action(e.target.value));
+    addLst('bt_loudMonReset', 'mousedown',      (e) => omd_lu_mon_reset(e.target));
+
+    addLst('bt_lvl_m1', 'mousedown',            (e) => omd_audio_change(e.target, 'level', -1));
+    addLst('bt_lvl_p1', 'mousedown',            (e) => omd_audio_change(e.target, 'level', 1));
+    addLst('bt_lvl_m3', 'mousedown',            (e) => omd_audio_change(e.target, 'level', -3));
+    addLst('bt_lvl_p3', 'mousedown',            (e) => omd_audio_change(e.target, 'level', 3));
+
+    addLst('bt_bass-', 'mousedown',             (e) => omd_audio_change(e.target, 'bass', -1));
+    addLst('bt_bass+', 'mousedown',             (e) => omd_audio_change(e.target, 'bass', 1));
+    addLst('bt_bal-', 'mousedown',              (e) => omd_audio_change(e.target, 'balance', -1));
+    addLst('bt_bal+', 'mousedown',              (e) => omd_audio_change(e.target, 'balance', 1));
+    addLst('bt_treb-', 'mousedown',             (e) => omd_audio_change(e.target, 'treble', -1));
+    addLst('bt_treb+', 'mousedown',             (e) => omd_audio_change(e.target, 'treble', 1));
+
+
+    addLst('targetSelector', 'change',          (e) => oc_target_select(e.target.value));
+    addLst('xoSelector', 'change',              (e) => oc_xo_select(e.target.value));
+    addLst('drcSelector', 'change',             (e) => oc_drc_select(e.target.value));
+    addLst('bt_peq', 'mousedown',               () => mc.send_cmd('aux peq_bypass toggle'));
+    addLst('bt_toggle_eq_graphs', 'mousedown',  () => omd_graphs_toggle());
+
+    addLst('bt_-15min', 'mousedown',            (e) => omd_playerCtrl(e.target, 'rew_15min'));
+    addLst('bt_-5min', 'mousedown',             (e) => omd_playerCtrl(e.target, 'rew_5min'));
+    addLst('bt_+5min', 'mousedown',             (e) => omd_playerCtrl(e.target, 'ff_5min'));
+    addLst('bt_+15min', 'mousedown',            (e) => omd_playerCtrl(e.target, 'ff_15min'));
+    addLst('bt_prev', 'mousedown',              (e) => omd_playerCtrl(e.target, 'previous'));
+    addLst('bt_rew', 'mousedown',               (e) => omd_playerCtrl(e.target, 'rew'));
+    addLst('bt_ff', 'mousedown',                (e) => omd_playerCtrl(e.target, 'ff'));
+    addLst('bt_next', 'mousedown',              (e) => omd_playerCtrl(e.target, 'next'));
+    addLst('random_toggle_button', 'mousedown', (e) => omd_playerCtrl(e.target, 'random_toggle'));
+    addLst('bt_eject', 'mousedown',             (e) => omd_playerCtrl(e.target, 'eject'));
+    addLst('bt_stop', 'mousedown',              (e) => omd_playerCtrl(e.target, 'stop'));
+    addLst('bt_pause', 'mousedown',             (e) => omd_playerCtrl(e.target, 'pause'));
+    addLst('bt_play', 'mousedown',              (e) => omd_playerCtrl(e.target, 'play'));
+
+    addLst('bt_macros_toggle', 'mousedown',     () => omd_macro_buttons_display_toggle());
+});
+
+
+// INIT
+if (document.readyState === 'complete') {
+    init();
+} else {
+    window.addEventListener('load', init);
 }
