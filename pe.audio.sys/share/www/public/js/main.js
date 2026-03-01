@@ -1072,7 +1072,7 @@ function oc_target_select(xoName){
 
 function omd_lu_mon_reset(elem){
     mc.flash_element( elem );
-    mc.send_cmd('ctrl reset_loudness_monitor');
+    mc.send_cmd('aux reset_loudness_monitor');
 }
 
 
