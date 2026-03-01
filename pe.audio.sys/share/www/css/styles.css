@@ -1,17 +1,11 @@
 
-    /* styles used from index.html */
-
-    /* (The .xxxxx refers to classes definitions) */
-
-
-    /* GLOBAL THEME */
+    /* GLOBAL */
     body    {   color:white;
                 background-color: rgb(38, 38, 38);
                 font-family: Verdana, Helvetica, Arial;
                 font-weight:bold;
             }
 
-    /* GLOBAL BUTTONS STYLE */
     button  {   background-color: rgb(100, 100, 100);
                 border-radius: 5px/5px;
                 border:2px solid rgb(120,120,120);
@@ -21,24 +15,28 @@
                 font-size:0.95em;   /* smaller than usual */
             }
 
-    /* GLOBAL TABLES behavior */
     table   {   width: 100%;
             }
 
-    /* GLOBAL TABLES CELLS behavior */
     th, td  {   padding: 5px;
                 text-align: center;
                 border: 1px solid gray;
                 font-size:1.0em;
             }
 
-    /* GLOBAL SELECT behavior */
-    /* (i) Initial font color is grey, will uptate to white when changed */
     select  {   font-size:          0.9em;
                 font-weight:        bold;
                 color:              rgb(200,200,200);
                 background-color:   rgb(25, 25, 25);
             }
+
+
+    /* Custom flashing button */
+    .btn-flash {
+      background-color: #4CAF50 !important;
+      transition: all 0.3s ease;
+      transform: scale(1.05);
+    }
 
 
     td#main_lside       { width:   5%; text-align: center; border: none; }
