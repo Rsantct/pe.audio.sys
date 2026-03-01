@@ -322,7 +322,7 @@ def prepare_drc_graphs():
         (void)
     """
     print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
-    sp.Popen(f'python3 {MAINFOLDER}/share/www/scripts/drc2png.py -q', shell=True)
+    sp.Popen(f'python3 {MAINFOLDER}/share/www/public/scripts/drc2png.py -q', shell=True)
 
 
 def prepare_log_header():
