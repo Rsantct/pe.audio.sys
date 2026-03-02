@@ -26,8 +26,7 @@ import  sys
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import *
-
+from    miscel import *
 
 # Init plugins (to run first)
 INIT_PLUGINS = (
@@ -322,8 +321,8 @@ def prepare_drc_graphs():
     """ used by the control web page
         (void)
     """
-    print(f'(start) processing drc sets to web/images/{LOUDSPEAKER} in background')
-    sp.Popen(f'python3 {MAINFOLDER}/share/www/scripts/drc2png.py -q', shell=True)
+    print(f'(start) processing drc sets to public/images/{LOUDSPEAKER} in background')
+    sp.Popen(f'python3 {MAINFOLDER}/share/miscel/drc2png.py -q', shell=True)
 
 
 def prepare_log_header():
@@ -479,11 +478,9 @@ if __name__ == "__main__":
             print(f'({Fmt.BOLD}start) Problems starting BRUTEFIR: {bfstart}')
             sys.exit()
 
-        # - CamillaDSP (currently used only for an optional compressor)
-        if CONFIG["use_compressor"]:
-            import  camilla_dsp
-            # Inits CamillaDSP with the compressor bypassed, standalone process (Popen)
-            camilla_dsp._init(compressor='off')
+        # - CamillaDSP (import needs Jack, `._init` will only load it if needed)
+        import  camilla_dsp
+        camilla_dsp._init(compressor='off')
 
         # Optional REMOTE SOURCES
         if REMOTES:

@@ -80,7 +80,7 @@ def clear_cdda_stuff():
         # blank pe.audio.sys/.cdda_metadata
         print(f'{Fmt.GRAY}(players.py) clearing `{CDDA_META_PATH}`{Fmt.END}')
         with open(CDDA_META_PATH, 'w') as f:
-            f.write( json.dumps(CDDA_META_TEMPLATE.copy()) )
+            f.write( json.dumps(CDDA_META_TEMPLATE.copy(), indent=2) )
 
         # delete MPD cdda playlist files (M3U/PLS)
         MPD_PL_DIR  = read_mpd_config()["playlist_directory"]
@@ -349,7 +349,7 @@ def loop_getting_metadata():
 
             # Save metadata to disk file.
             with open(PLAYER_META_PATH, 'w') as f:
-                f.write( json.dumps( CURRENT_MD ) )
+                f.write( json.dumps( CURRENT_MD, indent=2 ) )
 
             # Wait for period
             sleep(period)
@@ -382,7 +382,7 @@ def do(cmd, arg):
     elif cmd == 'random_mode':
         result = random_control(arg)
 
-    elif cmd == 'get_meta':
+    elif cmd == 'get_meta' or cmd == 'get_info':
         result = CURRENT_MD
 
     elif cmd == 'get_all_info':
@@ -399,7 +399,7 @@ def do(cmd, arg):
 
         print(f'{Fmt.MAGENTA}(players.py) ejecting disc...{Fmt.END}')
         clear_cdda_stuff()
-        Popen( 'eject'.split() )
+        Popen( f'eject { CONFIG.get("cdrom_device", "/dev/cdrom") }'.split() )
         result = 'ordered'
         sleep(1)
 

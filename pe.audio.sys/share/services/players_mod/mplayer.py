@@ -308,7 +308,7 @@ def mplayer_control(cmd, arg='', service=''):
 
         # Flush .cdda_metadata
         with open( cdda.CDDA_META_PATH, 'w') as f:
-            f.write( json.dumps( cdda.CDDA_META_TEMPLATE.copy() ) )
+            f.write( json.dumps( cdda.CDDA_META_TEMPLATE.copy(), indent=2 ) )
 
         # Flush Mplayer playlist and player status file
         send_mplayer_cmd('stop', service)

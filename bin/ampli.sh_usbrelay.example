@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Copyright (c) Rafael Sánchez
-# This file is part of 'pe.audio.sys'
-# 'pe.audio.sys', a PC based personal audio system.
-
 # (i)   This amplifier switch is based on the 'usbrelay' binary,
 #       which manages a simple HID usb relay unit.
 #       Recently Debian offers the packet 'usbrelay'.
@@ -12,25 +8,45 @@
 #       (It is needed to reboot the machine to usbrelay to work)
 #
 #       The 'usbrelay' executable:
-#       - w/o args will show the status of the relays
-#       - passing arg 'BITFT_x=y' will switch a relay (x:1|2, y:0|1)
-#       (!) - the relay status is writen to stderr,
+#       - w/o args will show the state (0 or 1) for each relay BITFT_N
+#       - passing arg 'BITFT_N=X' will switch a relay N to new state X (0 or 1)
+#       (!) - the old relay status is writen to stderr,
 #           - additional info is written to stdout
 
 # CONFIGURE YOUR RELAY HERE:
 myRelay="BITFT_1"
 
+# current state
+curr=$(usbrelay | awk -v r="$myRelay" -F'=' '$1 == r {print $2}')
+
 # Switching:
-if [[ $1 ]]; then
-    tmp="$myRelay""=0"
-    if [[ $1 == "on" || $1 == "1" ]]; then
-        tmp="$myRelay""=1"
+if [[ $1 == '1' || $1 == 'on' || $1 == 'ON' ]]; then
+    arg="$myRelay""=1"
+
+elif [[ $1 == '0' || $1 == 'off' || $1 == 'OFF' ]]; then
+    arg="$myRelay""=0"
+
+elif [[ $1 == 'toggle' ]]; then
+
+    if [[ $curr == '0' ]]; then
+        arg="$myRelay""=1"
+    else
+        arg="$myRelay""=0"
     fi
-    usbrelay "$tmp"
+
+else
+    echo $curr
+    exit 0
 fi
 
-# Querying and saving the current status to ~/.amplifier
-BITFT_1=$(usbrelay 2>&1 | grep BITFT_1)
-BITFT_2=$(usbrelay 2>&1 | grep BITFT_2)
-echo ${!myRelay} | cut -d"=" -f2 > "$HOME"/.amplifier
+# ordering
+usbrelay "$arg"
+
+# new state
+new=$(usbrelay | awk -v r="$myRelay" -F'=' '$1 == r {print $2}')
+
+# saving state to ~/.amplifier
+echo $new > "$HOME"/.amplifier
+
+# print out
 cat "$HOME"/.amplifier

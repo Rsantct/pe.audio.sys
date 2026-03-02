@@ -28,7 +28,7 @@ import  matplotlib.pyplot as plt
 
 
 UHOME    = os.path.expanduser("~")
-PNG_PATH = f'{UHOME}/pe.audio.sys/share/www/images/brutefir_eq.png'
+PNG_PATH = f'{UHOME}/pe.audio.sys/share/www/public/images/brutefir_eq.png'
 
 verbose     = False
 

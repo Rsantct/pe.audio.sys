@@ -21,7 +21,7 @@
 """
 import  sys
 import  os
-from    subprocess import Popen, call
+from    subprocess import Popen, call, check_output
 from    socket import gethostname
 from    getpass import getuser
 import  threading
@@ -30,22 +30,25 @@ from    time import sleep
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import kill_bill
+from miscel import kill_bill, Fmt
 
 
 # Current user
 USER = getuser()
 
 # librespot binary
-BINARY = '/usr/bin/librespot'
+try:
+    BINARY = sp.check_output('which librespot'.split()).decode().strip()
+except Exception as e:
+    print(f'{Fmt.RED}(librespot) error getting librespot binary: {str(e)}{Fmt.END}')
+    sys.exit()
 
 # libresport options list (do not configure here: bitrate, name, backend, device)
 OTHER_OPTS = [
-    #'--disable-audio-cache',
     # https://github.com/librespot-org/librespot/wiki/FAQ
     # For AUDIOPHILES
     '--mixer softvol --volume-ctrl fixed --initial-volume 100',
-    '--format F32'
+    '--format F32 --disable-audio-cache'
 ]
 
 

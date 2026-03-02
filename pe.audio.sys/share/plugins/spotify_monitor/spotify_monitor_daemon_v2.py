@@ -61,7 +61,7 @@ def metadata2file(metalines):
     # spotify xesam:trackNumber         1
     # spotify xesam:url                 https://open.spotify.com/track/0M99ZDKDfGxcH7hBmZx6oa
 
-    dict = {}
+    d = {}
     for line in metalines:
         if not line.strip():
             break
@@ -69,11 +69,11 @@ def metadata2file(metalines):
         # mpris:length to integer
         if key == 'mpris:length':
             value = int(value)
-        dict[key] =  value
+        d[key] =  value
 
     # Writes down the metadata dictionary to a file
     with open(SPOTIFYfile, 'w') as f:
-        f.write( json.dumps( dict ) )
+        f.write( json.dumps( d, indent=2 ) )
 
 
 class Changed_files_handler(FileSystemEventHandler):

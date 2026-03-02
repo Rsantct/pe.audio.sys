@@ -1,0 +1,107 @@
+# THIS IS JUST AN EXAMPLE
+
+# Safe gain to avoid clipping when applying filters below.
+# This is not a CamillaDSP native parameter but will affect the processor gain.
+safe_gain: -15
+
+# The `filters` section must follow the CamillaDSP native parameters format
+filters:
+
+    # Non DRC filters will be applied as EQ to both channels
+    bass_extension:
+        type: Biquad
+        parameters:
+            type:           LinkwitzTransform
+            freq_act:       65
+            q_act:          1.0
+            freq_target:    25
+            q_target:       0.707
+
+
+    # DRC filter names format must be `drc_C_xxxxx`, with C = `L` or `R`, also must be unique
+    drc_L_1:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 53.8
+            gain: -2.0
+            q: 4.645
+    drc_L_2:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 101.0
+            gain: -6.0
+            q: 2.253
+    drc_L_3:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 243.0
+            gain: -1.5
+            q: 2.0
+    drc_L_4:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 1000.0
+            gain: -2.0
+            q: 2.0
+    drc_L_5:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 2136.0
+            gain: 2.5
+            q: 3.496
+    drc_L_6:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 2500.0
+            gain: 0.9
+            q: 1.0
+    drc_L_7:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 3988.0
+            gain: 1.4
+            q: 2.089
+
+    drc_R_1:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 79.5
+            gain: -4.4
+            q: 2.563
+    drc_R_2:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 212.0
+            gain: -3.0
+            q: 3.21
+    drc_R_3:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 850.0
+            gain: -1.5
+            q: 2.5
+    drc_R_4:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 2288.0
+            gain: 3.5
+            q: 1.612
+    drc_R_5:
+        type: Biquad
+        parameters:
+            type: Peaking
+            freq: 4100.0
+            gain: 1.5
+            q: 3.0
+

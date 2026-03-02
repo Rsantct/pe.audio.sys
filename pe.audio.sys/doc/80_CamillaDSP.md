@@ -1,8 +1,16 @@
-## CamillaDSP
+# CamillaDSP
 
-From version 2.0, we can use CamillaDSP, by now only used to provide an optional compressor.
+## Introduction
+
+From pe.audio.sys version 2.0, we can use CamillaDSP, by now the only applications are:
+- An optional compressor. Just set `use_compressor: true` inside your `config/config.yml` file.
+- A Loudspeaker global EQ, mainly using biquad filtering. You only need to provide a proper Camilla YAML filtering configuration, see the example config file under the _full_range_example_ loudspeaker folder.
 
 The compressor is designed to facilitate the intelligibility of movies with difficult to hear  dialogues at low listening levels.
+
+See below for fine-tuning according to the CPU
+
+## Install
 
 You'll need to prepare 2 packages:
 1. The [CamillaDSP](https://github.com/HEnquist/camilladsp) itself
@@ -75,11 +83,11 @@ Once activated you will be able to work normally on your system, VENV is transpa
 
 pe.audio.sys scripts take care of this for you, automatically, so you don't need to manually activate the VENV to run pe.audio.sys.
 
+## Fine-tuning according to the CPU
 
+CamillaDSP is inserted into the pe.audio.sys JACK graph. If you experience some **jack xruns**, try to fine tune the CamillaDSP chunk size inside **`pe.audio.sys/config/camilladsp_base.yml`**
 
+This implies more or less latency depending on the chunk size:
 
-
-
-
-
+    CamillaDSP latency (ms) = chunk_size / samplerate * 1000
 

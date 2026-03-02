@@ -272,6 +272,7 @@ if __name__ == '__main__':
 
         # STARTS the plugin and optionally load a preset/name
         if opc == 'start':
+            stop()
             start()
             if sys.argv[2:]:
                 opc2 = sys.argv[2]

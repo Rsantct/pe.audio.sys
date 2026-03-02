@@ -39,7 +39,7 @@ def get_running_mpd_config_path():
     if len(mpd_processes) > 1:
 
         msg = 'More than ONE `mpd` process is running'
-        print(f'{Fmt.BOLD}(start) msg{Fmt.END}')
+        print(f'{Fmt.BOLD}(miscel) {msg}{Fmt.END}')
         raise Exception(msg)
 
     elif len(mpd_processes) == 1:
@@ -50,7 +50,7 @@ def get_running_mpd_config_path():
 
     else:
         msg = 'mpd process NOT detected'
-        print(f'{Fmt.RED}(start) msg{Fmt.END}')
+        print(f'{Fmt.RED}(miscel) {msg}{Fmt.END}')
 
     return result
 
@@ -678,19 +678,6 @@ def get_macros(only_web_macros=True):
     return macro_files
 
 
-def get_remote_selected_source(addr, port=9990):
-    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
-        (string)
-    """
-    remote_source = ''
-    remote_state = send_cmd('state', host=addr, port=port, timeout=1)
-    try:
-        remote_source = json_loads(remote_state)["input"]
-    except:
-        pass
-    return remote_source
-
-
 def get_remote_source_addr_port(sname):
     """ Gets the IP:CTRLPORT as configured under 'jack_pname' in a
         remoteXXXXX kind of configured source.
@@ -781,22 +768,21 @@ def local_zita_restart(raddr, udp_port, buff_size):
 
     zitajname = f'zita_n2j_{ raddr.split(".")[-1] }'
     zitacmd   = f'zita-n2j --jname {zitajname} --buff {buff_size} {get_my_ip()} {udp_port}'
+    zitalog   = f'{LOG_FOLDER}/{zitajname}.log'
 
     # Assign ALIAS to ports to be able to switch by using
-    # the IP port name of a remoteXXXX input in config.yml
+    # the IP port name of a remoteXXXX source in config.yml
     #
-    with open(f'{LOG_FOLDER}/{zitajname}.log', 'w') as zitalog:
+    try:
+        # Using stdbuf because zita does use unbuffered output to tty, skipping stdout/stderr
+        sp.Popen( f'stdbuf -oL -eL {zitacmd} 1>{zitalog} 2>&1', shell=True )
+        wait4ports(zitajname, 3)
+        sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
+        sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
+        print(f'(miscel.py) RUNNING LOCAL: {zitacmd}, LOGGING under {LOG_FOLDER}')
 
-        # Ignore if zita-njbridge is not available
-        try:
-            sp.Popen( zitacmd.split(), stdout=zitalog, stderr=zitalog )
-            wait4ports(zitajname, 3)
-            sp.Popen( f'jack_alias {zitajname}:out_1 {raddr}:out_1'.split() )
-            sp.Popen( f'jack_alias {zitajname}:out_2 {raddr}:out_2'.split() )
-            print(f'(miscel.py) RUNNING LOCAL: {zitacmd}, LOGGING under {LOG_FOLDER}')
-
-        except Exception as e:
-            print(f'(miscel.py) ERROR: {e}, you may want run it for a remote source?')
+    except Exception as e:
+        print(f'(miscel.py) ERROR: {e}, you may want run it for a remote source?')
 
 
 def wait4ports( pattern, timeout=10 ):
@@ -1013,17 +999,29 @@ def get_pid_cmdline(process_name=''):
     return pids
 
 
-def process_is_running(process_name):
+def process_is_running(*patterns):
+    """ all patterns must appear on the command line
+    """
+
     # Iterate through all running processes
     for proc in psutil.process_iter(['cmdline']):
+
         try:
+
             # (i) proc.info['cmdline']) is a list of command line args
             cmdline = ' '.join( proc.info['cmdline'] )
-            # Match process name (case-insensitive)
-            if process_name.lower() in cmdline.lower():
+
+            # Match patterns (case-insensitive)
+            n = 0
+            for pattern in patterns:
+                if pattern.lower() in cmdline.lower():
+                    n += 1
+            if n == len(patterns):
                 return True
+
         except:
             pass
+
     return False
 
 

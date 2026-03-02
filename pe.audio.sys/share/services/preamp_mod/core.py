@@ -699,14 +699,14 @@ class Preamp(object):
     def save_state(self):
         self.state["convolver_runs"] = bf.is_running()
         with open(STATE_PATH, 'w') as f:
-            f.write( json.dumps( self.state ) )
+            f.write( json.dumps( self.state, indent=2 ) )
 
 
     def save_tone_memo(self):
         self.tone_memo["bass"]   = self.state["bass"]
         self.tone_memo["treble"] = self.state["treble"]
         with open(TONE_MEMO_PATH, 'w') as f:
-            f.write( json.dumps( self.tone_memo ) )
+            f.write( json.dumps( self.tone_memo, indent=2 ) )
 
 
     def get_state(self, *dummy):

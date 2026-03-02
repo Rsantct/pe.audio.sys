@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--
+    Copyright (c) Rafael Sánchez
+    This file is part of 'pe.audio.sys'
+    'pe.audio.sys', a PC based personal audio system.
+    -->
+
+  <meta charset="utf-8">
+  <title>pe.audio.sys</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+  <link rel="manifest" href="./manifest.json">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="pe.audio.sys">
+
+  <link rel="stylesheet" href="./css/styles.css">
+
+  <script type="module" src="./js/main.js"></script>
+</head>
+
+<body>
+  <div>
+    <table id="main_title">
+      <tr>
+        <td id="main_lside" style="display:none">
+          <button id="bt_restart_sys" title="(!) pe.audio.sys RESTART" style="font-size:0.7em"> &#128585; </button>
+        </td>
+        <td id="main_cside"></td>
+        <td id="main_rside">
+          <button id="advanced_switch" title="advanced controls" style="font-size:0.7em"> &#9881; </button>
+        </td>
+      </tr>
+      <tr>
+        <td id="landscape" title="BIG" style="display:none">
+          <a href="/index_big.html" style="color:white;text-decoration-line:none">&#9605;</a>
+        </td>
+        <td id="sysmon" colspan="3" style="display:none"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div>
+    <table id="level_ampli_input">
+      <tr>
+        <td id="OnOff" rowspan="2">
+          <button type="button" id="bt_onoff" title="Amplifier ON/OFF">-</button>
+        </td>
+        <td id="levelInfo" rowspan="2" title="Target volume"></td>
+        <td id="LoudnessInfo">
+          <button type="button" id="bt_loud" title="Loudness Contour compensation">LC</button>
+        </td>
+        <td id="SoloInfo" style="display:none">
+          <button type="button" id="bt_solo" title="L|R solo control">L|R</button>
+        </td>
+        <td id="input" rowspan="2">
+          <button id="bt_url" title="enter an URL to be played" style="text-align:center;font-size:0.7em;display:none">&#9901;</button>
+          <button type="button" id="bt_track_num" title="Enter a track number" style="display:none; width:150px">#</button>
+          <select id="playlist_selector" title="load a playlist" style="display:none; width:150px"></select>
+          <select id="track_selector" title="select a track" style="display:none; width:150px"></select>
+          <select id="mainSelector" style="width:150px" title="Source Selector"></select>
+        </td>
+      </tr>
+      <tr>
+        <td id="MonoInfo">
+          <button type="button" id="bt_mono" title="Mono/Stereo">M</button>
+        </td>
+        <td id="PolarityInfo" style="display:none">
+          <button type="button" id="bt_polarity" title="LR polarity control">++</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="level_buttons">
+    <table id="level_buttons_table">
+      <tr>
+        <td id="level_buttons11">
+          <button type="button" id="bt_subsonic" style="display:none;font-size:0.7em" title="Subsonic Filter">SUBS.</button>
+        </td>
+        <td id="level_buttons12">
+          <button type="button" id="bt_lvl_m1">&nbsp;-1&nbsp;</button>
+          <button type="button" id="bt_mute">&#128263;</button>
+          <button type="button" id="bt_lvl_p1">&nbsp;+1&nbsp;</button>
+        </td>
+        <td id="level_buttons13">
+          <button type="button" id="bt_swap_lr" style="display:none;font-size:0.7em" title="Swap L/R">L&nbsp;R</button>
+        </td>
+      </tr>
+      <tr>
+        <td id="level_buttons21">
+          <button type="button" id="bt_tone_defeat" style="display:none;font-size:0.7em" title="Tone Defeat Toggle">TONE DEF</button>
+        </td>
+        <td id="level_buttons22">
+          <button type="button" id="bt_lvl_m3">&nbsp;&nbsp;&nbsp;-3&nbsp;&nbsp;&nbsp;</button>
+          <button type="button" id="bt_lvl_p3">&nbsp;&nbsp;&nbsp;+3&nbsp;&nbsp;&nbsp;</button>
+        </td>
+        <td id="level_buttons23">
+          <button type="button" id="bt_aod" style="display:none;font-size:0.7em" title="Toggle Output Delay">0 ms</button>
+        </td>
+      </tr>
+      <tr id="extra_row">
+        <td id="extra_buttons11">
+          <button type="button" id="bt_compressor" style="display:none;font-size:0.7em" title="Compressor">COMP.</button>
+        </td>
+        <td id="extra_buttons12"></td>
+        <td id="extra_buttons13">
+          <select id="samplerateSelector" style="display:none"></select>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="LU_offset" style="display:block">
+    <table>
+      <tr>
+        <td id="LU_meter_scope">
+          <select id="LUscopeSelector" title="LU scope selector"></select>
+        </td>
+        <td id="LU_offset_value">LU offset: --</td>
+        <td id="LU_offset_slider">
+          <input id="LU_slider" class="LU_slider" type="range" min="0" step="3" max="15.0" title="Adjust as monitored LU">
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="LU_monitor" style="display:none;">
+    <table>
+      <tr>
+        <td id="LU_meter_reset">
+          <button type="button" id="bt_loudMonReset" title="restart LU monitor measurement">reset</button>
+        </td>
+        <td id="LU_meter_value">LU monit: --</td>
+        <td id="LU_meter_bar">
+          <meter id="LU_meter" title="Loudness Units meter EBU R128" class="LU_meter" value="0" min="-15" max="0"></meter>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="div_advanced_controls" style="display:none; font-size:0.75em;">
+    <table>
+      <tr>
+        <td id="bass">
+          <button type="button" id='bt_bass-'>-</button>
+          <span id="bassInfo">bass</span>
+          <button type="button" id='bt_bass+'>+</button>
+        </td>
+        <td id="balance">
+          <button type="button" id='bt_bal-'>-</button>
+          <span id="balInfo">BAL</span>
+          <button type="button" id='bt_bal+'>+</button>
+        </td>
+      </tr>
+      <tr>
+        <td id="treble">
+          <button type="button" id='bt_treb-'>-</button>
+          <span id="trebleInfo">treble</span>
+          <button type="button" id='bt_treb+'>+</button>
+        </td>
+        <td id="target">
+          <span>target c.&nbsp;<select id="targetSelector"></select></span>
+        </td>
+      </tr>
+    </table>
+    <table id="eq_table">
+      <tr>
+        <td>XO: <select id="xoSelector"></select></td>
+        <td>DRC: <select id="drcSelector"></select></td>
+        <td><button type="button" id="bt_peq" title="PEQ BYPASS">PEQ</button></td>
+        <td><button type="button" id="bt_toggle_eq_graphs" title="toggle EQ graphs">G</button></td>
+      </tr>
+    </table>
+    <div id="bfeq_graph" style="display:none">
+      <img id="bfeq_img" src="images/brutefir_eq.png?dummy=33" title="Brutefir EQ coeff" style="width:100%">
+    </div>
+    <div id="drc_graph" style="display:none">
+      <img id="drc_img" src="" title="Brutefir DRC FIRs" style="width:100%">
+    </div>
+  </div>
+
+  <div>
+    <table id="player_info">
+      <tr>
+        <td id="bitrate"></td>
+        <td id="track_info"></td>
+        <td id="artist"></td>
+        <td id="time"></td>
+      </tr>
+      <tr id="format_file" style="display:none">
+        <td id="format" colspan="1"></td>
+        <td id="file" colspan="3"></td>
+      </tr>
+      <tr>
+        <td id="album" colspan="4"></td>
+      </tr>
+      <tr>
+        <td id="title" colspan="4"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div>
+    <table id="playback_control">
+      <tr>
+        <td id="playback_control_01"></td>
+        <td id="playback_control_02">
+          <button type="button" id="bt_-15min" title="- 15 MIN" style="font-weight:normal">- 15 m</button>
+          <button type="button" id="bt_-5min" title="- 5 MIN" style="font-weight:normal">- 5 m</button>
+          <button type="button" id="bt_+5min" title="+ 5 MIN" style="font-weight:normal">+ 5 m</button>
+          <button type="button" id="bt_+15min" title="+ 15 MIN" style="font-weight:normal">+ 15 m</button>
+        </td>
+        <td id="playback_control_03"></td>
+      </tr>
+      <tr>
+        <td id="playback_control_11"></td>
+        <td id="playback_control_12">
+          <button type="button" id="bt_prev" title="PREV">&lt;|</button>
+          <button type="button" id="bt_rew" title="- 30 SEC">&lt;&lt;</button>
+          <button type="button" id="bt_ff" title="+ 30 SEC">&gt;&gt;</button>
+          <button type="button" id="bt_next" title="NEXT">|&gt;</button>
+        </td>
+        <td id="playback_control_13">
+          <button type="button" id="random_toggle_button" title="Toggle random playback">&#8644;</button>
+        </td>
+      </tr>
+      <tr>
+        <td id="playback_control_21"></td>
+        <td id="playback_control_22">
+          <button type="button" id="bt_eject" title="EJECT">&nbsp;^&nbsp;</button>
+          <button type="button" id="bt_stop" title="STOP">&nbsp;[]&nbsp;</button>
+          <button type="button" id="bt_pause" title="PAUSE">&nbsp;||&nbsp;</button>
+          <button type="button" id="bt_play" title="PLAY">&nbsp;&gt;&nbsp;</button>
+        </td>
+        <td id="playback_control_23">
+          <button type="button" id="bt_macros_toggle" title="Toggle macro buttons" style="display:none">::</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div>
+    <table id="macro_buttons" style="display:inline-table"></table>
+  </div>
+</body>
+
+</html>

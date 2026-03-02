@@ -167,7 +167,7 @@ def save2disk():
         I_LU = I_LU // meter.I_threshold * meter.I_threshold
         M_LU = M_LU // meter.M_threshold * meter.M_threshold
         d = { "LU_I":  I_LU, "LU_M":  M_LU, "scope": scope }
-        f.write( json.dumps(d) )
+        f.write( json.dumps(d, indent=2) )
 
 
 if __name__ == '__main__':
@@ -178,7 +178,7 @@ if __name__ == '__main__':
         if sys.argv[1] == 'stop':
             Popen( f'pkill -u {USER} -KILL -f "loudness_monitor.py start"', shell=True )
             with open(LDMON_PATH, 'w') as f:
-                f.write('{"LU_I": -99.0, "LU_M": -99.0, "scope": "album"}')
+                f.write( json.dumps({"LU_I": -99.0, "LU_M": -99.0, "scope": "album"}, indent=2) )
             sys.exit()
 
         elif sys.argv[1] == 'start':
