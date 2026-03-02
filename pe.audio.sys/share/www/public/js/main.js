@@ -236,7 +236,7 @@ function fill_in_page_statics(){
 }
 
 
-function init(){
+async function init(){
 
     function download_drc_graphs(){
         if (web_config.show_graphs==false){
@@ -258,25 +258,30 @@ function init(){
     }
 
 
-    function get_web_config(){
+    function update_web_config(){
 
-        try{
-            web_config      = mc.send_cmd('aux get_web_config');
+        const tmp = mc.send_cmd('aux get_web_config');
 
-            if (document.body.getAttribute('data-layout') == 'landscape'){
-                main_sel_mode = 'macros'
-            }else{
-                main_sel_mode = web_config.main_selector;
-            }
-
-            mFnames         = web_config.user_macros;
-            if (web_config.show_graphs==false){
-                document.getElementById( "bt_toggle_eq_graphs").style.display = "none";
-            }
-
-        }catch(e){
-            console.log('response error to \'aux get_web_config\'', e.message);
+        // bad response
+        if ( !tmp.user_macros ){
+            return false
         }
+
+        web_config = tmp;
+
+        if (document.body.getAttribute('data-layout') == 'landscape'){
+            main_sel_mode = 'macros'
+        }else{
+            main_sel_mode = web_config.main_selector;
+        }
+
+        mFnames = web_config.user_macros;
+
+        if (web_config.show_graphs == false){
+            document.getElementById("bt_toggle_eq_graphs").style.display = "none";
+        }
+
+        return true
     }
 
 
@@ -363,22 +368,20 @@ function init(){
 
 
 
-    get_web_config();
+    mc.do_until_function_istrue( update_web_config )
 
-    server_available = state_get();
+    fill_in_macro_buttons();
+
+    mc.do_until_function_istrue( update_state )
 
     download_drc_graphs();
 
     manage_main_cside();
 
-    fill_in_macro_buttons();
-
     fill_in_playlists_selector( get_playlists() );
 
     show_hide_LU_frame();
 
-    // SCHEDULES THE PAGE_UPDATE (only runtime variable items):
-    // Notice: the function call inside setInterval uses NO brackets)
     setInterval( page_update, AUTO_UPDATE_INTERVAL );
 }
 
@@ -501,6 +504,11 @@ function page_update() {
         }
 
 
+        if (!player_info.state){
+            console.log('bad player_info');
+            return
+        }
+
         player_controls_update(     player_info.state       );
         player_metadata_update(     player_info.metadata    );
         player_random_mode_update(  player_info.random_mode );
@@ -574,27 +582,39 @@ function page_update() {
 
 
     function aux_info_get(){
-        try{
-            aux_info = mc.send_cmd('aux info');
-        }catch(e){
-            console.log('response error to \'aux info\'', e.message);
-            // Backup method to retrieve the amplifier state:
-            aux_info.amp = mc.send_cmd('amp_switch state');
+
+        let tmp = mc.send_cmd('aux info');
+
+        if (tmp.amp) {
+            aux_info = tmp
+
+        }else{
+            tmp = mc.send_cmd('amp_switch state');
+
+            if (typeof tmp == 'string') {
+                aux_info.amp = tmp
+            }
         }
     }
 
 
     function aux_info_refresh(){
 
+        if (!aux_info.amp){
+            return
+        }
+
         if ( aux_info.amp == 'off' || aux_info.amp == 'on' ) {
             document.getElementById("bt_onoff").innerText = aux_info.amp.toUpperCase();
             document.getElementById("bt_onoff").style.display = 'block';
+
         }else{
             document.getElementById("bt_onoff").style.display = 'none';
         }
 
         if ( ! aux_info.last_macro ){
             clear_macro_buttons_highlight();
+
         }else{
             const x = aux_info.last_macro;
             const mName = x.slice(x.indexOf('_') + 1, x.length);
@@ -602,48 +622,49 @@ function page_update() {
             highlight_macro_button(mName)
         }
 
+        if (aux_info.sysmon) {
+            // sysmon
+            // Example when wifi is not conneted:
+            //  "sysmon": {"wifi": {"Tx-Power": "12"}, "temp": 69.2}}
+            //
+            let sysmon = '';
+            const temp = aux_info.sysmon.temp
+            const wifi = aux_info.sysmon.wifi
+            const fan1 = aux_info.sysmon.fans.fan1
+            const fan2 = aux_info.sysmon.fans.fan2
+            const fan3 = aux_info.sysmon.fans.fan3
 
-        // sysmon
-        // Example when wifi is not conneted:
-        //  "sysmon": {"wifi": {"Tx-Power": "12"}, "temp": 69.2}}
-        //
-        let sysmon = '';
-        const temp = aux_info.sysmon.temp
-        const wifi = aux_info.sysmon.wifi
-        const fan1 = aux_info.sysmon.fans.fan1
-        const fan2 = aux_info.sysmon.fans.fan2
-        const fan3 = aux_info.sysmon.fans.fan3
-
-        let fans = ''
-        if (fan1){
-            fans += fan1
-        }
-        if (fan2){
-            fans += ',' + fan2
-        }
-        if (fan3){
-            fans += ',' + fan3
-        }
-
-        if (temp){
-            sysmon += 'temp: ' + temp + 'º';
-        }
-
-        if (fans){
-            sysmon += ' | fan: ' + fans + ' rpm';
-        }
-
-        if (! isEmpty(wifi)){
-            if ('Bit-rate-Mb/s' in wifi){
-                sysmon += ' | wifi: ' + wifi['Bit-rate-Mb/s'] + ' Mb/s';
-                sysmon += ' quality: ' + wifi['Quality'];
-                sysmon += ' Rx: ' + wifi['Signal-level'] + ' dBm';
-            }else{
-                sysmon += ' | wifi: ' + wifi['iface'] + ' (not connected)';
+            let fans = ''
+            if (fan1){
+                fans += fan1
             }
-        }
+            if (fan2){
+                fans += ',' + fan2
+            }
+            if (fan3){
+                fans += ',' + fan3
+            }
 
-        document.getElementById("sysmon").innerText = sysmon;
+            if (temp){
+                sysmon += 'temp: ' + temp + 'º';
+            }
+
+            if (fans){
+                sysmon += ' | fan: ' + fans + ' rpm';
+            }
+
+            if (! isEmpty(wifi)){
+                if ('Bit-rate-Mb/s' in wifi){
+                    sysmon += ' | wifi: ' + wifi['Bit-rate-Mb/s'] + ' Mb/s';
+                    sysmon += ' quality: ' + wifi['Quality'];
+                    sysmon += ' Rx: ' + wifi['Signal-level'] + ' dBm';
+                }else{
+                    sysmon += ' | wifi: ' + wifi['iface'] + ' (not connected)';
+                }
+            }
+
+            document.getElementById("sysmon").innerText = sysmon;
+        }
     }
 
 
@@ -809,14 +830,13 @@ function page_update() {
         }
     }
 
-    // AUX STUFF
+
+
     aux_info_get();
     aux_info_refresh();
 
-    // PREAMP STUFF
-    server_available = state_get();
+    server_available = update_state();
 
-    //  Cancel updating if not connected
     if (! server_available){
         document.getElementById("levelInfo").innerHTML  = '--';
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: not connected';
@@ -825,7 +845,6 @@ function page_update() {
         return;
     }
 
-    //  Refresh static stuff if loudspeaker's audio processes has changed
     if ( last_loudspeaker != state.loudspeaker ){
         fill_in_page_statics();
         last_loudspeaker = state.loudspeaker;
@@ -833,8 +852,6 @@ function page_update() {
 
     state_refresh();
 
-
-    // PLAYER STUFF
     player_get();
     player_refresh();
 
@@ -845,20 +862,22 @@ function page_update() {
     manage_main_cside();
 
     show_peq_info();
-
 }
 
 
 ////////  MISCEL INTERNALS  ////////
 
-function state_get() {
-    try{
-        state = mc.send_cmd('preamp state');
+function update_state() {
+
+    const tmp = mc.send_cmd('preamp state');
+
+    if (tmp.loudspeaker){
+        state = tmp;
         server_available = true;
         document.title = 'pe.audio.sys ' + state.loudspeaker;
         return true
 
-    }catch(e){
+    }else{
         server_available = false;
         document.getElementById("main_cside").innerText = ':: pe.audio.sys :: not connected';
         return false
