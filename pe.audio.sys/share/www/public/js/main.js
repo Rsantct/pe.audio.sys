@@ -1307,9 +1307,12 @@ function oc_restart_samplerate(value){
 
 
 function ck_peaudiosys_restart() {
-    mc.send_cmd('restart_peaudiosys');
-    ck_display_advanced('off');
-    page_update();
+
+    if ( window.confirm('Are you sure to RESTART pe.audio.sys?') ){
+        mc.send_cmd('restart_peaudiosys');
+        ck_display_advanced('off');
+        page_update();
+    }
 }
 
 
