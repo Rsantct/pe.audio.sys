@@ -27,6 +27,10 @@ export function send_cmd( cmd ) {
     //console.log('httpTX: ' + cmd);
     //console.log('httpRX: ' + ans);
 
+    if (ans.includes('socket') && ans.includes('refused')) {
+        return {}
+    }
+
     try {
         // response as JSON Object
         return JSON.parse(ans.replaceAll(': null', ': ""'));
@@ -36,9 +40,46 @@ export function send_cmd( cmd ) {
     }
 }
 
+
+// Aux function to stop the execution
+export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
 export function flash_element(e, timeout=950){
     e.classList.add('btn-flash');
     setTimeout(() => {
         e.classList.remove('btn-flash');
     }, timeout);
+}
+
+export async function do_until_function_istrue( my_function, period_ms, verbose=true ) {
+
+    if (!period_ms){
+        period_ms = 5000;
+    }
+
+    let istrue = false;
+
+    while ( !istrue ) {
+
+        const now = new Date().toLocaleTimeString();
+
+        if (verbose) {
+            const segundos = Math.round(period_ms / 1000);
+            console.log(`${now} Waiting ${segundos} s for <${my_function.name}> response`);
+        }
+
+        istrue = await my_function();
+
+        if (istrue) {
+            if (verbose) {
+                console.log(`<${my_function.name}> OK`);
+            }
+            break;
+        }
+
+        await sleep(period_ms);
+    }
+
+    return istrue;
 }
