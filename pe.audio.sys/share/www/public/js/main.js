@@ -1463,12 +1463,14 @@ function omd_graphs_toggle() {
 //////// ELEMENTS HIGHLIGHT ////////
 
 function toneDefeatHighlight(){
+
     if (state.tone_defeat){
         document.getElementById("bt_tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("bt_tone_defeat").style.background = "rgb(100, 0, 0)";
         document.getElementById("bt_tone_defeat").style.color = "rgb(255, 200, 200)";
         document.getElementById("bassInfo").style.color = "grey";
         document.getElementById("trebleInfo").style.color = "grey";
+
     }else{
         document.getElementById("bt_tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("bt_tone_defeat").style.background = "rgb(100, 100, 100)";
@@ -1480,6 +1482,7 @@ function toneDefeatHighlight(){
 
 
 function buttonsToneBalanceHighlight(){
+
     if ( state.bass < 0 ){
         document.getElementById("bt_bass-").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("bt_bass+").style.border = "2px solid rgb(100, 100, 100)";
@@ -1490,6 +1493,7 @@ function buttonsToneBalanceHighlight(){
         document.getElementById("bt_bass-").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("bt_bass+").style.border = "2px solid rgb(100, 100, 100)";
     }
+
     if ( state.treble < 0 ){
         document.getElementById("bt_treb-").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("bt_treb+").style.border = "2px solid rgb(100, 100, 100)";
@@ -1500,6 +1504,7 @@ function buttonsToneBalanceHighlight(){
         document.getElementById("bt_treb-").style.border = "2px solid rgb(100, 100, 100)";
         document.getElementById("bt_treb+").style.border = "2px solid rgb(100, 100, 100)";
     }
+
     if ( state.balance < 0 ){
         document.getElementById("bt_bal-").style.border = "3px solid rgb(160, 160, 160)";
         document.getElementById("bt_bal+").style.border = "2px solid rgb(100, 100, 100)";
@@ -1514,66 +1519,79 @@ function buttonsToneBalanceHighlight(){
 
 
 function bt_muteHighlight(){
+
+    const e_mute  = document.getElementById("bt_mute");
+    const e_level = document.getElementById("levelInfo");
+
     if ( state.muted == true ) {
-        document.getElementById("bt_mute").style.background = "rgb(185, 185, 185)";
-        document.getElementById("bt_mute").style.color = "white";
-        document.getElementById("bt_mute").style.fontWeight = "bolder";
-        document.getElementById("levelInfo").style.color = "rgb(150, 90, 90)";
+        e_mute .style.background = "rgb(185, 185, 185)";
+        e_mute .style.color = "white";
+        e_mute .style.fontWeight = "bolder";
+        e_level.style.color = "rgb(150, 90, 90)";
     } else {
-        document.getElementById("bt_mute").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_mute").style.color = "lightgray";
-        document.getElementById("bt_mute").style.fontWeight = "normal";
-        document.getElementById("levelInfo").style.color = "white";
+        e_mute .style.background = "rgb(100, 100, 100)";
+        e_mute .style.color = "lightgray";
+        e_mute .style.fontWeight = "normal";
+        e_level.style.color = "white";
     }
 }
 
 
 function bt_monoHighlight(){
+
+    const e = document.getElementById("bt_mono");
+
     if ( state.midside == 'mid' ) {
-        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_mono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_mono").innerText = 'MO';
+        e.style.background = "rgb(100, 0, 0)";
+        e.style.color = "rgb(255, 200, 200)";
+        e.innerText = 'MO';
+
     } else if ( state.midside == 'side' ) {
-        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_mono").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_mono").innerText = 'L-R';
+        e.style.background = "rgb(100, 0, 0)";
+        e.style.color = "rgb(255, 200, 200)";
+        e.innerText = 'L-R';
+
     } else {
-        document.getElementById("bt_mono").style = "button";
-        document.getElementById("bt_mono").style.background = "rgb(0, 90, 0)";
-        document.getElementById("bt_mono").innerText = 'ST';
+        e.style = "button";
+        e.style.background = "rgb(0, 90, 0)";
+        e.innerText = 'ST';
     }
 
     // 'solo' setting will override displaying mono stereo
     if ( state.solo == 'l' ) {
-        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_mono").innerText = 'L_';
+        e.style.background = "rgb(100, 0, 0)";
+        e.innerText = 'L_';
+
     } else if ( state.solo == 'r' ) {
-        document.getElementById("bt_mono").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_mono").innerText = '_R';
+        e.style.background = "rgb(100, 0, 0)";
+        e.innerText = '_R';
     }
 
     // 'polarity' setting will modify the button border
     if ( state.polarity != '++' ) {
-        document.getElementById("bt_mono").style.border = "3px solid rgb(200, 10, 10)";
+        e.style.border = "3px solid rgb(200, 10, 10)";
+
     } else {
-        document.getElementById("bt_mono").style.border = "2px solid rgb(120, 120, 120)";
+        e.style.border = "2px solid rgb(120, 120, 120)";
     }
 }
 
 
 function bt_soloHighlight(){
 
+    const e = document.getElementById("bt_solo");
+
     if ( state.solo == 'off' ) {
-        document.getElementById("bt_solo").style = "button";
-        document.getElementById("bt_solo").innerText = 'L|R';
+        e.style = "button";
+        e.innerText = 'L|R';
 
     } else if ( state.solo == 'l' ) {
-        document.getElementById("bt_solo").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_solo").innerText = 'L_';
+        e.style.background = "rgb(100, 0, 0)";
+        e.innerText = 'L_';
 
     } else if ( state.solo == 'r' ) {
-        document.getElementById("bt_solo").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_solo").innerText = '_R';
+        e.style.background = "rgb(100, 0, 0)";
+        e.innerText = '_R';
     }
 
 }
@@ -1581,105 +1599,108 @@ function bt_soloHighlight(){
 
 function bt_polarityHighlight(){
 
+    const e = document.getElementById("bt_polarity");
+
     if ( state.polarity != '++' ) {
-        document.getElementById("bt_polarity").style.background = "rgb(100, 0, 0)";
+        e.style.background = "rgb(100, 0, 0)";
 
     } else {
-        document.getElementById("bt_polarity").style = "button";
+       e.style = "button";
     }
 
-    document.getElementById("bt_polarity").innerText = state.polarity;
+    e.innerText = state.polarity;
 }
 
 
 function bt_loudHighlight(){
+
+    const e = document.getElementById("bt_loud");
+
     if ( state.equal_loudness == true ) {
-        document.getElementById("bt_loud").style.background = "rgb(0, 90, 0)";
-        document.getElementById("bt_loud").style.color = "white";
+        e.className = 'btn-green';
+
     } else {
-        document.getElementById("bt_loud").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_loud").style.color = "rgb(150, 150, 150)";
+        e.className = 'btn-dimm-gray';
     }
 }
 
 
 function buttonAODHighlight(){
+    const e = document.getElementById("bt_aod");
     if ( state.extra_delay === 0 ) {
-        document.getElementById("bt_aod").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_aod").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_aod").style.color = "rgb(180, 180, 180)";
+        e.className = 'btn-dimm-gray';
     } else {
-        document.getElementById("bt_aod").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_aod").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_aod").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_aod").style.display = 'inline-block';
+        e.className = 'btn-maroon';
+        e.style.display = 'inline-block';
     }
 }
 
 
 function buttonSwapLRHighlight(){
+    const e = document.getElementById("bt_swap_lr");
     if ( state.lr_swapped === false ) {
-        document.getElementById("bt_swap_lr").innerHTML = "L R";
-        document.getElementById("bt_swap_lr").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_swap_lr").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_swap_lr").style.color = "rgb(180, 180, 180)";
+        e.innerHTML = "L R";
+        e.className = 'btn-dimm-gray';
     } else {
-        document.getElementById("bt_swap_lr").innerHTML = "R L";
-        document.getElementById("bt_swap_lr").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_swap_lr").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_swap_lr").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_swap_lr").style.display = 'inline-block';
+        e.innerHTML = "R L";
+        e.className = 'btn-red';
+        e.style.display = 'inline-block';
     }
 }
 
 
 function buttonCompressorHighlight(){
+
     if ( ! web_config.use_compressor ){
         return
     }
+
+    const e = document.getElementById("bt_compressor");
+
     if ( state.compressor === 'off' ) {
-        document.getElementById("bt_compressor").innerHTML = 'comp.<br>OFF';
-        document.getElementById("bt_compressor").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_compressor").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_compressor").style.color = "rgb(180, 180, 180)";
+        e.className = 'btn-dimm-gray';
+        e.innerHTML = 'comp.<br>OFF';
+
     } else {
-        document.getElementById("bt_compressor").innerHTML = 'COMP.<br>' + state.compressor;
-        document.getElementById("bt_compressor").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_compressor").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_compressor").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_compressor").style.display = 'inline-block';
+        e.className = 'btn-maroon';
+        e.innerHTML = 'COMP.<br>' + state.compressor;
+        e.style.display = 'inline-block';
     }
 }
 
 
 function buttonSubsonicHighlight(){
+
+    const e = document.getElementById("bt_subsonic");
+
     if ( state.subsonic == 'off' ) {
-        document.getElementById("bt_subsonic").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_subsonic").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_subsonic").style.color = "rgb(180, 180, 180)";
-        document.getElementById("bt_subsonic").innerText = 'SUBS\n-';
+        e.className = 'btn-dimm-gray';
+        e.innerText = 'SUBS\n-';
+
     } else if ( state.subsonic == 'mp' ) {
-        document.getElementById("bt_subsonic").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_subsonic").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_subsonic").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_subsonic").innerText = 'SUBS\nmp';
+        e.className = 'btn-maroon';
+        e.innerText = 'SUBS\nmp';
+
     } else if ( state.subsonic == 'lp' ) {
-        document.getElementById("bt_subsonic").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_subsonic").style.background = "rgb(150, 0, 0)";
-        document.getElementById("bt_subsonic").style.color = "rgb(255, 200, 200)";
-        document.getElementById("bt_subsonic").innerText = 'SUBS\nlp';
+        e.className = 'btn-red';
+        e.innerText = 'SUBS\nlp';
     }
 }
 
 
 function levelInfoHighlight() {
-    // currently only indicates subsonic filter activated
+
+    // currently only indicates if the subsonic filter is activated
+
+    const e = document.getElementById("levelInfo");
+
     if (state.subsonic != 'off' ){
-        document.getElementById("levelInfo").style.borderWidth = "thick";
-        document.getElementById("levelInfo").style.borderColor = "DarkRed";
+        e.style.borderWidth = "thick";
+        e.style.borderColor = "DarkRed";
+
     }else{
-        document.getElementById("levelInfo").style.borderWidth = "thin";
-        document.getElementById("levelInfo").style.borderColor = "white";
+        e.style.borderWidth = "thin";
+        e.style.borderColor = "white";
    }
 }
 
