@@ -1464,17 +1464,15 @@ function omd_graphs_toggle() {
 
 function toneDefeatHighlight(){
 
+    const btd = document.getElementById("bt_tone_defeat");
+
     if (state.tone_defeat){
-        document.getElementById("bt_tone_defeat").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_tone_defeat").style.background = "rgb(100, 0, 0)";
-        document.getElementById("bt_tone_defeat").style.color = "rgb(255, 200, 200)";
+        btd.className = "btn-maroon";
         document.getElementById("bassInfo").style.color = "grey";
         document.getElementById("trebleInfo").style.color = "grey";
 
     }else{
-        document.getElementById("bt_tone_defeat").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_tone_defeat").style.background = "rgb(100, 100, 100)";
-        document.getElementById("bt_tone_defeat").style.color = "rgb(180, 180, 180)";
+        btd.className = "btn-dimm-gray";
         document.getElementById("bassInfo").style.color = "white";
         document.getElementById("trebleInfo").style.color = "white";
     }
