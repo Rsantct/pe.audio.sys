@@ -1483,37 +1483,40 @@ function toneDefeatHighlight(){
 
 function buttonsToneBalanceHighlight(){
 
+    const thin  = "2px solid rgb(100, 100, 100)";
+    const thick = "3px solid rgb(160, 160, 160)";
+
     if ( state.bass < 0 ){
-        document.getElementById("bt_bass-").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_bass+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bass-").style.border = thick;
+        document.getElementById("bt_bass+").style.border = thin;
     }else if ( state.bass > 0 ){
-        document.getElementById("bt_bass-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_bass+").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_bass-").style.border = thin;
+        document.getElementById("bt_bass+").style.border = thick;
     }else{
-        document.getElementById("bt_bass-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_bass+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bass-").style.border = thin;
+        document.getElementById("bt_bass+").style.border = thin;
     }
 
     if ( state.treble < 0 ){
-        document.getElementById("bt_treb-").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_treb+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_treb-").style.border = thick;
+        document.getElementById("bt_treb+").style.border = thin;
     }else if ( state.treble > 0 ){
-        document.getElementById("bt_treb-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_treb+").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_treb-").style.border = thin;
+        document.getElementById("bt_treb+").style.border = thick;
     }else{
-        document.getElementById("bt_treb-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_treb+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_treb-").style.border = thin;
+        document.getElementById("bt_treb+").style.border = thin;
     }
 
     if ( state.balance < 0 ){
-        document.getElementById("bt_bal-").style.border = "3px solid rgb(160, 160, 160)";
-        document.getElementById("bt_bal+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bal-").style.border = thick;
+        document.getElementById("bt_bal+").style.border = thin;
     }else if ( state.balance > 0 ){
-        document.getElementById("bt_bal-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_bal+").style.border = "3px solid rgb(160, 160, 160)";
+        document.getElementById("bt_bal-").style.border = thin;
+        document.getElementById("bt_bal+").style.border = thick;
     }else{
-        document.getElementById("bt_bal-").style.border = "2px solid rgb(100, 100, 100)";
-        document.getElementById("bt_bal+").style.border = "2px solid rgb(100, 100, 100)";
+        document.getElementById("bt_bal-").style.border = thin;
+        document.getElementById("bt_bal+").style.border = thin;
     }
 }
 
@@ -1539,29 +1542,29 @@ function bt_monoHighlight(){
 
     const e = document.getElementById("bt_mono");
 
-    if ( STATE.midside == 'mid' ) {
+    if ( state.midside == 'mid' ) {
         e.className = "btn-maroon";
         e.innerText = 'MO';
 
-    } else if ( STATE.midside == 'side' ) {
+    } else if ( state.midside == 'side' ) {
         e.className = "btn-maroon";
         e.innerText = 'L-R';
 
-    } else if ( STATE.solo == 'l' ) {
+    } else if ( state.solo == 'l' ) {
         e.className = "btn-maroon";
         e.innerText = 'L_';
 
-    } else if ( STATE.solo == 'r' ) {
+    } else if ( state.solo == 'r' ) {
         e.className = "btn-maroon";
         e.innerText = '_R';
 
-    } else if ( STATE.solo == 'off' ) {
+    } else if ( state.solo == 'off' ) {
         e.className = "btn-green";
         e.innerText = 'ST';
     }
 
     // 'polarity' setting will modify the button border
-    if ( STATE.polarity != '++' ) {
+    if ( state.polarity != '++' ) {
         e.style.border = "3px solid rgb(200, 10, 10)";
 
     } else {
