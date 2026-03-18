@@ -1541,34 +1541,29 @@ function bt_monoHighlight(){
 
     const e = document.getElementById("bt_mono");
 
-    if ( state.midside == 'mid' ) {
-        e.style.background = "rgb(100, 0, 0)";
-        e.style.color = "rgb(255, 200, 200)";
+    if ( STATE.midside == 'mid' ) {
+        e.className = "btn-maroon";
         e.innerText = 'MO';
 
-    } else if ( state.midside == 'side' ) {
-        e.style.background = "rgb(100, 0, 0)";
-        e.style.color = "rgb(255, 200, 200)";
+    } else if ( STATE.midside == 'side' ) {
+        e.className = "btn-maroon";
         e.innerText = 'L-R';
 
-    } else {
-        e.style = "button";
-        e.style.background = "rgb(0, 90, 0)";
+    } else if ( STATE.solo == 'l' ) {
+        e.className = "btn-maroon";
+        e.innerText = 'L_';
+
+    } else if ( STATE.solo == 'r' ) {
+        e.className = "btn-maroon";
+        e.innerText = '_R';
+
+    } else if ( STATE.solo == 'off' ) {
+        e.className = "btn-green";
         e.innerText = 'ST';
     }
 
-    // 'solo' setting will override displaying mono stereo
-    if ( state.solo == 'l' ) {
-        e.style.background = "rgb(100, 0, 0)";
-        e.innerText = 'L_';
-
-    } else if ( state.solo == 'r' ) {
-        e.style.background = "rgb(100, 0, 0)";
-        e.innerText = '_R';
-    }
-
     // 'polarity' setting will modify the button border
-    if ( state.polarity != '++' ) {
+    if ( STATE.polarity != '++' ) {
         e.style.border = "3px solid rgb(200, 10, 10)";
 
     } else {
