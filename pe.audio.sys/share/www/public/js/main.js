@@ -1526,12 +1526,10 @@ function bt_muteHighlight(){
     if ( state.muted == true ) {
         e_mute .style.background = "rgb(185, 185, 185)";
         e_mute .style.color = "white";
-        e_mute .style.fontWeight = "bolder";
         e_level.style.color = "rgb(150, 90, 90)";
     } else {
         e_mute .style.background = "rgb(100, 100, 100)";
         e_mute .style.color = "lightgray";
-        e_mute .style.fontWeight = "normal";
         e_level.style.color = "white";
     }
 }
