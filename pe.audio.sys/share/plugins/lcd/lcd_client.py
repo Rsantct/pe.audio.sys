@@ -3,15 +3,16 @@
 # Copyright (c) Rafael Sánchez
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
-
 """
     Communicates with an LCDd server daemon
 """
+
 # https://manpages.debian.org/testing/lcdproc/LCDd.8.en.html
 # http://lcdproc.sourceforge.net/docs/current-dev.html
 
 import socket
 
+LCDd_timeout = .1
 
 class Client(object):
     """ A LCDd client
@@ -30,7 +31,8 @@ class Client(object):
     def connect(self):
         try:
             self.cli.connect( (self.host, self.port) )
-            self.cli.settimeout(.1)  # if not timeout s.recv will hang :-/
+            # if not timeout s.recv will hang :-/
+            self.cli.settimeout(LCDd_timeout)
             print(f'(lcd_client) Connected to the LCDd server.')
             return True
 
@@ -53,9 +55,12 @@ class Client(object):
     def send( self, phrase ):
         """sends a command phrase to LCDd"""
         # This is faster than query to get an answer
-        self.cli.send( f'{phrase}\n'.encode() )
         if self.verbose:
-            print(phrase)
+            print(f'(lcd_client) sending: {phrase}')
+        try:
+            self.cli.send( f'{phrase}\n'.encode() )
+        except Exception as e:
+            print(f'(lcd_client) send ERROR: {str(e)}')
 
     def register( self ):
         """Try to register a client into the LCDd server"""
