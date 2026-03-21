@@ -19,14 +19,17 @@ class Client(object):
     """
 
     def __init__(self, cname, host="localhost", port=13666):
-        self.cname   = cname
-        self.host    = host
-        self.port    = port
-        self.cli     = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.verbose = False
+        self.cname      = cname
+        self.host       = host
+        self.port       = port
+        self.cli        = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.verbose    = False
+        self.error      = False
+
 
     def set_verbose(self, mode):
         self.verbose = mode
+
 
     def connect(self):
         try:
@@ -41,35 +44,59 @@ class Client(object):
             self.cli.close()
             return False
 
+
     def query( self, phrase ):
         """sends a command phrase to LCDd then returns the received answer"""
-        self.cli.send( f'{phrase}\n'.encode() )
-        ans = b''
-        while True:
-            try:
-                ans += self.cli.recv(1024)
-            except:
-                break
-        return ans.decode().strip()
+
+        def received():
+            ans = b''
+            while True:
+                try:
+                    ans += self.cli.recv(1024)
+                except:
+                    break
+            if self.verbose:
+                print(f'(lcd_client) received: {ans}')
+
+            return ans.decode().strip()
+
+        if self.verbose:
+            print(f'(lcd_client) send: {phrase}')
+
+        if self.send(phrase):
+            return received()
+
+        else:
+            return ''
+
 
     def send( self, phrase ):
-        """sends a command phrase to LCDd"""
-        # This is faster than query to get an answer
+        """sends a command phrase to LCDd w/o awaiting reception"""
+
         if self.verbose:
-            print(f'(lcd_client) sending: {phrase}')
+            print(f'(lcd_client) send: {phrase}')
+
         try:
             self.cli.send( f'{phrase}\n'.encode() )
+            return True
+
         except Exception as e:
             print(f'(lcd_client) send ERROR: {str(e)}')
+            self.error = True
+            return False
+
 
     def register( self ):
         """Try to register a client into the LCDd server"""
-        ans = self.query('hello' )
+        ans = self.query('hello')
         if "huh?" not in ans:
             if 'success' in self.query( f'client_set name {self.cname}' ):
                 print( f'(lcd_client) LCDd client \'{self.cname}\' registered' )
+                return True
             else:
                 print( f'(lcd_client) LCDd client \'{self.cname}\' ERROR registering' )
+                return False
+
 
     def get_size( self ):
         """gets the LCD size"""
@@ -83,8 +110,10 @@ class Client(object):
             pass
         return {'columns': w, 'rows': h}
 
+
     def delete_screen( self, sname ):
         self.query( f'screen_del {sname}' )
+
 
     def create_screen( self, sname, priority="info", duration=3, timeout=0 ):
         # duration: A screen will be visible for this amount of time every rotation (1/8 sec)
