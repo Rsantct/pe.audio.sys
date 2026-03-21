@@ -31,7 +31,6 @@ from miscel import  json_loads, read_state_from_disk, read_metadata_from_disk,  
 state        = { 'lu_offset': 0 }
 last_warning = ''
 
-
 # Reading the LCD SETTINGS:
 try:
     with open( f'{MAINFOLDER}/share/plugins/lcd/lcd.yml', 'r' ) as f:
@@ -39,6 +38,10 @@ try:
 except:
     print( '(lcd_daemon) ERROR reading lcd.yml' )
     exit()
+
+
+# The LCD client
+LCD = lcd_client.Client('pe.audio.sys', host='localhost', port=13666)
 
 
 class Changed_files_handler(FileSystemEventHandler):
@@ -62,6 +65,17 @@ class Changed_files_handler(FileSystemEventHandler):
         # TEMPORARY WARNINGS
         if AUX_INFO_PATH in path:
             show_new_warning()
+
+        if not LCD.error:
+            return
+
+        n = 3
+        while n:
+            if connect2LCDd():
+                break
+            sleep(.1)
+            n -= 1
+
 
 class Widgets(object):
 
@@ -406,18 +420,34 @@ def update_lcd_metadata(scr='scr_1'):
     LCD.send( cmd )
 
 
+def connect2LCDd():
+    """ Connect and register a client under the LCDd server
+        and reset the LCD.error flag
+
+        returns: boolean
+    """
+
+    if LCD.connect():
+
+        if LCD.register():
+            LCD.error = False
+            print( f'(lcd_daemon) hello: { LCD.query("hello") }' )
+            return True
+
+        else:
+            print( f'(lcd_daemon) Error registering pe.audio.sys client on LCDd server' )
+
+    else:
+        print( f'(lcd_daemon) Error connecting pe.audio.sys client on LCDd server' )
+
+    return False
+
+
 if __name__ == "__main__":
 
-    # Registers a client under the LCDd server
-    LCD = lcd_client.Client('pe.audio.sys', host='localhost', port=13666)
-    if LCD.connect():
-        LCD.register()
-        print( f'(lcd_daemon) hello: { LCD.query("hello") }' )
-    else:
+    if not connect2LCDd():
         print( f'(lcd_daemon) Error registering pe.audio.sys client on LCDd server' )
         exit()
-
-    #LCD.set_verbose(True)  # only for DEBUG purposes
 
     # Prepare the main screen
     prepare_main_screen()
