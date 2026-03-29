@@ -4,7 +4,7 @@
 # This file is part of 'pe.audio.sys'
 # 'pe.audio.sys', a PC based personal audio system.
 """
-    Communicates with an LCDd server daemon
+    Communicates with an LCDd driver
 """
 
 # https://manpages.debian.org/testing/lcdproc/LCDd.8.en.html
@@ -12,7 +12,7 @@
 
 import socket
 
-LCDd_timeout = .1
+LCDd_timeout = .2
 
 class Client(object):
     """ A LCDd client
@@ -33,14 +33,14 @@ class Client(object):
 
     def connect(self):
         try:
-            self.cli.connect( (self.host, self.port) )
             # if not timeout s.recv will hang :-/
             self.cli.settimeout(LCDd_timeout)
-            print(f'(lcd_client) Connected to the LCDd server.')
+            self.cli.connect( (self.host, self.port) )
+            print(f'(lcd_client) Connected to the LCDd driver.')
             return True
 
         except:
-            print(f'(lcd_client) Error connecting to the LCDd server.')
+            print(f'(lcd_client) Error connecting to the LCDd driver.')
             self.cli.close()
             return False
 
