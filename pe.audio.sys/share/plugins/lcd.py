@@ -18,10 +18,22 @@ from getpass import getuser
 
 UHOME = os.path.expanduser("~")
 LCDFOLDER = f'{UHOME}/pe.audio.sys/share/plugins/lcd'
+LOGFOLDER = f'{UHOME}/pe.audio.sys/log'
 USER = getuser()
 
 def start():
-    # wait 10 s for the pe.audio.sys server to be listening at :9990
+
+    def run_lcd_driver():
+        print('(plugins/lcd) launching LCDd driver...')
+        Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
+
+
+    def run_lcd_daemon():
+        print('(plugins/lcd) launching the pe.ausio.sys LCD daemon...')
+        Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
+
+
+    # wait up to 10 s for the pe.audio.sys server to be listening at :9990
     n = 10
     while n:
         tmp = check_output( ['ss', '-tl', 'sport == :9990'] ).decode()
@@ -29,16 +41,14 @@ def start():
             break
         n -= 1
         sleep(1)
+
     if n:
-        print('(plugins/lcd) launching lcd daemon...')
-        sleep(1)
-        # The server that manages the LCD display Linux driver.
-        Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
+        run_lcd_driver()
         sleep(3)
-        # The daemon to display pe.audio.sys info on the LCD
-        Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
+        run_lcd_daemon()
+
     else:
-        print('(plugins/lcd) TIMEOUT: pe.audio.sys server not detected')
+        print('(plugins/lcd) TIMEOUT: pe.audio.sys server not detected at :9990')
 
 
 def stop():
