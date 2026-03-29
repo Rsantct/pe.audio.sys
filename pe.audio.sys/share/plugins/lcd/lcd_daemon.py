@@ -180,7 +180,7 @@ def show_new_warning():
         with open(AUX_INFO_PATH, 'r') as f:
             curr_warn = json_loads(f.read())["warning"]
     except:
-        pass
+        print( f'(lcd_daemon) Error reading {AUX_INFO_PATH}')
 
     if curr_warn != last_warning:
         if curr_warn:
@@ -325,7 +325,9 @@ def update_lcd_loudness_monitor(scr='scr_1'):
         except:
             sleep(.1)
             tries -= 1
+
     if not tries:
+        print( f'(lcd_daemon) Error reading {LDMON_PATH}')
         lu_I = None
 
 
