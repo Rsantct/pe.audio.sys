@@ -141,30 +141,40 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
             yield seq[:n]
             seq = seq[n:]
 
-    # lcdproc manages 1/8 seconds
-    timeout = 8 * timeout
+    if not message.strip():
+        print('(lcd_daemon) Error cannot show temporary void message')
+        return
 
-    # Will try to define the screen, if already exist will receive 'huh?'
-    ans = LCD.query('screen_add scr_info')
-    if 'huh?' not in ans:
-        LCD.send(f'screen_set scr_info -cursor no -priority foreground ' + \
-                 f'-timeout {str(timeout)}' )
-        LCD.send('widget_add scr_info info_tit title')
-        LCD.send('widget_add scr_info info_txt2 string')
-        LCD.send('widget_add scr_info info_txt3 string')
-        LCD.send('widget_add scr_info info_txt4 string')
+    try:
 
-    # Define the screen title (at line 1)
-    LCD.send('widget_set scr_info info_tit "pe.audio.sys info:"')
+        # lcdproc manages 1/8 seconds
+        timeout = 8 * timeout
 
-    # Display the temporary message
-    line = 2
-    for data in split_by_n(message, 20):
-        LCD.send('widget_set scr_info info_txt' + str(line) + ' 1 ' +
-                 str(line) + ' "' + data + '"')
-        line += 1
-        if line > 4:
-            break
+        # Will try to define the screen, if already exist will receive 'huh?'
+        ans = LCD.query('screen_add scr_info')
+        if 'huh?' not in ans:
+            LCD.send(f'screen_set scr_info -cursor no -priority foreground ' + \
+                     f'-timeout {str(timeout)}' )
+            LCD.send('widget_add scr_info info_tit title')
+            LCD.send('widget_add scr_info info_txt2 string')
+            LCD.send('widget_add scr_info info_txt3 string')
+            LCD.send('widget_add scr_info info_txt4 string')
+
+        # Define the screen title (at line 1)
+        LCD.send('widget_set scr_info info_tit "pe.audio.sys info:"')
+
+        # Display the temporary message
+        line = 2
+        for data in split_by_n(message, 20):
+            LCD.send('widget_set scr_info info_txt' + str(line) + ' 1 ' +
+                     str(line) + ' "' + data + '"')
+            line += 1
+            if line > 4:
+                break
+
+    except Exception as e:
+        print(f'(lcd_daemon) Error cannot show temporary message "{message}": {str(e)}')
+
 
 
 def show_new_warning():
@@ -182,7 +192,7 @@ def show_new_warning():
     except:
         print( f'(lcd_daemon) Error reading {AUX_INFO_PATH}')
 
-    if curr_warn != last_warning:
+    if curr_warn and curr_warn != last_warning:
         if curr_warn:
             show_temporary_screen( curr_warn, timeout=5)
         last_warning = curr_warn
