@@ -22,9 +22,8 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import  json_loads, read_state_from_disk, read_metadata_from_disk,  \
-                    MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH,       \
-                    AUX_INFO_PATH
+from miscel import  read_json_from_file, read_state_from_disk, read_metadata_from_disk,  \
+                    MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH, AUX_INFO_PATH
 
 
 ## Auxiliary globals
@@ -176,7 +175,6 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
         print(f'(lcd_daemon) Error cannot show temporary message "{message}": {str(e)}')
 
 
-
 def show_new_warning():
     """ This checks for pe.audio.sys temporary warnings
         changes (looks inside AUX_INFO_PATH)
@@ -186,11 +184,8 @@ def show_new_warning():
 
     curr_warn = ''
 
-    try:
-        with open(AUX_INFO_PATH, 'r') as f:
-            curr_warn = json_loads(f.read())["warning"]
-    except:
-        print( f'(lcd_daemon) Error reading {AUX_INFO_PATH}')
+    aux_info = read_json_from_file(AUX_INFO_PATH, 0.5)
+    curr_warn = aux_info.get('warning', '')
 
     if curr_warn and curr_warn != last_warning:
         if curr_warn:
@@ -323,24 +318,10 @@ def update_lcd_loudness_monitor(scr='scr_1'):
         This makes it easy to adjust the proper LU reference offset setting
     """
 
-    # Reading LU-I monitored value
-    tries = 3
-    while tries:
-        try:
-            with open(LDMON_PATH, 'r') as f:
-                # e.g. {'LU_I': -6.0, 'scope': 'album'}
-                lu_dict = json_loads( f.read() )
-                lu_I = lu_dict["LU_I"]
-                break
-        except:
-            sleep(.1)
-            tries -= 1
+    lu_dict = read_json_from_file(LDMON_PATH)
+    lu_I = lu_dict.get('LU_I', None)
 
-    if not tries:
-        print( f'(lcd_daemon) Error reading {LDMON_PATH}')
-        lu_I = None
-
-
+    # Widget
     wdg  = 'loudness_monitor'
 
     # LU monitor and reference as numbers option:
