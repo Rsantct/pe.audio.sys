@@ -12,97 +12,104 @@
 
 import socket
 
-LCDd_timeout = .2
 
 class Client(object):
     """ A LCDd client
     """
 
-    def __init__(self, cname, host="localhost", port=13666):
-        self.cname      = cname
-        self.host       = host
-        self.port       = port
-        self.cli        = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.verbose    = False
-        self.error      = False
+    def __init__(self, cname='lcd_cli', host="localhost", port=13666, verbose=False):
+        self.cname          = cname
+        self.host           = host
+        self.port           = port
+        self.verbose        = verbose
+        self.error          = False
+        self.LCDd_timeout   = .2
 
-
-    def set_verbose(self, mode):
-        self.verbose = mode
+        if self.verbose:
+            print('(lcd_client) VERBOSE MODE')
 
 
     def connect(self):
+
+        self.cli = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         try:
             # if not timeout s.recv will hang :-/
-            self.cli.settimeout(LCDd_timeout)
+            self.cli.settimeout(self.LCDd_timeout)
             self.cli.connect( (self.host, self.port) )
-            print(f'(lcd_client) Connected to the LCDd driver.')
+            if self.verbose:
+                print(f'(lcd_client) Connected to the LCDd driver.')
             return True
 
-        except:
-            print(f'(lcd_client) Error connecting to the LCDd driver.')
+        except Exception as e:
+            print(f'(lcd_client) Error connecting to the LCDd driver: {str(e)}')
             self.cli.close()
+            del (self.cli)
+            self.error = True
             return False
 
 
-    def query( self, phrase ):
-        """sends a command phrase to LCDd then returns the received answer"""
+    def send( self, msg ):
+        """ sends a message to LCDd andn returns the received answer
+        """
+
+        def send( msg ):
+
+            if self.verbose:
+                print(f'(lcd_client) send: {msg}')
+
+            try:
+                self.cli.send( f'{msg}\n'.encode() )
+                return True
+
+            except Exception as e:
+                print(f'(lcd_client) send ERROR: {str(e)}')
+                self.error = True
+                return False
+
 
         def received():
+
             ans = b''
             while True:
                 try:
                     ans += self.cli.recv(1024)
                 except:
                     break
+
             if self.verbose:
                 print(f'(lcd_client) received: {ans}')
 
             return ans.decode().strip()
 
-        if self.verbose:
-            print(f'(lcd_client) send: {phrase}')
 
-        if self.send(phrase):
+        if send(msg):
             return received()
 
         else:
             return ''
 
 
-    def send( self, phrase ):
-        """sends a command phrase to LCDd w/o awaiting reception"""
-
-        if self.verbose:
-            print(f'(lcd_client) send: {phrase}')
-
-        try:
-            self.cli.send( f'{phrase}\n'.encode() )
-            return True
-
-        except Exception as e:
-            print(f'(lcd_client) send ERROR: {str(e)}')
-            self.error = True
-            return False
-
-
     def register( self ):
-        """Try to register a client into the LCDd server"""
-        ans = self.query('hello')
+        """ Try to register a client into the LCDd server
+        """
+        ans = self.send('hello')
         if "huh?" not in ans:
-            if 'success' in self.query( f'client_set name {self.cname}' ):
+            if 'success' in self.send( f'client_set name {self.cname}' ):
                 print( f'(lcd_client) LCDd client \'{self.cname}\' registered' )
                 return True
             else:
                 print( f'(lcd_client) LCDd client \'{self.cname}\' ERROR registering' )
+                self.error = True
                 return False
 
 
     def get_size( self ):
-        """gets the LCD size"""
+        """ gets the LCD size
+        """
         w = 0
         h = 0
-        ans = self.query('hello').split()
+        ans = self.send('hello').split()
         try:
             w = int( ans[ ans.index('wid') + 1 ] )
             h = int( ans[ ans.index('hgt') + 1 ] )
@@ -120,21 +127,21 @@ class Client(object):
         # timeout:  After the screen has been visible for a total of this amount of time,
         #           it will be deleted (1/8 sec)
         self.query( f'screen_add {sname}' )
-        dur = str(duration * 8)
-        tou = str(timeout  * 8)
+        duration *= 8
+        timeout = str(timeout  * 8)
         self.query( f'screen_set {sname} -cursor no' )
         self.query( f'screen_set {sname} priority {priority}' )
-        if dur != "0":
-            self.query( f'screen_set {sname} duration {dur}' )
-        if tou != "0":
-            self.query( f'screen_set {sname} timeout {tou}' )
+        if duration != "0":
+            self.query( f'screen_set {sname} duration {duration}' )
+        if timeout != "0":
+            self.query( f'screen_set {sname} timeout {timeout}' )
 
 
 if __name__ == "__main__":
 
     # This is only for command line test purpose
-    c = Client('test', host='localhost', port=13666)
+    c = Client(cname='test', host='localhost', port=13666)
     if c.connect():
         c.register()
-        print( '(lcd_client)', c.query('hello') )
+        print( '(lcd_client)', c.send('hello') )
         print( '(lcd_client)', c.get_size() )
