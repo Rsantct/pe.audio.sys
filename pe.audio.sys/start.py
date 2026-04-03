@@ -18,7 +18,7 @@
 
 import  subprocess as sp
 from    time import sleep, time, ctime, gmtime, strftime
-from    json import dumps as json_dumps
+import  json
 from    types import SimpleNamespace
 import  os
 import  sys
@@ -94,7 +94,7 @@ def start_zita_link():
     # (*) Saving the zita's UDP PORTS for future use because
     #     the remote sender could not be online at the moment ...
     with open(f'{MAINFOLDER}/.zita_link_ports', 'w') as f:
-        d = json_dumps( zita_link_ports )
+        d = json.dumps( zita_link_ports )
         f.write(d)
 
 
@@ -105,7 +105,7 @@ def stop_zita_link():
         _, raddr, rport = item
 
         # REMOTE
-        zargs = json_dumps( (get_my_ip(), None, 'stop') )
+        zargs = json.dumps( (get_my_ip(), None, 'stop') )
         remotecmd = f'aux zita_j2n {zargs}'
         send_cmd(remotecmd, host=raddr, port=rport, timeout=1)
 
@@ -126,7 +126,7 @@ def start_brutefir():
     # Ensuring that .state keeps extra_delay = 0 ms from start
     tmp_state = read_state_from_disk()
     tmp_state["extra_delay"] = 0.0
-    force_to_flush_file(STATE_PATH, json_dumps(tmp_state))
+    force_to_flush_file(STATE_PATH, json.dumps(tmp_state))
     return result
 
 

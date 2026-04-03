@@ -45,7 +45,7 @@ def dump_aux_info():
 
     # Dumping to disk
     with open(AUX_INFO_PATH, 'w') as f:
-        f.write( json_dumps(AUX_INFO, indent=2) )
+        f.write( json.dumps(AUX_INFO, indent=2) )
 
 
 def get_sysmon(w_iface='wlan0'):
@@ -220,7 +220,7 @@ def zita_j2n(args):
         args: a json tuple string "(dest, udpport, do_stop)"
     """
 
-    dest, udpport, do_stop = json_loads(args)
+    dest, udpport, do_stop = json.loads(args)
 
     # BAD ADDRESS
     if not is_IP(dest):

@@ -9,7 +9,7 @@
 
 import  socket
 import  ipaddress
-from    json import loads as json_loads, dumps as json_dumps
+import  json
 from    time import sleep
 from    datetime import datetime
 import  subprocess as sp
@@ -734,7 +734,7 @@ def get_remote_zita_params(rem_src_name):
     # The ZITA's UDP PORT was assigned at the start.
     try:
         with open(f'{MAINFOLDER}/.zita_link_ports', 'r') as f:
-            zports = json_loads( f.read() )
+            zports = json.loads( f.read() )
             zport  = zports[rem_src_name]['udpport']
     except Exception as e:
         print( f'(miscel.py) ERROR with .zita_link_ports: {str(e)}' )
@@ -750,7 +750,7 @@ def remote_zita_restart(raddr, ctrl_port, zita_port):
         (i) The sender will run zita_j2n only when a receiver request it
     """
 
-    zargs     = json_dumps( (get_my_ip(), zita_port, 'start') )
+    zargs     = json.dumps( (get_my_ip(), zita_port, 'start') )
     remotecmd = f'aux zita_j2n {zargs}'
     result = send_cmd(remotecmd, host=raddr, port=ctrl_port)
 
@@ -952,6 +952,29 @@ def read_cdda_meta_from_disk():
 
 # --- General purpose functions:
 
+def dict_compare(d1, d2, static=True):
+    """ Compare dictionaries
+
+        static: boolean to find only static keys changes, it is FASTER
+    """
+
+    if static:
+        changes = {k: (d1[k], d2[k]) for k in d1 if k in d2 and d1[k] != d2[k]}
+        return changes
+
+
+    keys1 = set(d1.keys())
+    keys2 = set(d2.keys())
+
+    interseccion = keys1.intersection(keys2)
+
+    changed = {k: (d1[k], d2[k]) for k in interseccion if d1[k] != d2[k]}
+    added   = {k: d2[k] for k in keys2 - keys1}
+    removed = {k: d1[k] for k in keys1 - keys2}
+
+    return changed, added, removed
+
+
 def read_json_from_file(fpath, timeout=2):
     """ Some json files cannot be ready to read in first run,
         so let's retry
@@ -968,7 +991,7 @@ def read_json_from_file(fpath, timeout=2):
     while tries:
         try:
             with open(fpath, 'r') as f:
-                d = json_loads(f.read())
+                d = json.loads(f.read())
             break
         except:
             tries -= 1
