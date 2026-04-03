@@ -24,13 +24,19 @@ USER = getuser()
 def start():
 
     def run_lcd_driver():
-        print('(plugins/lcd) launching LCDd driver...')
+        print('(plugins/lcd) starting the LCDd driver...')
         Popen( f'LCDd -c {LCDFOLDER}/LCDd.conf'.split() )
 
 
     def run_lcd_daemon():
-        print('(plugins/lcd) launching the pe.ausio.sys LCD daemon...')
-        Popen( f'python3 {LCDFOLDER}/lcd_daemon.py'.split() )
+        print('(plugins/lcd) starting the pe.ausio.sys LCD daemon...')
+        dv_flag = ''
+        cv_flag = ''
+        if daemon_verbose:
+            dv_flag = '-v'
+        if client_verbose:
+            cv_flag = '-cv'
+        Popen( f'python3 {LCDFOLDER}/lcd_daemon.py {dv_flag} {cv_flag}'.split() )
 
 
     # wait up to 10 s for the pe.audio.sys server to be listening at :9990
@@ -56,14 +62,34 @@ def stop():
     call( ['pkill', '-u', USER, '-f', 'lcd_daemon.py'] )
 
 
-if sys.argv[1:]:
-    try:
-        option = {
-                    'start' : start,
-                    'stop'  : stop
-                  }[ sys.argv[1] ]()
-    except:
-        print( '(plugins/lcd.py) internal error :-/' )
+if __name__ == "__main__":
 
-else:
-    print(__doc__)
+    daemon_verbose = False
+    client_verbose = False
+
+    mode    = ''
+
+    for opc in sys.argv[1:]:
+
+        if opc == 'start':
+            mode = 'start'
+
+        elif opc == 'stop':
+            mode = 'stop'
+
+        elif '-v' in opc or '-dv' in opc:
+            daemon_verbose = True
+
+        elif '-cv' in opc:
+            client_verbose = True
+
+    if mode == 'start':
+        stop()
+        sleep(.5)
+        start()
+
+    elif mode == 'stop':
+        stop()
+
+    else:
+        print(__doc__)
