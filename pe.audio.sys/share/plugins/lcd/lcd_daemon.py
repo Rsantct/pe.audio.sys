@@ -22,13 +22,13 @@ from time import sleep
 UHOME = os.path.expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from miscel import  read_json_from_file, read_state_from_disk, read_metadata_from_disk,  \
-                    MAINFOLDER, STATE_PATH, LDMON_PATH, PLAYER_META_PATH, AUX_INFO_PATH
-
+from miscel import *
 
 ## Auxiliary globals
-state        = { 'lu_offset': 0 }
-last_warning = ''
+state         = { 'lu_offset': 0 }
+last_warning  = ''
+last_metadata = {}
+last_lu_I     = 0
 
 # Reading the LCD SETTINGS:
 try:
@@ -39,28 +39,31 @@ except:
     exit()
 
 
-# The LCD client
-LCD = lcd_client.Client('pe.audio.sys', host='localhost', port=13666)
-
-
 class Changed_files_handler(FileSystemEventHandler):
     """ This is a handler that will do something when some file has changed
     """
 
     def on_modified(self, event):
 
+        if event.is_directory:
+            return
+
         path = event.src_path
-        #print( f'(lcd_daemon) file {event.event_type}: \'{path}\'' ) # DEBUG
+        if verbose:
+            print( f'(lcd_daemon) EVENT {event.event_type}: \'{path}\'' )
 
         # pe.audio.sys STATE changes
         if STATE_PATH in path:
             update_lcd_state()
+
         # METADATA perodically updated file by players.py
         if PLAYER_META_PATH in path:
             update_lcd_metadata()
+
         # LOUDNESS MONITOR
         if path in (LDMON_PATH):
             update_lcd_loudness_monitor()
+
         # TEMPORARY WARNINGS
         if AUX_INFO_PATH in path:
             show_new_warning()
@@ -68,8 +71,10 @@ class Changed_files_handler(FileSystemEventHandler):
         if not LCD.error:
             return
 
+        print('(lcd_daemon) *!* detected LCDd.error')
         n = 3
         while n:
+            print('(lcd_daemon) reconnecting to LCDd ...')
             if connect2LCDd():
                 break
             sleep(.1)
@@ -150,7 +155,7 @@ def show_temporary_screen( message, timeout=LCD_CONFIG['info_screen_timeout'] ):
         timeout = 8 * timeout
 
         # Will try to define the screen, if already exist will receive 'huh?'
-        ans = LCD.query('screen_add scr_info')
+        ans = LCD.send('screen_add scr_info')
         if 'huh?' not in ans:
             LCD.send(f'screen_set scr_info -cursor no -priority foreground ' + \
                      f'-timeout {str(timeout)}' )
@@ -297,6 +302,10 @@ def update_lcd_state(scr='scr_1'):
     # If changed
     if new_state != state:
 
+        if verbose:
+            changes = dict_compare(new_state, state)
+            print(f'(lcd_daemon) STATE changed: {changes}')
+
         # update global state
         state = new_state
 
@@ -318,8 +327,18 @@ def update_lcd_loudness_monitor(scr='scr_1'):
         This makes it easy to adjust the proper LU reference offset setting
     """
 
-    lu_dict = read_json_from_file(LDMON_PATH)
-    lu_I = lu_dict.get('LU_I', None)
+    global last_lu_I
+
+    ld_mon = read_json_from_file(LDMON_PATH)
+    lu_I = ld_mon.get('LU_I', None)
+
+    if lu_I == last_lu_I:
+        return
+
+    if verbose:
+        print(f'(lcd_daemon) LU_I changed: {last_lu_I} -> {lu_I}')
+
+    last_lu_I = lu_I
 
     # Widget
     wdg  = 'loudness_monitor'
@@ -373,6 +392,7 @@ def update_lcd_metadata(scr='scr_1'):
     """ Reads the metadata dict then updates the LCD display marquee """
     # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html
 
+    global last_metadata
 
     # Composes a string by joining artist+album+title
     def compose_marquee(md):
@@ -387,6 +407,16 @@ def update_lcd_metadata(scr='scr_1'):
     md = read_metadata_from_disk()
     if not md:
         return
+
+    # Early return if no changes in title/album
+    if last_metadata.get('title', '') == md.get('title', '') \
+       and last_metadata.get('album', '') == md.get('album', ''):
+           return
+
+    if verbose:
+       print(f'(lcd_daemon) METADATA TITLE changed: {md.get("title")}')
+
+    last_metadata = md
 
     # Modify the metadata dict to have a new field 'composed_marquue'
     # with artist+album+title to be displayed on the LCD bottom line marquee.
@@ -424,7 +454,7 @@ def connect2LCDd():
 
         if LCD.register():
             LCD.error = False
-            print( f'(lcd_daemon) hello: { LCD.query("hello") }' )
+            print( f'(lcd_daemon) hello: { LCD.send("hello") }' )
             return True
 
         else:
@@ -437,6 +467,22 @@ def connect2LCDd():
 
 
 if __name__ == "__main__":
+
+    verbose = False
+    client_verbose = False
+
+    for opc in sys.argv[1:]:
+
+        if opc == '-v':
+            print('(lcd_daemon) VERBOSE MODE')
+            verbose = True
+
+        elif opc == 'cv':
+            client_verbose = True
+
+
+    # The LCD client
+    LCD = lcd_client.Client('pe.audio.sys', host='localhost', port=13666, verbose=client_verbose)
 
     if not connect2LCDd():
         print( f'(lcd_daemon) Error registering pe.audio.sys client on LCDd server' )
