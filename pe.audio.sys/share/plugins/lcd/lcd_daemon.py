@@ -25,7 +25,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from miscel import *
 
 ## Auxiliary globals
-state         = read_state_from_disk()
+state         = { 'lu_offset': 0 }
 last_warning  = ''
 last_metadata = {}
 last_lu_I     = 0
@@ -224,7 +224,7 @@ def update_lcd_state(scr='scr_1'):
 
     global state
 
-    def show_state(state, priority="info"):
+    def show_state(priority="info"):
 
         ws = Widgets()
 
@@ -315,7 +315,7 @@ def update_lcd_state(scr='scr_1'):
             update_lcd_loudness_monitor()
 
         # refresh state items in LCD
-        show_state(state)
+        show_state()
 
 
 def update_lcd_loudness_monitor(scr='scr_1'):
