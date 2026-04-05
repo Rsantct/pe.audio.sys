@@ -25,7 +25,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from miscel import *
 
 ## Auxiliary globals
-state         = { 'lu_offset': 0 }
+state         = read_state_from_disk()
 last_warning  = ''
 last_metadata = {}
 last_lu_I     = 0
@@ -224,7 +224,7 @@ def update_lcd_state(scr='scr_1'):
 
     global state
 
-    def show_state(priority="info"):
+    def show_state(state, priority="info"):
 
         ws = Widgets()
 
@@ -302,8 +302,9 @@ def update_lcd_state(scr='scr_1'):
     # If changed
     if new_state != state:
 
+        changes = dict_compare(new_state, state)
+
         if verbose:
-            changes = dict_compare(new_state, state)
             print(f'(lcd_daemon) STATE changed: {changes}')
 
         # update global state
@@ -314,7 +315,7 @@ def update_lcd_state(scr='scr_1'):
             update_lcd_loudness_monitor()
 
         # refresh state items in LCD
-        show_state()
+        show_state(state)
 
 
 def update_lcd_loudness_monitor(scr='scr_1'):
@@ -473,11 +474,11 @@ if __name__ == "__main__":
 
     for opc in sys.argv[1:]:
 
-        if opc == '-v':
+        if '-v' in opc:
             print('(lcd_daemon) VERBOSE MODE')
             verbose = True
 
-        elif opc == 'cv':
+        elif '-cv' in opc:
             client_verbose = True
 
 
