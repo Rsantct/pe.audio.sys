@@ -204,7 +204,12 @@ def run_macro(mname):
     if mname in get_macros():
 
         print( f'(aux) running macro: {mname}' )
-        sp.Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
+
+        try:
+            sp.Popen( f'"{MACROS_FOLDER}/{mname}"', shell=True)
+        except Exception as e:
+            return str(e)
+
         AUX_INFO["last_macro"] = mname
         return 'ordered'
 
