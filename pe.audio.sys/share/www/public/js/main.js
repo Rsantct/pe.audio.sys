@@ -30,9 +30,7 @@ var web_config          = { 'main_selector':      'inputs',
 
 var main_sel_mode       = web_config.main_selector;
 
-var mFnames             = web_config.user_macros; // Macro file names
-
-var macro_button_list   = [];
+var mFnames             = [];       // Macro file names
 
 var metablank           = {         // A player's metadata blank dict
                             'player':       '',
@@ -1008,9 +1006,10 @@ function clear_highlighteds(){
 
 
 function clear_macro_buttons_highlight(){
-    for (let i = 0; i < macro_button_list.length; i++) {
-        document.getElementById(macro_button_list[i]).className = 'macro_button';
-    }
+    const m_buttons = document.querySelectorAll('#macro_buttons button');
+    m_buttons.forEach(b => {
+        b.classList = 'macro_button';
+    });
 }
 
 
