@@ -15,7 +15,9 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
 from    config                  import  CONFIG
 from    miscel                  import  get_remote_zita_params, \
-                                        remote_zita_restart
+                                        remote_zita_restart,    \
+                                        get_xo_latencies
+
 from    preamp_mod.core         import  Preamp, Convolver
 
 # INITIATE A PREAMP INSTANCE
@@ -96,6 +98,7 @@ def do( cmd, argstring ):
         result = convolver.set_xo(x)
         if result == 'done':
             preamp.state['xo_set'] = x
+            preamp.state['xo_latency'] = latencies.get(x, 0)
         return result
 
 
@@ -167,6 +170,8 @@ def do( cmd, argstring ):
     def print_help(*dummy):
         return open(f'{UHOME}/pe.audio.sys/doc/peaudiosys.hlp', 'r').read()
 
+
+    latencies = get_xo_latencies( convolver.xo_sets )
 
     # extract 'add' option for relative changes
     arg, add = analize_arg_add(argstring)
