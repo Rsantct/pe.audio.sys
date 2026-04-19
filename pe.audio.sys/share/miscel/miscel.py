@@ -10,9 +10,10 @@
 import  socket
 import  ipaddress
 import  json
-from    time import sleep
-from    datetime import datetime
-import  subprocess as sp
+from    time        import sleep
+from    datetime    import datetime
+from    pathlib     import Path
+import  subprocess  as sp
 import  configparser
 import  os
 import  threading
@@ -20,6 +21,7 @@ import  psutil
 import  inspect
 import  shlex
 import  jack
+import  numpy       as np
 
 from    config      import  *
 from    fmt         import  Fmt
@@ -180,6 +182,56 @@ def get_loudspeaker_sample_rates():
     sample_rates.sort()
 
     return sample_rates
+
+
+def get_xo_latencies(xo_sets):
+    """ Analize FIR latency for xo_sets
+
+        Example of xover PCM files:
+
+            my_lspk/44100/xo.hi.lp.pcm
+            my_lspk/44100/xo.hi.mp.pcm
+            my_lspk/44100/xo.lo.lp.pcm
+            my_lspk/44100/xo.lo.mp.pcm
+            my_lspk/44100/xo.sw.lp.pcm
+            my_lspk/44100/xo.sw.mp.pcm
+
+                xo.<way_id>.<xo_set>.pcm
+    """
+
+    def readPCM(fname, dtype=np.float32):
+        return np.fromfile(fname, dtype=dtype)
+
+
+    def get_peak(fir):
+        peak_pos = np.argmax(np.abs(fir))
+        fs = CONFIG['sample_rate']
+        latency_ms = round(peak_pos / fs * 1000, 1)
+        return (latency_ms, peak_pos)
+
+    directory = Path(LSPK_FOLDER)
+    latencies = {}
+
+    for xo_set in xo_sets:
+
+        latencies[xo_set] = []
+
+        pcm_files = list(directory.glob(f'xo.*.{xo_set}.pcm'))
+
+        for f in pcm_files:
+            fir = readPCM( str(f.absolute()) )
+            latency, _ = get_peak(fir)
+            latencies[xo_set].append(latency)
+
+    # DEBUG
+    #print(latencies)
+
+    # Keep only the minimun one, because low cut FIRs have a "thick" peaking zone
+    for xo_set in xo_sets:
+        latencies[xo_set] = np.min( latencies[xo_set] )
+
+    # example {'mp': 1.0, 'lp': 92.9}
+    return latencies
 
 
 def load_extra_cards(config=CONFIG, channels=2):
