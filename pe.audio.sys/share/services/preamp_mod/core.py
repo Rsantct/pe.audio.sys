@@ -24,7 +24,7 @@ from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
                     LSPK_FOLDER, LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
-                    time_sec2mmss, Fmt, calc_gain
+                    time_sec2mmss, Fmt, calc_gain, get_xo_latencies
 
 USE_AMIXER = False
 try:
@@ -180,9 +180,14 @@ def init_audio_settings():
 
         # Processing
         warning = ''
+
         if func( value ) == 'done':
             preamp.state[state_prop] = value
+            # special case XO
+            if state_prop == 'xo_set':
+                preamp.state["xo_latency"] = latencies.get(value, 0)
             print('(on_init)', prop, value)
+
         else:
             warning = f'{Fmt.RED}bad {prop}:{value}{Fmt.END}'
             print('(on_init)', warning)
@@ -199,6 +204,8 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
     warnings  = ''
+    latencies = get_xo_latencies( convolver.xo_sets )
+
 
 
     # DEFAULTS
