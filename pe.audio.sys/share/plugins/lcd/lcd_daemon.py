@@ -333,11 +333,9 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     ld_mon = read_json_from_file(LDMON_PATH)
     lu_I = ld_mon.get('LU_I', None)
 
-    if lu_I == last_lu_I:
-        return
-
-    if verbose:
-        print(f'(lcd_daemon) LU_I changed: {last_lu_I} -> {lu_I}')
+    if lu_I != last_lu_I:
+        if verbose:
+            print(f'(lcd_daemon) LU_I changed: {last_lu_I} -> {lu_I}')
 
     last_lu_I = lu_I
 
