@@ -354,11 +354,11 @@ def _init(compressor='off', mode='start'):
             print(f'{Fmt.BOLD}Cannot disconnect CamillaDSP cpal jack ports from system{Fmt.END}')
             return False
 
-        # Inserting before Brutefir
-        if _insert_cdsp():
-            print(f'{Fmt.BLUE}CamillaDSP has been inserted in jack.{Fmt.END}')
-        else:
-            return False
+        # Inserting before Brutefir. Deprecated, preamp.py will do this when necessary.
+        #if _insert_cdsp():
+        #    print(f'{Fmt.BLUE}CamillaDSP has been inserted in jack.{Fmt.END}')
+        #else:
+        #    return False
 
         # Double check
         if not _cpal_ports_ok():
