@@ -226,11 +226,18 @@ def get_xo_latencies(xo_sets):
     # DEBUG
     #print(latencies)
 
-    # Keep only the minimun one, because low cut FIRs have a "thick" peaking zone
+    # Keep only the minimun one of the found ones,
+    # because low cut FIRs have a "thick" peaking zone
     for xo_set in xo_sets:
         latencies[xo_set] = np.min( latencies[xo_set] )
 
     # example {'mp': 1.0, 'lp': 92.9}
+
+    # Offset to indicate extra latency over the minimum one
+    minimum = min( latencies.values() )
+    for k in latencies:
+        latencies[k] -= minimum
+
     return latencies
 
 
