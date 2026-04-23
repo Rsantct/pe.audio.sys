@@ -1,5 +1,8 @@
 sample_rate:       44100 
 
+# io latency needs to be manually measured
+io_latency:  95.4
+
 # ===================== ALSAMIXER VOLUME CONTROL (OPTIONAL) ====================
 
 # You need to investigate 'alsamixer' and 'amixer' command line tools
