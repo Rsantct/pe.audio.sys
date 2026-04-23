@@ -8,17 +8,19 @@
 """
 
 import  sys
-from    os.path             import expanduser
+from    os.path         import expanduser
+from    time            import sleep
+import  jack
 
 UHOME = expanduser("~")
 sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 
-from    config                  import  CONFIG
-from    miscel                  import  get_remote_zita_params, \
-                                        remote_zita_restart,    \
-                                        get_xo_latencies
+from    config          import  CONFIG
+from    miscel          import  get_remote_zita_params, \
+                                remote_zita_restart,    \
+                                get_xo_latencies
 
-from    preamp_mod.core         import  Preamp, Convolver
+from    preamp_mod.core import  Preamp, Convolver
 
 # INITIATE A PREAMP INSTANCE
 preamp = Preamp()
@@ -38,6 +40,52 @@ if CONFIG["use_compressor"]:
 
 # Anyway the compresor stage is baypassed at startup
 preamp.state["compressor"] = 'off'
+
+
+# Auxiliary to insert CamillaDSP (used for compressor)
+def camilladsp_insert(insert=True):
+    """ insert (boolean)
+    """
+
+    def con(xpair, ypair):
+        for x,y in zip(xpair, ypair):
+            try:
+                jcli.connect(x,y)
+                sleep(.1)
+            except Exception as e:
+                pass
+                #print(e)
+
+
+    def dis(xpair, ypair):
+        for x,y in zip(xpair, ypair):
+            try:
+                jcli.disconnect(x,y)
+            except Exception as e:
+                pass
+                #print(e)
+
+
+    pre_out = 'pre_in_loop:output_1',  'pre_in_loop:output_2'
+    cam_in  = 'cpal_client_in:in_0',   'cpal_client_in:in_1'
+    cam_out = 'cpal_client_out:out_0', 'cpal_client_out:out_1'
+    bf_in   = 'brutefir:in.L',         'brutefir:in.R'
+
+    jcli = jack.Client('cdsp', no_start_server=True)
+    jcli.activate()
+
+    if insert:
+        con(pre_out, cam_in)
+        con(cam_out, bf_in)
+        dis(pre_out, bf_in)
+
+    else:
+        con(pre_out, bf_in)
+        dis(pre_out, cam_in)
+        dis(cam_out, bf_in)
+
+    jcli.deactivate()
+    jcli.close()
 
 
 # Interface function for this module
@@ -159,10 +207,12 @@ def do( cmd, argstring ):
             if active:
                 res = parameters["ratio"]
                 preamp.state["compressor"] = res
+                camilladsp_insert(True)
 
             else:
                 res = 'off'
                 preamp.state["compressor"] = res
+                camilladsp_insert(False)
 
         return res
 
