@@ -330,6 +330,9 @@ class Preamp(object):
         self.state["jack_buffer"] = jack.JCLI.blocksize
         self.state["jack_device"] = jack.get_device()
 
+        # save the base i/o latency to state
+        self.state["io_latency"] = CONFIG.get('io_latency', 60)
+
         # UPDATE STATE FILE
         self.save_state()
 
