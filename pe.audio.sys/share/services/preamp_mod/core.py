@@ -300,7 +300,6 @@ class Preamp(object):
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
-        self.state["fs"] = jack.JCLI.samplerate
 
         # tone_memo keeps tone values even when tone_defeat is activated
         self.state["tone_defeat"] = False
@@ -326,12 +325,16 @@ class Preamp(object):
         # get swap LR
         self.state["lr_swapped"] = self._check_pre_in_swapped()
 
-        # get JACK stuff
+        # DSP and JACK stuff
+        self.state["samplerate"]  = jack.JCLI.samplerate
         self.state["jack_buffer"] = jack.JCLI.blocksize
         self.state["jack_device"] = jack.get_device()
-
-        # save the base i/o latency to state
-        self.state["io_latency"] = CONFIG.get('io_latency', 60)
+        self.state["dsp_latency"] = CONFIG.get('dsp_latency', 60)
+        fs             = self.state["samplerate"]
+        jperiod        = CONFIG["jack"]["period"]
+        jnperiods      = CONFIG["jack"]["nperiods"]
+        output_latency = round( (jperiod * jnperiods) / fs * 1000, 1)
+        self.state["output_latency"] = output_latency
 
         # UPDATE STATE FILE
         self.save_state()
