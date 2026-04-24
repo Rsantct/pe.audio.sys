@@ -208,7 +208,7 @@ function fill_in_page_statics(){
             option.text = web_config.lspk_sample_rates[i];
             mySel.add(option);
         }
-        mySel.value = state.fs;
+        mySel.value = state.samplerate;
     }
 
 
@@ -1300,7 +1300,7 @@ function oc_restart_samplerate(value){
         alert(ans);
 
     }else{
-        s.value = state.fs;
+        s.value = state.samplerate;
     };
 }
 
