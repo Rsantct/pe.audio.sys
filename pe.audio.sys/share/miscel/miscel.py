@@ -205,7 +205,7 @@ def get_xo_latencies(xo_sets):
 
     def get_peak(fir):
         peak_pos = np.argmax(np.abs(fir))
-        fs = CONFIG['sample_rate']
+        fs = CONFIG['samplerate']
         latency_ms = round(peak_pos / fs * 1000, 1)
         return (latency_ms, peak_pos)
 
@@ -309,8 +309,8 @@ def start_jack_stuff(config=CONFIG):
     else:
         jBkndOpts  = f'-p {jc["period"]}'
 
-    # set sample_rate
-    jBkndOpts += f' -r {CONFIG["sample_rate"]}'
+    # set samplerate
+    jBkndOpts += f' -r {CONFIG["samplerate"]}'
 
     # other backend options (config.yml)
     if ('miscel' in jc) and (jc["miscel"]):
@@ -685,7 +685,7 @@ def read_bf_config_fs():
 
 
     if not fs:
-        raise ValueError('unable to find Brutefir sample_rate')
+        raise ValueError('unable to find Brutefir samplerate')
 
     if 'brutefir_defaults' in fname:
         print(f'{Fmt.RED}'
