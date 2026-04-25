@@ -212,6 +212,9 @@ def get_xo_latencies(xo_sets):
     directory = Path(LSPK_FOLDER)
     latencies = {}
 
+    if not xo_sets:
+        return latencies
+
     for xo_set in xo_sets:
 
         latencies[xo_set] = []
