@@ -42,7 +42,7 @@ if CONFIG["use_compressor"]:
 preamp.state["compressor"] = 'off'
 
 
-# Auxiliary to insert CamillaDSP (used for compressor)
+# Auxiliary to insert CamillaDSP (when needed for compressor)
 def camilladsp_insert(insert=True):
     """ insert (boolean)
     """
