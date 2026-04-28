@@ -184,8 +184,8 @@ def get_loudspeaker_sample_rates():
     return sample_rates
 
 
-def get_xo_latencies(xo_sets):
-    """ Analize FIR latency for xo_sets
+def get_xo_latencies(xo_sets, relative=True):
+    """ Analize FIR latency for each xo_set
 
         Example of xover PCM files:
 
@@ -197,6 +197,9 @@ def get_xo_latencies(xo_sets):
             my_lspk/44100/xo.sw.mp.pcm
 
                 xo.<way_id>.<xo_set>.pcm
+
+        If <relative>, the result is referred to the minimum latency
+        set of those found, example:  {'mp': 0.0, 'lp': 91.9}
     """
 
     def readPCM(fname, dtype=np.float32):
@@ -229,17 +232,18 @@ def get_xo_latencies(xo_sets):
     # DEBUG
     #print(latencies)
 
-    # Keep only the minimun one of the found ones,
+    # Keep only the minimum one of those found,
     # because low cut FIRs have a "thick" peaking zone
     for xo_set in xo_sets:
         latencies[xo_set] = np.min( latencies[xo_set] )
 
     # example {'mp': 1.0, 'lp': 92.9}
 
-    # Offset to indicate extra latency over the minimum one
-    minimum = min( latencies.values() )
-    for k in latencies:
-        latencies[k] -= minimum
+    # Relative extra latency over the minimum one
+    if relative:
+        minimum = min( latencies.values() )
+        for k in latencies:
+            latencies[k] -= minimum
 
     return latencies
 
