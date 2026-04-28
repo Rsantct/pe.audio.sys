@@ -22,7 +22,7 @@ from    miscel  import MAINFOLDER, time_sec2mmss, Fmt
 
 
 # (i) AUDIO FORMAT IS HARDWIRED pending on how to retrieve it from the desktop client.
-SPOTIFY_BITRATE = '320'
+SPOTIFY_BITRATE = '1411'
 SPOTIFY_FORMAT  = '44100:16:2'
 
 # USER PLAYLISTS
