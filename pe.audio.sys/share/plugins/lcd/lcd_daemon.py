@@ -302,8 +302,9 @@ def update_lcd_state(scr='scr_1'):
     # If changed
     if new_state != state:
 
+        changes = dict_compare(new_state, state)
+
         if verbose:
-            changes = dict_compare(new_state, state)
             print(f'(lcd_daemon) STATE changed: {changes}')
 
         # update global state
@@ -332,11 +333,9 @@ def update_lcd_loudness_monitor(scr='scr_1'):
     ld_mon = read_json_from_file(LDMON_PATH)
     lu_I = ld_mon.get('LU_I', None)
 
-    if lu_I == last_lu_I:
-        return
-
-    if verbose:
-        print(f'(lcd_daemon) LU_I changed: {last_lu_I} -> {lu_I}')
+    if lu_I != last_lu_I:
+        if verbose:
+            print(f'(lcd_daemon) LU_I changed: {last_lu_I} -> {lu_I}')
 
     last_lu_I = lu_I
 
@@ -473,11 +472,11 @@ if __name__ == "__main__":
 
     for opc in sys.argv[1:]:
 
-        if opc == '-v':
+        if '-v' in opc:
             print('(lcd_daemon) VERBOSE MODE')
             verbose = True
 
-        elif opc == 'cv':
+        elif '-cv' in opc:
             client_verbose = True
 
 

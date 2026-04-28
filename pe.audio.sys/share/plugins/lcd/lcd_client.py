@@ -13,7 +13,7 @@
 import socket
 
 
-class Client(object):
+class Client:
     """ A LCDd client
     """
 
@@ -23,7 +23,9 @@ class Client(object):
         self.port           = port
         self.verbose        = verbose
         self.error          = False
-        self.LCDd_timeout   = .2
+        self.LCDd_timeout   = .1
+        self.cli            = None
+        self.lector         = None
 
         if self.verbose:
             print('(lcd_client) VERBOSE MODE')
@@ -39,14 +41,21 @@ class Client(object):
             self.cli.connect( (self.host, self.port) )
             if self.verbose:
                 print(f'(lcd_client) Connected to the LCDd driver.')
+            self.lector = self.cli.makefile('r', encoding='utf-8')
             return True
 
         except Exception as e:
             print(f'(lcd_client) Error connecting to the LCDd driver: {str(e)}')
-            self.cli.close()
-            del (self.cli)
+            selfclose()
             self.error = True
             return False
+
+    def close(self):
+        if self.lector:
+            self.lector.close()
+        if self.cli:
+            self.cli.close()
+        print("(lcd_client) connection closed")
 
 
     def send( self, msg ):
@@ -54,14 +63,11 @@ class Client(object):
         """
 
         def send( msg ):
-
-            if self.verbose:
-                print(f'(lcd_client) send: {msg}')
-
             try:
-                self.cli.send( f'{msg}\n'.encode() )
+                self.cli.sendall( f'{msg}\n'.encode() )
+                if self.verbose:
+                    print(f'(lcd_client) sent: {msg}')
                 return True
-
             except Exception as e:
                 print(f'(lcd_client) send ERROR: {str(e)}')
                 self.error = True
@@ -69,18 +75,14 @@ class Client(object):
 
 
         def received():
-
-            ans = b''
-            while True:
-                try:
-                    ans += self.cli.recv(1024)
-                except:
-                    break
-
-            if self.verbose:
-                print(f'(lcd_client) received: {ans}')
-
-            return ans.decode().strip()
+            """ read a line response from LCDd """
+            ans = ''
+            if self.lector:
+                line = self.lector.readline()
+                ans = line.strip()
+                if self.verbose:
+                    print(f'(lcd_client) received: {ans}')
+            return ans
 
 
         if send(msg):

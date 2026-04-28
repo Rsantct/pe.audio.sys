@@ -90,9 +90,9 @@ function do_start {
 
 
 function modify_sample_rate {
-    # $1 must be the new sample_rate value
-    tmp="sample_rate: ""$1"
-    sed -i -e "/^sample_rate:/c\\$tmp"   $HOME/pe.audio.sys/config/config.yml
+    # $1 must be the new samplerate value
+    tmp="samplerate: ""$1"
+    sed -i -e "/^samplerate:/c\\$tmp"   $HOME/pe.audio.sys/config/config.yml
 }
 
 
@@ -150,7 +150,7 @@ if [[ $fs_ok != "yes"  ]]; then
 fi
 
 
-# Modify config.yml with the new sample_rate if desired:
+# Modify config.yml with the new samplerate if desired:
 if [[ $fs != "0" ]]; then
 
     # Validate if the loudspeaker has the desired samplerate:

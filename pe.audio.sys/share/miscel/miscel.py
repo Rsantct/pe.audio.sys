@@ -10,9 +10,10 @@
 import  socket
 import  ipaddress
 import  json
-from    time import sleep
-from    datetime import datetime
-import  subprocess as sp
+from    time        import sleep
+from    datetime    import datetime
+from    pathlib     import Path
+import  subprocess  as sp
 import  configparser
 import  os
 import  threading
@@ -20,6 +21,7 @@ import  psutil
 import  inspect
 import  shlex
 import  jack
+import  numpy       as np
 
 from    config      import  *
 from    fmt         import  Fmt
@@ -182,6 +184,70 @@ def get_loudspeaker_sample_rates():
     return sample_rates
 
 
+def get_xo_latencies(xo_sets, relative=True):
+    """ Analize FIR latency for each xo_set
+
+        Example of xover PCM files:
+
+            my_lspk/44100/xo.hi.lp.pcm
+            my_lspk/44100/xo.hi.mp.pcm
+            my_lspk/44100/xo.lo.lp.pcm
+            my_lspk/44100/xo.lo.mp.pcm
+            my_lspk/44100/xo.sw.lp.pcm
+            my_lspk/44100/xo.sw.mp.pcm
+
+                xo.<way_id>.<xo_set>.pcm
+
+        If <relative>, the result is referred to the minimum latency
+        set of those found, example:  {'mp': 0.0, 'lp': 91.9}
+    """
+
+    def readPCM(fname, dtype=np.float32):
+        return np.fromfile(fname, dtype=dtype)
+
+
+    def get_peak(fir):
+        peak_pos = np.argmax(np.abs(fir))
+        fs = CONFIG['samplerate']
+        latency_ms = round(peak_pos / fs * 1000, 1)
+        return (latency_ms, peak_pos)
+
+    directory = Path(LSPK_FOLDER)
+    latencies = {}
+
+    if not xo_sets:
+        return latencies
+
+    for xo_set in xo_sets:
+
+        latencies[xo_set] = []
+
+        pcm_files = list(directory.glob(f'xo.*.{xo_set}.pcm'))
+
+        for f in pcm_files:
+            fir = readPCM( str(f.absolute()) )
+            latency, _ = get_peak(fir)
+            latencies[xo_set].append(latency)
+
+    # DEBUG
+    #print(latencies)
+
+    # Keep only the minimum one of those found,
+    # because low cut FIRs have a "thick" peaking zone
+    for xo_set in xo_sets:
+        latencies[xo_set] = np.min( latencies[xo_set] )
+
+    # example {'mp': 1.0, 'lp': 92.9}
+
+    # Relative extra latency over the minimum one
+    if relative:
+        minimum = min( latencies.values() )
+        for k in latencies:
+            latencies[k] -= minimum
+
+    return latencies
+
+
 def load_extra_cards(config=CONFIG, channels=2):
     """ This launch resamplers that connects extra sound cards into Jack
         (void)
@@ -250,8 +316,8 @@ def start_jack_stuff(config=CONFIG):
     else:
         jBkndOpts  = f'-p {jc["period"]}'
 
-    # set sample_rate
-    jBkndOpts += f' -r {CONFIG["sample_rate"]}'
+    # set samplerate
+    jBkndOpts += f' -r {CONFIG["samplerate"]}'
 
     # other backend options (config.yml)
     if ('miscel' in jc) and (jc["miscel"]):
@@ -626,7 +692,7 @@ def read_bf_config_fs():
 
 
     if not fs:
-        raise ValueError('unable to find Brutefir sample_rate')
+        raise ValueError('unable to find Brutefir samplerate')
 
     if 'brutefir_defaults' in fname:
         print(f'{Fmt.RED}'

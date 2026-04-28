@@ -24,7 +24,7 @@ from config import  STATE_PATH, CONFIG, EQ_FOLDER, EQ_CURVES, TONE_MEMO_PATH, \
                     LSPK_FOLDER, LDMON_PATH, MAINFOLDER
 
 from miscel import  read_state_from_disk, read_json_from_file, get_peq_in_use, \
-                    time_sec2mmss, Fmt, calc_gain
+                    time_sec2mmss, Fmt, calc_gain, get_xo_latencies
 
 USE_AMIXER = False
 try:
@@ -180,9 +180,14 @@ def init_audio_settings():
 
         # Processing
         warning = ''
+
         if func( value ) == 'done':
             preamp.state[state_prop] = value
+            # special case XO
+            if state_prop == 'xo_set':
+                preamp.state["xo_latency"] = latencies.get(value, 0)
             print('(on_init)', prop, value)
+
         else:
             warning = f'{Fmt.RED}bad {prop}:{value}{Fmt.END}'
             print('(on_init)', warning)
@@ -199,6 +204,8 @@ def init_audio_settings():
     preamp    = Preamp()
     convolver = Convolver()
     warnings  = ''
+    latencies = get_xo_latencies( convolver.xo_sets )
+
 
 
     # DEFAULTS
@@ -293,7 +300,6 @@ class Preamp(object):
         # will add some informative values:
         self.state["loudspeaker"] = CONFIG["loudspeaker"]
         self.state["loudspeaker_ref_SPL"] = CONFIG["refSPL"]
-        self.state["fs"] = jack.JCLI.samplerate
 
         # tone_memo keeps tone values even when tone_defeat is activated
         self.state["tone_defeat"] = False
@@ -319,9 +325,16 @@ class Preamp(object):
         # get swap LR
         self.state["lr_swapped"] = self._check_pre_in_swapped()
 
-        # get JACK stuff
+        # DSP and JACK stuff
+        self.state["samplerate"]  = jack.JCLI.samplerate
         self.state["jack_buffer"] = jack.JCLI.blocksize
         self.state["jack_device"] = jack.get_device()
+        self.state["dsp_latency"] = CONFIG.get('dsp_latency', 60)
+        fs             = self.state["samplerate"]
+        jperiod        = CONFIG["jack"]["period"]
+        jnperiods      = CONFIG["jack"]["nperiods"]
+        output_latency = round( (jperiod * jnperiods) / fs * 1000, 1)
+        self.state["output_latency"] = output_latency
 
         # UPDATE STATE FILE
         self.save_state()

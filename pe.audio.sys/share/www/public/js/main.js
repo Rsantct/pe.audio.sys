@@ -30,9 +30,7 @@ var web_config          = { 'main_selector':      'inputs',
 
 var main_sel_mode       = web_config.main_selector;
 
-var mFnames             = web_config.user_macros; // Macro file names
-
-var macro_button_list   = [];
+var mFnames             = [];       // Macro file names
 
 var metablank           = {         // A player's metadata blank dict
                             'player':       '',
@@ -210,7 +208,7 @@ function fill_in_page_statics(){
             option.text = web_config.lspk_sample_rates[i];
             mySel.add(option);
         }
-        mySel.value = state.fs;
+        mySel.value = state.samplerate;
     }
 
 
@@ -1008,9 +1006,10 @@ function clear_highlighteds(){
 
 
 function clear_macro_buttons_highlight(){
-    for (let i = 0; i < macro_button_list.length; i++) {
-        document.getElementById(macro_button_list[i]).className = 'macro_button';
-    }
+    const m_buttons = document.querySelectorAll('#macro_buttons button');
+    m_buttons.forEach(b => {
+        b.classList = 'macro_button';
+    });
 }
 
 
@@ -1301,7 +1300,7 @@ function oc_restart_samplerate(value){
         alert(ans);
 
     }else{
-        s.value = state.fs;
+        s.value = state.samplerate;
     };
 }
 

@@ -78,7 +78,7 @@ def do( cmd_phrase ):
                   }[ pfx ]( cmd, args )
 
         if type(result) != str:
-            result = json.dumps(result)
+            result = json.dumps(result, indent=2)
 
         # Avoids logging non-relevant commands
         if  ('state'        not in cmd)  and \
