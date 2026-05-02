@@ -13,6 +13,7 @@ cat <<EOF
         iniciar:    peaudiosys_macos_cli.sh   HOST_REMOTO [SAMPLE_RATE]
         detener:    peaudiosys_macos_cli.sh   stop (restaura la salida de sonido del escritorio)
 
+    The 'SwitchAudioSource' tool is needed  (brew install switchudiosource-osx)
 EOF
 }
 
