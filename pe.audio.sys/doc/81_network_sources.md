@@ -8,18 +8,18 @@ You can send audio from another PC over the same LAN.
 
 Example:
 
-pe.audio.sys/config/config.yml
-
-    sources:
-
-        MacBook Pro:
-            jack_pname:      MacBook Pro
-            jacktrip:        true            # This triggers the launch of the jacktrip server
+    pe.audio.sys/config/config.yml
+    
+        sources:
+    
+            MacBook Pro:
+                jack_pname:      MacBook Pro
+                jacktrip:        true            # This triggers the launch of the jacktrip server
 
 
 ### Remote Mac as remote source
 
-### You need to install:
+#### You need to install:
 
 - JackTrip (go to the offcial site to download the macOS installer)
 - [BlackHole](https://github.com/ExistentialAudio/BlackHole) to route your audio. Please do not use the Homebrew installation method currently does not work, install it by downloading the [official package](https://existential.audio/blackhole).
@@ -34,9 +34,9 @@ To alow the binary **AdjustVolume** to be executed, you'll need to unblock it, o
 
     xattr -d com.apple.quarantine ~/bin/AdjustVolume
 
-### Sending audio to pe.audio.sys
+#### Sending audio to pe.audio.sys
 
-Just run the provided script bin/paudio_macos_cli.sh
+Just run the provided script **`bin/paudio_macos_cli.sh`**
 
 ```
     $ paudio_macos_cli.sh --help
