@@ -36,6 +36,8 @@ except Exception as e:
 
 ZEROS = np.zeros( EQ_CURVES["freqs"].shape[0] )
 
+LATENCIES = {}
+
 # Aux to manage the powersave feature (auto start/stop Brutefir process)
 def powersave_loop( convolver_off_driver, convolver_on_driver,
                     end_loop_flag, reset_elapsed_flag ):
@@ -185,7 +187,7 @@ def init_audio_settings():
             preamp.state[state_prop] = value
             # special case XO
             if state_prop == 'xo_set':
-                preamp.state["xo_latency"] = latencies.get(value, 0)
+                preamp.state["xo_latency"] = LATENCIES.get(value, 0)
             print('(on_init)', prop, value)
 
         else:
@@ -199,12 +201,13 @@ def init_audio_settings():
 
         return warning
 
+    global LATENCIES
 
     # temporary Preamp and Convolver instances
     preamp    = Preamp()
     convolver = Convolver()
     warnings  = ''
-    latencies = get_xo_latencies( convolver.xo_sets )
+    LATENCIES = get_xo_latencies( convolver.xo_sets )
 
 
 
@@ -974,26 +977,32 @@ class Preamp(object):
 
             # Trying to set the desired xo and drc for this source
             c = Convolver()
+
             try:
-                xo = CONFIG["sources"][source]["xo"]
+                xo = CONFIG["sources"][source].get('xo', '')
                 if xo and c.set_xo( xo ) == 'done':
                     self.state["xo_set"] = xo
+                    self.state["xo_latency"] = LATENCIES.get(xo, 0)
                 elif xo:
                     if w:
                         w += '; '
                     w += f'\'xo:{xo}\' in \'{source}\' is not valid'
-            except:
-                pass
+
+            except Exception as e:
+                print(f'{Fmt.RED}(core) select source ERROR with xo {xo}: {str(e)}{Fmt.END}')
+
             try:
-                drc = CONFIG["sources"][source]["drc"]
+                drc = CONFIG["sources"][source].get('drc', '')
                 if drc and c.set_drc( drc ) == 'done':
                     self.state["drc_set"] = drc
                 elif drc:
                     if w:
                         w += '; '
                     w += f'\'drc:{drc}\' in \'{source}\' is not valid'
-            except:
-                pass
+
+            except Exception as e:
+                print(f'{Fmt.RED}(core) select source ERROR with drc {drc}: {str(e)}{Fmt.END}')
+
             del(c)
 
             # end of trying to select the source
