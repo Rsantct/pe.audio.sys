@@ -334,7 +334,7 @@ class Preamp(object):
         jnperiods      = CONFIG["jack"]["nperiods"]
 
         self.state["samplerate"]     = fs
-        self.state["jack_device"]    = jack.get_device()
+        self.state["output_device"]  = jack.get_device()
         self.state["jack_period"]    = jperiod
         self.state["jack_nperiods"]  = jnperiods
         self.state["output_latency"] = round( (jperiod * jnperiods) / fs * 1000, 1)
