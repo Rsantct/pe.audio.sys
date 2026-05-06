@@ -329,15 +329,16 @@ class Preamp(object):
         self.state["lr_swapped"] = self._check_pre_in_swapped()
 
         # DSP and JACK stuff
-        self.state["samplerate"]  = jack.JCLI.samplerate
-        self.state["jack_buffer"] = jack.JCLI.blocksize
-        self.state["jack_device"] = jack.get_device()
-        self.state["dsp_latency"] = CONFIG.get('dsp_latency', 60)
-        fs             = self.state["samplerate"]
+        fs             = jack.JCLI.samplerate
         jperiod        = CONFIG["jack"]["period"]
         jnperiods      = CONFIG["jack"]["nperiods"]
-        output_latency = round( (jperiod * jnperiods) / fs * 1000, 1)
-        self.state["output_latency"] = output_latency
+
+        self.state["samplerate"]     = fs
+        self.state["jack_device"]    = jack.get_device()
+        self.state["jack_period"]    = jperiod
+        self.state["jack_nperiods"]  = jnperiods
+        self.state["output_latency"] = round( (jperiod * jnperiods) / fs * 1000, 1)
+        self.state["dsp_latency"]    = CONFIG.get('dsp_latency', 60)
 
         # UPDATE STATE FILE
         self.save_state()
