@@ -41,6 +41,42 @@ INIT_PLUGINS = (
 )
 
 
+def prepare_jacktrip_server(iostat=False):
+    """ run jacktrip in hub server mode
+    """
+
+    def jacktrip_wanted():
+
+        jack_sources = CONFIG.get('sources', {})
+
+        result = False
+
+        for s, params in jack_sources.items():
+            if params.get('jacktrip', None) == True:
+                result = True
+
+        return result
+
+
+    if not jacktrip_wanted():
+        print(f'{Fmt.GRAY}(start) (i) JackTrip server not needed{Fmt.END}')
+        return
+
+    log_path   = f'{MAINFOLDER}/log/jacktrip_hubserver.log'
+    stats_path = f'{MAINFOLDER}/log/jacktrip_hubserver.stats'
+
+    iostat_cmd = f' --iostat 5 --iostatlog '
+
+    cmd = f'jacktrip --jacktripserver --numchannels 2 --nojackportsconnect'
+
+    if iostat:
+        cmd += iostat_cmd
+
+    print(f'{Fmt.GRAY}(start) (i) Running JackTrip server ...{Fmt.END}')
+    with open(log_path, 'w') as flog:
+        sp.Popen(cmd, shell=True, stdout=flog, stderr=flog)
+
+
 def start_zita_link():
     """ A LAN audio connection based on zita-njbridge from Fons Adriaensen.
 
@@ -221,6 +257,10 @@ def stop_processes(mode):
         if REMOTES:
             print(f'(start) STOPPING ZITA_LINK')
             stop_zita_link()
+
+        # Stop JackTrip
+        print(f'(start) STOPPING JackTrip')
+        sp.Popen(['pkill', '-f', 'jacktrip'])
 
         # Stop Jack
         print(f'(start) STOPPING JACKD')
@@ -485,6 +525,8 @@ if __name__ == "__main__":
         # Optional REMOTE SOURCES
         if REMOTES:
             start_zita_link()
+
+        prepare_jacktrip_server()
 
         # - RESTORE ON_INIT AUDIO settings
         core.init_audio_settings()

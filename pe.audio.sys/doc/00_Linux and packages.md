@@ -89,7 +89,7 @@ sudo apt update && sudo apt upgrade
 
 ```
 sudo apt install jackd2 brutefir alsa-utils alsa-ucm-conf libasound2-dev libasound2-plugins \
-                 libjack-jackd2-dev libsamplerate0 libsamplerate0-dev \
+                 libjack-jackd2-dev libsamplerate0 libsamplerate0-dev jacktrip \
                  mpd mpc gmpc ncmpcpp mplayer cdtool zita-ajbridge zita-njbridge \
                  apache2 libapache2-mod-php php-yaml mc jq anacron \
                  source-highlight git netcat-openbsd
