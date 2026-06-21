@@ -16,9 +16,10 @@
 
 """
 
-from    subprocess import Popen
-from    time import time
+import  subprocess as sp
+from    time import time, sleep
 import  socket
+import  platform
 from    watchdog.observers import Observer
 from    watchdog.events import FileSystemEventHandler
 import  sys
@@ -32,14 +33,9 @@ import  server
 from    config  import CONFIG, USER
 from    miscel  import send_cmd, read_last_line, read_state_from_disk
 
-LOG_DIR         = f'{UHOME}/pe.audio.sys/log'
-CMD_LOG_PATH    = f'{LOG_DIR}/peaudiosys_cmd.log'
-
-
-# ------------- USER CONFIG --------------
-# x.x.x.RANGE
-REMOTES_ADDR_RANGE = range(230, 240)
-# ----------------------------------------
+LOG_DIR           = f'{UHOME}/pe.audio.sys/log'
+CMD_LOG_PATH      = f'{LOG_DIR}/peaudiosys_cmd.log'
+CLIENTS_LIST_PATH = f'{LOG_DIR}/remote_volume_daemon_clients'
 
 
 # Generic handler from 'watchdog' for doing actions when a file change occurs
@@ -69,28 +65,48 @@ class file_event_handler(FileSystemEventHandler):
                     globals()[self.action]()
 
 
-def get_remote_selected_source(addr, port=9990):
-    """ Gets the selected source from a remote pe.audio.sys server at <addr:port>
-        (string)
-    """
-    remote_source = ''
-    try:
-        tmp  = send_cmd('state', host=addr, port=port, timeout=1)
+def do_ping(addr, timeout=0.1):
 
-        if not tmp.startswith('{') or not tmp.endswith('}'):
-            return remote_source
+    param    = "-n" if platform.system().lower() == "windows" else "-c"
+    ping_cmd = f"ping {param} 1 -W {timeout} {addr}"
+    try:
+        res = sp.run(ping_cmd.split(), stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+        if res.returncode == 0:
+            return True
+
+    except Exception as e:
+        print(f"(remote_volume_daemon) Error with ping: {e}")
+
+    return False
+
+
+def get_remote_info(addr, port=9990):
+    """ Get some properties (loudspeaker, source) from a remote
+        pAudio / pe.audio.sys server at <addr:port>
+        (dict)
+    """
+
+    result = {}
+
+    try:
+        tmp  = send_cmd('state', host=addr, port=port, timeout=10)
+
+        if not tmp.strip().startswith('{') or not tmp.endswith('}'):
+            return result
 
         remote_state  = json.loads(tmp)
 
-        # Update for new pAudio project: 'input' becomes 'source'
         remote_source = remote_state.get('input', '')
         if not remote_source:
             remote_source = remote_state.get('source', '')
 
-    except Exception as e:
-        print(f'(remote_volume.get_remote_selected_source) Exception: {str(e)}')
+        result["loudspeaker"] = remote_state.get('loudspeaker', '')
+        result["source"]      = remote_source
 
-    return remote_source
+    except Exception as e:
+        print(f'(remote_volume_daemon.get_remote_info) ERROR: {e}')
+
+    return result
 
 
 def get_state():
@@ -100,35 +116,68 @@ def get_state():
 def detect_remotes():
     """ list of remote IPs listening to a source named *remote*
     """
-    clients = []
 
-    for n in REMOTES_ADDR_RANGE:
+    def find_loudspeaker(lspk):
 
-        addr_list = my_ip.split('.')
-        addr_list[-1] = str(n)
-        addr = '.'.join( addr_list )
+        res = []
 
-        if addr == my_ip:
+        for k, v in REMOTE_CLIENTS.items():
+            if v.get('loudspeaker', '') == lspk:
+                res.append(k)
+
+        return res
+
+
+    global REMOTE_CLIENTS
+
+    REMOTE_CLIENTS    = {}
+    save_clients()
+
+    tmp = my_ip.split('.')[:-1]
+    my_C_net = '.'.join(tmp) + '.0'
+
+    print(f'(remote_volume_daemon) PLEASE WAIT while scannig {my_C_net} for remote clients ...')
+
+    # do not ping GW
+    for n in range(2,255):
+
+        dest = my_C_net[:-1] + str(n)
+
+        if dest == my_ip:
             continue
 
-        if 'remote' in get_remote_selected_source(addr).lower():
-            clients.append(addr)
+        if do_ping(dest):
 
-    return clients
+            remote_info = get_remote_info(dest)
+
+            if 'remote' in remote_info.get('source', '').lower():
+
+                rem_loudspeaker = remote_info.get('loudspeaker', '')
+                remotes_with_same_loudspeaker = find_loudspeaker( rem_loudspeaker )
+
+                if not remotes_with_same_loudspeaker:
+                    REMOTE_CLIENTS[dest] = {'loudspeaker': rem_loudspeaker}
+                    save_clients()
+                    print(f'(remote_volume_daemon) remote detected {dest}: {json.dumps(remote_info)}')
+
+                else:
+                    print(f'(remote_volume_daemon) IP {dest} having the same loudspeaker `{rem_loudspeaker}` as {remotes_with_same_loudspeaker}')
+
+
+    print(f'(remote_volume_daemon) scannig {my_C_net} DONE.')
 
 
 def remote_send_cmd(cli_addr, cmd):
-    print( f'(remote_volume) remote {cli_addr} sending \'{cmd}\'' )
+    print( f'(remote_volume_daemon) remote {cli_addr} sending \'{cmd}\'' )
     send_cmd( cmd, host=cli_addr, verbose=False )
 
 
-def remote_update_levels(rem_addr):
-    level           = get_state()["level"]
-    lu_offset       = get_state()["lu_offset"]
-    equal_loudness  = get_state()["equal_loudness"]
-    remote_send_cmd(rem_addr, f'lu_offset {lu_offset}')
-    remote_send_cmd(rem_addr, f'loudness {equal_loudness}')
-    remote_send_cmd(rem_addr, f'level {level}')
+def remote_update_levels(rem_addr, param_list=['level', 'lu_offset', 'equal_loudness']):
+
+    for p in param_list:
+        value = get_state().get(p, None)
+        if value != None:
+            remote_send_cmd(rem_addr, f'{p} {value}')
 
 
 # The action triggered by the observer
@@ -158,36 +207,21 @@ def relay_level_changes():
         equal_loudness  = get_state()["equal_loudness"]
         wanted_cmd      = f'loudness {equal_loudness}'
 
-    # Early return
     if not wanted_cmd:
         return
 
-    # Forwarding commands to remotes
-    for rem_addr in remoteClients:
+    resignations = []
+    for addr, info in REMOTE_CLIENTS.items():
 
-        # Checking if remote is still listening to us
-        # then updates the level event to remote
-        if 'remote' in get_remote_selected_source(rem_addr):
-            remote_send_cmd(rem_addr, wanted_cmd)
+        if 'remote' in get_remote_info(addr).get('source', ''):
+            remote_send_cmd(addr, wanted_cmd)
 
-        # else purge from remotes list if not listening anymore
         else:
-            print( f'remote {rem_addr} not listening by now :-/' )
-            remoteClients.remove( rem_addr )
-            print( f'Updated remote listening machines: {remoteClients}' )
+            resignations.append([addr, info])
 
-
-# Broadcast level settings to all remote machines
-def broadcast_level_settings():
-
-    for rem_addr in remoteClients:
-
-        if 'remote' in get_remote_selected_source(rem_addr):
-            remote_update_levels(rem_addr)
-        else:
-            print( f'remote {rem_addr} not listening by now :-/' )
-            remoteClients.remove( rem_addr )
-            print( f'Updated remote listening machines: {remoteClients}' )
+    for addr, info in resignations:
+        print( f'(remote_volume_daemon) say bye to remote {addr}:{info} not listening by now :-/' )
+        REMOTE_CLIENTS.pop( addr, None )
 
 
 # The action called from our instance of <server.py> when receiving messages.
@@ -199,36 +233,53 @@ def do(cmd):
 
     # Only 'hello' command is processed
     if cmd == 'hello':
+
         if cli_addr != my_ip and '127.0.' not in cli_addr:
+
             print( f'(remote_volume) Received hello from: {cli_addr}' )
-            if cli_addr not in remoteClients:
-                # updating new client into remote clients list
-                remoteClients.append(cli_addr)
-                print( f'(remote_volume) Updated remote listening machines: '
-                       f'{remoteClients}' )
-            # set the level settings in remote listener even if already in remoteClients
+
+            if cli_addr not in REMOTE_CLIENTS:
+
+                sleep(1)
+                cli_info = get_remote_info(cli_addr)
+                REMOTE_CLIENTS[cli_addr] = {'loudspeaker': cli_info.get('loudspeaker', '')}
+                save_clients()
+
+                print( f'(remote_volume_daemon) Updated remote listening machines:\n'
+                       f'{json.dumps(REMOTE_CLIENTS, indent=2)}' )
+
+            # set the level settings in remote listener even if already in REMOTE_CLIENTS
             remote_update_levels(cli_addr)
             result = 'ack'
+
         else:
-            print( f'(remote_volume) Tas tonto: received \'hello\' '
+            print( f'(remote_volume_daemon) Tas tonto: received \'hello\' '
                    f'from MY SELF ({cli_addr})' )
 
     return result
 
 
-def killme():
-    Popen( f'pkill -u {USER} -f "remote_volume_daemon.py start"', shell=True )
-    sys.exit()
+def stop():
+    sp.Popen( f'pkill -u {USER} --older 1 -f "remote_volume_daemon.py"', shell=True )
+
+
+def save_clients():
+    """ to disk """
+    with open(CLIENTS_LIST_PATH, 'w') as f:
+        f.write( json.dumps(REMOTE_CLIENTS, indent=2) )
 
 
 if __name__ == "__main__":
 
-    # Reading command line
     if sys.argv[1:]:
         if sys.argv[1] == 'stop':
-            killme()
+            stop()
+            print('(remote_volume_daemon) ended.')
+            sys.exit()
+
         elif sys.argv[1] == 'start':
-            pass
+            stop()
+
         else:
             print(__doc__)
             sys.exit()
@@ -240,13 +291,14 @@ if __name__ == "__main__":
     # Retrieving basic data for this to work
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
-    remoteClients   = detect_remotes()
-    print( f'(remote_volume) Detected {len(remoteClients)} '
-           f'remote listening machines: {remoteClients}' )
+    detect_remotes()
+    print( f'(remote_volume_daemon) Detected {len(REMOTE_CLIENTS)} '
+           f'remote listening machines:\n{json.dumps(REMOTE_CLIENTS, indent=2)}' )
 
-    # Broadcast level settings to remote clients
-    print( f'(remote_volume) broadcast level settings to remotes ...' )
-    broadcast_level_settings()
+    print( f'(remote_volume_daemon) broadcasting level settings to remotes ...' )
+    for addr, info in REMOTE_CLIENTS.items():
+        remote_update_levels(addr)
+
 
     #   WATCHDOG to observe file changes
     #   https://watchdog.readthedocs.io/en/latest/
@@ -263,11 +315,11 @@ if __name__ == "__main__":
                                             recursive=False )
     observer.start()
 
-    print( f'(remote_volume) Keep relaying level changes to remotes ...' )
+    print( f'(remote_volume_daemon) Keep relaying level changes to remotes ...' )
 
 
     # A server that listen for new remote listening clients to emerge
-    print( f'(remote_volume) Keep listening for new remotes ...' )
+    print( f'(remote_volume_daemon) Keep listening for new remotes ...' )
     server.SERVICE       = 'remote_volume_daemon'
     server.PROCESSOR_MOD = __import__(__name__)
     server.VERBOSE       = True
