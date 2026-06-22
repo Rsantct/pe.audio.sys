@@ -19,7 +19,6 @@
 import  subprocess as sp
 from    time import time, sleep
 import  socket
-import  platform
 from    watchdog.observers import Observer
 from    watchdog.events import FileSystemEventHandler
 import  sys
@@ -67,8 +66,8 @@ class file_event_handler(FileSystemEventHandler):
 
 def do_ping(addr, timeout=0.1):
 
-    param    = "-n" if platform.system().lower() == "windows" else "-c"
-    ping_cmd = f"ping {param} 1 -W {timeout} {addr}"
+    ping_cmd = f"ping -c 1 -W {timeout} {addr}"
+
     try:
         res = sp.run(ping_cmd.split(), stdout=sp.DEVNULL, stderr=sp.DEVNULL)
         if res.returncode == 0:
