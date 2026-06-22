@@ -259,7 +259,7 @@ def do(cmd):
 
 
 def stop():
-    sp.Popen( f'pkill -u {USER} --older 1 -f "remote_volume_daemon.py"', shell=True )
+    sp.Popen( f'pkill -u {USER} --older 5 -f "remote_volume_daemon.py"', shell=True )
 
 
 def save_clients():
