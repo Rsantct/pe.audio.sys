@@ -138,7 +138,7 @@ def detect_remotes():
     print(f'(remote_volume_daemon) PLEASE WAIT while scannig {my_C_net} for remote clients ...')
 
     # do not ping GW
-    for n in range(2,255):
+    for n in range(2, 255):
 
         dest = my_C_net[:-1] + str(n)
 
