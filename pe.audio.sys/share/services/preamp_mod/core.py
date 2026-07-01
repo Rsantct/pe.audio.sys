@@ -288,6 +288,7 @@ class Preamp(object):
 
         # The state dictionary
         self.state = read_state_from_disk()
+        self.state["application"] = 'pe.audio.sys'
 
         # The jack port of the selected source
         source = self.state["input"]
