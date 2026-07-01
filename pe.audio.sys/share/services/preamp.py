@@ -5,6 +5,9 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """ Controls the preamp (inputs, level, tones and convolver)
+
+    NOTICE: This relays level related commands to the remote volume manager daemon
+            (Find 'forward to remotes manager daemon' below)
 """
 
 import  sys
@@ -18,7 +21,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from    config          import  CONFIG
 from    miscel          import  get_remote_zita_params, \
                                 remote_zita_restart,    \
-                                get_xo_latencies
+                                get_xo_latencies, send_cmd
 
 from    preamp_mod.core import  Preamp, Convolver
 
@@ -86,6 +89,13 @@ def camilladsp_insert(insert=True):
 
     jcli.deactivate()
     jcli.close()
+
+
+def send_to_remotes(cmd):
+    """ remotes are managed by remote_volume_daemon which listen at base port + 2
+    """
+    remotes_manager_port = CONFIG["peaudiosys_port"] + 2
+    send_cmd( cmd, port=remotes_manager_port)
 
 
 # Interface function for this module
@@ -277,11 +287,16 @@ def do( cmd, argstring ):
 
             } [ cmd.lower() ] ( arg, add )
 
-        # ************************************
-        # ** KEEPING UPDATED THE STATE FILE **
-        # ************************************
         if result:
+            # ** KEEPING UPDATED THE STATE FILE **
             preamp.save_state()
+
+            # ** forward to remotes manager daemon **
+            if ('level' in cmd and 'add' in argstring) or \
+                'lu_offset' in cmd or \
+                'loudness' in cmd:
+                    send_to_remotes(f'{cmd} {argstring}')
+
 
     except KeyError:
         result = f'(preamp) unknown command: \'{cmd}\''
