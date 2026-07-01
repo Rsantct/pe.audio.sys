@@ -140,6 +140,8 @@ def _init():
         print(f'(config) ERROR reading \'config.yml\'')
         sys.exit()
 
+    CONFIG["application"] = 'pe.audio.sys'
+
     FS                  = CONFIG['samplerate']
     LOUDSPEAKER         = CONFIG['loudspeaker']
     LSPK_FOLDER         = f'{MAINFOLDER}/loudspeakers/{LOUDSPEAKER}/{FS}'
