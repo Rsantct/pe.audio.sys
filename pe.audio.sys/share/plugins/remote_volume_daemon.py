@@ -184,8 +184,8 @@ def discover_remotes():
             remote_update_levels(addr)
 
 
-def remote_update_levels(rem_addr):
-    """ this is threaded for each destination rem_addr,
+def remote_update_levels(addr):
+    """ this is threaded for each destination <addr>,
         but sending each command must be blocking
     """
 
@@ -199,8 +199,8 @@ def remote_update_levels(rem_addr):
             value = get_state().get(p, None)
             if value != None:
                 cmd = f'{p} {value}'
-                print( f'(remote_volume_daemon) remote {rem_addr} sending \'{cmd}\'' )
-                send_cmd(cmd=cmd, host=rem_addr)
+                ans = send_cmd(cmd=cmd, host=addr)
+                print( f'(remote_volume_daemon) remote {addr} sending \'{cmd}\'; {ans}' )
 
 
     job = threading.Thread(
@@ -228,24 +228,24 @@ def listen_to_preamp():
         """ Notice that only relative level changes will be relayed
         """
 
-        cmd      = kwargs.get('msg', '')
+        candidate_cmd = kwargs.get('msg', '')
 
         # Filtering commands:
-        wanted_cmd = ''
+        cmd = ''
 
         # - relative level
-        if ('level' in cmd and 'add' in cmd):
-            wanted_cmd = cmd
+        if ('level' in candidate_cmd and 'add' in candidate_cmd):
+            cmd = candidate_cmd
 
         # - LU_offset (usually a toggle command)
-        if ('lu_offset' in cmd):
-            wanted_cmd      = cmd
+        if ('lu_offset' in candidate_cmd):
+            cmd = candidate_cmd
 
         # - equal loudness (usually a toggle command)
-        if ('loudness' in cmd):
-            wanted_cmd      = cmd
+        if ('loudness' in candidate_cmd):
+            cmd = candidate_cmd
 
-        if not wanted_cmd:
+        if not cmd:
             return
 
         resignations = []
@@ -255,8 +255,8 @@ def listen_to_preamp():
             remote_config = get_remote_config(addr)
 
             if remote_is_listening_to_me(remote_state, remote_config):
-                print( f'(remote_volume_daemon) remote {addr} sending \'{wanted_cmd}\'' )
-                send_cmd(cmd=wanted_cmd, host=addr)
+                ans = send_cmd(cmd=cmd, host=addr)
+                print( f'(remote_volume_daemon) remote {addr} sending \'{cmd}\'; {ans}' )
 
             else:
                 resignations.append([addr, info])
