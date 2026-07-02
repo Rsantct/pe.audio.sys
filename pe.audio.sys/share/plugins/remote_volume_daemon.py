@@ -28,11 +28,12 @@ sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
 import  server
 from    config  import CONFIG, USER
-from    miscel  import send_cmd, tcp_server, read_state_from_disk
+from    miscel  import send_cmd, tcp_server, read_state_from_disk, Fmt
 
 LOG_DIR           = f'{UHOME}/pe.audio.sys/log'
 CLIENTS_LIST_PATH = f'{LOG_DIR}/remote_volume_daemon_clients'
 REMOTE_CLIENTS    = {}
+BASE_PORT         = CONFIG['peaudiosys_port']
 
 
 def do_ping(addr, timeout=0.1):
@@ -50,7 +51,7 @@ def do_ping(addr, timeout=0.1):
     return False
 
 
-def get_remote_config(addr, port=CONFIG['peaudiosys_port']):
+def get_remote_config(addr, port=BASE_PORT):
     """ Get the config dict from a remote
         pAudio / pe.audio.sys server
         (dict)
@@ -59,7 +60,7 @@ def get_remote_config(addr, port=CONFIG['peaudiosys_port']):
     result = {}
 
     try:
-        tmp  = send_cmd('aux get_config', host=addr, port=port, timeout=1)
+        tmp  = send_cmd('ctrl get_config', host=addr, port=port, timeout=1)
 
         if not tmp.strip().startswith('{') or not tmp.endswith('}'):
             return result
@@ -72,7 +73,7 @@ def get_remote_config(addr, port=CONFIG['peaudiosys_port']):
     return result
 
 
-def get_remote_state(addr, port=CONFIG['peaudiosys_port']):
+def get_remote_state(addr, port=BASE_PORT):
     """ Get the current state from a remote
         pAudio / pe.audio.sys server
         (dict)
@@ -100,21 +101,29 @@ def get_state():
 
 def remote_is_listening_to_me(remote_state, remote_config):
 
+    if not remote_state or not remote_config:
+        return False
+
     remote_source_name = remote_state.get('source', '')
 
-    remote_app =         remote_state.get('application', 'pAudio')
+    remote_app =         remote_state.get('application', '')
 
 
     if remote_app == 'pAudio':
+        # (i) config.yml has 'remote_addr' but CONFIG has 'ip'
         remote_source_addr = remote_config.get('jack', {})  \
                             .get('sources', {})             \
                             .get(remote_source_name, {})    \
-                            .get('remote_addr', '')
+                            .get('ip', '')
 
     elif remote_app == 'pe.audio.sys':
         remote_source_addr = remote_config.get('sources', {})  \
                             .get(remote_source_name, {})    \
                             .get('jack_pname', '')
+    else:
+        print(f'{Fmt.RED}(remote_volume_daemon.remote_is_listening_to_me) ERROR {Fmt.END}')
+        remote_source_addr = ''
+
 
     if 'remote' in remote_source_name.lower() \
         and (my_ip in remote_source_addr or my_hostname in remote_source_addr):
@@ -272,7 +281,7 @@ def listen_to_preamp():
     job = threading.Thread(
         target = tcp_server,
         kwargs = {  'addr':         '127.0.0.1',
-                    'port':         CONFIG['peaudiosys_port'] + 2,
+                    'port':         BASE_PORT + 2,
                     'service_id':   'level_forwarder',
                     'processor':    relay_level_changes
         }
@@ -331,7 +340,7 @@ def listen_to_remotes():
     job = threading.Thread(
         target = tcp_server,
         kwargs = {  'addr':         '0.0.0.0',
-                    'port':         CONFIG['peaudiosys_port'] + 5,
+                    'port':         BASE_PORT + 5,
                     'service_id':   'receptionist',
                     'processor':    receptionist
         }
