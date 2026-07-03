@@ -94,10 +94,6 @@ def get_remote_state(addr, port=BASE_PORT):
     return result
 
 
-def get_state():
-    return read_state_from_disk()
-
-
 def remote_lspk_listening_to_me(dest, verbose=True):
     """ Returns the remote loudspeaker name
         if it is listenting to me, else False
@@ -214,10 +210,12 @@ def remote_update_levels(addr):
         """ send current local level setting to a remote
         """
 
-        param_list = ['level', 'lu_offset', 'equal_loudness']
+        local_state = read_state_from_disk()
 
-        for p in param_list:
-            value = get_state().get(p, None)
+        for p in ['level', 'lu_offset', 'equal_loudness']:
+
+            value = local_state.get(p, None)
+
             if value != None:
                 cmd = f'{p} {value}'
                 ans = send_cmd(cmd=cmd, host=addr)
