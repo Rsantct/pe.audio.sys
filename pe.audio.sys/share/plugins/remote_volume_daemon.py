@@ -46,7 +46,7 @@ def do_ping(addr, timeout=0.1):
             return True
 
     except Exception as e:
-        print(f"(remote_volume_daemon) Error with ping: {e}")
+        print(f"{Fmt.RED}(remote_volume_daemon) Error with ping: {e}{Fmt.END}")
 
     return False
 
@@ -68,7 +68,7 @@ def get_remote_config(addr, port=BASE_PORT):
         result  = json.loads(tmp)
 
     except Exception as e:
-        print(f'(remote_volume_daemon.get_remote_config) {addr}:{port} ERROR: {e}')
+        print(f'{Fmt.RED}(remote_volume_daemon.get_remote_config) {addr}:{port} ERROR: {e}{Fmt.END}')
 
     return result
 
@@ -90,7 +90,7 @@ def get_remote_state(addr, port=BASE_PORT):
         result  = json.loads(tmp)
 
     except Exception as e:
-        print(f'(remote_volume_daemon.get_remote_state) {addr}:{port} ERROR: {e}')
+        print(f'{Fmt.RED}(remote_volume_daemon.get_remote_state) {addr}:{port} ERROR: {e}{Fmt.END}')
 
     return result
 
@@ -99,36 +99,50 @@ def get_state():
     return read_state_from_disk()
 
 
-def remote_is_listening_to_me(remote_state, remote_config):
+def remote_lspk_listening_to_me(dest, verbose=True):
+    """ Returns the remote loudspeaker name
+        if it is listenting to me, else False
+    """
 
-    if not remote_state or not remote_config:
+    remote_state  = get_remote_state(dest)
+    remote_config = get_remote_config(dest)
+
+    if not remote_state:
+        if verbose:
+            print(f'{Fmt.MAGENTA}(remote_volume_daemon.remote_is_listening_to_me) missing remote_state{Fmt.END}')
         return False
 
-    remote_source_name = remote_state.get('source', '')
+    if not remote_config:
+        if verbose:
+            print(f'{Fmt.MAGENTA}(remote_volume_daemon.remote_is_listening_to_me) missing remote_config{Fmt.END}')
+        return False
 
     remote_app =         remote_state.get('application', '')
 
+    remote_source_name = remote_state.get('source', '')
+
+    if not 'remote' in remote_source_name.lower():
+        return False
 
     if remote_app == 'pAudio':
-        # (i) config.yml has 'remote_addr' but CONFIG has 'ip'
-        remote_source_addr = remote_config.get('jack', {})  \
-                            .get('sources', {})             \
-                            .get(remote_source_name, {})    \
-                            .get('ip', '')
+        remote_source_addr = remote_config.get('jack', {})      \
+                            .get('sources', {})                 \
+                            .get(remote_source_name, {})        \
+                            .get('remote_addr', '')
 
     elif remote_app == 'pe.audio.sys':
-        remote_source_addr = remote_config.get('sources', {})  \
-                            .get(remote_source_name, {})    \
+        remote_source_addr = remote_config.get('sources', {})   \
+                            .get(remote_source_name, {})        \
                             .get('jack_pname', '')
     else:
-        print(f'{Fmt.RED}(remote_volume_daemon.remote_is_listening_to_me) ERROR {Fmt.END}')
         remote_source_addr = ''
 
+    if not remote_source_addr:
+        print(f'{Fmt.RED}(remote_volume_daemon.remote_is_listening_to_me) remote source {remote_source_name}:NO_IP_FOUND {Fmt.END}')
+        return False
 
-    if 'remote' in remote_source_name.lower() \
-        and (my_ip in remote_source_addr or my_hostname in remote_source_addr):
-
-        return True
+    if (my_ip in remote_source_addr) or (my_hostname in remote_source_addr):
+        return remote_state.get('loudspeaker', 'NO_NAME_LSPK')
 
     else:
         return False
@@ -167,28 +181,27 @@ def discover_remotes():
 
         if do_ping(dest):
 
-            remote_state  = get_remote_state(dest)
-            remote_config = get_remote_config(dest)
+            rem_loudspeaker = remote_lspk_listening_to_me(dest, verbose=False)
 
-            if remote_is_listening_to_me(remote_state, remote_config):
+            if rem_loudspeaker:
 
-                rem_loudspeaker = remote_state.get('loudspeaker', '')
                 remotes_with_same_loudspeaker = find_loudspeaker( rem_loudspeaker )
 
                 if not remotes_with_same_loudspeaker:
                     REMOTE_CLIENTS[dest] = {'loudspeaker': rem_loudspeaker}
                     save_clients()
-                    print(f'(remote_volume_daemon) remote detected {dest}: {rem_loudspeaker} ...')
+                    print(f'{Fmt.BLUE}(remote_volume_daemon) remote detected {dest}: {rem_loudspeaker} ...{Fmt.END}')
 
                 else:
-                    print(f'(remote_volume_daemon) IP {dest} having the same loudspeaker `{rem_loudspeaker}` as {remotes_with_same_loudspeaker}')
+                    # This is weird, but it can happens if remote machine has more than one IP (eth, wifi)
+                    print(f'{Fmt.MAGENTA}(remote_volume_daemon) IP {dest} having the same loudspeaker `{rem_loudspeaker}` as {remotes_with_same_loudspeaker}{Fmt.MAGENTA}')
 
     print(f'(remote_volume_daemon) scannig {my_C_net} DONE.')
     print(f'(remote_volume_daemon) Detected {len(REMOTE_CLIENTS)} remote listening machines')
 
     if REMOTE_CLIENTS:
         print(json.dumps(REMOTE_CLIENTS, indent=2))
-        print( f'(remote_volume_daemon) broadcasting level settings to remotes ...' )
+        print( f'(remote_volume_daemon) Broadcasting level settings to remotes ...' )
         for addr, info in REMOTE_CLIENTS.items():
             remote_update_levels(addr)
 
@@ -209,7 +222,7 @@ def remote_update_levels(addr):
             if value != None:
                 cmd = f'{p} {value}'
                 ans = send_cmd(cmd=cmd, host=addr)
-                print( f'(remote_volume_daemon) remote {addr} sending \'{cmd}\'; {ans}' )
+                print( f'(remote_volume_daemon) {addr} --> \'{cmd}\'; {ans}' )
 
 
     job = threading.Thread(
@@ -260,12 +273,10 @@ def listen_to_preamp():
         resignations = []
         for addr, info in REMOTE_CLIENTS.items():
 
-            remote_state  = get_remote_state(addr)
-            remote_config = get_remote_config(addr)
 
-            if remote_is_listening_to_me(remote_state, remote_config):
+            if remote_lspk_listening_to_me(addr):
                 ans = send_cmd(cmd=cmd, host=addr)
-                print( f'(remote_volume_daemon) remote {addr} sending \'{cmd}\'; {ans}' )
+                print( f'(remote_volume_daemon) {addr} --> \'{cmd}\'; {ans}' )
 
             else:
                 resignations.append([addr, info])
@@ -275,7 +286,7 @@ def listen_to_preamp():
             REMOTE_CLIENTS.pop( addr, None )
 
 
-    print( f'(remote_volume_daemon) Keep relaying level changes to remotes ...' )
+    print( f'(remote_volume_daemon) Keep relaying preamp level changes to remotes ...' )
 
     # Start a server listening to LOCAL
     job = threading.Thread(
@@ -370,7 +381,7 @@ if __name__ == "__main__":
     my_hostname     = socket.gethostname()
     my_ip           = socket.gethostbyname(f'{my_hostname}.local')
     if not my_ip:
-        print( f'(remote_volume_daemon) ERROR GETTING MY IP ADDRESS !!!')
+        print( f'{Fmt.RED}(remote_volume_daemon) ERROR GETTING MY IP ADDRESS !!!{Fmt.END}')
         exit()
 
     # this takes a while
