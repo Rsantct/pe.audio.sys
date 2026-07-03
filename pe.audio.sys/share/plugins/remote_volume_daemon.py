@@ -26,8 +26,8 @@ import  json
 UHOME           = os.path.expanduser("~")
 sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
-from    config  import CONFIG, USER
-from    miscel  import send_cmd, tcp_server, read_state_from_disk, Fmt
+from    miscel  import  CONFIG, USER, send_cmd, get_my_ip, \
+                        read_state_from_disk, tcp_server, Fmt
 
 BASE_PORT         = CONFIG['peaudiosys_port']
 LOG_DIR           = f'{UHOME}/pe.audio.sys/log'
@@ -376,7 +376,7 @@ if __name__ == "__main__":
 
 
     my_hostname     = socket.gethostname()
-    my_ip           = socket.gethostbyname(f'{my_hostname}.local')
+    my_ip           = get_my_ip()
     if not my_ip:
         print( f'{Fmt.RED}(remote_volume_daemon) ERROR GETTING MY IP ADDRESS !!!{Fmt.END}')
         exit()
