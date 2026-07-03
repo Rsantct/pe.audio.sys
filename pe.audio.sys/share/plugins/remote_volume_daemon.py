@@ -26,7 +26,6 @@ import  json
 UHOME           = os.path.expanduser("~")
 sys.path.append( f'{UHOME}/pe.audio.sys/share/miscel' )
 
-import  server
 from    config  import CONFIG, USER
 from    miscel  import send_cmd, tcp_server, read_state_from_disk, Fmt
 
