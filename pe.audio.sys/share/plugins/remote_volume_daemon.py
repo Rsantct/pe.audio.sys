@@ -30,10 +30,10 @@ import  server
 from    config  import CONFIG, USER
 from    miscel  import send_cmd, tcp_server, read_state_from_disk, Fmt
 
+BASE_PORT         = CONFIG['peaudiosys_port']
 LOG_DIR           = f'{UHOME}/pe.audio.sys/log'
 CLIENTS_LIST_PATH = f'{LOG_DIR}/remote_volume_daemon_clients'
 REMOTE_CLIENTS    = {}
-BASE_PORT         = CONFIG['peaudiosys_port']
 
 
 def do_ping(addr, timeout=0.1):
