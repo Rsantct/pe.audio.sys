@@ -19,6 +19,7 @@ import  sys
 import  os
 import  socket
 import  threading
+import  queue
 import  subprocess as sp
 from    time import time, sleep
 import  json
@@ -144,8 +145,8 @@ def remote_lspk_listening_to_me(dest, verbose=True):
 
 
 def discover_remotes():
-    """ update REMOTE_CLIENTS with remote IPs
-        listening to ME as selected remote source
+    """ Initial scan for other pAudio systems
+        having myself as the selected source
     """
 
     def find_loudspeaker(lspk):
@@ -169,33 +170,46 @@ def discover_remotes():
     # do not ping GW
     for n in range(2, 255):
 
-        dest = my_C_net[:-1] + str(n)
+        addr = my_C_net[:-1] + str(n)
 
-        if dest == my_ip:
+        if addr == my_ip:
             continue
 
-        if do_ping(dest):
+        if do_ping(addr):
 
-            rem_loudspeaker = remote_lspk_listening_to_me(dest, verbose=False)
+            rem_loudspeaker = remote_lspk_listening_to_me(addr, verbose=False)
 
             if rem_loudspeaker:
 
                 remotes_with_same_loudspeaker = find_loudspeaker( rem_loudspeaker )
 
                 if not remotes_with_same_loudspeaker:
-                    REMOTE_CLIENTS[dest] = {'loudspeaker': rem_loudspeaker}
+
+                    REMOTE_CLIENTS[addr] = {
+                        'loudspeaker':  rem_loudspeaker,
+                        'queue':        queue.Queue()
+                    }
+                    # We start the thread for that cli
+                    t = threading.Thread(
+                        target = manejar_cliente_tcp,
+                        args   = (addr, REMOTE_CLIENTS[addr]["queue"])
+                    )
+                    t.daemon = True
+                    t.start()
+
                     save_clients()
-                    print(f'{Fmt.BLUE}(remote_volume_daemon) remote detected {dest}: {rem_loudspeaker} ...{Fmt.END}')
+
+                    print(f'{Fmt.BLUE}(remote_volume_daemon) remote detected {addr}: {rem_loudspeaker} ...{Fmt.END}')
 
                 else:
                     # This is weird, but it can happens if remote machine has more than one IP (eth, wifi)
-                    print(f'{Fmt.MAGENTA}(remote_volume_daemon) IP {dest} having the same loudspeaker `{rem_loudspeaker}` as {remotes_with_same_loudspeaker}{Fmt.MAGENTA}')
+                    print(f'{Fmt.MAGENTA}(remote_volume_daemon) IP {addr} having the same loudspeaker `{rem_loudspeaker}` as {remotes_with_same_loudspeaker}{Fmt.MAGENTA}')
 
     print(f'(remote_volume_daemon) scannig {my_C_net} DONE.')
     print(f'(remote_volume_daemon) Detected {len(REMOTE_CLIENTS)} remote listening machines')
 
     if REMOTE_CLIENTS:
-        print(json.dumps(REMOTE_CLIENTS, indent=2))
+        print(json.dumps(remote_clients_wo_queues(), indent=2))
         print( f'(remote_volume_daemon) Broadcasting level settings to remotes ...' )
         for addr, info in REMOTE_CLIENTS.items():
             remote_update_levels(addr)
@@ -233,55 +247,97 @@ def stop():
     sp.Popen( f'pkill -u {USER} --older 5 -f "remote_volume_daemon.py"', shell=True )
 
 
+def remote_clients_wo_queues():
+    """ ommit queue objets from REMOTE_CLIENTS
+        so that it can be printed
+    """
+    rem_clients_copy = {}
+    for k ,v in REMOTE_CLIENTS.items():
+        rem_clients_copy[k] = {"loudspeaker": REMOTE_CLIENTS[k]["loudspeaker"]}
+    return rem_clients_copy
+
+
 def save_clients():
     """ to disk """
+
     with open(CLIENTS_LIST_PATH, 'w') as f:
-        f.write( json.dumps(REMOTE_CLIENTS, indent=2) )
+        f.write( json.dumps(remote_clients_wo_queues(), indent=2) )
+
+
+def manejar_cliente_tcp(addr, q):
+    """ Hilo dedicado exclusivamente a la comunicación TCP con UN cliente CbX
+    """
+
+    try:
+
+        while True:
+
+            # Espera a que Pb añada un comando a la cola de este cliente
+            cmd = q.get()
+            if not cmd:
+                break
+
+            ans = send_cmd(cmd=cmd, host=addr)
+            print( f'(remote_volume_daemon) {addr} --> \'{cmd}\'; {ans}' )
+
+            q.task_done()
+
+    except Exception as e:
+        print(f"Error con cliente {addr}: {e}")
+
+
+def relay_level_changes(**kwargs):
+    """ Notice that only relative level changes will be relayed
+
+        kwargs are provided by the server, having keys:
+            {'msg': message, 'addr': connected_IP}
+    """
+
+    candidate_cmd = kwargs.get('msg', '')
+
+    # Filtering commands:
+    cmd = ''
+
+    # - relative level
+    if ('level' in candidate_cmd and 'add' in candidate_cmd):
+        cmd = candidate_cmd
+
+    # - LU_offset (usually a toggle command)
+    if ('lu_offset' in candidate_cmd):
+        cmd = candidate_cmd
+
+    # - equal loudness (usually a toggle command)
+    if ('loudness' in candidate_cmd):
+        cmd = candidate_cmd
+
+    if not cmd:
+        return
+
+    resignations = []
+
+    for addr, info in REMOTE_CLIENTS.items():
+
+        # this retrieves remote config and state, but it is fast
+        if remote_lspk_listening_to_me(addr):
+
+            # Change commands are queued because their
+            # execution on the remote end can be slow.
+            REMOTE_CLIENTS[addr]["queue"].put(cmd)
+
+        else:
+            resignations.append([addr, info])
+
+    for addr, values in resignations:
+        lspk = values.get('loudspeaker', 'n/a')
+        print( f'(remote_volume_daemon) say bye to remote {addr}:{lspk} not listening by now :-/' )
+        REMOTE_CLIENTS.pop( addr, None )
+
+    save_clients()
 
 
 def listen_to_preamp():
     """ listen to our local preamp, which relays level commands here at base port + 2
     """
-
-    def relay_level_changes(**kwargs):
-        """ Notice that only relative level changes will be relayed
-        """
-
-        candidate_cmd = kwargs.get('msg', '')
-
-        # Filtering commands:
-        cmd = ''
-
-        # - relative level
-        if ('level' in candidate_cmd and 'add' in candidate_cmd):
-            cmd = candidate_cmd
-
-        # - LU_offset (usually a toggle command)
-        if ('lu_offset' in candidate_cmd):
-            cmd = candidate_cmd
-
-        # - equal loudness (usually a toggle command)
-        if ('loudness' in candidate_cmd):
-            cmd = candidate_cmd
-
-        if not cmd:
-            return
-
-        resignations = []
-        for addr, info in REMOTE_CLIENTS.items():
-
-
-            if remote_lspk_listening_to_me(addr):
-                ans = send_cmd(cmd=cmd, host=addr)
-                print( f'(remote_volume_daemon) {addr} --> \'{cmd}\'; {ans}' )
-
-            else:
-                resignations.append([addr, info])
-
-        for addr, info in resignations:
-            print( f'(remote_volume_daemon) say bye to remote {addr}:{info} not listening by now :-/' )
-            REMOTE_CLIENTS.pop( addr, None )
-
 
     print( f'(remote_volume_daemon) Keep relaying preamp level changes to remotes ...' )
 
@@ -306,40 +362,51 @@ def listen_to_remotes():
             a remote pAudio IP address, then updates REMOTE_CLIENTS
         """
 
-        cli_addr = kwargs.get('addr', '')
-        msg      = kwargs.get('msg', '')
-        result   = 'nack'
+        addr   = kwargs.get('addr', '')
+        msg    = kwargs.get('msg', '')
+        result = 'nack'
 
-        if not msg or not cli_addr:
+        if not msg or not addr:
             return result
 
         # Only 'hello' command is processed
         if msg == 'hello':
 
-            if cli_addr != my_ip and '127.0.' not in cli_addr:
+            if addr != my_ip and '127.0.' not in addr:
 
-                print( f'(remote_volume_daemon) Received hello from: {cli_addr}' )
+                print( f'(remote_volume_daemon) Received hello from: {addr}' )
 
-                if cli_addr not in REMOTE_CLIENTS:
+                if addr not in REMOTE_CLIENTS:
 
                     sleep(1)
-                    cli_state = get_remote_state(cli_addr)
-                    REMOTE_CLIENTS[cli_addr] = {'loudspeaker': cli_state.get('loudspeaker', '')}
+                    cli_state = get_remote_state(addr)
+                    REMOTE_CLIENTS[addr] = {
+                        'loudspeaker':  cli_state.get('loudspeaker', ''),
+                        'queue':        queue.Queue()
+                    }
+
+                    # We start the thread for that cli
+                    t = threading.Thread(
+                        target = manejar_cliente_tcp,
+                        args   = (addr, REMOTE_CLIENTS[addr]["queue"])
+                    )
+                    t.daemon = True
+                    t.start()
+
                     save_clients()
 
                     print( f'(remote_volume_daemon) Updated remote listening machines:\n'
-                           f'{json.dumps(REMOTE_CLIENTS, indent=2)}' )
+                           f'{json.dumps(remote_clients_wo_queues(), indent=2)}' )
 
                 # set the level settings in remote listener even if already in REMOTE_CLIENTS
-                remote_update_levels(cli_addr)
+                remote_update_levels(addr)
                 result = 'ack'
 
             else:
                 print( f'(remote_volume_daemon) Tas tonto: received \'hello\' '
-                       f'from MY SELF ({cli_addr})' )
+                       f'from MY SELF ({addr})' )
 
         return result
-
 
 
     print( f'(remote_volume_daemon) Keep listening for new remotes ...' )
