@@ -1349,6 +1349,24 @@ def get_my_ip_through_hostname():
         return ''
 
 
+def do_ping(addr, timeout=0.1):
+    """ Try pinging the address once.
+        returns: True/False
+    """
+
+    ping_cmd = f"ping -c 1 -W {timeout} {addr}"
+
+    try:
+        res = sp.run(ping_cmd.split(), stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+        if res.returncode == 0:
+            return True
+
+    except Exception as e:
+        print(f"{Fmt.RED}(miscel) Error with ping: {e}{Fmt.END}")
+
+    return False
+
+
 def get_my_ip():
     """ This ensures the one with best metric
     """
