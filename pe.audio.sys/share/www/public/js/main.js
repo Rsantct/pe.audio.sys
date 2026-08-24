@@ -1213,9 +1213,9 @@ function omd_polarity_rotate() {
 function omd_delay_toggle(elem) {
     mc.flash_element( elem );
     if (state.extra_delay !== 0) {
-        mc.send_cmd('preamp add_delay 0');
+        mc.send_cmd('preamp set_delay 0');
     }else{
-        mc.send_cmd('preamp add_delay ' + last_delay.toString());
+        mc.send_cmd('preamp set_delay ' + last_delay.toString());
     }
 }
 

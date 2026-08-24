@@ -48,7 +48,7 @@ OTHER_OPTS = [
     # https://github.com/librespot-org/librespot/wiki/FAQ
     # For AUDIOPHILES
     '--mixer softvol --volume-ctrl fixed --initial-volume 100',
-    '--format F32 --disable-audio-cache'
+    '--dither none --format F32 --disable-audio-cache'
 ]
 
 

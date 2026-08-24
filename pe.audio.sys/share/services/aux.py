@@ -665,6 +665,9 @@ def do( cmd, arg=None ):
         if cmd == 'info':
             result = AUX_INFO
 
+        elif cmd == 'get_config':
+            result = CONFIG
+
         elif cmd == 'amp_switch':
             result = manage_amp_switch(arg)
 

@@ -278,8 +278,8 @@ touch pe.audio.sys/.spotify_events
 ########################################################################
 # Symlink to use the SOCKET version of server.py (can change in a future)
 ########################################################################
-ln -s $HOME/pe.audio.sys/share/miscel/server.py.SOCKET \
-      $HOME/pe.audio.sys/share/miscel/server.py         1>/dev/null 2>&1
+ln -s $HOME/pe.audio.sys/share/miscel/server.py.SOCKET_THR \
+      $HOME/pe.audio.sys/share/miscel/server.py  1>/dev/null 2>&1
 
 
 ########################################################################

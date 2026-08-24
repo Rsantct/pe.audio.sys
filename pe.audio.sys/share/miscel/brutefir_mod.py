@@ -662,8 +662,8 @@ def restart_and_reconnect(bf_sources=[], delay=0.0):
         warnings += ' Brutefir ERROR getting jack ports available.'
 
 
-    # Settigs outputs delays as required
-    add_delay(delay)
+    # Setting outputs extra delay if required
+    set_delay(delay)
 
     # A safe wait to avoid early connections failures
     sleep(.2)
@@ -781,7 +781,7 @@ def get_current_outputs():
     return outputs
 
 
-def add_delay(ms):
+def set_delay(ms):
     """ Will add a delay to all outputs, relative to the  delay values
         as configured under 'brutefir_config'.
         Useful for multiroom simultaneous listening.

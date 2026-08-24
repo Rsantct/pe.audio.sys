@@ -873,6 +873,45 @@ def wait4ports( pattern, timeout=10 ):
         return False
 
 
+def tcp_server(addr='127.0.0.1', port=0, service_id='UNNAMED', processor=None, verbose=False):
+    """ a general purpose TCP server
+    """
+
+    def handle_client(srv):
+
+        con, cliaddr = srv.accept()
+
+        with con:
+
+            msg = con.recv(1024).decode().strip()
+            if verbose:
+                print( f'(server-{service_id}) Rx: {msg}' )
+
+            result = ''
+            if processor:
+
+                result = processor( addr=cliaddr[0], msg=msg )
+
+                if result:
+                    # Sending back the result
+                    con.sendall( result.encode() )
+                    if verbose:
+                        print( f'(server-{service_id}) Tx: {result}' )
+
+
+    if not port:
+        raise Exception('(miscel.server) missing port')
+
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    srv.bind((addr, port))
+    srv.listen(10)
+
+    while True:
+        handle_client(srv)
+
+
+
 def send_cmd( cmd, sender='', verbose=False, timeout=60,
               host='127.0.0.1', port=CONFIG['peaudiosys_port'] ):
     """
@@ -1268,15 +1307,88 @@ def is_IP(s):
          return False
 
 
-def get_my_ip():
+def get_my_ip_through_socket():
+    """ retrieves the own IP address using socket
+        (string)
+
+        We prefer the below version get_my_ip()
+        instead of using a dummy socket here
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    try:
+        # No se necesita conexión real, el IP puede ser cualquiera
+        s.connect(('8.8.8.8', 1))
+        IP = s.getsockname()[0]
+
+    except Exception:
+        IP = '127.0.0.1'
+
+    finally:
+        s.close()
+
+    return IP
+
+
+def get_my_ip_through_hostname():
     """ retrieves the own IP address
         (string)
+
+        We prefer this instead of using a dummy socket
+
+            $ hostname --all-ip-addresses
+            192.168.1.47 192.168.1.69
+
+        BUT if more than one (eth wifi) it is not guaranteed
+        that the first one is the one with best metric :-/
     """
     try:
         tmp = sp.check_output( 'hostname --all-ip-addresses'.split() ).decode()
         return tmp.split()[0]
     except:
         return ''
+
+
+def do_ping(addr, timeout=0.1):
+    """ Try pinging the address once.
+        returns: True/False
+    """
+
+    ping_cmd = f"ping -c 1 -W {timeout} {addr}"
+
+    try:
+        res = sp.run(ping_cmd.split(), stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+        if res.returncode == 0:
+            return True
+
+    except Exception as e:
+        print(f"{Fmt.RED}(miscel) Error with ping: {e}{Fmt.END}")
+
+    return False
+
+
+def get_my_ip():
+    """ This ensures the one with best metric
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    try:
+        # It doesn't actually need to connect to the internet,
+        # it just asks the kernel to choose the best exit route.
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+
+    except Exception:
+        # If there is no connection or default route
+        ip = get_my_ip_through_hostname()
+
+    finally:
+        s.close()
+
+    if ip:
+        return ip
+    else:
+        return get_my_ip_through_hostname()
 
 
 def get_timestamp():

@@ -5,6 +5,9 @@
 # 'pe.audio.sys', a PC based personal audio system.
 
 """ Controls the preamp (inputs, level, tones and convolver)
+
+    NOTICE: This relays level related commands to the remote volume manager daemon
+            (Find 'forward to remotes manager daemon' below)
 """
 
 import  sys
@@ -18,7 +21,7 @@ sys.path.append(f'{UHOME}/pe.audio.sys/share/miscel')
 from    config          import  CONFIG
 from    miscel          import  get_remote_zita_params, \
                                 remote_zita_restart,    \
-                                get_xo_latencies
+                                get_xo_latencies, send_cmd
 
 from    preamp_mod.core import  Preamp, Convolver
 
@@ -88,6 +91,13 @@ def camilladsp_insert(insert=True):
     jcli.close()
 
 
+def send_to_remotes(cmd):
+    """ remotes are managed by remote_volume_daemon which listen at base port + 2
+    """
+    remotes_manager_port = CONFIG["peaudiosys_port"] + 2
+    send_cmd( cmd, port=remotes_manager_port)
+
+
 # Interface function for this module
 def do( cmd, argstring ):
     """ Processes commands for audio control
@@ -150,10 +160,10 @@ def do( cmd, argstring ):
         return result
 
 
-    def add_delay(x, *dummy):
-        """ Add outputs delay, typically for multiroom listening
+    def set_delay(x, *dummy):
+        """ set outputs extra delay, typically for multiroom listening
         """
-        result = convolver.add_delay(float(x))
+        result = convolver.set_delay(float(x))
         if result == 'done':
             preamp.state['extra_delay'] = float(x)
         return result
@@ -266,7 +276,7 @@ def do( cmd, argstring ):
             'drc':              set_drc,
             'set_xo':           set_xo,
             'xo':               set_xo,
-            'add_delay':        add_delay,
+            'set_delay':        set_delay,
 
             'compressor':       manage_compressor,
 
@@ -277,11 +287,16 @@ def do( cmd, argstring ):
 
             } [ cmd.lower() ] ( arg, add )
 
-        # ************************************
-        # ** KEEPING UPDATED THE STATE FILE **
-        # ************************************
         if result:
+            # ** KEEPING UPDATED THE STATE FILE **
             preamp.save_state()
+
+            # ** forward to remotes manager daemon **
+            if ('level' in cmd and 'add' in argstring) or \
+                'lu_offset' in cmd or \
+                'loudness' in cmd:
+                    send_to_remotes(f'{cmd} {argstring}')
+
 
     except KeyError:
         result = f'(preamp) unknown command: \'{cmd}\''

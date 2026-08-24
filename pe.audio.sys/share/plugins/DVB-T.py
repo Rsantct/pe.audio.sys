@@ -100,12 +100,12 @@ A:17840.5 ( 4:57:20.5) of -0.6 (unknown) 69.8%
 Exiting... (Quit)
 """
 
+import  sys
+import  os
 from    pathlib import Path
 from    time    import sleep
 from    subprocess import Popen, call, check_output
 import  yaml
-import  sys
-import  os
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
@@ -113,17 +113,18 @@ sys.path.append(f'{MAINFOLDER}/share/miscel')
 
 from miscel import wait4ports, check_Mplayer_config_file, Fmt, USER
 
+# (i) STREAM LEVEL management
+#     '-softvol-max 400' alows to amplify for AC3 encoded streams, see
+#     above examples. Then later, we can issue a slave mode volume command.
+#     We use channels = 2 to force mplayer internal downmix to stereo.
+MPLAYER_OPTIONS = '-quiet -nolirc -slave -idle -softvol -softvol-max 400 -channels 2'
+AC3_BOOST_DB    = 9.0 # in dB
+
 
 CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
 PRESETS_PATH    = f'{MAINFOLDER}/config/DVB-T.yml'
 REDIR_PATH      = f'{MAINFOLDER}/.dvb_events'
 INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
-
-
-# (i) STREAM LEVEL management
-#     '-softvol-max 400' alows to amplify 12 dB for AC3 encoded streams, see
-#     above examples. Then later, we can issue a slave mode volume command.
-MPLAYER_OPTIONS = '-quiet -nolirc -slave -idle -softvol -softvol-max 400'
 
 
 def select_by_preset(pnum):
@@ -143,8 +144,8 @@ def select_by_name(channel_name):
     """ loads a stream by its channel.conf name """
 
 
-    def get_volume():
-        """ Boost 12 dB if 'codec' is AC3 kind of as per the PRESETS user file.
+    def get_needed_volume(db=AC3_BOOST_DB):
+        """ Boost if 'codec' is AC3 kind of as per the PRESETS user file.
         """
 
         volume = 0
@@ -154,7 +155,7 @@ def select_by_name(channel_name):
             if PRESETS[pnum]['name'] == channel_name:
                 if 'codec' in  PRESETS[pnum] and PRESETS[pnum]['codec']:
                     if 'ac3' in  PRESETS[pnum]['codec'].lower():
-                        volume = 400 # 12 dB in percent
+                        volume = 10**(AC3_BOOST_DB / 20) * 100 # in percent
                 break
 
         return volume
@@ -182,7 +183,7 @@ def select_by_name(channel_name):
 
 
         # Optional VOLUME for multichannel codec 'ffac3'
-        volume = get_volume()
+        volume = get_needed_volume()
 
         if volume:
 

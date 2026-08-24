@@ -41,6 +41,15 @@ From now on we can use `pip3` to install packages not included within Debian:
 
 Please remember when running this project you must activate the Python VENV so that modules can be loaded. The provided `bin/peaudiosys_restart.sh` script will do so automatically.
 
+### Load the Python enviromnet in your terminal
+
+edit **`~/.bashrc`**
+
+    # Load the Python environment for interactive sessions
+    if [ -n "$PS1" ]; then
+        source ~/.env/bin/activate
+    fi
+
 
 ### Optional to manage volume through by the sound card ALSA mixer:
 
