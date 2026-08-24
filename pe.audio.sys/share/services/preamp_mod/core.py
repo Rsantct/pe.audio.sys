@@ -1151,8 +1151,8 @@ class Convolver(object):
             return f'xo set \'{xo_set}\' not available'
 
 
-    def add_delay(self, ms, *dummy):
-        return bf.add_delay(ms)
+    def set_delay(self, ms, *dummy):
+        return bf.set_delay(ms)
 
 
     def get_drc_sets(self, *dummy):
