@@ -8,11 +8,11 @@
     Adds Brutefir's outputs delay.
 
     This tool is intended to compensate for multiroom listening tuning,
-    anyway you can use the command 'aux add_delay X'
+    anyway you can use the command 'aux set_delay X'
 
     Usage:
 
-        peaudiosys_add_delay.py  <additional delay> | --list
+        peaudiosys_set_delay.py  <additional delay> | --list
 
     You can reserve a 'maxdelay' value in samples inside 'brutefir_config'.
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
         else:
             try:
                 delay = float(opc)
-                print( 'adding delay: ', bf.add_delay(delay) )
+                print( 'adding delay: ', bf.set_delay(delay) )
             except:
                 print( f'bad delay \'{opc}\'' )
 
