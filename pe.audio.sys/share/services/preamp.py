@@ -160,10 +160,10 @@ def do( cmd, argstring ):
         return result
 
 
-    def add_delay(x, *dummy):
-        """ Add outputs delay, typically for multiroom listening
+    def set_delay(x, *dummy):
+        """ set outputs extra delay, typically for multiroom listening
         """
-        result = convolver.add_delay(float(x))
+        result = convolver.set_delay(float(x))
         if result == 'done':
             preamp.state['extra_delay'] = float(x)
         return result
@@ -276,7 +276,7 @@ def do( cmd, argstring ):
             'drc':              set_drc,
             'set_xo':           set_xo,
             'xo':               set_xo,
-            'add_delay':        add_delay,
+            'set_delay':        set_delay,
 
             'compressor':       manage_compressor,
 
