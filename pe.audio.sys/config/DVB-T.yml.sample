@@ -5,19 +5,19 @@
 #       codec:  Optional. Currently 'ffac3' will set a 12 dB boost in Mplayer
 
 1:
-    name:   Radio Nacional
+    name:   Radio Nacional de España
     codec:  mpg123
 
 2:
-    name:   Radio Clasica HQ A52
+    name:   Radio Clasica HQ RNE audio_pid_2021
     codec:  ffac3
 
 22:
-    name:   Radio Clasica HQ MPA
+    name:   Radio Clasica HQ RNE audio_pid_2022
     codec:  mpg123
 
 3:
-    name:   Radio 3 HQ
+    name:   Radio3 HQ RNE
 
 4:
     name:   Radio Exterior RNE
