@@ -11,7 +11,9 @@
 
     Usage:    DVB-T.py  start
                         stop
-                        channel <channel_name>
+                        channel channel_name
+                        load    channel_name
+                        pan     ITU-R (default) | LR | loud | quiet
 
     Notice:
     When loading a new stream, Mplayer jack ports will dissapear for a while,
@@ -27,6 +29,7 @@ import  os
 from    pathlib import Path
 from    time    import sleep
 import  subprocess as sp
+import  jack
 
 UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
@@ -37,6 +40,72 @@ from miscel import wait4ports, Fmt, USER
 CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
 EVENTS_PATH     = f'{MAINFOLDER}/.dvb_events'
 INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
+
+# -- VERBOSE (use tail -f .dvb_events), see details under make_msglevel()
+VERBOSE = False
+
+# --- RESAMPLER
+# Integrated resamplier
+#AF_RESAMPLER = 'resample=44100:0:2'
+#
+# HiFi resampler
+"""
+   lavcresample[=srate[:length[:linear[:count[:cutoff]]]]]
+          Changes the sample rate of the audio stream to an integer <srate> in Hz.  It only supports the 16-bit native-endian format.
+          NOTE: With MEncoder, you need to also use -srate <srate>.
+             <srate>
+                  the output sample rate
+             <length>
+                  length of the filter with respect to the lower sampling rate (default: 16)
+             <linear>
+                  if 1 then filters will be linearly interpolated between polyphase entries
+             <count>
+                  log2 of the number of polyphase entries (..., 10->1024, 11->2048, 12->4096, ...)  (default: 10->1024)
+             <cutoff>
+                  cutoff frequency (0.0-1.0), default set depending upon filter length
+"""
+RESAMPLER = 'lavcresample=44100:32:0:12'
+
+
+def make_pan(mode='itu'):
+    """
+        ITU-R Downmix for 5.1(side)
+
+                0       1       2       3       4       5
+                FL      FR      SL      SR      FC      LFE
+            L   1.0     0.0     0.707   0.0     0.707   0.5
+            R   0.0     1.0     0.0     0.707   0.707   0.5
+    """
+
+
+    if mode.lower() == 'lr':
+        L = [1.0, 0.0, 0.0,   0.0,   0.0,  0.0]
+        R = [0.0, 1.0, 0.0,   0.0,   0.0,  0.0]
+
+    elif mode.lower() == 'itu-r':
+        L = [1.0, 0.0, 0.707, 0.0,   0.707, 0.5]
+        R = [0.0, 1.0, 0.0,   0.707, 0.707, 0.5]
+
+    elif mode.lower() == 'quiet':
+        L = [0.2, 0.0, 0.707, 0.0,   0.707, 0.5]
+        R = [0.0, 0.2, 0.0,   0.707, 0.707, 0.5]
+
+    elif mode.lower() == 'loud':
+        L = [3.0, 0.0, 0.707, 0.0,   0.707, 0.5]
+        R = [0.0, 3.0, 0.0,   0.707, 0.707, 0.5]
+
+    else:
+        print(f'BAD pan ID: {mode}')
+        return ''
+
+    pan = f'{2}'
+
+    for l, r in zip(L,R):
+        pan += f':{l}:{r}'
+
+    # example  2:1.0:0.0:0.0:1.0:0.707:0.0:0.0:0.707:0.707:0.707:0.5:0.5
+
+    return pan
 
 
 def make_msglevel():
@@ -55,6 +124,7 @@ def make_msglevel():
           9   debug level 4
     """
 
+
     # use (d)efault) or (v)erbose below
     matrix = """
         Available msg modules:
@@ -65,8 +135,8 @@ def make_msglevel():
         v  ao         - libao
         v  demuxer    - demuxer.c (general stuff)
            ds         - demux stream (add/read packet etc)
-        d  demux      - fileformat-specific stuff (demux_*.c)
-        v  header     - fileformat-specific header (*header.c)
+           demux      - fileformat-specific stuff (demux_*.c)
+           header     - fileformat-specific header (*header.c)
            avsync     - mplayer.c timer stuff
            autoq      - mplayer.c auto-quality stuff
            cfgparser  - cfgparser.c
@@ -127,6 +197,48 @@ def make_msglevel():
     return result
 
 
+def connect_to_jkmeter():
+
+    jcli = jack.Client('DVB-T', no_start_server=True)
+
+    for i in range(6):
+        try:
+            jcli.connect(f'mplayer_dvb:out_{i}', f'jkmeter:in-{i+1}')
+        except:
+            pass
+
+    del(jcli)
+
+
+def connect_to_ebumeter():
+
+    jcli = jack.Client('DVB-T', no_start_server=True)
+
+    try:
+        jcli.connect(f'mplayer_dvb:out_0', f'ebumeter:in.L')
+        jcli.connect(f'mplayer_dvb:out_1', f'ebumeter:in.R')
+    except:
+        pass
+
+    del(jcli)
+
+
+def set_pan(pan_id):
+
+    pan = make_pan(pan_id)
+
+    if pan:
+        issue_cmd(f'af_cmdline pan {pan}')
+
+
+def issue_cmd(command):
+
+    with open( INPUT_FIFO, 'w') as f:
+        f.write( f"{command}\n" )
+
+    print( f"(DVB-T.py) issued: {command}" )
+
+
 def load_channel(channel_name):
     """ loads a stream by its channel.conf name """
 
@@ -140,27 +252,15 @@ def load_channel(channel_name):
 
 
     # Loading the DVB-T station
-    try:
-
-        # The whole address after 'loadfile' needs to be SINGLE quoted to load properly
-        command = f"loadfile 'dvb://{channel_name}'"
-
-        with open( INPUT_FIFO, 'w') as f:
-            f.write( f"{command}\n" )
-
-        print( f"(DVB-T.py) issued: {command}" )
-
-
-    except:
-
-        print( f"(DVB-T.py) failed to load '{channel_name}'" )
-        sys.exit()
+    # The whole address after 'loadfile' needs to be SINGLE quoted to load properly
+    issue_cmd( f"loadfile 'dvb://{channel_name}'" )
 
 
     # Wait a bit for the new Mplayer ports to emerge (informational only)
     sleep(2)
     if wait4ports('mplayer_dvb', 5):
         print( f"(DVB-T.py) Mplayer JACK ports emerged" )
+        connect_to_ebumeter()
     else:
         print( f"(DVB-T.py) Mplayer JACK ports NOT available" )
 
@@ -170,8 +270,10 @@ def start():
     # Check the necessary files for this to work
     do_check_files()
 
-    # Uncomment to debug
-    MSGLEVEL = '' #make_msglevel()
+    if VERBOSE:
+        MSGLEVEL = make_msglevel()
+    else:
+        MSGLEVEL = ''
 
     # NOTICE for AC3 Radio streams (e.g. Radio Clasica RNE)
     # Mplayer -channels options refers the MAX number of channels to catch
@@ -182,33 +284,12 @@ def start():
     # normally comes in stereo compatibility mode except for a few live broadcasting concerts.
     OPTIONS  = '-quiet -nolirc -slave -idle -ao jack:name=mplayer_dvb:noconnect -channels 6'
 
-    # Integrated resamplier
-    #AFILTERS = '-af resample=44100:0:2'
-    #
-    # HiFi resampler
-    """
-       lavcresample[=srate[:length[:linear[:count[:cutoff]]]]]
-              Changes the sample rate of the audio stream to an integer <srate> in Hz.  It only supports the 16-bit native-endian format.
-              NOTE: With MEncoder, you need to also use -srate <srate>.
-                 <srate>
-                      the output sample rate
-                 <length>
-                      length of the filter with respect to the lower sampling rate (default: 16)
-                 <linear>
-                      if 1 then filters will be linearly interpolated between polyphase entries
-                 <count>
-                      log2 of the number of polyphase entries (..., 10->1024, 11->2048, 12->4096, ...)  (default: 10->1024)
-                 <cutoff>
-                      cutoff frequency (0.0-1.0), default set depending upon filter length
-    """
-    AFILTERS = '-af lavcresample=44100:32:0:12'
-
 
     # Run by flushing the events file, which grows about 200K per hour while running mplayer
     with open(EVENTS_PATH, 'w') as f:
         # clearing the file for this session
         f.write('')
-        cmd = f'mplayer {OPTIONS} {AFILTERS} {MSGLEVEL} -input file={INPUT_FIFO}'
+        cmd = f'mplayer {OPTIONS} -af format=floatle,{RESAMPLER},pan={make_pan("itu-r")} {MSGLEVEL} -input file={INPUT_FIFO}'
         sp.Popen( cmd.split(), shell=False, stdout=f, stderr=f )
 
 
@@ -252,12 +333,28 @@ if __name__ == '__main__':
             stop()
 
         # ON THE FLY tuning
-        elif opc == 'channel':
-            load_channel( sys.argv[2] )
+        elif opc in ('channel', 'load'):
+            if sys.argv[2:]:
+                load_channel( sys.argv[2] )
+            else:
+                print(__doc__)
+
+        # ON THE FLY changing PAN
+        elif opc == 'pan':
+            if sys.argv[2:]:
+                set_pan( sys.argv[2] )
+            else:
+                print('missing pan ID')
+
+        elif opc == 'pan_view':
+            if sys.argv[2:]:
+                tmp = make_pan( sys.argv[2] )
+                print(f'pan: {tmp}')
+            else:
+                print('missing pan ID')
 
         elif '-h' in opc:
             print(__doc__)
-            sys.exit()
 
         else:
             print( '(DVB-T.py) Bad option' )
