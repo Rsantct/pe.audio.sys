@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+import templates.dvbt_macro as dvb
+
+dvb.channel         = 'Radio Clasica HQ RNE'
+dvb.lu_offset       = 3
+
+# Use this if you know that the stream is AC3
+dvb.ac3             = True
+
+dvb.main()
