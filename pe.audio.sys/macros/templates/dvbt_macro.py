@@ -8,7 +8,7 @@
     A pe.audio.sys macro to help tuning a Mplayer DVB-T radio channel
 """
 from    time            import sleep
-from    subprocess      import Popen
+import  subprocess      as sp
 from    os.path         import expanduser
 import  sys
 UHOME = expanduser("~")
@@ -22,7 +22,8 @@ ME = 'dvbt_macro'
 
 # DEFAUL
 lu_offset = 9
-
+ac3       = False
+verbose   = False
 
 def main():
 
@@ -33,8 +34,14 @@ def main():
     send_cmd( f'aux warning clear' )
     send_cmd( f'aux warning set tuning takes a while ...' )
 
-    # Tune the radio station (Mplayer jack ports will dissapear for a while)
-    Popen( f'{UHOME}/pe.audio.sys/share/plugins/DVB-T.py channel "{channel}"', shell=True)
+    # Restart Mplayer with the necessary input channels layout
+    ac3_flag = '-ac3' if ac3 else ''
+    verbose_flag = '-v' if verbose else ''
+    sp.call( f'{UHOME}/pe.audio.sys/share/plugins/DVB-T.py start {ac3_flag} {verbose_flag}', shell=True)
+
+    # Tune the radio station
+    sp.Popen( f'{UHOME}/pe.audio.sys/share/plugins/DVB-T.py channel "{channel}"', shell=True)
+
     # Wait a bit for current ports to disappear
     sleep(3)
 
