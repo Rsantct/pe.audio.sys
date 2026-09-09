@@ -9,19 +9,17 @@
     DVB-T tuned channels must be in:
         ~/.mplayer/channels.conf
 
-    Usage:    DVB-T.py  start
+    Usage:    DVB-T.py  start           [-ac3] [-v]
                         stop
-                        channel channel_name
-                        load    channel_name
-                        pan     ITU-R (default) | LR | loud | quiet
+                        channel/load    channel_name
+                        pan             ITU-R (default) | LR | loud | quiet
 
-    Notice:
-    When loading a new stream, Mplayer jack ports will dissapear for a while,
-    so you'll need to wait for Mplayer ports to re-emerge before switching
-    the preamp input.
+        -v      makes Mplayer verbosity in .dvb_events
+        -ac3    prepares Mplayer chain with 6 channels the received input stream
 
-    Mplayer SLAVE MODE
-    http://www.mplayerhq.hu/DOCS/tech/slave.txt
+
+    Mplayer SLAVE MODE doc:
+        http://www.mplayerhq.hu/DOCS/tech/slave.txt
 """
 
 import  sys
@@ -41,56 +39,37 @@ CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
 EVENTS_PATH     = f'{MAINFOLDER}/.dvb_events'
 INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
 
-# -- VERBOSE (use tail -f .dvb_events), see details under make_msglevel()
-VERBOSE = False
-
-# --- RESAMPLER
-# Integrated resamplier
-#AF_RESAMPLER = 'resample=44100:0:2'
-#
-# HiFi resampler
-"""
-   lavcresample[=srate[:length[:linear[:count[:cutoff]]]]]
-          Changes the sample rate of the audio stream to an integer <srate> in Hz.  It only supports the 16-bit native-endian format.
-          NOTE: With MEncoder, you need to also use -srate <srate>.
-             <srate>
-                  the output sample rate
-             <length>
-                  length of the filter with respect to the lower sampling rate (default: 16)
-             <linear>
-                  if 1 then filters will be linearly interpolated between polyphase entries
-             <count>
-                  log2 of the number of polyphase entries (..., 10->1024, 11->2048, 12->4096, ...)  (default: 10->1024)
-             <cutoff>
-                  cutoff frequency (0.0-1.0), default set depending upon filter length
-"""
-RESAMPLER = 'lavcresample=44100:32:0:12'
-
 
 def make_pan(mode='itu'):
-    """
+    r"""
         ITU-R Downmix for 5.1(side)
 
-                0       1       2       3       4       5
-                FL      FR      SL      SR      FC      LFE
-            L   1.0     0.0     0.707   0.0     0.707   0.5
-            R   0.0     1.0     0.0     0.707   0.707   0.5
+                  \     in:
+                   \    0       1       2       3       4       5
+                    \   FL      FR      SL      SR      FC      LFE
+             out:  L    1.0     0.0     0.707   0.0     0.707   0.5
+                   R    0.0     1.0     0.0     0.707   0.707   0.5
     """
 
+    mode = mode.lower()
 
-    if mode.lower() == 'lr':
+    # LR mode just routes FL--> L, FR --> R
+    if mode == 'lr':
         L = [1.0, 0.0, 0.0,   0.0,   0.0,  0.0]
         R = [0.0, 1.0, 0.0,   0.0,   0.0,  0.0]
 
-    elif mode.lower() == 'itu-r':
+    # ITU-R downmix
+    elif mode == 'itu-r':
         L = [1.0, 0.0, 0.707, 0.0,   0.707, 0.5]
         R = [0.0, 1.0, 0.0,   0.707, 0.707, 0.5]
 
-    elif mode.lower() == 'quiet':
+    # for testing
+    elif mode == 'quiet':
         L = [0.2, 0.0, 0.707, 0.0,   0.707, 0.5]
         R = [0.0, 0.2, 0.0,   0.707, 0.707, 0.5]
 
-    elif mode.lower() == 'loud':
+    # for testing
+    elif mode == 'loud':
         L = [3.0, 0.0, 0.707, 0.0,   0.707, 0.5]
         R = [0.0, 3.0, 0.0,   0.707, 0.707, 0.5]
 
@@ -98,9 +77,9 @@ def make_pan(mode='itu'):
         print(f'BAD pan ID: {mode}')
         return ''
 
-    pan = f'{2}'
+    pan = '2'
 
-    for l, r in zip(L,R):
+    for l, r in zip(L, R):
         pan += f':{l}:{r}'
 
     # example  2:1.0:0.0:0.0:1.0:0.707:0.0:0.0:0.707:0.707:0.707:0.5:0.5
@@ -224,6 +203,8 @@ def connect_to_ebumeter():
 
 
 def set_pan(pan_id):
+    """ af_cmdline modifies on the fly the initially loaded pan instance
+    """
 
     pan = make_pan(pan_id)
 
@@ -261,6 +242,7 @@ def load_channel(channel_name):
     if wait4ports('mplayer_dvb', 5):
         print( f"(DVB-T.py) Mplayer JACK ports emerged" )
         connect_to_ebumeter()
+        connect_to_jkmeter()
     else:
         print( f"(DVB-T.py) Mplayer JACK ports NOT available" )
 
@@ -275,21 +257,24 @@ def start():
     else:
         MSGLEVEL = ''
 
-    # NOTICE for AC3 Radio streams (e.g. Radio Clasica RNE)
-    # Mplayer -channels options refers the MAX number of channels to catch
-    # from the input stream to be rendered to the -ao output.
-    # If the stream is AC3 (6 ch), then will output 6 channels to the -ao backend
-    # If you force -channels 2 (or leave it to default 2), then Mplayer will downmix the AC3 to 2 ch,
-    # BUT this is not useful for Radio Clasica HQ RNE pid 2021 because this AC3
-    # normally comes in stereo compatibility mode except for a few live broadcasting concerts.
-    OPTIONS  = '-quiet -nolirc -slave -idle -ao jack:name=mplayer_dvb:noconnect -channels 6'
+    OPTIONS  = f'-quiet -nolirc -slave -idle -ao jack:name=mplayer_dvb:noconnect -channels {nCH}'
 
+    # This only computes 16 bit samples, so additional conversions will be applied (see console in verbose mode)
+    RESAMPLER16 = 'lavcresample=44100:32:0:12'
+    # This computes 32 bit samples
+    RESAMPLER32 = 'resample=44100:0:2'
 
     # Run by flushing the events file, which grows about 200K per hour while running mplayer
     with open(EVENTS_PATH, 'w') as f:
+
         # clearing the file for this session
         f.write('')
-        cmd = f'mplayer {OPTIONS} -af format=floatle,{RESAMPLER},pan={make_pan("itu-r")} {MSGLEVEL} -input file={INPUT_FIFO}'
+
+        if nCH == 2:
+            cmd = f'mplayer {OPTIONS} -af {RESAMPLER32} {MSGLEVEL} -input file={INPUT_FIFO}'
+        elif nCH == 6:
+            cmd = f'mplayer {OPTIONS} -af {RESAMPLER32},pan={make_pan("itu-r")} {MSGLEVEL} -input file={INPUT_FIFO}'
+
         sp.Popen( cmd.split(), shell=False, stdout=f, stderr=f )
 
 
@@ -316,7 +301,30 @@ def do_check_files():
     del(f)
 
 
+def check_mplayer_channels():
+    """ Check how many channels were configured in the running Mplayer process
+    """
+    res = 2
+
+    try:
+        tmp = sp.check_output('pgrep -fla "pe.audio.sys/.dvb_fifo"', shell=True).decode()
+        if '-channels 6' in tmp:
+            res = 6
+    except:
+        pass
+
+    return res
+
+
 if __name__ == '__main__':
+
+    # NOTICE that for AC3 input streams we need to prepare Mplayer to manage up to 6 ch.
+    # Later, the `pan` filter will mix to 2ch stereo as desired.
+    # If so, please use 'DVB-T.py start -ac3'
+    nCH = 2
+
+    # -- VERBOSE (use tail -f .dvb_events), see details under make_msglevel()
+    VERBOSE = False
 
     ### Reading the command line
     if sys.argv[1:]:
@@ -325,7 +333,15 @@ if __name__ == '__main__':
 
         # STARTS the plugin
         if opc == 'start':
+
             stop()
+
+            for x in sys.argv[2:]:
+                if x == '-v':
+                    VERBOSE = True
+                if '-ac3' in x.lower() or '-6ch' in x.lower():
+                    nCH = 6
+
             start()
 
         # STOPS all this stuff
@@ -341,17 +357,25 @@ if __name__ == '__main__':
 
         # ON THE FLY changing PAN
         elif opc == 'pan':
-            if sys.argv[2:]:
-                set_pan( sys.argv[2] )
+
+            if check_mplayer_channels() == 6:
+                if sys.argv[2:]:
+                    set_pan( sys.argv[2] )
+                else:
+                    print('missing pan ID')
             else:
-                print('missing pan ID')
+                print('pan only works if started with 6ch')
 
         elif opc == 'pan_view':
-            if sys.argv[2:]:
-                tmp = make_pan( sys.argv[2] )
-                print(f'pan: {tmp}')
+
+            if check_mplayer_channels() == 6:
+                if sys.argv[2:]:
+                    tmp = make_pan( sys.argv[2] )
+                    print(f'pan: {tmp}')
+                else:
+                    print('missing pan ID')
             else:
-                print('missing pan ID')
+                print('pan only works if started with 6ch')
 
         elif '-h' in opc:
             print(__doc__)
