@@ -1060,7 +1060,7 @@ class Preamp(object):
 
 
     def get_inputs(self, *dummy):
-        return [ x for x in self.inputs.keys() ]
+        return ['none'] + [ x for x in self.inputs.keys() ]
 
 
 # The Convolver: drc and xo Brutefir stages management =========================
