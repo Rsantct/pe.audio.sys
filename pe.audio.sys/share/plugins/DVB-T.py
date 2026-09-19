@@ -40,7 +40,7 @@ EVENTS_PATH     = f'{MAINFOLDER}/.dvb_events'
 INPUT_FIFO      = f'{MAINFOLDER}/.dvb_fifo'
 
 
-def make_pan(mode='itu'):
+def make_pan(mode='itu-r'):
     r"""
         ITU-R Downmix for 5.1(side)
 
