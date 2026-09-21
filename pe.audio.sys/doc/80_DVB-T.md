@@ -30,7 +30,7 @@ Podemos hacer un enlace o copiarlo en `/lib/firmware` para que sea reconocido po
 
     sudo ln -s /home/firtro/custom/firmware/dvb_nova_12mhz_b0.inp /lib/firmware/
 
-### Problemas NPG Real HDTV Nano
+**Problemas NPG Real HDTV Nano**
 
 A partir de Ubuntu 24.04 con kernel 6.xx, ocurren XRUNS y problemas en el kernel (dmesg, journalctl)
 
@@ -49,6 +49,9 @@ A partir de Ubuntu 24.04 con kernel 6.xx, ocurren XRUNS y problemas en el kernel
 
 Según pruebas realizadas parece ser que `firmware/dvb_nova_12mhz_b0.inp` no es compatible con kernel 6.xx
 
+**SOLUCION**
+
+Desestimar el archivo **`firmware/dvb_nova_12mhz_b0.inp`** y en su lugar instalar **`apt install firmware-siano`**
 
 # 2. Módulos del kernel para DVB
 

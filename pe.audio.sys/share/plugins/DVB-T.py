@@ -33,7 +33,7 @@ UHOME       = os.path.expanduser("~")
 MAINFOLDER  = f'{UHOME}/pe.audio.sys'
 sys.path.append(f'{MAINFOLDER}/share/miscel')
 
-from miscel import wait4ports, Fmt, USER
+from miscel import wait4ports, Fmt, USER, CONFIG
 
 CHANNELS_PATH   = f'{UHOME}/.mplayer/channels.conf'
 EVENTS_PATH     = f'{MAINFOLDER}/.dvb_events'
@@ -231,10 +231,14 @@ def load_channel(channel_name):
         print( f"(DVB-T.py) Channel NOT found: '{channel_name}'" )
         sys.exit()
 
+    CARD_NAME = 'adapter0'
+    configured_card = CONFIG.get('dvb_adapter_id', '')
+    if configured_card:
+        CARD_NAME = configured_card
 
     # Loading the DVB-T station
     # The whole address after 'loadfile' needs to be SINGLE quoted to load properly
-    issue_cmd( f"loadfile 'dvb://{channel_name}'" )
+    issue_cmd( f"loadfile 'dvb://{CARD_NAME}@{channel_name}'" )
 
 
     # Wait a bit for the new Mplayer ports to emerge (informational only)
