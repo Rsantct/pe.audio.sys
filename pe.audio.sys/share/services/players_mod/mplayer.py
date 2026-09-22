@@ -497,7 +497,8 @@ def mplayer_get_meta(md, service):
             md['bitrate'] = line.split('=')[-1].replace("'", "").split()[0]
 
         if 'ANS_FILENAME=' in line:
-            md['title'] = line.split('=')[-1].replace("'", "")
+            # remove adapterN@
+            md['title'] = line.split('=')[-1].replace("'", "").split('@')[-1]
 
     return md
 
