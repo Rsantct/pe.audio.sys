@@ -17,7 +17,7 @@ Para convertir `canales_tdt.conf` al formato clásico de **Mplayer**, usar el sc
 ## Varias tarjetas DVB-T
 
 Elegir la deseada en **`config.yml`**
-
-    # Optional for more than one adapterX under /dev/dvb/
-    # You can use an udev rule for a named symlink to /dev/dvb/adapterX
-    dvb_adapter_id:  hauppage
+    
+    # Optional for more than one USB DVB-T device:
+    # use a name identifier string here, as it appears when running the 'lsusb' command
+    dvb_device_name:  Hauppauge
