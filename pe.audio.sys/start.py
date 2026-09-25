@@ -58,6 +58,10 @@ def prepare_jacktrip_server(iostat=False):
         return result
 
 
+    # defaults are 4464 and 61002, we use here non standard ports
+    BIND_PORT = 4465
+    UDP_PORT  = 62002
+
     if not jacktrip_wanted():
         print(f'{Fmt.GRAY}(start) (i) JackTrip server not needed{Fmt.END}')
         return
@@ -67,7 +71,7 @@ def prepare_jacktrip_server(iostat=False):
 
     iostat_cmd = f' --iostat 5 --iostatlog '
 
-    cmd = f'jacktrip --jacktripserver --numchannels 2 --nojackportsconnect'
+    cmd = f'jacktrip --jacktripserver --bindport {BIND_PORT} --udpbaseport {UDP_PORT} --numchannels 2 --nojackportsconnect'
 
     if iostat:
         cmd += iostat_cmd
