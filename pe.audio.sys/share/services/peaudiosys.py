@@ -42,6 +42,8 @@ def do( cmd_phrase ):
         #           preamp  command  arg1 ...
         #           players command  arg1 ...
         #           aux     command  arg1 ...
+        #           ctrl    command  arg1 ...   'ctrl' is an alias of 'aux'
+        #                                        for pAudio compatibility
         #     The 'preamp' prefix can be omited
 
         pfx, cmd, argstring = '', '', ''
@@ -51,7 +53,7 @@ def do( cmd_phrase ):
         chunks = [x for x in cmd_phrase.split(' ') if x]
 
         # If not prefix, will treat as a preamp command kind of
-        if not chunks[0] in ('preamp', 'player', 'aux'):
+        if not chunks[0] in ('preamp', 'player', 'aux', 'ctrl'):
             chunks.insert(0, 'preamp')
         pfx = chunks[0]
 
@@ -60,6 +62,9 @@ def do( cmd_phrase ):
         if chunks[2:]:
             # <argstring> can be compound
             argstring = ' '.join( chunks[2:] )
+
+        if pfx == 'ctrl':
+            pfx = 'aux'
 
         return pfx, cmd, argstring
 
